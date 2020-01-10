@@ -1,7 +1,7 @@
 set(example01_src example01.cpp)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-set(EXAMPLE_LIBS)
+set(EXAMPLE_LIBS nerikiri)
 
 find_package(Threads REQUIRED)
 
