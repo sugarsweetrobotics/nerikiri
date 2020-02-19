@@ -1,15 +1,14 @@
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/http/restbroker.h"
+#include "nerikiri/http/httpbroker.h"
 
 
 int main(const int argc, const char* argv[]) {
-  nerikiri::Process process;
-  process.setOperation(nerikiri::Operation([](auto arg) { 
-    arg["arg01"] = arg["arg01"].intValue() + 1;
-    return arg;
-  }));
-
-  process.setBroker(nerikiri::http::RESTBroker());
-
-  return process.start();
+  return nerikiri::Process(argv[0])
+    .addOperation({{"increment"},
+		   [](auto arg) { 
+		     arg["arg01"] = arg["arg01"].intValue() + 1;
+		     return arg;
+		   }})
+    .addBroker(std::make_unique<nerikiri::http::HTTPBroker>())
+    .start();
 }

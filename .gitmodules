@@ -4,3 +4,9 @@
 [submodule "thirdparty/rapidjson"]
 	path = thirdparty/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "thirdparty/spdlog"]
+	path = thirdparty/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "thirdparty/Catch2"]
+	path = thirdparty/Catch2
+	url = https://github.com/catchorg/Catch2
