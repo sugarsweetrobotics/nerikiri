@@ -56,23 +56,30 @@ std::function<http::Server_ptr(http::Server_ptr&&)> http::serve(const std::strin
   return [endpoint, method, cb](http::Server_ptr&& server) {
 	   if (server->failed) return std::move(server);
 
-	   auto log_req = logger::doLog(logger::TRACE) ? 
-	     [](const httplib::Request& req) {
-	       logger::debug("Request - request.method={}", req.method);
-	       logger::trace("request.body={}", req.body);
-	     } : ( logger::doLog(logger::DEBUG) ?
-		   [](const httplib::Request& req) {
-		     logger::debug("Request - request.method={}", req.method);
-		   }
-		   : [](const httplib::Request& req) {});
+	   std::function<void(const httplib::Request&)> log_req = [](const httplib::Request& req) {};
 
-	   auto log_res = logger::doLog(logger::TRACE) ? 
-	     [](const httplib::Response& res) {
-	       logger::trace("response.body={}", res.body);
-	     } : ( logger::doLog(logger::DEBUG) ?
-		   [](const httplib::Response& res) {
-		   }
-		   : [](const httplib::Response& res) {});
+	   if (logger::doLog(logger::TRACE)) {
+		   log_req = [](const httplib::Request& req) {
+			   logger::debug("Request - request.method={}", req.method);
+			   logger::trace("request.body={}", req.body);
+		   };
+	   }
+	   else if (logger::doLog(logger::DEBUG)) {
+		   log_req = [](const httplib::Request& req) {
+			   logger::debug("Request - request.method={}", req.method);
+		   };
+	   }
+	       
+
+	   std::function<void(const httplib::Response&)> log_res = [](const httplib::Response& res) {};
+	   if (logger::doLog(logger::TRACE)) {
+		   log_res = [](const httplib::Response& res) {
+			   logger::trace("response.body={}", res.body);
+		   };
+	   } else if (logger::doLog(logger::DEBUG)) {
+		   log_res = [](const httplib::Response& res) {
+		   };
+	   }
 
 	   if (method == "GET") {
 	     impl(server)->svr->Get(endpoint.c_str(), [cb, log_req, log_res](const httplib::Request& req, httplib::Response& res) {

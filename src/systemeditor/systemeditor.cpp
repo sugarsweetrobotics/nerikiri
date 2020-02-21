@@ -65,10 +65,10 @@ bool SystemEditorImpl::run() {
   logger::trace(" createDocumnet");  
 
   logger::trace(" set base_dir to {}", baseDir_);
-  //  server_->baseDirectory(baseDir_);
+  server_->baseDirectory(baseDir_);
 
   // Grid Style
-  /*
+  
   GridLayoutStyler gridStyle({ 150, 150, 30 }, { 40, 40 });
 
   auto on_up_button_clicked = [&document](const ActionEvent& e) {
@@ -111,7 +111,7 @@ bool SystemEditorImpl::run() {
 				)
 			   )
 	      );
-  */
+  
   logger::trace(" starting webi server on background");
   server_->runForever(port_, websocket_port_);
   //  server_->runBackground(port_, websocket_port_);

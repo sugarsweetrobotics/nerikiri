@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <functional>
 #include <memory>
 #include "client.h"
 #include "nerikiri/logger.h"
