@@ -1,6 +1,6 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/http/httpbroker.h"
-
+#include "nerikiri/systemeditor.h"
 
 int main(const int argc, const char* argv[]) {
   return nerikiri::Process(argv[0])
@@ -10,5 +10,6 @@ int main(const int argc, const char* argv[]) {
 		     return arg;
 		   }})
     .addBroker(std::make_unique<nerikiri::http::HTTPBroker>())
+    .addSystemEditor(nerikiri::systemEditor())
     .start();
 }

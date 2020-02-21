@@ -19,4 +19,20 @@ namespace nerikiri {
       remain...);
   }
 
+  template<typename T, typename K, typename V>
+  std::vector<T> map(std::map<K, V>& map, std::function<T(const K&,V&)> func) {
+    std::vector<T> ret;
+    for(auto& [k, v] : map) {
+      ret.emplace_back(func(k, v));
+    }
+    return ret;
+  }
+
+  template<typename K, typename V>
+  void foreach(std::map<K, V>& map, std::function<void(const K&,V&)> func) {
+    for(auto& [k, v] : map) {
+      func(k, v);
+    }
+  }
+
 }

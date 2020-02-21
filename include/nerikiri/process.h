@@ -3,6 +3,9 @@
 #include "operation.h"
 #include "broker.h"
 #include "brokerdictionary.h"
+#include "nerikiri/runnable.h"
+#include "nerikiri/systemeditor.h"
+
 
 namespace nerikiri {
 
@@ -16,6 +19,7 @@ namespace nerikiri {
   class Process {
   private:
     BrokerDictionary brokerDictionary_;
+    std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
     const ProcessInfo info_;
   public:
@@ -25,8 +29,8 @@ namespace nerikiri {
 
   public:
     Process& addOperation(Operation&& op);
-
     Process& addBroker(Broker_ptr&& brk);
+    Process& addSystemEditor(SystemEditor_ptr&& se);
 
     int32_t start();
     void startAsync();

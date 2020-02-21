@@ -10,3 +10,6 @@
 [submodule "thirdparty/Catch2"]
 	path = thirdparty/Catch2
 	url = https://github.com/catchorg/Catch2
+[submodule "thirdparty/webi"]
+	path = thirdparty/webi
+	url = https://github.com/sugarsweetrobotics/webi.git

@@ -2,7 +2,6 @@
 
 #include "brokerinfo.h"
 #include "logger.h"
-
 #include <memory>
 
 namespace nerikiri {
@@ -27,7 +26,6 @@ namespace nerikiri {
     }
     
   };
-
   using Broker_ptr = std::unique_ptr<Broker>;
 
 }
