@@ -19,13 +19,13 @@ void apply(httplib::Response& response, http::Response&& r) {
   response.body = r.body;
 }
 
-struct ServerImpl : public http::Server {
-  ServerImpl(const std::string& addr, const int32_t p) : http::Server(addr, p),
+struct ServerImpl : public http::HttpServer {
+  ServerImpl(const std::string& addr, const int32_t p) : http::HttpServer(addr, p),
 						    svr(new httplib::Server()), 
 						    server_thread(nullptr) {
   }
 
-  ServerImpl(ServerImpl&& s) : http::Server(s), 
+  ServerImpl(ServerImpl&& s) : http::HttpServer(s), 
 			       svr(s.svr), 
 			       server_thread(std::move(s.server_thread)) {
   }
@@ -44,16 +44,16 @@ struct ServerImpl : public http::Server {
 
 #define impl(x) dynamic_cast<ServerImpl*>(x.get())
 
-http::Server_ptr http::server(const std::string& address, const int32_t port) {
+http::HttpServer_ptr http::server(const std::string& address, const int32_t port) {
   logger::trace("http::server({}, {})", address.c_str(), port);
-  auto s = std::unique_ptr<http::Server>(new ServerImpl(address, port));
+  auto s = std::unique_ptr<http::HttpServer>(new ServerImpl(address, port));
   return std::move(s);
 }
 
 
-std::function<http::Server_ptr(http::Server_ptr&&)> http::serve(const std::string& endpoint, const std::string& method, Callback cb) {
+std::function<http::HttpServer_ptr(http::HttpServer_ptr&&)> http::serve(const std::string& endpoint, const std::string& method, Callback cb) {
   logger::trace("serve({}, {})", endpoint, method);
-  return [endpoint, method, cb](http::Server_ptr&& server) {
+  return [endpoint, method, cb](http::HttpServer_ptr&& server) {
 	   if (server->failed) return std::move(server);
 
 	   std::function<void(const httplib::Request&)> log_req = [](const httplib::Request& req) {};
@@ -108,9 +108,9 @@ std::function<http::Server_ptr(http::Server_ptr&&)> http::serve(const std::strin
 }
 
 
-std::function<http::Server_ptr(http::Server_ptr&&)> http::listen(double timeout) {
+std::function<http::HttpServer_ptr(http::HttpServer_ptr&&)> http::listen(double timeout) {
   logger::trace("listen({})", timeout);
-  return [timeout](http::Server_ptr&& server) {
+  return [timeout](http::HttpServer_ptr&& server) {
     int32_t port = server->port;
     auto address = server->address;
     auto svr = impl(server)->svr;
@@ -153,8 +153,8 @@ std::function<http::Server_ptr(http::Server_ptr&&)> http::listen(double timeout)
 }
 
 
-std::function<http::Server_ptr(http::Server_ptr&&)> http::stop() {
-  return [&](http::Server_ptr&& server) {
+std::function<http::HttpServer_ptr(http::HttpServer_ptr&&)> http::stop() {
+  return [&](http::HttpServer_ptr&& server) {
 	   impl(server)->svr->stop();
 	   impl(server)->server_thread->join();
 	   return std::move(server);

@@ -1,7 +1,9 @@
+
+#include "webi/webi.h"
+
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/logger.h"
 
-#include "webi/webi.h"
 
 using namespace nerikiri;
 
@@ -31,7 +33,7 @@ private:
   std::condition_variable cond_;
   std::mutex mutex_;
 
-  webi::Server_ptr server_;
+  webi::Server_ptr webi_server_;
 public:
   
 };
@@ -58,14 +60,14 @@ bool SystemEditorImpl::run() {
   webi::Webi webi_;  
 
   logger::trace(" creating webi server");
-  server_ = webi_.createServer();
-  if (server_) { logger::trace("okayyyyy"); }
+  webi_server_ = webi_.createServer();
+  if (webi_server_) { logger::trace("okayyyyy"); }
   else { logger::trace("hogehoge"); }
-  auto document = server_->createDocument();
+  auto document = webi_server_->createDocument();
   logger::trace(" createDocumnet");  
 
   logger::trace(" set base_dir to {}", baseDir_);
-  server_->baseDirectory(baseDir_);
+  webi_server_->baseDirectory(baseDir_);
 
   // Grid Style
   
@@ -88,7 +90,7 @@ bool SystemEditorImpl::run() {
   logger::trace(" set get method handler");
   // Define HTML file and set endpoint and document simaltaneously for server.
 
-  server_->get("/", htmlDoc(
+  webi_server_->get("/", htmlDoc(
 			   head(
 				webi::webiScript(), // This is needed for webi framework.
 				styleSheet("webi.css")),
@@ -113,10 +115,11 @@ bool SystemEditorImpl::run() {
 	      );
   
   logger::trace(" starting webi server on background");
-  server_->runForever(port_, websocket_port_);
-  //  server_->runBackground(port_, websocket_port_);
+  //webi_server_->runForever(port_, websocket_port_);
+  webi_server_->runBackground(port_, websocket_port_);
   cond_.wait(lock);  
-  return false;
+  webi_server_->terminateBackground();
+  return true;
 }
 
 

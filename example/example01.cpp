@@ -9,7 +9,7 @@ int main(const int argc, const char* argv[]) {
 		     arg["arg01"] = arg["arg01"].intValue() + 1;
 		     return arg;
 		   }})
-    .addBroker(std::make_unique<nerikiri::http::HTTPBroker>())
+    .addBroker(nerikiri::http::broker("localhost", 8080))
     .addSystemEditor(nerikiri::systemEditor())
     .start();
 }
