@@ -10,6 +10,6 @@ int main(const int argc, const char* argv[]) {
 		     return arg;
 		   }})
     .addBroker(nerikiri::http::broker("localhost", 8080))
-    .addSystemEditor(nerikiri::systemEditor())
+    .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();
 }

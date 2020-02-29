@@ -12,7 +12,7 @@ namespace nerikiri {
   class ProcessInfo {
   public:
     std::string name;
-
+    
     ProcessInfo(const std::string& n): name(n) {}
   };
   

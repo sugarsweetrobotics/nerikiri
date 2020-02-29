@@ -41,11 +41,10 @@ public:
     std::unique_lock<std::mutex> lock(mutex_);
     
     logger::trace("HTTPBroker::run()");
-    server_->response("/", "GET", "text/html", [](const webi::Request& req) -> webi::Response {
-      webi::Response r(200);
-      r.contentType = "text/html";
-      r.body = "Hello WebiTypeHTTPBroker";
-      return r;
+    server_->response("/process/info", "GET", "text/html", [](const webi::Request& req) -> webi::Response {
+      auto contentType = "application/json";
+      auto content = "Hello WebiTypeHTTPBroker";
+      return webi::Response(200, content, contentType);
     });
     server_->runBackground(port_);
     cond_.wait(lock);
