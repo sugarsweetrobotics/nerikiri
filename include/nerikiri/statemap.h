@@ -6,19 +6,19 @@
 
 namespace nerikiri {
 
-  class StateMap {
+  class ValueMap {
   private:
-    std::map<std::string, nerikiri::State> map_;
+    std::map<std::string, nerikiri::Value> map_;
   public:
-    StateMap();
-    ~StateMap();
+    ValueMap();
+    ~ValueMap();
 
   public:
-    State& operator[](const std::string& x) {
+    Value& operator[](const std::string& x) {
       return map_[x];
     }
 
-    State& operator[](const char* x) {
+    Value& operator[](const char* x) {
       return map_[x];
     }
 

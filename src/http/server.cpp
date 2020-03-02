@@ -142,8 +142,8 @@ std::function<http::HttpServer_ptr(http::HttpServer_ptr&&)> http::listen(double 
       int to = (int)(timeout*1000);
       
       if (to != 0 && d > std::chrono::milliseconds(to)) {
-	logger::trace("http::listen server may not be running, but timeout to wait.");
-	break;
+		logger::trace("http::listen server may not be running, but timeout to wait.");
+		break;
       }
     }
 

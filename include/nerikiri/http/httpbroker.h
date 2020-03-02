@@ -19,6 +19,8 @@ namespace nerikiri::http {
     virtual bool run() = 0;
 
     virtual void shutdown() = 0;
+
+    virtual void setProcess(Process_ptr process) = 0;
   };
   
   nerikiri::Broker_ptr broker(const std::string& address, const int32_t port); 

@@ -6,6 +6,9 @@
 
 namespace nerikiri {
 
+  class Process;
+  using Process_ptr = std::shared_ptr<Process>;
+  
   class Broker {
   private:
     const BrokerInfo info_;
@@ -23,6 +26,10 @@ namespace nerikiri {
     
     virtual void shutdown() {
       logger::trace("Broker::shutdown()");
+    }
+
+    virtual void setProcess(Process_ptr process) {
+      logger::trace("Broker::setProcess()");
     }
     
   };

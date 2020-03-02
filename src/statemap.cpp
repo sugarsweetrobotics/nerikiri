@@ -4,8 +4,8 @@
 using namespace nerikiri;
 
 
-StateMap::StateMap() {}
+ValueMap::ValueMap() {}
 
 
-StateMap::~StateMap() {}
+ValueMap::~ValueMap() {}
 

@@ -7,6 +7,7 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/http/httpbroker.h"
 #include "webi/http_server.h"
+#include "nerikiri/process.h"
 
 
 using namespace nerikiri;
@@ -24,6 +25,7 @@ auto get_cb = [](HTTPBroker* broker) {
 class HTTPBrokerImpl : public HTTPBroker {
 private:
 //HttpServer_ptr server_;
+  nerikiri::Process_ptr process_;
   webi::HttpServer_ptr server_;
   std::condition_variable cond_;
   std::mutex mutex_;
@@ -37,13 +39,17 @@ public:
     logger::trace("HTTPBroker::~HTTPBroker()");
   }
 
+  virtual void setProcess(Process_ptr process) override {
+    process_ = process;
+  }
+
   bool run() override {
     std::unique_lock<std::mutex> lock(mutex_);
     
     logger::trace("HTTPBroker::run()");
-    server_->response("/process/info", "GET", "text/html", [](const webi::Request& req) -> webi::Response {
+    server_->response("/process/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       auto contentType = "application/json";
-      auto content = "Hello WebiTypeHTTPBroker";
+      auto content = "hoge";//process_->info();
       return webi::Response(200, content, contentType);
     });
     server_->runBackground(port_);
