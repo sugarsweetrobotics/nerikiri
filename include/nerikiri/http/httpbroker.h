@@ -4,7 +4,7 @@
 #include <condition_variable>
 
 #include "nerikiri/broker.h"
-#include "server.h"
+#include "nerikiri/http/server.h"
 
 
 namespace nerikiri::http {
@@ -19,8 +19,6 @@ namespace nerikiri::http {
     virtual bool run() = 0;
 
     virtual void shutdown() = 0;
-
-    virtual void setProcess(Process_ptr process) = 0;
   };
   
   nerikiri::Broker_ptr broker(const std::string& address, const int32_t port); 

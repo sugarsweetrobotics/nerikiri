@@ -1,5 +1,5 @@
-set(nk_base_srcs process.cpp operation.cpp operationinfo.cpp state.cpp statemap.cpp logger.cpp brokerinfo.cpp brokerdictionary.cpp signal.cpp)
-set(nk_http_srcs http/httpbroker.cpp) # http/server.cpp http/client.cpp)
+set(nk_base_srcs process.cpp operation.cpp operationinfo.cpp value.cpp valuemap.cpp logger.cpp brokerinfo.cpp brokerdictionary.cpp signal.cpp)
+set(nk_http_srcs http/httpbroker.cpp datatype/json.cpp) # http/server.cpp http/client.cpp)
 set(nk_se_srcs systemeditor/systemeditor.cpp)
 set(nk_srcs ${nk_base_srcs} ${nk_http_srcs} ${nk_se_srcs})
 

@@ -18,6 +18,7 @@ Process::~Process() {
 }
 
 Process& Process::addOperation(Operation&& op) {
+  operations_.emplace_back(std::move(op));
   return *this;
 }
 
@@ -29,6 +30,7 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
 
 Process& Process::addBroker(Broker_ptr&& brk) {
   trace("Process::addBroker()");
+  brk->setProcess(Process_ptr(this));
   brokerDictionary_.add(std::forward<Broker_ptr>(brk));
   return *this;
 }
@@ -108,6 +110,10 @@ int32_t Process::start() {
   return 0;
 }
 
-std::vector<OperationInfo> Process::getOperationInfos() {
-  return {};
+OperationInfos Process::getOperationInfos() {
+  OperationInfos infos;
+  nerikiri::foreach<Operation>(operations_, [this, &infos](auto& op) {
+    infos.push_back(op.info());
+  });
+  return infos;
 }

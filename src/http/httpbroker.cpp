@@ -5,6 +5,7 @@
 
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
+#include "nerikiri/datatype/json.h"
 #include "nerikiri/http/httpbroker.h"
 #include "webi/http_server.h"
 #include "nerikiri/process.h"
@@ -48,10 +49,14 @@ public:
     
     logger::trace("HTTPBroker::run()");
     server_->response("/process/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      auto contentType = "application/json";
-      auto content = "hoge";//process_->info();
-      return webi::Response(200, content, contentType);
+      return webi::Response(200, nerikiri::json::toJSONString(process_->info()), "application/json");
     });
+    server_->response("/process/operations", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      std::cout << "matches:" << req.matches[1] << std::endl;
+      return webi::Response(200, nerikiri::json::toJSONString(process_->getOperationInfos()), "application/json");
+    });
+
+
     server_->runBackground(port_);
     cond_.wait(lock);
     

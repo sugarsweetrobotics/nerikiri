@@ -1,13 +1,17 @@
 #pragma once
 
-
-#include "broker.h"
 #include <vector>
 #include <map>
 #include <thread>
 #include <future>
+#include "nerikiri/broker.h"
+#include "nerikiri/functional.h"
+
+
+
 namespace nerikiri {
 
+  /*
   template<typename T, typename A>
   std::vector<T> map(std::vector<A>& aa, std::function<T(A&)> func) {
     std::vector<T> t;
@@ -16,7 +20,8 @@ namespace nerikiri {
     }
     return t;
   }
-  
+  */
+
   class BrokerDictionary {
   private:
     std::map<std::string, Broker_ptr> dictionary_;

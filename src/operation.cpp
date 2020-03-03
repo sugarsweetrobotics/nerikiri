@@ -11,6 +11,12 @@ Operation::Operation(OperationInfo&& info, std::function<ValueMap(ValueMap)>&& f
   trace("Operation::Operation({})", str(info));
 }
 
+Operation::Operation(const OperationInfo& info, std::function<ValueMap(ValueMap)>&& func):
+  info_(info),
+  function_(func) {
+  trace("Operation::Operation({})", str(info));
+}
+
 Operation::~Operation() {
   trace("Operation::~Operation()");
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "state.h"
+#include "nerikiri/value.h"
 #include <string>
 #include <map>
 

@@ -1,20 +1,30 @@
 #pragma once
 
-#include "operation.h"
-#include "broker.h"
-#include "brokerdictionary.h"
+#include "nerikiri/operation.h"
+#include "nerikiri/value.h"
+#include "nerikiri/broker.h"
+#include "nerikiri/brokerdictionary.h"
 #include "nerikiri/runnable.h"
 #include "nerikiri/systemeditor.h"
 
 
 namespace nerikiri {
 
-  class ProcessInfo {
+  /*
+  class ProcessInfo : public Value{
   public:
-    std::string name;
-    
-    ProcessInfo(const std::string& n): name(n) {}
+    ProcessInfo(const std::string& n): Value({
+      {"name", Value(n)},
+      {"type", {"ProcessInfo"}}
+      }) {}
+    virtual ~ProcessInfo() {}
+
+    const std::string name() const {
+      return this->at("name").stringValue();
+    }
   };
+  */
+ using ProcessInfo = Value;
   
   class Process {
   private:
@@ -22,6 +32,7 @@ namespace nerikiri {
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
     const ProcessInfo info_;
+    std::vector<Operation> operations_;
   public:
     Process(const std::string& name);
     ~Process();
@@ -38,7 +49,7 @@ namespace nerikiri {
     void shutdown();
     const ProcessInfo& info() { return info_; }
     
-    std::vector<OperationInfo> getOperationInfos();
+    OperationInfos getOperationInfos();
   };
 
 
