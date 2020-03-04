@@ -72,6 +72,9 @@ public:
       } catch (nerikiri::json::JSONParseError& e) {
         logger::error("JSON Parse Error: \"{}\"", req.body);
         return webi::Response(400, "Bad Request", "text/html");
+      } catch (nerikiri::json::JSONConstructError& e) {
+        logger::error("JSON Construct Error: \"{}\"", req.body);
+        return webi::Response(400, e.what(), "text/html");
       }
     });
 

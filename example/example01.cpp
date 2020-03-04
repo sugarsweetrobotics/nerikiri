@@ -5,22 +5,12 @@ using namespace std::literals::string_literals;
 
 using namespace nerikiri;
 
-//nerikiri::Value v(0);
-//nerikiri::Value v2("hoeg");
-
-//nerikiri::Value defaultArg({{"arg01", v(0)}});
-
 nerikiri::OperationInfo info ({
   {"name", "increment"},
   {"defaultArg", {
     {"arg01", 0}
   }}
-}); 
-//({
-//  {"name"s, "increment"},
-//  {"defaultArg"s, defaultArg }
-//});
-
+});
 
 int main(const int argc, const char* argv[]) {
   return nerikiri::Process(argv[0])

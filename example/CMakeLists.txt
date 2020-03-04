@@ -1,4 +1,6 @@
 set(example01_src example01.cpp)
+set(example02_src example02.cpp)
+
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 set(EXAMPLE_LIBS nerikiri)
@@ -12,3 +14,4 @@ endfunction(add_example)
 
 
 add_example(example01)
+add_example(example02)

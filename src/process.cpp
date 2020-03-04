@@ -22,6 +22,11 @@ Process& Process::addOperation(Operation&& op) {
   return *this;
 }
 
+Process& Process::addOperation(const Operation& op) {
+  operations_.push_back(op);
+  return *this;
+}
+
 Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   trace("Process::addSystemEditor()");
   systemEditors_.emplace(se->name(), std::forward<SystemEditor_ptr>(se));

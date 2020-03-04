@@ -29,5 +29,9 @@ Operation Operation::null;
 
 
 Value nerikiri::call_operation(const Operation& operation, Value&& value) {
+  try {
     return operation.function_(value);
+  } catch (ValueTypeError& ex) {
+    return Value::error(ex.what());
+  }
 }

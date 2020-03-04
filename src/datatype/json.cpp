@@ -77,5 +77,8 @@ std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
     if (value.isNull()) {
         return "{}";
     }
+    if (value.isError()) {
+        throw JSONConstructError(value.getErrorMessage());
+    }
     return "{\"Error\": \"Value is not supported type.\"}";
 }

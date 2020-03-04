@@ -41,6 +41,7 @@ namespace nerikiri {
 			  VALUE_TYPE_STRING,
 			  VALUE_TYPE_OBJECT,
         VALUE_TYPE_LIST,
+        VALUE_TYPE_ERROR,
     };
     
   private:
@@ -52,6 +53,7 @@ namespace nerikiri {
 
     std::map<std::string, Value> objectvalue_;
     std::vector<Value> listvalue_;
+    std::string errormessage_;
   public:
     Value();
 
@@ -70,6 +72,13 @@ namespace nerikiri {
     //Value(std::vector<Value>&& value);
     Value(std::vector<std::pair<std::string, Value>>&& value);
     Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
+
+    static Value error(const std::string& msg) {
+      Value v;
+      v.typecode_ = VALUE_TYPE_ERROR;
+      v.errormessage_ = msg;
+      return v;
+    }
     virtual ~Value();
   private:
     
@@ -98,6 +107,10 @@ namespace nerikiri {
     bool isListValue() const { return typecode_ == VALUE_TYPE_LIST; }
     
     bool isNull() const { return typecode_ == VALUE_TYPE_NULL; }
+
+    bool isError() const { return typecode_ == VALUE_TYPE_ERROR; }
+
+    std::string getErrorMessage() const { return errormessage_; }
     
     bool hasKey(const std::string& key) const {
       if (!isObjectValue()) return false;
@@ -248,4 +261,8 @@ namespace nerikiri {
     return v;
   }
   */
+
+ inline Value errorValue(const std::string& msg) {
+   return Value::error(msg);
+ }
 }
