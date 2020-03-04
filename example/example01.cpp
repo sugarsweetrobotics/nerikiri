@@ -8,9 +8,14 @@ using namespace nerikiri;
 //nerikiri::Value v(0);
 //nerikiri::Value v2("hoeg");
 
-nerikiri::Value defaultArg({{"arg01", v(0)}});
+//nerikiri::Value defaultArg({{"arg01", v(0)}});
 
-nerikiri::OperationInfo info ({p("name", v("increment")), p("defaultArg", std::move(defaultArg))}); 
+nerikiri::OperationInfo info ({
+  {"name", "increment"},
+  {"defaultArg", {
+    {"arg01", 0}
+  }}
+}); 
 //({
 //  {"name"s, "increment"},
 //  {"defaultArg"s, defaultArg }

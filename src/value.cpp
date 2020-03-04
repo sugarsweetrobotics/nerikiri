@@ -12,6 +12,12 @@ Value::Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), list
 Value::Value(const Value& value): typecode_(value.typecode_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_) {}
 //Value::Value(std::vector<Value>&& value) : typecode_(VALUE_TYPE_LIST), listvalue_(std::move(value)) {}
 
+Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
+  for(auto &p : ps) {
+    objectvalue_[p.first] = p.second;
+  }
+}
+
 Value::Value(std::initializer_list<std::pair<std::string, Value>>&& ps) : typecode_(VALUE_TYPE_OBJECT) {
   for(auto &p : ps) {
     objectvalue_[p.first] = p.second;

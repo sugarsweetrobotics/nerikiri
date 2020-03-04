@@ -52,8 +52,27 @@ public:
       return webi::Response(200, nerikiri::json::toJSONString(process_->info()), "application/json");
     });
     server_->response("/process/operations", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      std::cout << "matches:" << req.matches[1] << std::endl;
       return webi::Response(200, nerikiri::json::toJSONString(process_->getOperationInfos()), "application/json");
+    });
+    server_->response("/process/operation/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      OperationInfo info;
+      process_->getOperationInfos().list_for_each([&req, &info](auto& oi) {
+        if (oi["name"].stringValue() == req.matches[1]) {
+          info = oi;
+        }
+      });
+      return webi::Response(200, nerikiri::json::toJSONString(info), "application/json");
+    });
+    server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
+      std::cout << "matches:" << req.matches[1] << std::endl;
+      try {
+        auto v = nerikiri::json::toValue(req.body);
+        Value return_value = nerikiri::call_operation(process_->getOperationByName(req.matches[1]), std::move(v));
+        return webi::Response(200, nerikiri::json::toJSONString(return_value), "application/json");
+      } catch (nerikiri::json::JSONParseError& e) {
+        logger::error("JSON Parse Error: \"{}\"", req.body);
+        return webi::Response(400, "Bad Request", "text/html");
+      }
     });
 
 

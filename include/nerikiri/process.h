@@ -40,6 +40,8 @@ namespace nerikiri {
 
   public:
     Process& addOperation(Operation&& op);
+    Operation& getOperationByName(const std::string& name);
+    
     Process& addBroker(Broker_ptr&& brk);
     Process& addSystemEditor(SystemEditor_ptr&& se);
 

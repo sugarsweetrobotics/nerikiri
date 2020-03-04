@@ -68,7 +68,7 @@ namespace nerikiri {
     //Value(Value&& Value) = default;
     Value(const std::vector<Value>& value);
     //Value(std::vector<Value>&& value);
-    //explicit Value(const std::vector<std::pair<std::string, Value>>& value);
+    Value(std::vector<std::pair<std::string, Value>>&& value);
     Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
     virtual ~Value();
   private:
@@ -96,6 +96,8 @@ namespace nerikiri {
     bool isObjectValue() const { return typecode_ == VALUE_TYPE_OBJECT; }
 
     bool isListValue() const { return typecode_ == VALUE_TYPE_LIST; }
+    
+    bool isNull() const { return typecode_ == VALUE_TYPE_NULL; }
     
     bool hasKey(const std::string& key) const {
       if (!isObjectValue()) return false;
@@ -164,7 +166,7 @@ namespace nerikiri {
       if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
       return objectvalue_.at(key);
     }
-        
+    /*
     Value& operator=(const int64_t value) {
       typecode_ = VALUE_TYPE_INT;
       objectvalue_.clear();
@@ -185,6 +187,7 @@ namespace nerikiri {
       stringvalue_ = str;
       return *this;
     }
+     */
 
     Value& operator=(const Value& value) {
       typecode_ = value.typecode_;
@@ -196,7 +199,7 @@ namespace nerikiri {
       stringvalue_ = value.stringvalue_;
       return *this;
     }
-
+  
     Value& operator=(Value&& value) {
       typecode_ = value.typecode_;
       objectvalue_.clear();
@@ -207,7 +210,7 @@ namespace nerikiri {
       stringvalue_ = value.stringvalue_;
       return *this;
     }
-
+  
     Value& push_back(const Value& str) {
       typecode_ = VALUE_TYPE_LIST;
       objectvalue_.clear();
@@ -231,27 +234,6 @@ namespace nerikiri {
 
   };
   /*
-  inline Value setValue(Value&& v) { return std::move(v); }
-
-  inline Value setValue(Value&& v, const value_pair& p) {
-    v[p.first] = p.second;
-    return std::move(v);
-  }
-
-
-  template<typename T, typename... R>
-  inline Value setValue(Value&& v, const value_pair& p, R... rem) {
-    v[p.first] = p.second;
-    return setValue(std::move(v), rem...);
-  }
-  */
-
-  /*
-  Value value(value_pair&& p) {
-    Value v;
-    return setValue(std::move(v), p);
-  }*/
-
   inline Value v(const char* cs) { return Value(cs); }
 
   inline value_pair p(const char* cs, Value&& v) {
@@ -265,4 +247,5 @@ namespace nerikiri {
     }
     return v;
   }
+  */
 }

@@ -112,8 +112,20 @@ int32_t Process::start() {
 
 OperationInfos Process::getOperationInfos() {
   OperationInfos infos;
-  nerikiri::foreach<Operation>(operations_, [this, &infos](auto& op) {
+  nerikiri::foreach<Operation>(operations_, [&infos](auto& op) {
     infos.push_back(op.info());
   });
   return infos;
 }
+
+
+Operation& Process::getOperationByName(const std::string& name) {
+  Operation& ret = Operation::null;
+  nerikiri::foreach<Operation>(operations_, [&name, &ret](auto& op) {
+    if (op.info().at("name").stringValue() == name) {
+      ret = op;
+    }
+  });
+  return ret;
+}
+    
