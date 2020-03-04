@@ -29,6 +29,7 @@ public:
   */
 
   using OperationInfo = Value;
+  
   class OperationInfos : public Value {
   public:
     OperationInfos() : Value(std::vector<Value>()) {}

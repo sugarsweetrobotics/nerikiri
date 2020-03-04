@@ -56,18 +56,20 @@ namespace nerikiri {
     Value();
 
     //explicit Value(const int value);
-    explicit Value(const int64_t value);
-    explicit Value(int&& value);
+    Value(const int64_t value);
+    Value(int&& value);
     explicit Value(const double value);
     explicit Value(const std::string& value);
+    Value(const char* value) : Value(std::string(value)) {}
     Value(std::string&& value);
-    explicit Value(const std::map<std::string, Value>& value);
+    //explicit Value(const std::map<std::string, Value>& value);
     //Value(std::map<std::string, Value>&& value);
     Value(const Value& Value);
     //Value(Value&& Value) = default;
     Value(const std::vector<Value>& value);
     //Value(std::vector<Value>&& value);
-    //explicit Value(std::vector<std::pair<std::string, Value>>&& value);
+    //explicit Value(const std::vector<std::pair<std::string, Value>>& value);
+    Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
     virtual ~Value();
   private:
     
@@ -141,13 +143,15 @@ namespace nerikiri {
     const std::vector<Value>& listValue() const;
 
     Value& emplace(std::pair<std::string, Value>&& v) {
-      if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+      typecode_ = VALUE_TYPE_OBJECT;
+      //if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
       objectvalue_.emplace(std::move(v));
       return *this;
     }
 
     Value& operator[](const std::string& key) {
-      if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+      typecode_ = VALUE_TYPE_OBJECT;
+      //if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
       return objectvalue_[key];
     }
 
@@ -220,5 +224,45 @@ namespace nerikiri {
 
   };
 
+  class value_pair : public std::pair<std::string, Value> {
+  public:
+    value_pair(const char* c, Value&& v): std::pair<std::string, Value>(c, std::move(v)) {}
+    value_pair(const char* c, const int64_t v): value_pair(c, Value(v)) {}
 
+  };
+  /*
+  inline Value setValue(Value&& v) { return std::move(v); }
+
+  inline Value setValue(Value&& v, const value_pair& p) {
+    v[p.first] = p.second;
+    return std::move(v);
+  }
+
+
+  template<typename T, typename... R>
+  inline Value setValue(Value&& v, const value_pair& p, R... rem) {
+    v[p.first] = p.second;
+    return setValue(std::move(v), rem...);
+  }
+  */
+
+  /*
+  Value value(value_pair&& p) {
+    Value v;
+    return setValue(std::move(v), p);
+  }*/
+
+  inline Value v(const char* cs) { return Value(cs); }
+
+  inline value_pair p(const char* cs, Value&& v) {
+    return value_pair(cs, std::move(v));
+  }
+
+  inline Value value(std::initializer_list<value_pair> ps) {
+    Value v;
+    for(auto &p : ps) {
+      v[p.first] = p.second;
+    }
+    return v;
+  }
 }

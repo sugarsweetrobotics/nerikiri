@@ -1,19 +1,20 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/http/httpbroker.h"
 #include "nerikiri/systemeditor.h"
+using namespace std::literals::string_literals;
 
-nerikiri::Value v(0);
-nerikiri::Value v2("hoeg");
+using namespace nerikiri;
 
-nerikiri::Value defaultArg({
-  //{"name", {"increment"}},
-  {"arg01", v}
-});
+//nerikiri::Value v(0);
+//nerikiri::Value v2("hoeg");
 
-nerikiri::OperationInfo info({
-  {"name", {"increment"}},
-  {"defaultArg", defaultArg }
-});
+nerikiri::Value defaultArg({{"arg01", v(0)}});
+
+nerikiri::OperationInfo info ({p("name", v("increment")), p("defaultArg", std::move(defaultArg))}); 
+//({
+//  {"name"s, "increment"},
+//  {"defaultArg"s, defaultArg }
+//});
 
 
 int main(const int argc, const char* argv[]) {
