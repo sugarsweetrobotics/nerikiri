@@ -2,6 +2,7 @@
 #include <sstream>
 #include <string>
 
+/*
 std::string nerikiri::str(const OperationInfo& info) {
   std::stringstream ss;
   ss << "OperationInfo(";
@@ -9,3 +10,4 @@ std::string nerikiri::str(const OperationInfo& info) {
   ss << ")";
   return ss.str();
 }
+*/

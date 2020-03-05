@@ -4,7 +4,8 @@
 #include <functional>
 
 #include "nerikiri/valuemap.h"
-#include "operationinfo.h"
+#include "nerikiri/operationinfo.h"
+#include "nerikiri/connection.h"
 
 namespace nerikiri {
   class Operation;
@@ -16,6 +17,7 @@ namespace nerikiri {
     std::function<Value(Value)> function_;
     OperationInfo info_;
     bool is_null_;
+    ConnectionListDictionary connectionListDictionary_;
   private:
     
   public:
@@ -39,6 +41,10 @@ namespace nerikiri {
     static Operation null;
 
     friend Value call_operation(const Operation& operation, Value&& value);
+
+    ConnectionList getConnectionsByArgName(const std::string& argName) {
+      return connectionListDictionary_[argName];
+    }
   };
   
 }

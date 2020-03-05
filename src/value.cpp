@@ -60,3 +60,35 @@ const std::vector<Value>& Value::listValue() const {
   if (isListValue()) return listvalue_;
   throw new ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
+
+
+
+std::string nerikiri::str(const nerikiri::Value& value) {
+    if (value.isIntValue()) return std::to_string(value.intValue());
+    if (value.isDoubleValue()) return std::to_string(value.doubleValue());
+    if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
+    if (value.isObjectValue()) {
+        std::stringstream ss;
+        for(auto [k, v] : value.objectValue()) {
+            ss << ",\"" << k << "\":" << str(v);
+        }
+        ss << "}";
+        return ss.str().replace(0, 1, "{");
+    }
+    if (value.isListValue()) {
+        std::stringstream ss;
+        for(auto& v : value.listValue()) {
+            ss << "," << str(v);
+        }
+        ss << "]";
+        return ss.str().replace(0, 1, "[");
+    }
+    if (value.isNull()) {
+        return "{}";
+    }
+    if (value.isError()) {
+        throw ValueTypeError(value.getErrorMessage());
+    }
+    return "{\"Error\": \"Value is not supported type.\"}";
+}
+

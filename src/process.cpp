@@ -1,5 +1,6 @@
 #include <sstream>
 #include "nerikiri/nerikiri.h"
+#include "nerikiri/functional.h"
 #include "nerikiri/process.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/signal.h"
@@ -36,7 +37,8 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
 Process& Process::addBroker(Broker_ptr&& brk) {
   trace("Process::addBroker()");
   brk->setProcess(Process_ptr(this));
-  brokerDictionary_.add(std::forward<Broker_ptr>(brk));
+  //brokerDictionary_.add(std::forward<Broker_ptr>(brk));
+  brokers_.emplace_back(std::forward<Broker_ptr>(brk));
   return *this;
 }
 
@@ -70,7 +72,7 @@ static std::future<bool> start_systemEditor(std::vector<std::thread>& threads, S
 
 void Process::startAsync() {
   logger::trace("Process::startAsync()");
-  auto broker_futures = brokerDictionary_.map<std::future<bool>>([this](auto& brk) {
+  auto broker_futures = nerikiri::map<std::future<bool>, Broker_ptr>(brokers_, [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, brk);
 								 });
   
@@ -92,7 +94,7 @@ int32_t Process::wait() {
 
 void Process::shutdown() {
   logger::trace("Process::shutdown()");
-  brokerDictionary_.foreach([](auto& brk) {
+  nerikiri::foreach<Broker_ptr>(brokers_, [](auto& brk) {
 			      brk->shutdown();
 			    });
   nerikiri::foreach<std::string, SystemEditor_ptr>(systemEditors_, [](auto& name, auto& se) {
@@ -133,4 +135,36 @@ Operation& Process::getOperationByName(const std::string& name) {
   });
   return ret;
 }
+
+Broker_ptr& Process::getBrokerByName(const std::string& name) {
+  for(auto& brk : brokers_) {
+    if (brk->info().at("name").stringValue() == name) {
+      return brk;
+    }
+  }
+  return Broker::null;
+}
     
+
+Value Process::invokeConnection(const Connection& con) {
+  //auto& brokerProxy = 
+  return Value();
+}
+
+Value Process::invokeOperationByName(const std::string& name) {
+  auto op = getOperationByName(name);
+  if (op.isNull()) {
+    return Value::error("Operation not found.");
+  }
+  /// ここで接続があったら、接続に対してデータをよこせという。なければデフォルト引数をそのまま与える
+  Value ret(op.info().at("defaultArg").object_map<std::pair<std::string, Value>>([this, &op](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
+    for(auto& con : op.getConnectionsByArgName(key)) {
+      if (con.isPull()) {
+        return {key, invokeConnection(con)};
+      }
+    }
+    return {key, value};
+  }));
+
+  return nerikiri::call_operation(op, std::move(ret));
+}

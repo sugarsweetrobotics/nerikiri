@@ -117,16 +117,33 @@ namespace nerikiri {
       return (objectvalue_.count(key) != 0);
     }
 
-    void object_for_each(std::function<void(std::string, Value&)>&& func) {
+    
+    void object_for_each(std::function<void(const std::string&, Value&)>&& func) {
       for(auto& [k, v] : objectvalue_) {
+        func(k, v);
+      }
+    }
+    
+
+    void object_for_each(std::function<void(const std::string&, const Value&)>&& func) const {
+      for(const auto& [k, v] : objectvalue_) {
         func(k, v);
       }
     }
 
     template<typename T>
-    std::vector<T> object_map(std::function<T(std::string, Value&)>&& func) {
+    std::vector<T> object_map(std::function<T(const std::string&, Value&)>&& func) {
       std::vector<T> r;
       for(auto& [k, v] : objectvalue_) {
+        r.emplace_back(func(k, v));
+      }
+      return r;
+    }
+
+    template<typename T>
+    std::vector<T> object_map(std::function<T(const std::string&, const Value&)>&& func) const {
+      std::vector<T> r;
+      for(const auto& [k, v] : objectvalue_) {
         r.emplace_back(func(k, v));
       }
       return r;
@@ -246,23 +263,11 @@ namespace nerikiri {
     value_pair(const char* c, const int64_t v): value_pair(c, Value(v)) {}
 
   };
-  /*
-  inline Value v(const char* cs) { return Value(cs); }
 
-  inline value_pair p(const char* cs, Value&& v) {
-    return value_pair(cs, std::move(v));
-  }
-
-  inline Value value(std::initializer_list<value_pair> ps) {
-    Value v;
-    for(auto &p : ps) {
-      v[p.first] = p.second;
-    }
-    return v;
-  }
-  */
-
- inline Value errorValue(const std::string& msg) {
+  inline Value errorValue(const std::string& msg) {
    return Value::error(msg);
- }
+  }
+
+
+  std::string str(const Value& value);
 }

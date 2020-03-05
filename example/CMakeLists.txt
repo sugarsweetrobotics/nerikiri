@@ -1,5 +1,7 @@
 set(example01_src example01.cpp)
 set(example02_src example02.cpp)
+set(example03_src example03.cpp)
+
 
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -15,3 +17,4 @@ endfunction(add_example)
 
 add_example(example01)
 add_example(example02)
+add_example(example03)

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/http/httpbroker.h"
 #include "nerikiri/systemeditor.h"
@@ -52,12 +54,7 @@ nerikiri::Operation zero(
 
 
 int main(const int argc, const char* argv[]) {
-  return nerikiri::Process(argv[0])
-    .addOperation(increment)
-    .addOperation(decrement)
-    .addOperation(add)
-    .addOperation(zero)
-    .addBroker(nerikiri::http::broker("localhost", 8080))
-    .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
-    .start();
+  auto broker = nerikiri::http::brokerProxy("localhost", 8080);
+  std::cout << nerikiri::str(broker->info()) << std::endl;;
+  return 0;
 }

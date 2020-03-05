@@ -4,6 +4,9 @@
 #include "nerikiri/value.h"
 #include "nerikiri/broker.h"
 #include "nerikiri/brokerdictionary.h"
+#include "nerikiri/connection.h"
+#include "nerikiri/connectiondictionary.h"
+
 #include "nerikiri/runnable.h"
 #include "nerikiri/systemeditor.h"
 
@@ -28,11 +31,13 @@ namespace nerikiri {
   
   class Process {
   private:
-    BrokerDictionary brokerDictionary_;
+    //BrokerDictionary brokerDictionary_;
+    ConnectionDictionary connectionDictionary_;
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
-    const ProcessInfo info_;
+    ProcessInfo info_;
     std::vector<Operation> operations_;
+    std::vector<Broker_ptr> brokers_;
   public:
     Process(const std::string& name);
     ~Process();
@@ -44,15 +49,24 @@ namespace nerikiri {
     Operation& getOperationByName(const std::string& name);
     
     Process& addBroker(Broker_ptr&& brk);
+    Broker_ptr& getBrokerByName(const std::string& name);
+
     Process& addSystemEditor(SystemEditor_ptr&& se);
+    Process& addConnection(Connection_ptr&& con);
 
     int32_t start();
     void startAsync();
     int32_t wait();
     void shutdown();
-    const ProcessInfo& info() { return info_; }
+    ProcessInfo info() const { return info_; }
     
     OperationInfos getOperationInfos();
+
+    public:
+
+
+    Value invokeOperationByName(const std::string& name);
+    Value invokeConnection(const Connection& con);
   };
 
 

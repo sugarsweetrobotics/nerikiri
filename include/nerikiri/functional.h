@@ -38,7 +38,7 @@ namespace nerikiri {
   }
 
   template<typename V>
-  void foreach(std::vector<V>& vec, std::function<void(const V&)> func) {
+  void foreach(std::vector<V>& vec, std::function<void(V&)> func) {
     for(auto& v : vec) {
       func(v);
     }
@@ -46,7 +46,7 @@ namespace nerikiri {
 
 
   template<typename T, typename V>
-  std::vector<T> map(std::vector<V>& vec, std::function<T(const V&)> func) {
+  std::vector<T> map(std::vector<V>& vec, std::function<T(V&)> func) {
     std::vector<T> ret;
     for(auto& v : vec) {
       ret.emplace_back(func(v));

@@ -10,10 +10,8 @@
 namespace nerikiri::http {
 
   class HTTPBroker : public Broker {
-  private:
-    
   public:
-    HTTPBroker(): Broker({"HTTPBroker"}) {};
+    HTTPBroker(): Broker({{"name", "HTTPBroker"}}) {};
     virtual ~HTTPBroker(){};
     
     virtual bool run() = 0;
@@ -22,4 +20,13 @@ namespace nerikiri::http {
   };
   
   nerikiri::Broker_ptr broker(const std::string& address, const int32_t port); 
+
+  class HTTPBrokerProxy : public BrokerProxy {
+  public:
+    HTTPBrokerProxy() {}
+    virtual ~HTTPBrokerProxy() {}
+  };
+
+   nerikiri::Broker_ptr brokerProxy(const std::string& address, const int32_t port); 
+
 };
