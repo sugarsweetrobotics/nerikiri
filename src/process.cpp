@@ -19,7 +19,10 @@ Process::~Process() {
 }
 
 Process& Process::addOperation(Operation&& op) {
-  operations_.emplace_back(std::move(op));
+  if (getOperationByName(info().at("name").stringValue()).isNull()) {
+    operations_.emplace_back(std::move(op));
+  } 
+  error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
   return *this;
 }
 
@@ -144,7 +147,10 @@ Broker_ptr& Process::getBrokerByName(const std::string& name) {
   }
   return Broker::null;
 }
-    
+
+Broker_ptr& Process::getBrokerByBrokerInfo(const BrokerInfo& bi) {
+  return getBrokerByName(bi.at("name").stringValue());
+}
 
 Value Process::invokeConnection(const Connection& con) {
   //auto& brokerProxy = 
@@ -152,7 +158,8 @@ Value Process::invokeConnection(const Connection& con) {
 }
 
 Value Process::invokeOperationByName(const std::string& name) {
-  auto op = getOperationByName(name);
+  logger::trace("Process::invokeOperationByName({})", name);
+  auto& op = getOperationByName(name);
   if (op.isNull()) {
     return Value::error("Operation not found.");
   }

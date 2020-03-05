@@ -73,7 +73,12 @@ public:
     server_->response("/process/operation/([^\\/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::invokeOperationByName(req.matches[1]);});
     });
-
+    server_->response("/process/make_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::makeConnection(nerikiri::json::toValue(req.body));});
+    });
+    server_->response("/process/register_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::registerConnection(nerikiri::json::toValue(req.body));});
+    });
     server_->runBackground(port_);
     cond_.wait(lock);
     
@@ -135,9 +140,16 @@ public:
     }
 
     virtual Value invokeOperationByName(const std::string& name) const {
-
+      return toValue(client_->request("/process/operation/" + name + "/invoke", "GET"));
     }
 
+    virtual Value makeConnection(const ConnectionInfo& ci) const {
+      //return toValue(client_->request("/process/operation/" + name + "/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+    }
+
+    virtual Value registerConnection(const ConnectionInfo& ci) const {
+      //return toValue(client_->request("/process/operation/" + name + "/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+    }
 };
 
 nerikiri::Broker_ptr nerikiri::http::brokerProxy(const std::string& address, const int32_t port) {

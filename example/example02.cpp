@@ -51,12 +51,23 @@ nerikiri::Operation zero(
 );
 
 
+nerikiri::Operation one( 
+       {{"name", "one"},
+          {"defaultArg", {}}
+        },
+		   [](auto arg) { 
+		     return Value({{"result", 1}});
+		   }
+);
+
+
 int main(const int argc, const char* argv[]) {
   return nerikiri::Process(argv[0])
     .addOperation(increment)
     .addOperation(decrement)
     .addOperation(add)
     .addOperation(zero)
+    .addOperation(one)
     .addBroker(nerikiri::http::broker("localhost", 8080))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();

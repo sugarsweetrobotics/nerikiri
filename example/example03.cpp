@@ -52,9 +52,24 @@ nerikiri::Operation zero(
 		   }
 );
 
-
 int main(const int argc, const char* argv[]) {
   auto broker = nerikiri::http::brokerProxy("localhost", 8080);
   std::cout << nerikiri::str(broker->info()) << std::endl;;
+  std::cout << nerikiri::str(broker->invokeOperationByName("zero")) << std::endl;;
+  std::cout << nerikiri::str(broker->makeConnection(
+    {{"name", "connection01"},
+      {"brokerInfo", {{"name", {"HTTPBroker"}}}},
+      {"from", {
+          {"name", {"one"}}, 
+          {"pin", {"result"}},
+        }},
+      {"to", {
+          {"name", {"increment"}},
+          {"pin", {
+            {"argument", {
+            {"name", "arg01"}
+          }}}}
+        }}
+    })) << std::endl;
   return 0;
 }

@@ -51,6 +51,8 @@ namespace nerikiri {
     Process& addBroker(Broker_ptr&& brk);
     Broker_ptr& getBrokerByName(const std::string& name);
 
+    Broker_ptr& getBrokerByBrokerInfo(const BrokerInfo& ci);
+    
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
 

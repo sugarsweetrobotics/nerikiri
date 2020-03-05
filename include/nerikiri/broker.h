@@ -3,6 +3,7 @@
 //#include "nerikiri/brokerinfo.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/value.h"
+#include "nerikiri/connection.h"
 #include <memory>
 
 namespace nerikiri {
@@ -37,6 +38,13 @@ namespace nerikiri {
     virtual Value callOperationByName(const std::string& name, Value&& value) const = 0;
 
     virtual Value invokeOperationByName(const std::string& name) const = 0;
+
+    //Value makeConnection(ConnectionInfo&& ci) const {
+    //  return makeConnection(ci);
+    //}
+    virtual Value makeConnection(const ConnectionInfo& ci) const = 0;
+
+    virtual Value registerConnection(const ConnectionInfo& ci) const = 0;
   };
 
   class Broker  : public BrokerAPI{
@@ -52,32 +60,36 @@ namespace nerikiri {
     Broker(const BrokerInfo& info): info_(info) {}
     virtual ~Broker() {}
 
-    virtual bool run() {
+    virtual bool run() override{
       logger::trace("Broker::run()");
       return false;
     }
     
-    virtual void shutdown() {
+    virtual void shutdown() override {
       logger::trace("Broker::shutdown()");
     }
 
-    virtual void setProcess(Process_ptr process) {
+    virtual void setProcess(Process_ptr process) override {
       logger::trace("Broker::setProcess()");
       process_ = process;
     }
     
   public:
-    virtual BrokerInfo info() const { return info_; }
+    virtual BrokerInfo info() const override { return info_; }
 
-    virtual Value getProcessInfo() const;
+    virtual Value getProcessInfo() const override;
 
-    virtual Value getProcessOperationInfos() const;
+    virtual Value getProcessOperationInfos() const override;
 
-    virtual Value getOperationInfoByName(const std::string& name) const;
+    virtual Value getOperationInfoByName(const std::string& name) const override;
 
-    virtual Value callOperationByName(const std::string& name, Value&& value) const;
+    virtual Value callOperationByName(const std::string& name, Value&& value) const override;
 
-    virtual Value invokeOperationByName(const std::string& name) const;
+    virtual Value invokeOperationByName(const std::string& name) const override;
+
+    virtual Value makeConnection(const ConnectionInfo& ci) const override;
+
+    virtual Value registerConnection(const ConnectionInfo& ci) const override;
   };
 
   using Broker_ptr = std::unique_ptr<BrokerAPI>;
@@ -88,11 +100,11 @@ namespace nerikiri {
     virtual ~BrokerProxy() {}
 
   public:
-    virtual bool run() {return false;}
+    virtual bool run() override {return false;}
     
-    virtual void shutdown() {}
+    virtual void shutdown() override {}
 
-    virtual void setProcess(Process_ptr process) {}
+    virtual void setProcess(Process_ptr process) override {}
     
   };
 
