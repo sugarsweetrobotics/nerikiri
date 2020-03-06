@@ -15,14 +15,14 @@ namespace nerikiri {
         private:
         ConnectionInfo info_;
     public:
-        Connection();
+        Connection(const ConnectionInfo& info);
         ~Connection();
 
         bool isPull() const { return false; }
 
 
     public:
-        const ConnectionInfo& info() const { return info_; }
+        ConnectionInfo info() const { return info_; }
     };
 
     using Connection_ptr = std::shared_ptr<Connection>;

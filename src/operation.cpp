@@ -13,7 +13,7 @@ Operation::Operation(OperationInfo&& info, std::function<Value(Value)>&& func):
    {
   trace("Operation::Operation({})", str(info));
   info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-      connectionListDictionary_.emplace(key, ConnectionList());
+      consumerConnectionListDictionary_.emplace(key, ConnectionList());
   });
 }
 
@@ -30,7 +30,6 @@ Operation::~Operation() {
 }
 
 Operation Operation::null;
-
 
 Value nerikiri::call_operation(const Operation& operation, Value&& value) {
   try {

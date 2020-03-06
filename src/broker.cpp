@@ -35,6 +35,11 @@ Value Broker::invokeOperationByName(const std::string& name) const {
 Value Broker::makeConnection(const ConnectionInfo& ci) const {
     logger::trace("Broker::makeConnection({}", str(ci));
     Broker_ptr& broker = process_->getBrokerByBrokerInfo(ci.at("brokerInfo"));
+    if (!broker) {
+        std::stringstream ss;
+        ss << "Broker (brokerInfo=" << str(ci.at("brokerInfo")) << ") can not be found.";
+        return Value::error(ss.str());
+    }
     return this->registerConnection(broker->registerConnection(ci));
 }
 

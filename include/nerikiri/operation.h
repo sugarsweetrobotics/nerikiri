@@ -9,11 +9,14 @@
 
 namespace nerikiri {
   class Operation;
-
+  class Process;
+  using Process_ptr = Process*;
+  
   Value call_operation(const Operation& operation, Value&& value);
  
   class Operation {
   private:
+    Process_ptr process_;
     std::function<Value(Value)> function_;
     OperationInfo info_;
     bool is_null_;
@@ -42,6 +45,14 @@ namespace nerikiri {
     bool isNull() const { return is_null_; }
 
     friend Value call_operation(const Operation& operation, Value&& value);
+
+    Value addProviderConnection(Connection&& c) {
+      return c.info();
+    }
+
+    Value addConsumerConnection(Connection&& c) {
+      return c.info();
+    }
 
     ConnectionList getProviderConnectionList() const {
       return providerConnectionList_;

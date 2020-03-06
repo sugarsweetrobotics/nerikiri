@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/datatype/json.h"
@@ -56,7 +58,30 @@ public:
     
     logger::trace("HTTPBroker::run()");
     server_->response("/broker/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this](){return Broker::info();});
+      return response([this, &req](){
+        auto info = Broker::info();
+        for(auto h : req.headers) {
+          if (h.first == "Host") {
+
+
+            std::string host = h.second;
+            int64_t port = 80;
+            std::string addr = h.second;
+            size_t pos = host.find(":");
+            if (pos != std::string::npos) {
+              auto port_str = host.substr(pos+1);
+                port = atoi(port_str.c_str());
+                addr = host.substr(0, pos);
+            }
+
+
+            info["host"] = Value(h.second);
+            info["address"] = Value(addr);
+            info["port"] = Value(port);
+          }
+        }
+        return info;
+        });
     });
     server_->response("/process/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this](){return Broker::getProcessInfo();});
@@ -144,7 +169,8 @@ public:
     }
 
     virtual Value makeConnection(const ConnectionInfo& ci) const {
-      //return toValue(client_->request("/process/operation/" + name + "/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+      auto name = ci.at("from").at("process").at("name").stringValue();
+      return toValue(client_->request("/process/operation/" + name + "/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
     virtual Value registerConnection(const ConnectionInfo& ci) const {

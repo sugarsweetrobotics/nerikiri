@@ -4,6 +4,6 @@
 
 using namespace nerikiri;
 
-Connection::Connection() {}
+Connection::Connection(const ConnectionInfo& info) : info_(info) {}
 
 Connection::~Connection() {}

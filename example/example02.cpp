@@ -68,7 +68,7 @@ int main(const int argc, const char* argv[]) {
     .addOperation(add)
     .addOperation(zero)
     .addOperation(one)
-    .addBroker(nerikiri::http::broker("localhost", 8080))
+    .addBroker(nerikiri::http::broker("0.0.0.0", 8080))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();
 }
