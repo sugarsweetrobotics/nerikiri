@@ -17,7 +17,10 @@ namespace nerikiri {
     std::function<Value(Value)> function_;
     OperationInfo info_;
     bool is_null_;
-    ConnectionListDictionary connectionListDictionary_;
+    ConnectionList providerConnectionList_;
+    ConnectionListDictionary consumerConnectionListDictionary_;
+  public:
+    static Operation null;
   private:
     
   public:
@@ -38,12 +41,27 @@ namespace nerikiri {
     const OperationInfo& info() const { return info_; }
     bool isNull() const { return is_null_; }
 
-    static Operation null;
-
     friend Value call_operation(const Operation& operation, Value&& value);
 
-    ConnectionList getConnectionsByArgName(const std::string& argName) {
-      return connectionListDictionary_[argName];
+    ConnectionList getProviderConnectionList() const {
+      return providerConnectionList_;
+    }
+    ConnectionList getConsumerConnectionsByArgName(const std::string& argName) const {
+      return consumerConnectionListDictionary_.at(argName);
+    }
+
+    bool hasConsumerConnection(const ConnectionInfo& ci) const {
+      for(const auto v : getConsumerConnectionsByArgName(ci.at("to").at("name").stringValue())) {
+        if (v.info().at("from") == ci.at("from")) return true;
+      }
+      return false;
+    }
+
+    bool hasProviderConnection(const ConnectionInfo& ci) const {
+      for(const auto v : providerConnectionList_) {
+        if (v.info().at("to") == ci.at("to")) return true;
+      }
+      return false;
     }
   };
   

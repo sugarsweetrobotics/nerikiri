@@ -165,7 +165,7 @@ Value Process::invokeOperationByName(const std::string& name) {
   }
   /// ここで接続があったら、接続に対してデータをよこせという。なければデフォルト引数をそのまま与える
   Value ret(op.info().at("defaultArg").object_map<std::pair<std::string, Value>>([this, &op](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
-    for(auto& con : op.getConnectionsByArgName(key)) {
+    for(auto& con : op.getConsumerConnectionsByArgName(key)) {
       if (con.isPull()) {
         return {key, invokeConnection(con)};
       }

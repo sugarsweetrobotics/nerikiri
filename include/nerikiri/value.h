@@ -254,7 +254,31 @@ namespace nerikiri {
       listvalue_.emplace_back(std::move(val));
       return *this;
     }
+     
+    bool operator==(const Value& v2) const {
+      if (typecode_ != v2.typecode_) return false;
+      if (isStringValue()) return stringValue() == v2.stringValue();
+      if (isIntValue()) return intValue() == v2.intValue();
+      if (isDoubleValue()) return doubleValue() == v2.doubleValue();
+      if (isListValue()) {
+        if (listvalue_.size() != v2.listvalue_.size()) return false;
+        for(size_t i = 0;i < listvalue_.size();i++) {
+          if(listvalue_[i] != v2.listvalue_[i]) return false;
+        }
+        return true;
+      }
+      if (isObjectValue()) {
+        if (objectvalue_.size() != v2.objectvalue_.size()) return false;
+        for(const auto& [k, v] : objectvalue_) {
+          if (v != v2.objectvalue_.at(k)) return false;
+        }
+        return true;
+      }
+      return false;
+    }
+    
 
+    bool operator!=(const Value& v2) const { return !this->operator==(v2); }
   };
 
   class value_pair : public std::pair<std::string, Value> {
@@ -270,4 +294,7 @@ namespace nerikiri {
 
 
   std::string str(const Value& value);
+
 }
+
+
