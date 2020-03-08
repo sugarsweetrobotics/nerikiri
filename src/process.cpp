@@ -131,15 +131,29 @@ OperationInfos Process::getOperationInfos() {
 
 Operation& Process::getOperationByName(const std::string& name) {
   Operation& ret = Operation::null;
+  for(size_t i = 0;i < operations_.size();i++) {
+    auto& op = operations_[i];
+    if (op.info().at("name").stringValue() == name) {
+      return operations_[i];
+    }
+  }
+  return Operation::null;
+  /*
   nerikiri::foreach<Operation>(operations_, [&name, &ret](auto& op) {
     if (op.info().at("name").stringValue() == name) {
       ret = op;
     }
   });
   return ret;
+  */
 }
 
-Broker_ptr& Process::getBrokerByName(const std::string& name) {
+
+Operation& Process::getOperationByInfo(const OperationInfo& oi) {
+  return getOperationByName(oi.at("name").stringValue());
+}
+
+Broker_ptr Process::getBrokerByName(const std::string& name) {
   for(auto& brk : brokers_) {
     if (brk->info().at("name").stringValue() == name) {
       return brk;
@@ -148,7 +162,7 @@ Broker_ptr& Process::getBrokerByName(const std::string& name) {
   return Broker::null;
 }
 
-Broker_ptr& Process::getBrokerByBrokerInfo(const BrokerInfo& bi) {
+Broker_ptr Process::getBrokerByInfo(const BrokerInfo& bi) {
   return getBrokerByName(bi.at("name").stringValue());
 }
 

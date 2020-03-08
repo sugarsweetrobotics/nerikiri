@@ -3,7 +3,7 @@
 //#include "nerikiri/brokerinfo.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/value.h"
-#include "nerikiri/connection.h"
+//#include "nerikiri/connection.h"
 #include <memory>
 
 namespace nerikiri {
@@ -11,6 +11,8 @@ namespace nerikiri {
   class Process;
   using Process_ptr = Process*;
   
+  class Connection;
+  using ConnectionInfo = Value;
 
   using BrokerInfo = Value;
 
@@ -39,12 +41,11 @@ namespace nerikiri {
 
     virtual Value invokeOperationByName(const std::string& name) const = 0;
 
-    //Value makeConnection(ConnectionInfo&& ci) const {
-    //  return makeConnection(ci);
-    //}
     virtual Value makeConnection(const ConnectionInfo& ci) const = 0;
 
-    virtual Value registerConnection(const ConnectionInfo& ci) const = 0;
+    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const = 0;
+
+    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const = 0;
   };
 
   class Broker  : public BrokerAPI{
@@ -55,7 +56,7 @@ namespace nerikiri {
     Process_ptr process_;
 
   public:
-    static std::unique_ptr<BrokerAPI> null;
+    static std::shared_ptr<BrokerAPI> null;
   public:
     Broker(const BrokerInfo& info): info_(info) {}
     virtual ~Broker() {}
@@ -89,10 +90,12 @@ namespace nerikiri {
 
     virtual Value makeConnection(const ConnectionInfo& ci) const override;
 
-    virtual Value registerConnection(const ConnectionInfo& ci) const override;
+    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const override;
+
+    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const override;
   };
 
-  using Broker_ptr = std::unique_ptr<BrokerAPI>;
+  using Broker_ptr = std::shared_ptr<BrokerAPI>;
 
   class BrokerProxy : public BrokerAPI{
   public:

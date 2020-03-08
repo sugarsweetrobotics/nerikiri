@@ -35,11 +35,6 @@ public:
   virtual ~HTTPBrokerImpl() {
     logger::trace("HTTPBroker::~HTTPBroker()");
   }
-  /*
-  virtual void setProcess(Process_ptr process) override {
-    process_ = process;
-  }
-  */
 
   webi::Response response(std::function<const Value(void)> func) {
     try {
@@ -62,8 +57,6 @@ public:
         auto info = Broker::info();
         for(auto h : req.headers) {
           if (h.first == "Host") {
-
-
             std::string host = h.second;
             int64_t port = 80;
             std::string addr = h.second;
@@ -74,8 +67,6 @@ public:
                 addr = host.substr(0, pos);
             }
 
-
-            info["host"] = Value(h.second);
             info["address"] = Value(addr);
             info["port"] = Value(port);
           }
@@ -101,8 +92,11 @@ public:
     server_->response("/process/make_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::makeConnection(nerikiri::json::toValue(req.body));});
     });
-    server_->response("/process/register_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::registerConnection(nerikiri::json::toValue(req.body));});
+    server_->response("/process/register_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::registerConsumerConnection(nerikiri::json::toValue(req.body));});
+    });
+    server_->response("/process/remove_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::removeConsumerConnection(nerikiri::json::toValue(req.body));});
     });
     server_->runBackground(port_);
     cond_.wait(lock);
@@ -120,7 +114,6 @@ public:
 nerikiri::Broker_ptr nerikiri::http::broker(const std::string& address, const int32_t port) {
   return nerikiri::Broker_ptr(new HTTPBrokerImpl(address, port));
 }
-
 
 
 class HTTPBrokerProxyImpl : public HTTPBrokerProxy {
@@ -169,12 +162,15 @@ public:
     }
 
     virtual Value makeConnection(const ConnectionInfo& ci) const {
-      auto name = ci.at("from").at("process").at("name").stringValue();
-      return toValue(client_->request("/process/operation/" + name + "/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+      return toValue(client_->request("/process/make_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
-    virtual Value registerConnection(const ConnectionInfo& ci) const {
-      //return toValue(client_->request("/process/operation/" + name + "/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const {
+      return toValue(client_->request("/process/register_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+    }
+
+    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const {
+      return toValue(client_->request("/process/remove_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 };
 

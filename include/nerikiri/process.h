@@ -13,20 +13,6 @@
 
 namespace nerikiri {
 
-  /*
-  class ProcessInfo : public Value{
-  public:
-    ProcessInfo(const std::string& n): Value({
-      {"name", Value(n)},
-      {"type", {"ProcessInfo"}}
-      }) {}
-    virtual ~ProcessInfo() {}
-
-    const std::string name() const {
-      return this->at("name").stringValue();
-    }
-  };
-  */
  using ProcessInfo = Value;
   
   class Process {
@@ -47,11 +33,12 @@ namespace nerikiri {
     Process& addOperation(Operation&& op);
     Process& addOperation(const Operation& op);
     Operation& getOperationByName(const std::string& name);
+    Operation& getOperationByInfo(const OperationInfo& oi);
     
     Process& addBroker(Broker_ptr&& brk);
-    Broker_ptr& getBrokerByName(const std::string& name);
+    Broker_ptr getBrokerByName(const std::string& name);
 
-    Broker_ptr& getBrokerByBrokerInfo(const BrokerInfo& ci);
+    Broker_ptr getBrokerByInfo(const BrokerInfo& ci);
     
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
@@ -64,9 +51,7 @@ namespace nerikiri {
     
     OperationInfos getOperationInfos();
 
-    public:
-
-
+  public:
     Value invokeOperationByName(const std::string& name);
     Value invokeConnection(const Connection& con);
   };

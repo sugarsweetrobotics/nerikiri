@@ -5,6 +5,7 @@
 #include <map>
 
 #include "nerikiri/value.h"
+#include "nerikiri/broker.h"
 
 
 namespace nerikiri {
@@ -14,8 +15,9 @@ namespace nerikiri {
     class Connection {
         private:
         ConnectionInfo info_;
+        Broker_ptr broker_;
     public:
-        Connection(const ConnectionInfo& info);
+        Connection(const ConnectionInfo& info, Broker_ptr broker);
         ~Connection();
 
         bool isPull() const { return false; }

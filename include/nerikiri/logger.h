@@ -76,9 +76,17 @@ namespace nerikiri::logger {
     log(INFO, fmt, args...);
   }
 
+  inline void warn(const std::string& str) {
+    log(WARN, str.c_str());
+  }
+
   template<typename... Args>
   inline void warn(const char* fmt, const Args &... args) {
     log(WARN, fmt, args...);
+  }
+
+  inline void error(const std::string& str) {
+    log(ERROR, str.c_str());
   }
 
   template<typename... Args>
