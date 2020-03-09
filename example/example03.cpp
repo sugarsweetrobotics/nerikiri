@@ -56,7 +56,7 @@ int main(const int argc, const char* argv[]) {
   auto broker = nerikiri::http::brokerProxy("localhost", 8080);
 
   std::cout << nerikiri::str(broker->info()) << std::endl;;
-  std::cout << nerikiri::str(broker->invokeOperationByName("increment")) << std::endl;;
+  //std::cout << nerikiri::str(broker->invokeOperationByName("increment")) << std::endl;;
   std::cout << nerikiri::str(broker->makeConnection(
     {{"name", "connection01"},
       {"provider", {

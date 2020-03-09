@@ -138,14 +138,6 @@ Operation& Process::getOperationByName(const std::string& name) {
     }
   }
   return Operation::null;
-  /*
-  nerikiri::foreach<Operation>(operations_, [&name, &ret](auto& op) {
-    if (op.info().at("name").stringValue() == name) {
-      ret = op;
-    }
-  });
-  return ret;
-  */
 }
 
 
@@ -166,11 +158,6 @@ Broker_ptr Process::getBrokerByInfo(const BrokerInfo& bi) {
   return getBrokerByName(bi.at("name").stringValue());
 }
 
-Value Process::invokeConnection(const Connection& con) {
-  //auto& brokerProxy = 
-  return Value();
-}
-
 Value Process::invokeOperationByName(const std::string& name) {
   logger::trace("Process::invokeOperationByName({})", name);
   auto& op = getOperationByName(name);
@@ -181,7 +168,8 @@ Value Process::invokeOperationByName(const std::string& name) {
   Value ret(op.info().at("defaultArg").object_map<std::pair<std::string, Value>>([this, &op](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
     for(auto& con : op.getConsumerConnectionsByArgName(key)) {
       if (con.isPull()) {
-        return {key, invokeConnection(con)};
+        auto v = con.pull();
+        return {key, v};
       }
     }
     return {key, value};

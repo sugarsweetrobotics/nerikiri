@@ -15,13 +15,16 @@ namespace nerikiri {
     class Connection {
         private:
         ConnectionInfo info_;
-        Broker_ptr broker_;
+        Broker_ptr providerBroker_;
+        Broker_ptr consumerBroker_;
+        std::function<Value()> pull_func_;
     public:
-        Connection(const ConnectionInfo& info, Broker_ptr broker);
+        Connection(const ConnectionInfo& info, Broker_ptr providerBroker, Broker_ptr consumerBroker);
         ~Connection();
 
-        bool isPull() const { return false; }
+        bool isPull() const { return true; }
 
+        Value pull() { return this->pull_func_(); }
 
     public:
         ConnectionInfo info() const { return info_; }

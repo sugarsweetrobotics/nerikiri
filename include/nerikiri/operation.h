@@ -32,11 +32,12 @@ namespace nerikiri {
     Operation(const OperationInfo& info, std::function<Value(Value)>&& func);
     Operation(const Operation& op): process_(op.process_), function_(op.function_), info_(op.info_), is_null_(op.is_null_),
       providerConnectionList_(op.providerConnectionList_), consumerConnectionListDictionary_(op.consumerConnectionListDictionary_)
-    {
-      
-    }
+      {
+        logger::trace("Operation copy constructory");
+      }
 
     Operation& operator=(const Operation& op) {
+      logger::trace("Operation copy");
       process_ = op.process_;
       function_ = op.function_;
       info_ = op.info_;
@@ -45,6 +46,7 @@ namespace nerikiri {
       consumerConnectionListDictionary_ = op.consumerConnectionListDictionary_;
       return *this;
     }
+
     ~Operation();
 
   public:

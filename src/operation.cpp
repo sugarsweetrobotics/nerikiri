@@ -23,6 +23,9 @@ Operation::Operation(const OperationInfo& info, std::function<Value(Value)>&& fu
     is_null_(false)
  {
   trace("Operation::Operation({})", str(info));
+  info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
+      consumerConnectionListDictionary_.emplace(key, ConnectionList());
+  });
 }
 
 Operation::~Operation() {

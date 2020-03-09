@@ -53,6 +53,14 @@ Value Broker::makeConnection(const ConnectionInfo& ci) const {
 
     // 自分はprovider側。
 
+    // 同じコネクションを持っていないか確認
+    if (provider.hasConsumerConnection(ci)) {
+        std::stringstream ss;
+        ss << "makeConnection failed. Provider already have the same connection." << str(ci.at("provider"));
+        logger::warn(ss.str().c_str());
+        return Value::error(ss.str());
+    }
+
     // Consumer側との接続確認
     // Consumer側のBrokerProxyを取得
     auto broker = process_->getBrokerByInfo(ci.at("consumer").at("broker"));    
@@ -71,27 +79,8 @@ Value Broker::makeConnection(const ConnectionInfo& ci) const {
         return Value::error(ss.str().c_str());
     }
 
-
-    ///provider = process_->getOperationByInfo(ci.at("provider").at("process"));
     // リクエストが成功なら、こちらもConnectionを登録。
-    if (provider.hasConsumerConnection(ci)) {
-        std::stringstream ss;
-        ss << "makeConnection failed. Provider already have the same connection." << str(ci.at("provider"));
-        logger::warn(ss.str().c_str());
-
-        // 登録が失敗ならConsumer側のConnectionを破棄。
-        auto retval3 = broker->removeConsumerConnection(ci);
-        if (retval3.isError()) {
-            std::stringstream ss;
-            ss << "request removeConsumerConnection for consumer's broker failed. " << retval3.getErrorMessage();
-            logger::error(ss.str().c_str());
-            return Value::error(ss.str().c_str());
-        }
-        return Value::error(ss.str());
-    }
-
-    //provider = process_->getOperationByInfo(ci.at("provider").at("process"));
-    auto retval2 = provider.addProviderConnection(Connection(ci, process_->getBrokerByInfo(ci.at("consumer").at("broker"))));
+    auto retval2 = provider.addProviderConnection(Connection(ci, nullptr, process_->getBrokerByInfo(ci.at("consumer").at("broker"))));
     if (!retval2.isError()) {
         // 登録成功ならciを返す
         return ci;
@@ -129,7 +118,7 @@ Value Broker::registerConsumerConnection(const ConnectionInfo& ci) const {
         logger::warn(ss.str());
         return Value::error(ss.str());
     }
-    return consumer.addConsumerConnection(Connection(ci, process_->getBrokerByInfo(ci.at("provider").at("broker"))));
+    return consumer.addConsumerConnection(Connection(ci, process_->getBrokerByInfo(ci.at("provider").at("broker")), nullptr));
 }
 
 

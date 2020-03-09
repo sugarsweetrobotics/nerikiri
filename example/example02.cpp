@@ -46,7 +46,7 @@ nerikiri::Operation zero(
           {"defaultArg", {}}
         },
 		   [](auto arg) { 
-		     return Value({{"result", 0}});
+		     return Value({0});
 		   }
 );
 
@@ -56,7 +56,7 @@ nerikiri::Operation one(
           {"defaultArg", {}}
         },
 		   [](auto arg) { 
-		     return Value({{"result", 1}});
+		     return Value({1});
 		   }
 );
 
