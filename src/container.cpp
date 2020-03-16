@@ -1,0 +1,27 @@
+#include "nerikiri/container.h"
+
+#include "nerikiri/functional.h"
+
+using namespace nerikiri;
+
+
+ContainerBase& ContainerBase::addOperation(ContainerOperationBase* operation) { 
+    operation->setContainer(this); 
+    operations_.push_back(operation); 
+    return *this; 
+}
+Value ContainerBase::getOperationInfos() const {
+    return {nerikiri::map<Value, ContainerOperationBase*>(operations_, [](auto op) { return op->getContainerOperationInfo();})};
+}
+
+ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
+    for(auto op: operations_) {
+        if (op->getContainerOperationInfo().at("name") == info.at("name")) {
+            return *op;
+        }
+    }
+    return *ContainerOperationBase::null;
+}
+
+ContainerOperationBase* ContainerOperationBase::null = new ContainerOperation<int>();
+ContainerBase ContainerBase::null("null", {{"name", "null"}});

@@ -5,54 +5,66 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/signal.h"
 
+
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
-Process::Process(const std::string& name) : info_(name)
-{
+
+Process Process::null("");
+
+Process::Process(const std::string& name) : info_({{"name", name}}) {
+  logger::trace("Process::Process(\"{}\")", name);
+  if (name.length() == 0) { 
+    info_ = Value::error("Process is Null."); 
+  } 
   setLogLevel(TRACE);
-  trace("Process::Process()");
 }
 
 Process::~Process() {
-  trace("Process::~Process()");
+  logger::trace("Process::~Process()");
 }
 
 Process& Process::addOperation(Operation&& op) {
-  if (getOperationByName(info().at("name").stringValue()).isNull()) {
-    operations_.emplace_back(std::move(op));
-  } 
-  error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
+  logger::trace("Process::addOperation({})", str(op.info()));
+  if (!getOperationByName(info().at("name").stringValue()).isNull()) {
+    logger::error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
+    return *this;
+  }
+  operations_.emplace_back(std::move(op));
   return *this;
 }
 
 Process& Process::addOperation(const Operation& op) {
+  logger::trace("Process::addOperation({})", str(op.info()));
+  if (!getOperationByName(info().at("name").stringValue()).isNull()) {
+    logger::error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
+    return *this;
+  }
   operations_.push_back(op);
   return *this;
 }
 
 Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
-  trace("Process::addSystemEditor()");
+  logger::trace("Process::addSystemEditor()");
   systemEditors_.emplace(se->name(), std::forward<SystemEditor_ptr>(se));
   return *this;
 }
 
 Process& Process::addBroker(Broker_ptr&& brk) {
-  trace("Process::addBroker()");
+  logger::trace("Process::addBroker()");
   brk->setProcess(Process_ptr(this));
-  //brokerDictionary_.add(std::forward<Broker_ptr>(brk));
   brokers_.emplace_back(std::forward<Broker_ptr>(brk));
   return *this;
 }
 
 static auto start_broker(std::vector<std::thread>& threads, Broker_ptr& brk) {
-  logger::trace("Creating a thread for broker {}", str(brk->info()));
+  logger::trace("Creating a thread for broker {}", str(brk->getBrokerInfo()));
   std::promise<bool> prms;
   auto ftr = prms.get_future();
   threads.emplace_back(std::thread([&brk](std::promise<bool> p) {
 				     std::stringstream ss;
 				     ss << std::this_thread::get_id();
-				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->info()));
+				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->getBrokerInfo()));
 				     p.set_value(brk->run());
 				     logger::trace("A thread {} finished", ss.str());
 				   }, std::move(prms)));
@@ -120,22 +132,18 @@ int32_t Process::start() {
   return 0;
 }
 
-OperationInfos Process::getOperationInfos() {
-  OperationInfos infos;
-  nerikiri::foreach<Operation>(operations_, [&infos](auto& op) {
-    infos.push_back(op.info());
-  });
-  return infos;
+Value Process::getOperationInfos() {
+  return {nerikiri::map<Value, Operation>(operations_, [](auto& op) { return op.info();})};
 }
 
+Value Process::getContainerInfos() {
+  return {nerikiri::map<Value, ContainerBase*>(containers_, [](auto* ctn) { return ctn->info(); })};
+}
 
 Operation& Process::getOperationByName(const std::string& name) {
-  Operation& ret = Operation::null;
-  for(size_t i = 0;i < operations_.size();i++) {
-    auto& op = operations_[i];
-    if (op.info().at("name").stringValue() == name) {
-      return operations_[i];
-    }
+  Operation& null = Operation::null;
+  for(auto& op : operations_) {
+    if (op.info().at("name").stringValue() == name) return op;
   }
   return Operation::null;
 }
@@ -147,7 +155,7 @@ Operation& Process::getOperationByInfo(const OperationInfo& oi) {
 
 Broker_ptr Process::getBrokerByName(const std::string& name) {
   for(auto& brk : brokers_) {
-    if (brk->info().at("name").stringValue() == name) {
+    if (brk->getBrokerInfo().at("name").stringValue() == name) {
       return brk;
     }
   }
@@ -158,22 +166,26 @@ Broker_ptr Process::getBrokerByInfo(const BrokerInfo& bi) {
   return getBrokerByName(bi.at("name").stringValue());
 }
 
-Value Process::invokeOperationByName(const std::string& name) {
-  logger::trace("Process::invokeOperationByName({})", name);
-  auto& op = getOperationByName(name);
-  if (op.isNull()) {
-    return Value::error("Operation not found.");
-  }
-  /// ここで接続があったら、接続に対してデータをよこせという。なければデフォルト引数をそのまま与える
-  Value ret(op.info().at("defaultArg").object_map<std::pair<std::string, Value>>([this, &op](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
-    for(auto& con : op.getConsumerConnectionsByArgName(key)) {
-      if (con.isPull()) {
-        auto v = con.pull();
-        return {key, v};
-      }
-    }
-    return {key, value};
-  }));
+Process& Process::addContainer(ContainerBase* container) {
+  trace("Process::addContainer()");
+  containers_.emplace_back(container);
+  return *this;
+}
 
-  return nerikiri::call_operation(op, std::move(ret));
+Process& Process::addOperationToContainerByName(const std::string&name, ContainerOperationBase* operation) {
+  getContainerByName(name).addOperation(operation);
+  return *this;
+}
+
+ContainerBase& Process::getContainerByName(const std::string& name) {
+  auto cs = nerikiri::filter<ContainerBase*>(containers_, [&name](auto c){return c->info().at("name").stringValue() == name;});
+  if (cs.size() == 1) return *cs[0];
+  if (cs.size() == 0) {
+    logger::warn("Process::getContainerByName({}) failed. Not found.", name);
+    return ContainerBase::null;
+  } else {
+    logger::warn("Process::getContainerByName({}) failed. Multiple containers with the same name are found.", name);
+    return ContainerBase::null;
+
+  }
 }

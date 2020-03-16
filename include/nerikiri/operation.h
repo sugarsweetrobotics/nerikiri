@@ -8,35 +8,99 @@
 #include "nerikiri/connection.h"
 
 namespace nerikiri {
-  class Operation;
+  //class OperationBase;
   class Process;
-  using Process_ptr = Process*;
   
-  Value call_operation(const Operation& operation, Value&& value);
+  using Process_ptr = Process*;
+
+  inline bool operationNameValidator(const std::string& name) {
+    if (name.find("/") >= 0) {
+      return false; // Invalid Name
+    }
+    return true;
+  };
+
+  inline bool operationValidator(const Value& opinfo) {
+    if (!operationNameValidator(opinfo.at("name").stringValue())) {
+      return false;
+    }
+    return true;
+  }
+  
+  class Invokable {
+  public:
+    virtual Value invoke() const = 0;
+  };
+
+  class Callable {
+  public:
+    virtual Value call(Value&& value) const = 0;
+  };
+
+  Value call_operation(const Callable& operation, Value&& value);
  
-  class Operation {
-  private:
+  Value invoke_operation(const Invokable& operation);
+
+  template<typename F>
+  class OperationBase {
+  protected:
     Process_ptr process_;
-    std::function<Value(Value)> function_;
-    OperationInfo info_;
     bool is_null_;
+    OperationInfo info_;
+    F function_;
     ConnectionList providerConnectionList_;
     ConnectionListDictionary consumerConnectionListDictionary_;
+
   public:
-    static Operation null;
-  private:
     
   public:
-    Operation(): is_null_(true) {}
-    Operation(OperationInfo&& info, std::function<Value(Value)>&& func);
-    Operation(const OperationInfo& info, std::function<Value(Value)>&& func);
-    Operation(const Operation& op): process_(op.process_), function_(op.function_), info_(op.info_), is_null_(op.is_null_),
-      providerConnectionList_(op.providerConnectionList_), consumerConnectionListDictionary_(op.consumerConnectionListDictionary_)
-      {
-        logger::trace("Operation copy constructory");
-      }
+    OperationBase() : process_(nullptr), is_null_(true), info_(Value::error("null operation")) {
+      logger::trace("OperationBase construct with ()");
+      
+    }
 
-    Operation& operator=(const Operation& op) {
+    OperationBase(OperationInfo&& info) : is_null_(true), info_(std::move(info)) {
+      logger::trace("OperationBase construct with (info)");
+      if (!operationValidator(info_)) {
+        logger::error("OperationInformation is invalid.");
+      }
+    }
+
+    OperationBase(const OperationBase& op): process_(op.process_), function_(op.function_), info_(op.info_), is_null_(op.is_null_),
+      providerConnectionList_(op.providerConnectionList_), consumerConnectionListDictionary_(op.consumerConnectionListDictionary_) {
+      logger::trace("OperationBase copy construction."); 
+      if (!operationValidator(info_)) {
+        logger::error("OperationInformation is invalid.");
+      }
+    }
+
+    OperationBase(OperationInfo&& info, F&& func):
+      info_(info), function_(func), is_null_(false) {
+      logger::trace("OperationBase::OperationBase({})", str(info));
+      if (!operationValidator(info_)) {
+        logger::error("OperationInformation is invalid.");
+      }
+      info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
+          consumerConnectionListDictionary_.emplace(key, ConnectionList());
+      });
+    }
+
+    OperationBase(const OperationInfo& info, F&& func):
+      info_(info), function_(func), is_null_(false) {
+      logger::trace("OperationBase::OperationBase({})", str(info));
+      if (!operationValidator(info_)) {
+        logger::error("OperationInformation is invalid.");
+      }
+      info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
+          consumerConnectionListDictionary_.emplace(key, ConnectionList());
+      });
+    }
+
+    virtual ~OperationBase() {
+      logger::trace("Operation desctructed.");
+    }
+
+    OperationBase& operator=(const OperationBase& op) {
       logger::trace("Operation copy");
       process_ = op.process_;
       function_ = op.function_;
@@ -46,22 +110,19 @@ namespace nerikiri {
       consumerConnectionListDictionary_ = op.consumerConnectionListDictionary_;
       return *this;
     }
-
-    ~Operation();
-
   public:
     const OperationInfo& info() const { return info_; }
+
     bool isNull() const { return is_null_; }
 
-    friend Value call_operation(const Operation& operation, Value&& value);
-
     Value addProviderConnection(Connection&& c) {
-      logger::trace("Operation::addProviderConnection({})", str(c.info()));
+      logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
       providerConnectionList_.emplace_back(std::move(c));
       return c.info();
     }
 
     Value removeProviderConnection(const ConnectionInfo& ci) {
+      logger::trace("OperationBase::removeProviderConnection({})", str(ci));
       // 未実装
       return ci;
     }
@@ -84,6 +145,7 @@ namespace nerikiri {
     }
 
     Value removeConsumerConnection(const ConnectionInfo& ci) {
+      logger::trace("Operation::removeConsumerConnection({})", str(ci));
       ///未実装
       return ci;
     }
@@ -91,6 +153,7 @@ namespace nerikiri {
     ConnectionList getProviderConnectionList() const {
       return providerConnectionList_;
     }
+
     ConnectionList getConsumerConnectionsByArgName(const std::string& argName) const {
       if (consumerConnectionListDictionary_.count(argName) == 0) return ConnectionList();
       return consumerConnectionListDictionary_.at(argName);
@@ -110,6 +173,55 @@ namespace nerikiri {
       }
       return false;
     }
+
+    Value collectValues() const {
+      return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
+        [this](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
+          for(auto& con : getConsumerConnectionsByArgName(key)) {
+            if (con.isPull()) { return {key, con.pull()}; }
+          }
+          return {key, value};
+        }
+      ));
+    }
+
+    
+    friend Value call_operation(const Callable& operation, Value&& value);
+
+    friend Value nerikiri::invoke_operation(const Invokable& operation);
   };
   
+  class Operation : public OperationBase<std::function<Value(Value)>>, public Callable, public Invokable {
+  public:
+    Operation(): OperationBase<std::function<Value(Value)>>() {}
+    Operation(OperationInfo&& info) : OperationBase(std::move(info)) {} //is_null_(true), info_(std::move(info)) {}
+    Operation(OperationInfo&& info, std::function<Value(Value)>&& func): OperationBase<std::function<Value(Value)>>(std::move(info), std::move(func)) {}
+    Operation(const OperationInfo& info, std::function<Value(Value)>&& func) : OperationBase<std::function<Value(Value)>>(info, std::move(func)) {}
+
+    virtual ~Operation() {}
+
+  public:
+    Operation& operator=(const Operation& op) {
+      logger::trace("Operation copy");
+      operator=(op);
+
+      return *this;
+    }
+
+
+    virtual Value call(Value&& value) const override {
+      if (this->isNull()) return Value::error("Opertaion is null");
+      return this->function_(value);
+    }
+
+    
+    virtual Value invoke() const override {
+      if (isNull()) {
+        return Value::error("Opertaion is null");
+      }
+      return nerikiri::call_operation(*this, collectValues());
+    }
+
+    static Operation null;
+  };
 }

@@ -1,9 +1,10 @@
 #include "nerikiri/logger.h"
-#include "nerikiri/brokerdictionary.h"
+//#include "nerikiri/brokerdictionary.h"
 
 
 using namespace nerikiri;
 
+/*
 
 void BrokerDictionary::add(Broker_ptr&& broker) {
   logger::trace("BrokerDictionary::add({})", broker->info().name);
@@ -20,4 +21,4 @@ void BrokerDictionary::foreach(std::function<void(Broker_ptr&)> func) {
   logger::trace("BrokerDictionary::foreach ends");
 }
     
-
+*/

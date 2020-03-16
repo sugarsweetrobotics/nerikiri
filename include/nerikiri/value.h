@@ -60,8 +60,8 @@ namespace nerikiri {
     //explicit Value(const int value);
     Value(const int64_t value);
     Value(int&& value);
-    explicit Value(const double value);
-    explicit Value(const std::string& value);
+    Value(const double value);
+    Value(const std::string& value);
     Value(const char* value) : Value(std::string(value)) {}
     Value(std::string&& value);
     //explicit Value(const std::map<std::string, Value>& value);

@@ -3,13 +3,12 @@
 #include "nerikiri/operation.h"
 #include "nerikiri/value.h"
 #include "nerikiri/broker.h"
-#include "nerikiri/brokerdictionary.h"
 #include "nerikiri/connection.h"
 #include "nerikiri/connectiondictionary.h"
 
 #include "nerikiri/runnable.h"
 #include "nerikiri/systemeditor.h"
-
+#include "nerikiri/container.h"
 
 namespace nerikiri {
 
@@ -24,11 +23,15 @@ namespace nerikiri {
     ProcessInfo info_;
     std::vector<Operation> operations_;
     std::vector<Broker_ptr> brokers_;
+
+    std::vector<ContainerBase*> containers_;
+    std::vector<ContainerOperationBase*> containerOperations_;
   public:
     Process(const std::string& name);
     ~Process();
 
-
+    static Process null;
+    
   public:
     Process& addOperation(Operation&& op);
     Process& addOperation(const Operation& op);
@@ -43,16 +46,20 @@ namespace nerikiri {
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
 
+    Value getContainerInfos();
+    ContainerBase& getContainerByName(const std::string& name);
+    Process& addContainer(ContainerBase* container);
+    Process& addOperationToContainerByName(const std::string& name, ContainerOperationBase* operation);
+
     int32_t start();
     void startAsync();
     int32_t wait();
     void shutdown();
     ProcessInfo info() const { return info_; }
     
-    OperationInfos getOperationInfos();
+    Value getOperationInfos();
 
   public:
-    Value invokeOperationByName(const std::string& name);
     Value invokeConnection(const Connection& con);
   };
 

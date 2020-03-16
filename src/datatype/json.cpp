@@ -1,5 +1,6 @@
 #include "nerikiri/datatype/json.h"
 #include "rapidjson/document.h"
+#include "nerikiri/logger.h"
 #include <iostream>
 #include <ios>
 #include <sstream>
@@ -49,6 +50,7 @@ nerikiri::Value nerikiri::json::toValue(const std::string& json_str) {
     rapidjson::Document doc;
     doc.Parse(json_str.c_str());
     if (doc.HasParseError()) {
+        logger::error("JSONParseError - {}", json_str);
         throw JSONParseError();
     } 
     return construct(doc);
@@ -59,6 +61,8 @@ std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
     if (value.isDoubleValue()) return std::to_string(value.doubleValue());
     if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
     if (value.isObjectValue()) {
+        if (value.objectValue().size() == 0) { return "{}"; }
+        
         std::stringstream ss;
         for(auto [k, v] : value.objectValue()) {
             ss << ",\"" << k << "\":" << toJSONString(v);
@@ -67,6 +71,9 @@ std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
         return ss.str().replace(0, 1, "{");
     }
     if (value.isListValue()) {
+        if (value.listValue().size() == 0) { return "[]"; }
+
+        
         std::stringstream ss;
         for(auto& v : value.listValue()) {
             ss << "," << toJSONString(v);

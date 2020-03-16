@@ -1,6 +1,6 @@
 set(nk_base_srcs process.cpp operation.cpp operationinfo.cpp value.cpp valuemap.cpp logger.cpp broker.cpp
 #brokerinfo.cpp brokerdictionary.cpp
-signal.cpp connection.cpp connectiondictionary.cpp)
+signal.cpp connection.cpp connectiondictionary.cpp container.cpp)
 set(nk_http_srcs http/httpbroker.cpp datatype/json.cpp) # http/server.cpp http/client.cpp)
 set(nk_se_srcs systemeditor/systemeditor.cpp)
 set(nk_srcs ${nk_base_srcs} ${nk_http_srcs} ${nk_se_srcs})

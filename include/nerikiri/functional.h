@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <numeric>
 
 namespace nerikiri {
 
@@ -63,6 +64,17 @@ namespace nerikiri {
   }
 
 
+  template<typename V>
+  std::vector<V> filter(std::vector<V>& vec, std::function<bool(V&)> func) {
+    std::vector<V> ret;
+    for(auto& v : vec) {
+      if (func(v)) {
+        ret.push_back(v);
+      }
+    }
+    return ret;
+  }
+
   template<typename T, typename V>
   std::vector<T> map(std::vector<V>& vec, std::function<T(V&)> func) {
     std::vector<T> ret;
@@ -70,6 +82,24 @@ namespace nerikiri {
       ret.emplace_back(func(v));
     }
     return ret;
+  }
+    
+  template<typename T, typename V>
+  std::vector<T> map(const std::vector<V>& vec, std::function<T(const V&)> func) {
+    std::vector<T> ret;
+    for(const auto& v : vec) {
+      ret.emplace_back(func(v));
+    }
+    return ret;
+  }
+
+
+
+   template<typename V, typename T>
+  T reduce(std::vector<V>& vec, std::function<void(T&, V&)> func, T acc) {
+    /*
+    foreach<V>(vec, [&acc, func](V& v) { func(acc, v); });*/
+    return acc;
   }
 
 }

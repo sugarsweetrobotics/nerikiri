@@ -5,40 +5,26 @@
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
-
-Operation::Operation(OperationInfo&& info, std::function<Value(Value)>&& func):
-  info_(info),
-  function_(func),
-  is_null_(false)
-   {
-  trace("Operation::Operation({})", str(info));
-  info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-      consumerConnectionListDictionary_.emplace(key, ConnectionList());
-  });
-}
-
-Operation::Operation(const OperationInfo& info, std::function<Value(Value)>&& func):
-  info_(info),
-  function_(func),
-    is_null_(false)
- {
-  trace("Operation::Operation({})", str(info));
-  info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-      consumerConnectionListDictionary_.emplace(key, ConnectionList());
-  });
-}
-
-Operation::~Operation() {
-  trace("Operation::~Operation()");
-}
-
 Operation Operation::null;
 
-Value nerikiri::call_operation(const Operation& operation, Value&& value) {
+Value nerikiri::call_operation(const Callable& operation, Value&& value) {
+  logger::trace("nerikir::call_operation({})", str(value));
+  /*
+  if (operation.isNull()) {
+    return Value::error("Opertaion is null");
+  }
+  */
+
   try {
-    return operation.function_(value);
+    return operation.call(std::move(value));
   } catch (ValueTypeError& ex) {
     return Value::error(ex.what());
   }
 }
+
+Value nerikiri::invoke_operation(const Invokable& operation) {
+  logger::trace("nerikir::invoke_operation()");
+  return operation.invoke();
+}
+  
 

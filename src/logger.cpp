@@ -29,6 +29,7 @@ format_type nerikiri::logger::formatter(format_type&& fmt, const std::string& ar
   return std::regex_replace(fmt, std::regex("\\{[^\\}]*\\}"), arg, std::regex_constants::format_first_only);
 }
 
-void nerikiri::logger::log(std::string&& fmt) {
+std::string nerikiri::logger::log(std::string&& fmt) {
   std::cout << fmt << std::endl;
+  return std::move(fmt);
 }

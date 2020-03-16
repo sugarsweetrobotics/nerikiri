@@ -30,7 +30,7 @@ private:
   int32_t port_;
 public:
   HTTPBrokerImpl(const std::string& address, const int32_t port): HTTPBroker(), server_(webi::server()), address_(address), port_(port) {
-    logger::trace("HTTPBroker::HTTPBroker({})", str(info()));
+    logger::trace("HTTPBroker::HTTPBroker({})", str(getBrokerInfo()));
   }
   virtual ~HTTPBrokerImpl() {
     logger::trace("HTTPBroker::~HTTPBroker()");
@@ -54,7 +54,7 @@ public:
     logger::trace("HTTPBroker::run()");
     server_->response("/broker/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){
-        auto info = Broker::info();
+        auto info = Broker::getBrokerInfo();
         for(auto h : req.headers) {
           if (h.first == "Host") {
             std::string host = h.second;
@@ -78,25 +78,49 @@ public:
       return response([this](){return Broker::getProcessInfo();});
     });
     server_->response("/process/operations", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this](){return Broker::getProcessOperationInfos();});
+      return response([this](){return Broker::getOperationInfos();});
+    }); 
+    server_->response("/process/containers", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this](){return Broker::getContainerInfos();});
+    });
+    server_->response("/process/container/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::getContainerInfo({{"name", Value(req.matches[1])}});});
+    });
+    server_->response("/process/container/([^/]*)/operations", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::getContainerOperationInfos({{"name", Value(req.matches[1])}});});
+    });
+    server_->response("/process/container/([^/]*)/operation/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::getContainerOperationInfo(
+        {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}});});
+    });
+    server_->response("/process/container/([^/]*)/operation/([^/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::callContainerOperation(
+        {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
+    });
+    server_->response("/process/container/([^/]*)/operation/([^/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::invokeContainerOperation(
+        {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}});});
     });
     server_->response("/process/operation/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::getOperationInfoByName(req.matches[1]);});
+      return response([this, &req](){return Broker::getOperationInfo({{"name", Value(req.matches[1])}});});
     });
     server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::callOperationByName(req.matches[1], nerikiri::json::toValue(req.body));});
+      return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
     });
     server_->response("/process/operation/([^\\/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::invokeOperationByName(req.matches[1]);});
     });
     server_->response("/process/make_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::makeConnection(nerikiri::json::toValue(req.body));});
+      return response([this, &req](){return nerikiri::makeConnection(this, nerikiri::json::toValue(req.body));});
     });
     server_->response("/process/register_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::registerConsumerConnection(nerikiri::json::toValue(req.body));});
     });
     server_->response("/process/remove_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::removeConsumerConnection(nerikiri::json::toValue(req.body));});
+    });
+    server_->response("/process/push_to_argument/([^\\/]*)/([^\\/]*)", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::pushToArgumentByName(req.matches[1], req.matches[2], nerikiri::json::toValue(req.body));});
     });
     server_->runBackground(port_);
     cond_.wait(lock);
@@ -126,6 +150,11 @@ public:
 
 private:
   Value toValue(webi::Response&& res) const {  
+    if (res.status != 200) {
+      logger::error("HTTBrokerProxyImpl: request failed. status = {}", res.status);
+      logger::error("body - {}", res.body);
+      return nerikiri::Value::error(res.body);
+    }
     try {
       return nerikiri::json::toValue(res.body);
     } catch (nerikiri::json::JSONParseError& e) {
@@ -137,16 +166,48 @@ private:
     }
   }
 public:
-    virtual BrokerInfo info() const {
+    virtual BrokerInfo getBrokerInfo() const override {
       return toValue(client_->request("/broker/info", "GET"));
     }
 
-    virtual Value getProcessInfo() const {
+    virtual Value getProcessInfo() const override {
       return toValue(client_->request("/process/info", "GET"));
     }
 
-    virtual Value getProcessOperationInfos() const {
+    virtual Value getOperationInfos() const override {
       return toValue(client_->request("/process/operations", "GET"));
+    }
+
+    virtual Value getContainerInfos() const override {
+      return toValue(client_->request("/process/containers", "GET"));
+    }
+
+    virtual Value getContainerInfo(const Value& v) const override {
+      return toValue(client_->request("/process/container/" + v.at("name").stringValue(), "GET"));
+    }
+
+    virtual Value getContainerOperationInfos(const Value& v) const override {
+      return toValue(client_->request("/process/container/" + v.at("name").stringValue() + "/operations", "GET"));
+    }
+
+    virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
+      return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue(), "GET"));
+    }
+
+    virtual Value callContainerOperation(const Value& ci, const Value& oi, Value&& arg) const override {
+     return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/call", "PUT"));
+    }
+
+    virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
+     return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/invoke", "GET"));
+    }
+
+    virtual Value getContainerInfoByName(const std::string& name) const {
+      return toValue(client_->request("/process/container/" + name, "GET"));
+    }
+
+    virtual Value getOperationInfo(const Value& v) const override {
+      return toValue(client_->request("/process/operation/" + v.at("name").stringValue(), "GET"));
     }
 
     virtual Value getOperationInfoByName(const std::string& name) const {
@@ -154,23 +215,31 @@ public:
     }
 
     virtual Value callOperationByName(const std::string& name, Value&& value) const {
-
+      return toValue(client_->request("/process/operation/" + name + "/call", "POST"));
     }
 
-    virtual Value invokeOperationByName(const std::string& name) const {
+    virtual Value callOperation(const Value& info, Value&& value) const override {
+      return toValue(client_->request("/process/operation/" + info.at("name").stringValue() + "/call", "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
+    }
+
+    virtual Value invokeOperationByName(const std::string& name) const override {
       return toValue(client_->request("/process/operation/" + name + "/invoke", "GET"));
     }
 
-    virtual Value makeConnection(const ConnectionInfo& ci) const {
+    virtual Value makeConnection(const ConnectionInfo& ci) const override {
       return toValue(client_->request("/process/make_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
-    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const {
+    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const override {
       return toValue(client_->request("/process/register_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
-    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const {
+    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const override {
       return toValue(client_->request("/process/remove_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+    }
+
+    virtual Value pushToArgumentByName(const std::string& operation_name, const std::string& argument_name, Value&& value)  const override {
+      return toValue(client_->request("/process/push_to_argument/" + operation_name + "/" + argument_name, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 };
 
