@@ -26,7 +26,7 @@ Process::~Process() {
 
 Process& Process::addOperation(Operation&& op) {
   logger::trace("Process::addOperation({})", str(op.info()));
-  if (!getOperationByName(info().at("name").stringValue()).isNull()) {
+  if (!getOperation(op.info()).isNull()) {
     logger::error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
     return *this;
   }
@@ -36,7 +36,7 @@ Process& Process::addOperation(Operation&& op) {
 
 Process& Process::addOperation(const Operation& op) {
   logger::trace("Process::addOperation({})", str(op.info()));
-  if (!getOperationByName(info().at("name").stringValue()).isNull()) {
+  if (!getOperation(op.info()).isNull()) {
     logger::error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
     return *this;
   }
@@ -133,13 +133,20 @@ int32_t Process::start() {
 }
 
 Value Process::getOperationInfos() {
-  return {nerikiri::map<Value, Operation>(operations_, [](auto& op) { return op.info();})};
+  auto ops = nerikiri::map<Value, Operation>(operations_, [](auto& op) { return op.info();});
+  for(auto& c : this->containers_) {
+    auto infos = c->getOperationInfos();
+    ops.insert(ops.end(), infos.begin(), infos.end());
+  }
+  return ops;
+//  return {nerikiri::map<Value, Operation>(operations_, [](auto& op) { return op.info();})};
 }
 
 Value Process::getContainerInfos() {
   return {nerikiri::map<Value, ContainerBase*>(containers_, [](auto* ctn) { return ctn->info(); })};
 }
 
+/*
 Operation& Process::getOperationByName(const std::string& name) {
   Operation& null = Operation::null;
   for(auto& op : operations_) {
@@ -147,10 +154,15 @@ Operation& Process::getOperationByName(const std::string& name) {
   }
   return Operation::null;
 }
+*/
 
-
-Operation& Process::getOperationByInfo(const OperationInfo& oi) {
-  return getOperationByName(oi.at("name").stringValue());
+Operation& Process::getOperation(const OperationInfo& oi) {
+  Operation& null = Operation::null;
+  auto& name = oi.at("name");
+  for(auto& op : operations_) {
+    if (op.info().at("name") == name) return op;
+  }
+  return Operation::null;
 }
 
 Broker_ptr Process::getBrokerByName(const std::string& name) {
@@ -168,6 +180,10 @@ Broker_ptr Process::getBrokerByInfo(const BrokerInfo& bi) {
 
 Process& Process::addContainer(ContainerBase* container) {
   trace("Process::addContainer()");
+  if (container->isNull()) {
+    logger::error("Container is null.");
+    return *this;
+  }
   containers_.emplace_back(container);
   return *this;
 }
@@ -188,4 +204,9 @@ ContainerBase& Process::getContainerByName(const std::string& name) {
     return ContainerBase::null;
 
   }
+}
+
+void Process::executeOperation(const OperationInfo& info) const {
+  logger::trace("Process::executeOpration({})", str(info));
+  
 }

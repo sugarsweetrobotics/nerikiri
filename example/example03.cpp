@@ -13,7 +13,8 @@ int main(const int argc, const char* argv[]) {
   std::cout << nerikiri::str(broker->getBrokerInfo()) << std::endl;;
   //std::cout << nerikiri::str(broker->invokeOperationByName("increment")) << std::endl;;
   std::cout << nerikiri::str(broker->makeConnection(
-    {{"name", "connection01"},
+    {
+      {"name", "connection01"},
       {"provider", {
           {"info", {
             {"name", {"one"}}

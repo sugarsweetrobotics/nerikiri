@@ -1,3 +1,7 @@
+/**
+ * nerikiriで使う基本的なデータ型
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -7,7 +11,7 @@
 #include <exception>
 #include <map>
 #include <optional>
-
+#include <algorithm>
 
 namespace nerikiri {
 
@@ -26,6 +30,11 @@ namespace nerikiri {
     }
   };
 
+
+  class Value;
+
+
+  Value merge(const Value& v1, const Value& v2);
 
   /**
    *
@@ -57,19 +66,14 @@ namespace nerikiri {
   public:
     Value();
 
-    //explicit Value(const int value);
     Value(const int64_t value);
     Value(int&& value);
     Value(const double value);
     Value(const std::string& value);
     Value(const char* value) : Value(std::string(value)) {}
     Value(std::string&& value);
-    //explicit Value(const std::map<std::string, Value>& value);
-    //Value(std::map<std::string, Value>&& value);
     Value(const Value& Value);
-    //Value(Value&& Value) = default;
     Value(const std::vector<Value>& value);
-    //Value(std::vector<Value>&& value);
     Value(std::vector<std::pair<std::string, Value>>&& value);
     Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
 
@@ -279,6 +283,8 @@ namespace nerikiri {
     
 
     bool operator!=(const Value& v2) const { return !this->operator==(v2); }
+
+    friend Value merge(const Value& v1, const Value& v2);
   };
 
   class value_pair : public std::pair<std::string, Value> {
@@ -290,6 +296,28 @@ namespace nerikiri {
 
   inline Value errorValue(const std::string& msg) {
    return Value::error(msg);
+  }
+
+  inline Value merge(const Value& v1, const Value& v2) {
+    if((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_LIST)) {
+      std::vector<Value> result;
+      result.insert(result.end(), v1.listvalue_.begin(), v1.listvalue_.end());
+      result.insert(result.end(), v2.listvalue_.begin(), v2.listvalue_.end());
+      //      std::merge(v1.listvalue_.begin(), v1.listvalue_.end(),
+      //       v2.listvalue_.begin(), v2.listvalue_.end(), std::back_inserter(result));
+      return {result};
+    } else if ((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_OBJECT)) {
+      Value rvalue;
+      rvalue.typecode_ = Value::VALUE_TYPE_OBJECT;
+      for(auto& [key, value] : v2.objectvalue_) {
+        rvalue[key] = value;
+      }
+      for(auto& [key, value] : v1.objectvalue_) {
+        rvalue[key] = value;
+      }
+      return rvalue;
+    }
+    return Value::error("Value::merge failed. Invalid Value types of arguments v1 and v2.");
   }
 
 

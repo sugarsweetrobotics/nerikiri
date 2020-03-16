@@ -59,7 +59,7 @@ namespace nerikiri {
 
     virtual Value removeConsumerConnection(const ConnectionInfo& ci) const = 0;
 
-    virtual Value pushToArgumentByName(const std::string& operation_name, const std::string& argument_name, Value&& value)  const = 0;
+    virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const = 0;
   };
 
   using Broker_ptr = std::shared_ptr<BrokerAPI>;
@@ -123,10 +123,7 @@ namespace nerikiri {
 
     virtual Value getOperationInfo(const Value& info) const override;
 
-
     virtual Value callOperation(const Value& info, Value&& value) const override;
-
-    //virtual Value callOperationByName(const std::string& name, Value&& value) const override;
 
     virtual Value invokeOperationByName(const std::string& name) const override;
 
@@ -136,8 +133,7 @@ namespace nerikiri {
 
     virtual Value removeConsumerConnection(const ConnectionInfo& ci) const override;
 
-    virtual Value pushToArgumentByName(const std::string& operation_name, const std::string& argument_name, Value&& value)  const override;
-
+    virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override;
 
   public:
     friend Value relayProvider(const Broker* broker, const ConnectionInfo& ci);

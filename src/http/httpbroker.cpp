@@ -119,8 +119,18 @@ public:
     server_->response("/process/remove_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::removeConsumerConnection(nerikiri::json::toValue(req.body));});
     });
-    server_->response("/process/push_to_argument/([^\\/]*)/([^\\/]*)", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::pushToArgumentByName(req.matches[1], req.matches[2], nerikiri::json::toValue(req.body));});
+    server_->response("/process/operation/([^\\/]*)/argument/([^\\/]*)/([-/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
+      std::string operation_name = req.matches[1];//ci.at("consumer").at("info").at("name").stringValue();
+      std::string argument_name  = req.matches[2];//ci.at("consumer").at("target").at("name").stringValue();
+      std::string connection_name = req.matches[3];//ci.at("name").stringValue();
+      Value info = { 
+        {"name", connection_name}, 
+        {"consumer", { 
+          {"info", { {"name", operation_name} } }, 
+          {"target", { {"name", argument_name} } }
+          }
+        }};
+      return response([this, info, &req](){return Broker::pushViaConnection(info, nerikiri::json::toValue(req.body));});
     });
     server_->runBackground(port_);
     cond_.wait(lock);
@@ -238,8 +248,11 @@ public:
       return toValue(client_->request("/process/remove_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
-    virtual Value pushToArgumentByName(const std::string& operation_name, const std::string& argument_name, Value&& value)  const override {
-      return toValue(client_->request("/process/push_to_argument/" + operation_name + "/" + argument_name, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+    virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override {
+      auto operation_name = ci.at("consumer").at("info").at("name").stringValue();
+      auto argument_name  = ci.at("consumer").at("target").at("name").stringValue();
+      auto connection_name = ci.at("name").stringValue();
+      return toValue(client_->request("/process/operation/" + operation_name + "/argument/" + argument_name + "/" + connection_name + "/push", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 };
 

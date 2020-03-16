@@ -4,14 +4,18 @@
 
 using namespace nerikiri;
 
-
 ContainerBase& ContainerBase::addOperation(ContainerOperationBase* operation) { 
-    operation->setContainer(this); 
-    operations_.push_back(operation); 
-    return *this; 
+    if (!getOperation(operation->getContainerOperationInfo()).isNullContainerOperation()) {
+        logger::error("ContainerBase::addOperation({}) failed. ContainerOperation with same name is registered.", str(operation->getContainerOperationInfo()));
+    } else {
+        operation->setContainer(this);
+        operations_.push_back(operation); 
+    }
+    return *this;
 }
-Value ContainerBase::getOperationInfos() const {
-    return {nerikiri::map<Value, ContainerOperationBase*>(operations_, [](auto op) { return op->getContainerOperationInfo();})};
+
+std::vector<Value> ContainerBase::getOperationInfos() const {
+    return nerikiri::map<Value, ContainerOperationBase*>(operations_, [](auto op) { return op->getContainerOperationInfo();});
 }
 
 ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
@@ -24,4 +28,5 @@ ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
 }
 
 ContainerOperationBase* ContainerOperationBase::null = new ContainerOperation<int>();
+
 ContainerBase ContainerBase::null("null", {{"name", "null"}});

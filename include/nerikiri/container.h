@@ -14,16 +14,20 @@ namespace nerikiri {
         ContainerInfo info_;
         std::string type_;
         std::vector<ContainerOperationBase*> operations_;
+        bool is_null_;
+
     public:
         const ContainerInfo& info() const { return info_; }
         std::string type() const { return type_; }
+
+        bool isNull() const { return is_null_; }
     public:
-        ContainerBase(const std::string& typeName, ContainerInfo&& info) : type_(typeName), info_(std::move(info)) {}
+        ContainerBase(const std::string& typeName, ContainerInfo&& info) : type_(typeName), info_(std::move(info)), is_null_(false) { }
         virtual ~ContainerBase() {}
 
         ContainerBase& addOperation(ContainerOperationBase* operation);
 
-        Value getOperationInfos() const;
+        std::vector<Value> getOperationInfos() const;
 
         ContainerOperationBase& getOperation(const Value& info) const;
 
@@ -36,6 +40,10 @@ namespace nerikiri {
         std::shared_ptr<T> _ptr;
     public:
         Container(ContainerInfo&& info): ContainerBase(typeid(T).name(), std::move(info)), _ptr(std::make_shared<T>()) {
+            if (!nameValidator(info.at("name").stringValue())) {
+                logger::error("Container ({}) can not be created. Invalid name format.", str(info_));
+                is_null_ = true;
+            }
         }
         virtual ~Container() {}
  

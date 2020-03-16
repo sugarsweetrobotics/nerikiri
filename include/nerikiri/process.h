@@ -35,8 +35,8 @@ namespace nerikiri {
   public:
     Process& addOperation(Operation&& op);
     Process& addOperation(const Operation& op);
-    Operation& getOperationByName(const std::string& name);
-    Operation& getOperationByInfo(const OperationInfo& oi);
+    //Operation& getOperationByName(const std::string& name);
+    Operation& getOperation(const OperationInfo& oi);
     
     Process& addBroker(Broker_ptr&& brk);
     Broker_ptr getBrokerByName(const std::string& name);
@@ -61,6 +61,10 @@ namespace nerikiri {
 
   public:
     Value invokeConnection(const Connection& con);
+
+
+  public:
+    void executeOperation(const OperationInfo& oinfo) const;
   };
 
 

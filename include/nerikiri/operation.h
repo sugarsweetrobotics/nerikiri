@@ -3,43 +3,65 @@
 #include <map>
 #include <functional>
 #include "nerikiri/logger.h"
-#include "nerikiri/valuemap.h"
-#include "nerikiri/operationinfo.h"
+#include "nerikiri/value.h"
 #include "nerikiri/connection.h"
 
 namespace nerikiri {
-  //class OperationBase;
+
   class Process;
   
+  using OperationInfo = Value;
+
   using Process_ptr = Process*;
 
-  inline bool operationNameValidator(const std::string& name) {
-    if (name.find("/") >= 0) {
+  inline bool nameValidator(const std::string& name) {
+    if (name.find("/") != std::string::npos) {
+      return false; // Invalid Name
+    }
+    if (name.find(":") != std::string::npos) {
       return false; // Invalid Name
     }
     return true;
   };
 
   inline bool operationValidator(const Value& opinfo) {
-    if (!operationNameValidator(opinfo.at("name").stringValue())) {
+    if (!nameValidator(opinfo.at("name").stringValue())) {
       return false;
     }
     return true;
   }
   
-  class Invokable {
-  public:
-    virtual Value invoke() const = 0;
-  };
+  
 
   class Callable {
   public:
     virtual Value call(Value&& value) const = 0;
   };
 
+  class Invokable {
+  public:
+    virtual Value invoke() const = 0;
+  };
+
   Value call_operation(const Callable& operation, Value&& value);
  
   Value invoke_operation(const Invokable& operation);
+
+  class Buffer {
+  private:
+    bool empty_;
+    Value buffer_;
+    Value defaultValue_;
+  public:
+    Buffer(): empty_(true) {}
+    Buffer(const Value& defaultValue) : buffer_(defaultValue), defaultValue_(defaultValue), empty_(true) {}
+
+    virtual ~Buffer() {}
+  public:
+    virtual Value push(Value&& v) { buffer_ = std::move(v); empty_ = false; return buffer_; }
+    virtual Value pop() { return empty_ ? defaultValue_ : buffer_; }
+    virtual bool isEmpty() const { return empty_; }
+  };
 
   template<typename F>
   class OperationBase {
@@ -50,7 +72,7 @@ namespace nerikiri {
     F function_;
     ConnectionList providerConnectionList_;
     ConnectionListDictionary consumerConnectionListDictionary_;
-
+    std::map<std::string, std::shared_ptr<Buffer>> bufferMap_;
   public:
     
   public:
@@ -67,7 +89,7 @@ namespace nerikiri {
     }
 
     OperationBase(const OperationBase& op): process_(op.process_), function_(op.function_), info_(op.info_), is_null_(op.is_null_),
-      providerConnectionList_(op.providerConnectionList_), consumerConnectionListDictionary_(op.consumerConnectionListDictionary_) {
+      providerConnectionList_(op.providerConnectionList_), consumerConnectionListDictionary_(op.consumerConnectionListDictionary_), bufferMap_(op.bufferMap_) {
       logger::trace("OperationBase copy construction."); 
       if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
@@ -82,6 +104,7 @@ namespace nerikiri {
       }
       info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
           consumerConnectionListDictionary_.emplace(key, ConnectionList());
+          bufferMap_.emplace(key, std::make_shared<Buffer>(info_.at("defaultArg").at(key)));
       });
     }
 
@@ -93,6 +116,7 @@ namespace nerikiri {
       }
       info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
           consumerConnectionListDictionary_.emplace(key, ConnectionList());
+          bufferMap_.emplace(key, std::make_shared<Buffer>(info_.at("defaultArg").at(key)));
       });
     }
 
@@ -108,6 +132,7 @@ namespace nerikiri {
       is_null_ = op.is_null_;
       providerConnectionList_ = op.providerConnectionList_;
       consumerConnectionListDictionary_ = op.consumerConnectionListDictionary_;
+      bufferMap_ = op.bufferMap_;
       return *this;
     }
   public:
@@ -146,7 +171,13 @@ namespace nerikiri {
 
     Value removeConsumerConnection(const ConnectionInfo& ci) {
       logger::trace("Operation::removeConsumerConnection({})", str(ci));
-      ///未実装
+      const auto argName = ci.at("consumer").at("target").at("name").stringValue();
+      auto clist = consumerConnectionListDictionary_[argName];
+      for (auto it = clist.begin(); it != clist.end();) {
+          if ((*it).info().at("name") == ci.at("name")) {
+            it = clist.erase(it);
+          } else { ++it; }
+      }
       return ci;
     }
 
@@ -177,6 +208,9 @@ namespace nerikiri {
     Value collectValues() const {
       return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
         [this](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
+          if (!bufferMap_.at(key)->isEmpty()) {
+            return {key, bufferMap_.at(key)->pop()};
+          }
           for(auto& con : getConsumerConnectionsByArgName(key)) {
             if (con.isPull()) { return {key, con.pull()}; }
           }
@@ -185,6 +219,14 @@ namespace nerikiri {
       ));
     }
 
+    Value push(const Value& ci, Value&& value) {
+      for (auto& c : consumerConnectionListDictionary_[ci.at("target").at("name").stringValue()]) {
+        if (c.info().at("name") == ci.at("name")) {
+          return bufferMap_[ci.at("target").at("name").stringValue()]->push(std::move(value));
+        }
+      }
+      return Value::error(logger::error("OperationBase::push(Value) can not found connection ({})", str(ci)));
+    }
     
     friend Value call_operation(const Callable& operation, Value&& value);
 
@@ -194,7 +236,7 @@ namespace nerikiri {
   class Operation : public OperationBase<std::function<Value(Value)>>, public Callable, public Invokable {
   public:
     Operation(): OperationBase<std::function<Value(Value)>>() {}
-    Operation(OperationInfo&& info) : OperationBase(std::move(info)) {} //is_null_(true), info_(std::move(info)) {}
+    Operation(OperationInfo&& info) : OperationBase(std::move(info)) {}
     Operation(OperationInfo&& info, std::function<Value(Value)>&& func): OperationBase<std::function<Value(Value)>>(std::move(info), std::move(func)) {}
     Operation(const OperationInfo& info, std::function<Value(Value)>&& func) : OperationBase<std::function<Value(Value)>>(info, std::move(func)) {}
 

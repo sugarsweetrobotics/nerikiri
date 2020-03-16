@@ -9,12 +9,6 @@ Operation Operation::null;
 
 Value nerikiri::call_operation(const Callable& operation, Value&& value) {
   logger::trace("nerikir::call_operation({})", str(value));
-  /*
-  if (operation.isNull()) {
-    return Value::error("Opertaion is null");
-  }
-  */
-
   try {
     return operation.call(std::move(value));
   } catch (ValueTypeError& ex) {
