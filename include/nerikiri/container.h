@@ -52,45 +52,49 @@ namespace nerikiri {
         std::shared_ptr<T>& operator->() { return ptr(); }
     };
 
-    class ContainerOperationBase : public nerikiri::Callable, public nerikiri::Invokable{
+    class ContainerOperationBase : public nerikiri::OperationBaseBase {
     private:
         bool is_null_container_operation_;
     public:
-        ContainerOperationBase(bool is_null) : is_null_container_operation_(is_null) {}
-
-        virtual ~ContainerOperationBase() {}
+    ContainerOperationBase(bool is_null) : is_null_container_operation_(is_null) {}
+    ContainerOperationBase(Value&& info) : is_null_container_operation_(false), OperationBaseBase(std::move(info)) {}
+    
+    virtual ~ContainerOperationBase() {}
     protected:
         ContainerBase* container_;
     public:
         virtual Value getContainerOperationInfo() const = 0;
         virtual bool isNullContainerOperation() const { return is_null_container_operation_; }
-        void setContainer(ContainerBase* container) { container_ = container; }
+        virtual void setContainer(ContainerBase* container) { container_ = container; }
 
         static ContainerOperationBase *null;
     };
 
     template<typename T>
-    class ContainerOperation : public nerikiri::ContainerOperationBase, public nerikiri::OperationBase<std::function<Value(Container<T>&,Value)>> {
+    class ContainerOperation : public nerikiri::ContainerOperationBase {
     private:
-
+        std::function<Value(Container<T>&,Value)> function_;
     public:
-        ContainerOperation(): ContainerOperationBase(false), OperationBase<std::function<Value(Container<T>&,Value)>>() {
-        }
-        ContainerOperation(OperationInfo&& info, std::function<Value(Container<T>&, Value)>&& func): ContainerOperationBase(true),
-            OperationBase<std::function<Value(Container<T>&,Value)>>(std::move(info),std::move(func)) {
-        }
+        ContainerOperation(): ContainerOperationBase(true) {}
+        ContainerOperation(OperationInfo&& info, std::function<Value(Container<T>&, Value)>&& func): ContainerOperationBase(std::move(info)), function_(std::move(func)){}
 
         virtual ~ContainerOperation() {}
 
         virtual Value getContainerOperationInfo() const override { return this->info(); }
 
         virtual Value call(Value&& value) const override {
-            if (this->isNull()) return Value::error("ContainerOperation is Null.");
+            if (this->isNullContainerOperation()) return Value::error("ContainerOperation is Null.");
             return this->function_(*(static_cast<Container<T>*>(container_)), value);
         }
 
+        virtual void setContainer(ContainerBase* container) override { 
+            nerikiri::ContainerOperationBase::setContainer(container);
+            this->info_["operationName"] = this->info_["name"];
+            this->info_["name"] = container->info().at("name").stringValue() + ":" + this->info_["name"].stringValue();
+         }
+
         virtual Value invoke() const override {
-            if (this->isNull()) {
+            if (this->isNullContainerOperation()) {
                 return Value::error("Opertaion is null");
             }
             return nerikiri::call_operation(*this, this->collectValues());

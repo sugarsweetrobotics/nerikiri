@@ -31,7 +31,7 @@ Value Broker::getContainerOperationInfo(const Value& cinfo, const Value& oinfo) 
 }
 
 Value Broker::getOperationInfo(const Value& info) const {
-    return process_->getContainerByName(info.at("name").stringValue()).info();
+    return process_->getOperation(info).info();
 }
 
 

@@ -20,7 +20,7 @@ std::vector<Value> ContainerBase::getOperationInfos() const {
 
 ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
     for(auto op: operations_) {
-        if (op->getContainerOperationInfo().at("name") == info.at("name")) {
+        if (op->getContainerOperationInfo().at("operationName") == info.at("name")) {
             return *op;
         }
     }

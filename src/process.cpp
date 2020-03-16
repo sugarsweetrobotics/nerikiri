@@ -6,6 +6,8 @@
 #include "nerikiri/signal.h"
 
 
+#include <iostream>
+
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
@@ -156,11 +158,19 @@ Operation& Process::getOperationByName(const std::string& name) {
 }
 */
 
-Operation& Process::getOperation(const OperationInfo& oi) {
+OperationBaseBase& Process::getOperation(const OperationInfo& oi) {
   Operation& null = Operation::null;
   auto& name = oi.at("name");
-  for(auto& op : operations_) {
-    if (op.info().at("name") == name) return op;
+  auto pos = name.stringValue().find(":");
+  if (pos != std::string::npos) {
+    auto containerName = name.stringValue().substr(0, pos);
+    auto operationName = name.stringValue().substr(pos+1);
+    std::cout << "Con:" << containerName << ", " << operationName << std::endl;
+    return getContainerByName(containerName).getOperation({{"name", operationName}});
+  } else {
+    for(auto& op : operations_) {
+      if (op.info().at("name") == name) return op;
+    }
   }
   return Operation::null;
 }
