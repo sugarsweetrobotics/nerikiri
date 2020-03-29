@@ -31,8 +31,8 @@ namespace nerikiri {
     
   public:
     Value getOperationInfos() { return store_.getOperationInfos(); }
-    Process& addOperation(Operation&& op) { store_.addOperation(std::move(op)); return *this; }
-    Process& addOperation(const Operation& op) {store_.addOperation((op)); return *this; }
+    Process& addOperation(std::shared_ptr<Operation> op) { store_.addOperation(op); return *this; }
+    //Process& addOperation(const Operation& op) {store_.addOperation((op)); return *this; }
     OperationBaseBase& getOperation(const OperationInfo& oi) { return store_.getOperation(oi); }
 
     Value getContainerInfos() {return store_.getContainerInfos(); }

@@ -50,7 +50,7 @@ public:
     std::unique_lock<std::mutex> lock(mutex_);
     
     logger::trace("HTTPBroker::run()");
-    server_->response("/broker/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+    server_->response("/broker/info/", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){
         auto info = Broker::getBrokerInfo();
         for(auto h : req.headers) {
@@ -73,6 +73,7 @@ public:
         });
     });
     server_->response("/.*", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
       return response([this, &req](){return Broker::requestResource(req.matches[0]);});
     });
     
@@ -91,7 +92,7 @@ public:
     server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
     });
-    server_->response("/process/make_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
+    server_->response("/process/connections/", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return nerikiri::makeConnection(this, nerikiri::json::toValue(req.body));});
     });
     server_->response("/process/register_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
@@ -171,7 +172,7 @@ public:
     }
 
     virtual Value makeConnection(const ConnectionInfo& ci) const override {
-      return toValue(client_->request("/process/make_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+      return toValue(client_->request("/process/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
     virtual Value registerConsumerConnection(const ConnectionInfo& ci) const override {
@@ -191,6 +192,11 @@ public:
 
     virtual Value requestResource(const std::string& path) const override {
       return toValue(client_->request(path, "GET"));
+    }
+
+
+    virtual Value createResource(const std::string& path, const Value& value) override {
+      return toValue(client_->request(path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
 };
 

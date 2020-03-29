@@ -93,6 +93,8 @@ namespace nerikiri {
 
     virtual Value makeConnection(const ConnectionInfo& ci) const override;
 
+    virtual Value getConnectionInfos() const override;
+
     virtual Value registerConsumerConnection(const ConnectionInfo& ci) const override;
 
     virtual Value removeConsumerConnection(const ConnectionInfo& ci) const override;
@@ -101,6 +103,7 @@ namespace nerikiri {
 
     virtual Value requestResource(const std::string& path) const override;
 
+    virtual Value createResource(const std::string& path, const Value& value) override;
 
   public:
     friend Value relayProvider(const Broker* broker, const ConnectionInfo& ci);
@@ -152,6 +155,10 @@ namespace nerikiri {
 
     virtual Value getContainerInfos() const override {
       return requestResource("/process/containers/");
+    }
+
+    virtual Value getConnectionInfos() const override {
+      return requestResource("/process/connections/");
     }
 
     virtual Value getContainerInfo(const Value& v) const override {

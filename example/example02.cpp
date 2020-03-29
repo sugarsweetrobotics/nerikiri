@@ -5,7 +5,7 @@ using namespace std::literals::string_literals;
 
 using namespace nerikiri;
 
-nerikiri::Operation increment( 
+nerikiri::OperationFactory increment( 
        {{"name", "increment"},
           {"defaultArg", {
             {"arg01", 0}
@@ -17,7 +17,7 @@ nerikiri::Operation increment(
 		   }
 );
 
-nerikiri::Operation decrement( 
+nerikiri::OperationFactory decrement( 
        {{"name", "decrement"},
           {"defaultArg", {
             {"arg01", 0}
@@ -29,7 +29,7 @@ nerikiri::Operation decrement(
 		   }
 );
 
-nerikiri::Operation add( 
+nerikiri::OperationFactory add( 
        {{"name", "add"},
           {"defaultArg", {
             {"arg01", 0},
@@ -41,7 +41,7 @@ nerikiri::Operation add(
 		   }
 );
 
-nerikiri::Operation zero( 
+nerikiri::OperationFactory zero( 
        {{"name", "zero"},
           {"defaultArg", {}}
         },
@@ -51,7 +51,7 @@ nerikiri::Operation zero(
 );
 
 
-nerikiri::Operation one( 
+nerikiri::OperationFactory one( 
        {{"name", "one"},
           {"defaultArg", {}}
         },
@@ -63,11 +63,11 @@ nerikiri::Operation one(
 
 int main(const int argc, const char* argv[]) {
   return nerikiri::Process(argv[0])
-    .addOperation(increment)
-    .addOperation(decrement)
-    .addOperation(add)
-    .addOperation(zero)
-    .addOperation(one)
+    .addOperation(increment.create())
+    .addOperation(decrement.create())
+    .addOperation(add.create())
+    .addOperation(zero.create())
+    .addOperation(one.create())
     .addBroker(nerikiri::http::broker("0.0.0.0", 8080))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();

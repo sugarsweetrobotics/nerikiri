@@ -1,7 +1,10 @@
+#include <iostream>
+
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/http/httpbroker.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/container.h"
+#include "nerikiri/ec.h"
 
 using namespace std::literals::string_literals;
 
@@ -95,18 +98,20 @@ MyContainerOperation addInt(
     }
 );
 
+TimerEC timer(1.0); // Hz
+
 int main(const int argc, const char* argv[]) {
+  std::cout << "MyContainer:" << typeid(MyContainer).name() << std::endl;
   auto c = myContainer.create();
   c->addOperation(intGetter.create());
   c->addOperation(addInt.create());
-
-
   return nerikiri::Process(argv[0])
     .addOperation(increment.create())
     .addOperation(decrement.create())
     .addOperation(add.create())
     .addOperation(zero.create())
     .addOperation(one.create())
+    .addExecutionContext(timer)
     .addContainer(c)
     .addBroker(nerikiri::http::broker("0.0.0.0", 8080))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))

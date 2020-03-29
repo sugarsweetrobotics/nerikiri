@@ -250,7 +250,7 @@ namespace nerikiri {
 
     OperationBase(OperationInfo&& info, F&& func): OperationBaseBase(std::move(info)), function_(func) {}
 
-    OperationBase(const OperationInfo& info, F&& func): OperationBaseBase(info), function_(func) {}
+    OperationBase(const OperationInfo& info, F& func): OperationBaseBase(info), function_(func) {}
 
     virtual ~OperationBase() {
       logger::trace("Operation desctructed.");
@@ -262,7 +262,7 @@ namespace nerikiri {
     Operation(): OperationBase<std::function<Value(Value)>>() {}
     Operation(OperationInfo&& info) : OperationBase(std::move(info)) {}
     Operation(OperationInfo&& info, std::function<Value(Value)>&& func): OperationBase<std::function<Value(Value)>>(std::move(info), std::move(func)) {}
-    Operation(const OperationInfo& info, std::function<Value(Value)>&& func) : OperationBase<std::function<Value(Value)>>(info, std::move(func)) {}
+    Operation(const OperationInfo& info, std::function<Value(Value)>& func) : OperationBase<std::function<Value(Value)>>(info, func) {}
 
     virtual ~Operation() {}
 
@@ -289,5 +289,19 @@ namespace nerikiri {
     }
 
     static Operation null;
+  };
+
+  class OperationFactory {
+  private:
+    OperationInfo info_;
+    std::function<Value(Value)> function_;
+
+  public:
+    OperationFactory(const OperationInfo& info, std::function<Value(Value)>&& func): info_(info), function_(func) {}
+    virtual ~OperationFactory() {}
+
+    std::shared_ptr<Operation> create() {   
+        return std::make_shared<Operation>(info_, function_); 
+    }
   };
 }

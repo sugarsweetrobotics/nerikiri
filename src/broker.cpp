@@ -114,6 +114,9 @@ Value nerikiri::makeConnection(const BrokerAPI* broker, const ConnectionInfo& ci
     return broker->makeConnection(ci);
 }
 
+Value Broker::getConnectionInfos() const {
+    return store_->getConnectionInfos();
+}
 
 Value Broker::makeConnection(const ConnectionInfo& ci) const {
     if (ci.isError()) return ci;
@@ -182,4 +185,8 @@ Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
 
 Value Broker::requestResource(const std::string& path) const {
     return nerikiri::ObjectMapper::requestResource(store_, path);
+}
+
+Value Broker::createResource(const std::string& path, const Value& value) {
+    return nerikiri::ObjectMapper::createResource(store_, path, value);
 }
