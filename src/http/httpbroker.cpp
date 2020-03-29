@@ -21,8 +21,6 @@ auto get_cb = [](HTTPBroker* broker) {
 
 class HTTPBrokerImpl : public HTTPBroker {
 private:
-//HttpServer_ptr server_;
-  //nerikiri::Process_ptr process_;
   webi::HttpServer_ptr server_;
   std::condition_variable cond_;
   std::mutex mutex_;
@@ -74,41 +72,24 @@ public:
         return info;
         });
     });
-    server_->response("/process/info", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this](){return Broker::getProcessInfo();});
+    server_->response("/.*", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::requestResource(req.matches[0]);});
     });
-    server_->response("/process/operations", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this](){return Broker::getOperationInfos();});
-    }); 
-    server_->response("/process/containers", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this](){return Broker::getContainerInfos();});
-    });
-    server_->response("/process/container/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::getContainerInfo({{"name", Value(req.matches[1])}});});
-    });
-    server_->response("/process/container/([^/]*)/operations", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::getContainerOperationInfos({{"name", Value(req.matches[1])}});});
-    });
-    server_->response("/process/container/([^/]*)/operation/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::getContainerOperationInfo(
-        {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}});});
-    });
+    
     server_->response("/process/container/([^/]*)/operation/([^/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callContainerOperation(
         {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
     });
-    server_->response("/process/container/([^/]*)/operation/([^/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::invokeContainerOperation(
-        {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}});});
-    });
-    server_->response("/process/operation/([^/]*)", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::getOperationInfo({{"name", Value(req.matches[1])}});});
-    });
+    //server_->response("/process/container/([^/]*)/operation/([^/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+    //  return response([this, &req](){return Broker::invokeContainerOperation(
+    //    {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}});});
+    //});
+    //server_->response("/process/operation/([^\\/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+    //  return response([this, &req](){return Broker::invokeOperationByName(req.matches[1]);});
+    //});
+
     server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
-    });
-    server_->response("/process/operation/([^\\/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::invokeOperationByName(req.matches[1]);});
     });
     server_->response("/process/make_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return nerikiri::makeConnection(this, nerikiri::json::toValue(req.body));});
@@ -176,52 +157,9 @@ private:
     }
   }
 public:
-    virtual BrokerInfo getBrokerInfo() const override {
-      return toValue(client_->request("/broker/info", "GET"));
-    }
-
-    virtual Value getProcessInfo() const override {
-      return toValue(client_->request("/process/info", "GET"));
-    }
-
-    virtual Value getOperationInfos() const override {
-      return toValue(client_->request("/process/operations", "GET"));
-    }
-
-    virtual Value getContainerInfos() const override {
-      return toValue(client_->request("/process/containers", "GET"));
-    }
-
-    virtual Value getContainerInfo(const Value& v) const override {
-      return toValue(client_->request("/process/container/" + v.at("name").stringValue(), "GET"));
-    }
-
-    virtual Value getContainerOperationInfos(const Value& v) const override {
-      return toValue(client_->request("/process/container/" + v.at("name").stringValue() + "/operations", "GET"));
-    }
-
-    virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
-      return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue(), "GET"));
-    }
 
     virtual Value callContainerOperation(const Value& ci, const Value& oi, Value&& arg) const override {
      return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/call", "PUT"));
-    }
-
-    virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
-     return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/invoke", "GET"));
-    }
-
-    virtual Value getContainerInfoByName(const std::string& name) const {
-      return toValue(client_->request("/process/container/" + name, "GET"));
-    }
-
-    virtual Value getOperationInfo(const Value& v) const override {
-      return toValue(client_->request("/process/operation/" + v.at("name").stringValue(), "GET"));
-    }
-
-    virtual Value getOperationInfoByName(const std::string& name) const {
-      return toValue(client_->request("/process/operation/" + name, "GET"));
     }
 
     virtual Value callOperationByName(const std::string& name, Value&& value) const {
@@ -230,10 +168,6 @@ public:
 
     virtual Value callOperation(const Value& info, Value&& value) const override {
       return toValue(client_->request("/process/operation/" + info.at("name").stringValue() + "/call", "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
-    }
-
-    virtual Value invokeOperationByName(const std::string& name) const override {
-      return toValue(client_->request("/process/operation/" + name + "/invoke", "GET"));
     }
 
     virtual Value makeConnection(const ConnectionInfo& ci) const override {
@@ -253,6 +187,10 @@ public:
       auto argument_name  = ci.at("consumer").at("target").at("name").stringValue();
       auto connection_name = ci.at("name").stringValue();
       return toValue(client_->request("/process/operation/" + operation_name + "/argument/" + argument_name + "/" + connection_name + "/push", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+    }
+
+    virtual Value requestResource(const std::string& path) const override {
+      return toValue(client_->request(path, "GET"));
     }
 };
 

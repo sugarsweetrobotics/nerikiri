@@ -8,12 +8,13 @@ namespace nerikiri {
     using ContainerInfo = nerikiri::Value;
 
     class ContainerOperationBase;
+    using ContainerOperationBase_ptr = std::shared_ptr<ContainerOperationBase>;
 
     class ContainerBase {
     protected:
         ContainerInfo info_;
         std::string type_;
-        std::vector<ContainerOperationBase*> operations_;
+        std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
         bool is_null_;
 
     public:
@@ -25,7 +26,7 @@ namespace nerikiri {
         ContainerBase(const std::string& typeName, ContainerInfo&& info) : type_(typeName), info_(std::move(info)), is_null_(false) { }
         virtual ~ContainerBase() {}
 
-        ContainerBase& addOperation(ContainerOperationBase* operation);
+        ContainerBase& addOperation(std::shared_ptr<ContainerOperationBase> operation);
 
         std::vector<Value> getOperationInfos() const;
 
@@ -57,7 +58,7 @@ namespace nerikiri {
         bool is_null_container_operation_;
     public:
     ContainerOperationBase(bool is_null) : is_null_container_operation_(is_null) {}
-    ContainerOperationBase(Value&& info) : is_null_container_operation_(false), OperationBaseBase(std::move(info)) {}
+    ContainerOperationBase(const Value& info) : is_null_container_operation_(false), OperationBaseBase(info) {}
     
     virtual ~ContainerOperationBase() {}
     protected:
@@ -73,10 +74,10 @@ namespace nerikiri {
     template<typename T>
     class ContainerOperation : public nerikiri::ContainerOperationBase {
     private:
-        std::function<Value(Container<T>&,Value)> function_;
+        std::function<Value(T&,Value)> function_;
     public:
         ContainerOperation(): ContainerOperationBase(true) {}
-        ContainerOperation(OperationInfo&& info, std::function<Value(Container<T>&, Value)>&& func): ContainerOperationBase(std::move(info)), function_(std::move(func)){}
+        ContainerOperation(const OperationInfo& info, const std::function<Value(T&, Value)>& func): ContainerOperationBase(info), function_(func){}
 
         virtual ~ContainerOperation() {}
 
@@ -84,7 +85,7 @@ namespace nerikiri {
 
         virtual Value call(Value&& value) const override {
             if (this->isNullContainerOperation()) return Value::error("ContainerOperation is Null.");
-            return this->function_(*(static_cast<Container<T>*>(container_)), value);
+            return this->function_(*((static_cast<Container<T>*>(container_))->ptr()), value);
         }
 
         virtual void setContainer(ContainerBase* container) override { 
@@ -101,5 +102,29 @@ namespace nerikiri {
         }
     };
 
+    template<typename T>
+    class ContainerFactory {
+    public:
+        ContainerFactory() {}
+        ~ContainerFactory() {}
+
+    public:
+        std::shared_ptr<ContainerBase> create() { return std::shared_ptr<ContainerBase>(new Container<T>({{"name", typeid(T).name()}})); }
+    };
+
+    template<typename T>
+    class ContainerOperationFactory {
+    private:
+        Value info_;
+        std::function<Value(T&,Value&&)> function_;
+    public:
+        ContainerOperationFactory(const Value& info, std::function<Value(T&,Value&&)> func): info_(std::move(info)), function_(func) {}
+        ~ContainerOperationFactory() {}
+
+    public:
+        std::shared_ptr<ContainerOperation<T>> create() { 
+            return std::make_shared<ContainerOperation<T>>(info_, function_); 
+        }
+    };
 
 }

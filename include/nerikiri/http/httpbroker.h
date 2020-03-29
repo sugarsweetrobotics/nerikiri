@@ -21,7 +21,7 @@ namespace nerikiri::http {
   
   nerikiri::Broker_ptr broker(const std::string& address, const int32_t port); 
 
-  class HTTPBrokerProxy : public BrokerProxy {
+  class HTTPBrokerProxy : public AbstractBrokerProxy {
   public:
     HTTPBrokerProxy() {}
     virtual ~HTTPBrokerProxy() {}

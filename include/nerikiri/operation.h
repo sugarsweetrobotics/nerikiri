@@ -43,6 +43,11 @@ namespace nerikiri {
     virtual Value invoke() const = 0;
   };
 
+  class Executable {
+  public:
+    virtual void execute() const = 0;
+  };
+
   Value call_operation(const Callable& operation, Value&& value);
  
   Value invoke_operation(const Invokable& operation);
@@ -63,7 +68,7 @@ namespace nerikiri {
     virtual bool isEmpty() const { return empty_; }
   };
 
-  class OperationBaseBase : public Callable, public Invokable {
+  class OperationBaseBase : public Callable, public Invokable, public Executable {
   protected:
     Process_ptr process_;
     bool is_null_;
@@ -217,6 +222,13 @@ namespace nerikiri {
       return Value::error(logger::error("OperationBase::push(Value) can not found connection ({})", str(ci)));
     }
     
+    virtual void execute() const override {
+      auto v = this->invoke();
+      for(auto c : providerConnectionList_) {
+        c.push(std::forward<Value>(v));
+      }
+    }
+
     friend Value call_operation(const Callable& operation, Value&& value);
 
     friend Value nerikiri::invoke_operation(const Invokable& operation);

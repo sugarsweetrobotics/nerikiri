@@ -3,64 +3,22 @@
 //#include "nerikiri/brokerinfo.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/value.h"
-//#include "nerikiri/connection.h"
+#include "nerikiri/brokerapi.h"
 #include <memory>
+
 
 namespace nerikiri {
 
   class Process;
   using Process_ptr = Process*;
+
+  class ProcessStore;
   
   class Connection;
   using ConnectionInfo = Value;
 
   using BrokerInfo = Value;
 
-  class BrokerAPI {
-  private:
-
-  public:
-    BrokerAPI() {}
-    virtual ~BrokerAPI() {}
-
-    virtual bool run() = 0;
-    
-    virtual void shutdown() = 0;
-
-    virtual void setProcess(Process_ptr process)  = 0;
-
-    virtual Value getBrokerInfo() const = 0; 
-
-    virtual Value getProcessInfo() const = 0;
-
-    virtual Value getOperationInfos() const = 0;
-
-    virtual Value getOperationInfo(const Value& name) const = 0;
-
-    virtual Value getContainerInfos() const = 0;
-    
-    virtual Value getContainerInfo(const Value& value) const = 0;
-
-    virtual Value getContainerOperationInfos(const Value& value) const = 0;
-
-    virtual Value getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const  = 0;
-
-    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const  = 0;
-
-    virtual Value invokeContainerOperation(const Value& cinfo, const Value& oinfo) const  = 0;
-
-    virtual Value callOperation(const Value& info, Value&& value) const = 0;
-
-    virtual Value invokeOperationByName(const std::string& name) const = 0;
-
-    virtual Value makeConnection(const ConnectionInfo& ci) const = 0;
-
-    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const = 0;
-
-    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const = 0;
-
-    virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const = 0;
-  };
 
   using Broker_ptr = std::shared_ptr<BrokerAPI>;
 
@@ -81,11 +39,12 @@ namespace nerikiri {
 
   protected:
     Process_ptr process_;
+    ProcessStore* store_;
 
   public:
     static std::shared_ptr<BrokerAPI> null;
   public:
-    Broker(const BrokerInfo& info): info_(info), process_(nullptr) {}
+    Broker(const BrokerInfo& info): info_(info), process_(nullptr), store_(nullptr) {}
     virtual ~Broker() {}
 
     virtual bool run() override{
@@ -102,6 +61,11 @@ namespace nerikiri {
       process_ = process;
     }
     
+    virtual void setProcessStore(ProcessStore* store) override {
+      logger::trace("Broker::setProcessStore()");
+      store_ = store;
+    }
+
   public:
     virtual BrokerInfo getBrokerInfo() const override { return info_; }
 
@@ -135,6 +99,9 @@ namespace nerikiri {
 
     virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override;
 
+    virtual Value requestResource(const std::string& path) const override;
+
+
   public:
     friend Value relayProvider(const Broker* broker, const ConnectionInfo& ci);
 
@@ -161,7 +128,55 @@ namespace nerikiri {
     virtual void shutdown() override {}
 
     virtual void setProcess(Process_ptr process) override {}
-    
+
+    virtual void setProcessStore(ProcessStore* process) override {}
+  };
+
+  class AbstractBrokerProxy : public BrokerProxy {
+  public:
+    AbstractBrokerProxy() : BrokerProxy() {}
+    virtual ~AbstractBrokerProxy() {}
+
+  public:
+    virtual BrokerInfo getBrokerInfo() const override {
+      return requestResource("/broker/info/");
+    }
+
+    virtual Value getProcessInfo() const override {
+      return requestResource("/process/info/");
+    }
+
+    virtual Value getOperationInfos() const override {
+      return requestResource("/process/operations/");
+    }
+
+    virtual Value getContainerInfos() const override {
+      return requestResource("/process/containers/");
+    }
+
+    virtual Value getContainerInfo(const Value& v) const override {
+      return requestResource("/process/containers/" + v.at("name").stringValue() + "/");
+    }
+
+    virtual Value getContainerOperationInfos(const Value& v) const override {
+      return requestResource("/process/containers/" + v.at("name").stringValue() + "/operations/");
+    }
+
+    virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
+      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
+    }
+
+    virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
+     return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/invoke/");
+    }
+
+    virtual Value getOperationInfo(const Value& v) const override {
+      return requestResource("/process/operations/" + v.at("name").stringValue() + "/");
+    }
+
+    virtual Value invokeOperationByName(const std::string& name) const override {
+      return requestResource("/process/operations/" + name + "/invoke/");
+    }
   };
 
 }

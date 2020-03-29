@@ -4,7 +4,7 @@
 
 using namespace nerikiri;
 
-ContainerBase& ContainerBase::addOperation(ContainerOperationBase* operation) { 
+ContainerBase& ContainerBase::addOperation(std::shared_ptr<ContainerOperationBase> operation) { 
     if (!getOperation(operation->getContainerOperationInfo()).isNullContainerOperation()) {
         logger::error("ContainerBase::addOperation({}) failed. ContainerOperation with same name is registered.", str(operation->getContainerOperationInfo()));
     } else {
@@ -15,7 +15,7 @@ ContainerBase& ContainerBase::addOperation(ContainerOperationBase* operation) {
 }
 
 std::vector<Value> ContainerBase::getOperationInfos() const {
-    return nerikiri::map<Value, ContainerOperationBase*>(operations_, [](auto op) { return op->getContainerOperationInfo();});
+    return nerikiri::map<Value, ContainerOperationBase_ptr>(operations_, [](auto op) { return op->getContainerOperationInfo();});
 }
 
 ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {

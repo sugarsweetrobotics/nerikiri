@@ -3,29 +3,26 @@
 #include "nerikiri/operation.h"
 #include "nerikiri/value.h"
 #include "nerikiri/broker.h"
-#include "nerikiri/connection.h"
-#include "nerikiri/connectiondictionary.h"
 
 #include "nerikiri/runnable.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/container.h"
+#include "nerikiri/ec.h"
+#include "nerikiri/process_store.h"
 
 namespace nerikiri {
 
  using ProcessInfo = Value;
-  
+
   class Process {
   private:
-    //BrokerDictionary brokerDictionary_;
-    ConnectionDictionary connectionDictionary_;
+    ProcessInfo info_;
+
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
-    ProcessInfo info_;
-    std::vector<Operation> operations_;
     std::vector<Broker_ptr> brokers_;
 
-    std::vector<ContainerBase*> containers_;
-    std::vector<ContainerOperationBase*> containerOperations_;
+    ProcessStore store_;
   public:
     Process(const std::string& name);
     ~Process();
@@ -33,31 +30,32 @@ namespace nerikiri {
     static Process null;
     
   public:
-    Process& addOperation(Operation&& op);
-    Process& addOperation(const Operation& op);
-    OperationBaseBase& getOperation(const OperationInfo& oi);
-    
+    Value getOperationInfos() { return store_.getOperationInfos(); }
+    Process& addOperation(Operation&& op) { store_.addOperation(std::move(op)); return *this; }
+    Process& addOperation(const Operation& op) {store_.addOperation((op)); return *this; }
+    OperationBaseBase& getOperation(const OperationInfo& oi) { return store_.getOperation(oi); }
+
+    Value getContainerInfos() {return store_.getContainerInfos(); }
+    ContainerBase& getContainerByName(const std::string& name) { return store_.getContainerByName(name); }
+    Process& addContainer(std::shared_ptr<ContainerBase> container) { store_.addContainer(container); return *this; }
+
     Process& addBroker(Broker_ptr&& brk);
     Broker_ptr getBrokerByName(const std::string& name);
-
     Broker_ptr getBrokerByInfo(const BrokerInfo& ci);
     
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
 
-    Value getContainerInfos();
-    ContainerBase& getContainerByName(const std::string& name);
-    Process& addContainer(ContainerBase* container);
-    Process& addOperationToContainerByName(const std::string& name, ContainerOperationBase* operation);
+
+    Process& addExecutionContext(const ExecutionContext& ec);
 
     int32_t start();
     void startAsync();
     int32_t wait();
     void shutdown();
+    
     ProcessInfo info() const { return info_; }
     
-    Value getOperationInfos();
-
   public:
     Value invokeConnection(const Connection& con);
 

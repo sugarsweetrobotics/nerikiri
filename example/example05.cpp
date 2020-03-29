@@ -64,7 +64,7 @@ nerikiri::Operation one(
 
 struct MyStruct {
 public:
-  int32_t intValue;
+  int64_t intValue;
   double  doubleValue;
 };
 
@@ -77,8 +77,8 @@ MyContainerOperation intGetter(
       {"name", "intGetter"},
       {"defaultArg", {}},
     },
-    [](auto& container, auto arg) {
-      return Value((int64_t)container->intValue);
+    [](MyStruct& ms, auto arg) {
+      return Value((const int64_t)ms.intValue);
     }
 );
 
@@ -87,9 +87,9 @@ MyContainerOperation addInt(
       {"name", "addInt"},
       {"defaultArg", {{"data", 1}}}
     },
-    [](auto& container, auto arg) {
-      container->intValue += arg.at("data").intValue();
-      return Value((int64_t)container->intValue);
+    [](MyStruct& ms, auto arg) {
+      ms.intValue += arg.at("data").intValue();
+      return Value(ms.intValue);
     }
 );
 

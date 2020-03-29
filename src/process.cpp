@@ -14,7 +14,7 @@ using namespace nerikiri::logger;
 
 Process Process::null("");
 
-Process::Process(const std::string& name) : info_({{"name", name}}) {
+Process::Process(const std::string& name) : info_({{"name", name}}), store_(this) {
   logger::trace("Process::Process(\"{}\")", name);
   if (name.length() == 0) { 
     info_ = Value::error("Process is Null."); 
@@ -26,25 +26,6 @@ Process::~Process() {
   logger::trace("Process::~Process()");
 }
 
-Process& Process::addOperation(Operation&& op) {
-  logger::trace("Process::addOperation({})", str(op.info()));
-  if (!getOperation(op.info()).isNull()) {
-    logger::error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
-    return *this;
-  }
-  operations_.emplace_back(std::move(op));
-  return *this;
-}
-
-Process& Process::addOperation(const Operation& op) {
-  logger::trace("Process::addOperation({})", str(op.info()));
-  if (!getOperation(op.info()).isNull()) {
-    logger::error("Process::addOperation({}) Error. Process already has the same name operation", info().at("name").stringValue());
-    return *this;
-  }
-  operations_.push_back(op);
-  return *this;
-}
 
 Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   logger::trace("Process::addSystemEditor()");
@@ -55,6 +36,7 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
 Process& Process::addBroker(Broker_ptr&& brk) {
   logger::trace("Process::addBroker()");
   brk->setProcess(Process_ptr(this));
+  brk->setProcessStore(&store_);
   brokers_.emplace_back(std::forward<Broker_ptr>(brk));
   return *this;
 }
@@ -134,47 +116,6 @@ int32_t Process::start() {
   return 0;
 }
 
-Value Process::getOperationInfos() {
-  auto ops = nerikiri::map<Value, Operation>(operations_, [](auto& op) { return op.info();});
-  for(auto& c : this->containers_) {
-    auto infos = c->getOperationInfos();
-    ops.insert(ops.end(), infos.begin(), infos.end());
-  }
-  return ops;
-//  return {nerikiri::map<Value, Operation>(operations_, [](auto& op) { return op.info();})};
-}
-
-Value Process::getContainerInfos() {
-  return {nerikiri::map<Value, ContainerBase*>(containers_, [](auto* ctn) { return ctn->info(); })};
-}
-
-/*
-Operation& Process::getOperationByName(const std::string& name) {
-  Operation& null = Operation::null;
-  for(auto& op : operations_) {
-    if (op.info().at("name").stringValue() == name) return op;
-  }
-  return Operation::null;
-}
-*/
-
-OperationBaseBase& Process::getOperation(const OperationInfo& oi) {
-  Operation& null = Operation::null;
-  auto& name = oi.at("name");
-  auto pos = name.stringValue().find(":");
-  if (pos != std::string::npos) {
-    auto containerName = name.stringValue().substr(0, pos);
-    auto operationName = name.stringValue().substr(pos+1);
-    std::cout << "Con:" << containerName << ", " << operationName << std::endl;
-    return getContainerByName(containerName).getOperation({{"name", operationName}});
-  } else {
-    for(auto& op : operations_) {
-      if (op.info().at("name") == name) return op;
-    }
-  }
-  return Operation::null;
-}
-
 Broker_ptr Process::getBrokerByName(const std::string& name) {
   for(auto& brk : brokers_) {
     if (brk->getBrokerInfo().at("name").stringValue() == name) {
@@ -188,35 +129,12 @@ Broker_ptr Process::getBrokerByInfo(const BrokerInfo& bi) {
   return getBrokerByName(bi.at("name").stringValue());
 }
 
-Process& Process::addContainer(ContainerBase* container) {
-  trace("Process::addContainer()");
-  if (container->isNull()) {
-    logger::error("Container is null.");
-    return *this;
-  }
-  containers_.emplace_back(container);
-  return *this;
-}
-
-Process& Process::addOperationToContainerByName(const std::string&name, ContainerOperationBase* operation) {
-  getContainerByName(name).addOperation(operation);
-  return *this;
-}
-
-ContainerBase& Process::getContainerByName(const std::string& name) {
-  auto cs = nerikiri::filter<ContainerBase*>(containers_, [&name](auto c){return c->info().at("name").stringValue() == name;});
-  if (cs.size() == 1) return *cs[0];
-  if (cs.size() == 0) {
-    logger::warn("Process::getContainerByName({}) failed. Not found.", name);
-    return ContainerBase::null;
-  } else {
-    logger::warn("Process::getContainerByName({}) failed. Multiple containers with the same name are found.", name);
-    return ContainerBase::null;
-
-  }
-}
-
 void Process::executeOperation(const OperationInfo& info) const {
   logger::trace("Process::executeOpration({})", str(info));
   
+}
+
+Process& Process::addExecutionContext(const ExecutionContext& ec) {
+  
+  return *this;
 }

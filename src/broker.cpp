@@ -3,6 +3,7 @@
 #include "nerikiri/process.h"
 #include "nerikiri/operation.h"
 #include "nerikiri/connection.h"
+#include "nerikiri/objectmapper.h"
 
 using namespace nerikiri;
 
@@ -11,53 +12,56 @@ Broker_ptr Broker::null = Broker_ptr(nullptr);
 Value Broker::getProcessInfo() const{ return process_->info(); }
 
 Value Broker::getOperationInfos() const {
-    return process_->getOperationInfos();
+    return store_->getOperationInfos();
 }
 
 Value Broker::getContainerInfos() const {
-    return process_->getContainerInfos();
+    return store_->getContainerInfos();
 }
 
 Value Broker::getContainerInfo(const Value& value) const {
-    return process_->getContainerByName(value.at("name").stringValue()).info();
+    return store_->getContainerByName(value.at("name").stringValue()).info();
 }
 
 Value Broker::getContainerOperationInfos(const Value& info) const {
-    return process_->getContainerByName(info.at("name").stringValue()).getOperationInfos();
+    return store_->getContainerByName(info.at("name").stringValue()).getOperationInfos();
 }
 
 Value Broker::getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const {
-    return process_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).getContainerOperationInfo();
+    return store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).getContainerOperationInfo();
 }
 
 Value Broker::getOperationInfo(const Value& info) const {
-    return process_->getOperation(info).info();
+    return store_->getOperation(info).info();
 }
 
-
 Value Broker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const {
-    return nerikiri::call_operation(process_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo), std::move(arg));
+    return nerikiri::call_operation(store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo), std::move(arg));
 }
 
 Value Broker::invokeContainerOperation(const Value& cinfo, const Value& oinfo) const {
-
+    return nerikiri::invoke_operation(store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo));
 }
 
 Value Broker::callOperation(const Value& info, Value&& value) const {
-    return nerikiri::call_operation(process_->getOperation(info), std::move(value));
+    return nerikiri::call_operation(store_->getOperation(info), std::move(value));
 }
 
 Value Broker::invokeOperationByName(const std::string& name) const {
-    return nerikiri::invoke_operation(process_->getOperation({{"name", name}}));
+    return nerikiri::invoke_operation(store_->getOperation({{"name", name}}));
 }
 
+/**
+ * もしConnectionInfoで指定されたBrokerが引数のbrokerでなければ，親プロセスに対して別のブローカーをリクエストする
+ */
 Value nerikiri::relayProvider(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // まず、もし出力側 (Provider) 出なければProvider側にmakeConnectionを連鎖する
     
-    if (broker->process_->getOperation(ci.at("provider").at("info")).isNull()) {
+    if (broker->store_->getOperation(ci.at("provider").at("info")).isNull()) {
       logger::warn("The broker received makeConnection does not have the provider operation.");
       // Provider側のBrokerProxyを取得
+      
       return makeConnection(broker->process_->getBrokerByInfo(ci.at("provider").at("broker")).get(), ci);
     }
     return ci;
@@ -66,7 +70,7 @@ Value nerikiri::relayProvider(const Broker* broker, const ConnectionInfo& ci) {
 Value nerikiri::checkDuplicateConsumerConnection(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // 同じコネクションを持っていないか確認
-    if (broker->process_->getOperation(ci.at("provider").at("info")).hasConsumerConnection(ci)) {
+    if (broker->store_->getOperation(ci.at("provider").at("info")).hasConsumerConnection(ci)) {
         return Value::error(logger::warn("makeConnection failed. Provider already have the same connection {}", str(ci.at("provider"))));
     }
     return ci;
@@ -84,7 +88,7 @@ Value nerikiri::registerConsumerConnection(const Broker_ptr broker, const Connec
 Value nerikiri::registerProviderConnection(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // リクエストが成功なら、こちらもConnectionを登録。
-    auto& provider = broker->process_->getOperation(ci.at("provider").at("info"));
+    auto& provider = broker->store_->getOperation(ci.at("provider").at("info"));
     auto retval2 = provider.addProviderConnection(providerConnection(ci, broker->process_->getBrokerByInfo(ci.at("consumer").at("broker"))));
     if (retval2.isError()) {
         // 登録が失敗ならConsumer側のConnectionを破棄。
@@ -136,7 +140,7 @@ Value Broker::makeConnection(const ConnectionInfo& ci) const {
 Value Broker::registerConsumerConnection(const ConnectionInfo& ci) const {
     logger::trace("Broker::registerConsumerConnection({}", str(ci));
     /// Consumer側でなければ失敗出力
-    auto& consumer = process_->getOperation(ci.at("consumer").at("info"));
+    auto& consumer = store_->getOperation(ci.at("consumer").at("info"));
     if (consumer.isNull()) {
         std::stringstream ss;
         ss << "registerConsumerConnection failed. The broker does not have the consumer " << str(ci.at("consumer"));
@@ -157,7 +161,7 @@ Value Broker::registerConsumerConnection(const ConnectionInfo& ci) const {
 Value Broker::removeConsumerConnection(const ConnectionInfo& ci) const {
     logger::trace("Broker::removeConsumerConnection({}", str(ci));
     /// Consumer側でなければ失敗出力
-    auto& consumer = process_->getOperation(ci.at("consumer"));
+    auto& consumer = store_->getOperation(ci.at("consumer"));
     if (consumer.isNull()) {
         return Value::error(logger::warn("removeConsumerConnection failed. The broker does not have the consumer ", str(ci.at("consumer"))));
     }
@@ -169,9 +173,13 @@ Value Broker::removeConsumerConnection(const ConnectionInfo& ci) const {
 }
 
 Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
-    auto& op = process_->getOperation(ci.at("consumer"));
+    auto& op = store_->getOperation(ci.at("consumer"));
     if (op.isNull()) {
         return Value::error(logger::error("Operation({}) can not be found.", str(ci.at("consumer"))));
     }
     return op.push(ci, std::move(value));
+}
+
+Value Broker::requestResource(const std::string& path) const {
+    return nerikiri::ObjectMapper::requestResource(store_, path);
 }
