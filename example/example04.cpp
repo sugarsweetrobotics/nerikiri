@@ -14,11 +14,11 @@ nerikiri::Value connect(const std::string& connectionName, Broker_ptr providerBr
   // 今後はtestSetが入るから・・・
   return providerBroker->makeConnection(
     { {"name", connectionName},
-      {"provider", {
+      {"output", {
           {"info", providerBroker->getOperationInfo({{"name", providerName}})},
           {"broker", providerBroker->getBrokerInfo()}}
       },
-      {"consumer", {
+      {"input", {
           {"info", consumerBroker->getOperationInfo({{"name", consumerName}})},
           {"broker", consumerBroker->getBrokerInfo()},
           {"target", {

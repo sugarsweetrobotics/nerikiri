@@ -5,6 +5,7 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/value.h"
 #include "nerikiri/connection.h"
+#include "nerikiri/functional.h"
 
 namespace nerikiri {
 
@@ -73,8 +74,8 @@ namespace nerikiri {
     Process_ptr process_;
     bool is_null_;
     OperationInfo info_;
-    ConnectionList providerConnectionList_;
-    ConnectionListDictionary consumerConnectionListDictionary_;
+    ConnectionList outputConnectionList_;
+    ConnectionListDictionary inputConnectionListDictionary_;
     std::map<std::string, std::shared_ptr<Buffer>> bufferMap_;
   public:
     
@@ -90,13 +91,13 @@ namespace nerikiri {
         logger::error("OperationInformation is invalid.");
       }
       info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-          consumerConnectionListDictionary_.emplace(key, ConnectionList());
+          inputConnectionListDictionary_.emplace(key, ConnectionList());
           bufferMap_.emplace(key, std::make_shared<Buffer>(info_.at("defaultArg").at(key)));
       });
     }
 
     OperationBaseBase(const OperationBaseBase& op): process_(op.process_), info_(op.info_), is_null_(op.is_null_),
-      providerConnectionList_(op.providerConnectionList_), consumerConnectionListDictionary_(op.consumerConnectionListDictionary_), bufferMap_(op.bufferMap_) {
+      outputConnectionList_(op.outputConnectionList_), inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_) {
       logger::trace("OperationBase copy construction."); 
       if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
@@ -110,7 +111,7 @@ namespace nerikiri {
         logger::error("OperationInformation is invalid.");
       }
       info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-          consumerConnectionListDictionary_.emplace(key, ConnectionList());
+          inputConnectionListDictionary_.emplace(key, ConnectionList());
           bufferMap_.emplace(key, std::make_shared<Buffer>(info_.at("defaultArg").at(key)));
       });
     }
@@ -124,8 +125,8 @@ namespace nerikiri {
       process_ = op.process_;
       info_ = op.info_;
       is_null_ = op.is_null_;
-      providerConnectionList_ = op.providerConnectionList_;
-      consumerConnectionListDictionary_ = op.consumerConnectionListDictionary_;
+      outputConnectionList_ = op.outputConnectionList_;
+      inputConnectionListDictionary_ = op.inputConnectionListDictionary_;
       bufferMap_ = op.bufferMap_;
       return *this;
     }
@@ -136,7 +137,7 @@ namespace nerikiri {
 
     Value addProviderConnection(Connection&& c) {
       logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
-      providerConnectionList_.emplace_back(std::move(c));
+      outputConnectionList_.emplace_back(std::move(c));
       return c.info();
     }
 
@@ -149,14 +150,14 @@ namespace nerikiri {
     Value addConsumerConnection(Connection&& c) {
       logger::trace("Operation::addConsumerConnection({})", str(c.info()));
       
-      if (c.info()["consumer"]["name"] != info().at("name")) {
+      if (c.info()["input"]["name"] != info().at("name")) {
           logger::error("requestted connection does not match to this operation.");
       }
 
-      const auto argumentName = c.info()["consumer"]["target"]["name"].stringValue();
+      const auto argumentName = c.info()["input"]["target"]["name"].stringValue();
       if (info().at("defaultArg").hasKey(argumentName)) {
         auto inf = c.info();
-        consumerConnectionListDictionary_[argumentName].emplace_back(std::move(c));
+        inputConnectionListDictionary_[argumentName].emplace_back(std::move(c));
         return inf;
       }
       logger::error("Argument can not found ({}) ", str(c.info()));
@@ -165,8 +166,8 @@ namespace nerikiri {
 
     Value removeConsumerConnection(const ConnectionInfo& ci) {
       logger::trace("Operation::removeConsumerConnection({})", str(ci));
-      const auto argName = ci.at("consumer").at("target").at("name").stringValue();
-      auto clist = consumerConnectionListDictionary_[argName];
+      const auto argName = ci.at("input").at("target").at("name").stringValue();
+      auto clist = inputConnectionListDictionary_[argName];
       for (auto it = clist.begin(); it != clist.end();) {
           if ((*it).info().at("name") == ci.at("name")) {
             it = clist.erase(it);
@@ -175,26 +176,44 @@ namespace nerikiri {
       return ci;
     }
 
-    ConnectionList getProviderConnectionList() const {
-      return providerConnectionList_;
+    
+    ConnectionList getOutputConnectionList() const {
+      return outputConnectionList_;
     }
 
-    ConnectionList getConsumerConnectionsByArgName(const std::string& argName) const {
-      if (consumerConnectionListDictionary_.count(argName) == 0) return ConnectionList();
-      return consumerConnectionListDictionary_.at(argName);
+    Value getConnectionInfos() const {
+      return {
+        {"output", getOutputConnectionInfos()},
+        {"input",  getInputConnectionInfos()}
+      };
     }
 
-    bool hasConsumerConnection(const ConnectionInfo& ci) const {
-      for(const auto v : getConsumerConnectionsByArgName(ci.at("consumer").at("target").at("name").stringValue())) {
-        if (v.info().at("provider") == ci.at("provider")) 
+    Value getOutputConnectionInfos() const {
+      return nerikiri::map<Value, nerikiri::Connection>(getOutputConnectionList(), [](const auto& con) { return con.info(); });
+    }
+
+    Value getInputConnectionInfos() const {
+      return nerikiri::map<std::pair<std::string,Value>, std::string, nerikiri::ConnectionList>(inputConnectionListDictionary_, [](const auto& k, const ConnectionList& v) -> std::pair<std::string,Value> {
+        return {k, nerikiri::map<Value, nerikiri::Connection>(v, [](const Connection& con) -> Value { return con.info(); })};
+      });
+    }
+
+    ConnectionList getInputConnectionsByArgName(const std::string& argName) const {
+      if (inputConnectionListDictionary_.count(argName) == 0) return ConnectionList();
+      return inputConnectionListDictionary_.at(argName);
+    }
+
+    bool hasInputConnection(const ConnectionInfo& ci) const {
+      for(const auto v : getInputConnectionsByArgName(ci.at("input").at("target").at("name").stringValue())) {
+        if (v.info().at("output") == ci.at("output")) 
             return true;
       }
       return false;
     }
 
-    bool hasProviderConnection(const ConnectionInfo& ci) const {
-      for(const auto v : providerConnectionList_) {
-        if (v.info().at("consumer") == ci.at("consumer")) return true;
+    bool hasOutputConnection(const ConnectionInfo& ci) const {
+      for(const auto v : outputConnectionList_) {
+        if (v.info().at("input") == ci.at("input")) return true;
       }
       return false;
     }
@@ -205,7 +224,7 @@ namespace nerikiri {
           if (!bufferMap_.at(key)->isEmpty()) {
             return {key, bufferMap_.at(key)->pop()};
           }
-          for(auto& con : getConsumerConnectionsByArgName(key)) {
+          for(auto& con : getInputConnectionsByArgName(key)) {
             if (con.isPull()) { return {key, con.pull()}; }
           }
           return {key, value};
@@ -214,7 +233,7 @@ namespace nerikiri {
     }
 
     Value push(const Value& ci, Value&& value) {
-      for (auto& c : consumerConnectionListDictionary_[ci.at("target").at("name").stringValue()]) {
+      for (auto& c : inputConnectionListDictionary_[ci.at("target").at("name").stringValue()]) {
         if (c.info().at("name") == ci.at("name")) {
           return bufferMap_[ci.at("target").at("name").stringValue()]->push(std::move(value));
         }
@@ -224,7 +243,7 @@ namespace nerikiri {
     
     virtual void execute() const override {
       auto v = this->invoke();
-      for(auto c : providerConnectionList_) {
+      for(auto c : outputConnectionList_) {
         c.push(std::forward<Value>(v));
       }
     }

@@ -83,7 +83,9 @@ Value ProcessStore::getOperationInfos() {
 
 
 Value ProcessStore::getConnectionInfos() const {
-
+  return nerikiri::map<std::pair<std::string, Value>, std::shared_ptr<Operation>>(operations_, [](auto& op) -> std::pair<std::string, Value> {
+    return {op->info().at("name").stringValue(), op->getConnectionInfos()};
+  });
 }
 
 

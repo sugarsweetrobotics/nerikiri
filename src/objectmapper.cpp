@@ -23,6 +23,10 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/invoke/"))) {
         return nerikiri::invoke_operation(store->getOperation({{"name", Value(match[1])}}));
     }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
+        return store->getOperation({{"name", Value(match[1])}}).getConnectionInfos();
+    }
+
 
     if (path == "/process/containers/") {
         return store->getContainerInfos();
@@ -45,5 +49,11 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
 
 Value ObjectMapper::createResource(ProcessStore* store, const std::string& path, const Value& value) {
 
-    return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
+    std::smatch match;
+    if (path == "/process/connections/") {
+        return store->getOperationInfos();
+    }
+
+
+   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
 }

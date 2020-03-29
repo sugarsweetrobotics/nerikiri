@@ -58,11 +58,11 @@ Value nerikiri::relayProvider(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // まず、もし出力側 (Provider) 出なければProvider側にmakeConnectionを連鎖する
     
-    if (broker->store_->getOperation(ci.at("provider").at("info")).isNull()) {
+    if (broker->store_->getOperation(ci.at("output").at("info")).isNull()) {
       logger::warn("The broker received makeConnection does not have the provider operation.");
       // Provider側のBrokerProxyを取得
       
-      return makeConnection(broker->process_->getBrokerByInfo(ci.at("provider").at("broker")).get(), ci);
+      return makeConnection(broker->process_->getBrokerByInfo(ci.at("output").at("broker")).get(), ci);
     }
     return ci;
 }
@@ -70,8 +70,8 @@ Value nerikiri::relayProvider(const Broker* broker, const ConnectionInfo& ci) {
 Value nerikiri::checkDuplicateConsumerConnection(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // 同じコネクションを持っていないか確認
-    if (broker->store_->getOperation(ci.at("provider").at("info")).hasConsumerConnection(ci)) {
-        return Value::error(logger::warn("makeConnection failed. Provider already have the same connection {}", str(ci.at("provider"))));
+    if (broker->store_->getOperation(ci.at("output").at("info")).hasInputConnection(ci)) {
+        return Value::error(logger::warn("makeConnection failed. Provider already have the same connection {}", str(ci.at("output"))));
     }
     return ci;
 }
@@ -79,7 +79,7 @@ Value nerikiri::checkDuplicateConsumerConnection(const Broker* broker, const Con
 Value nerikiri::registerConsumerConnection(const Broker_ptr broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     if (!broker) {
-      return Value::error(logger::error("makeConnection failed. The broker does not have the broker proxy ", str(ci.at("provider").at("broker"))));
+      return Value::error(logger::error("makeConnection failed. The broker does not have the broker proxy ", str(ci.at("output").at("broker"))));
     }
     // ConsumerにregisterConnectionをリクエスト
     return broker->registerConsumerConnection(ci);
@@ -88,11 +88,11 @@ Value nerikiri::registerConsumerConnection(const Broker_ptr broker, const Connec
 Value nerikiri::registerProviderConnection(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // リクエストが成功なら、こちらもConnectionを登録。
-    auto& provider = broker->store_->getOperation(ci.at("provider").at("info"));
-    auto retval2 = provider.addProviderConnection(providerConnection(ci, broker->process_->getBrokerByInfo(ci.at("consumer").at("broker"))));
+    auto& provider = broker->store_->getOperation(ci.at("output").at("info"));
+    auto retval2 = provider.addProviderConnection(providerConnection(ci, broker->process_->getBrokerByInfo(ci.at("input").at("broker"))));
     if (retval2.isError()) {
         // 登録が失敗ならConsumer側のConnectionを破棄。
-        auto ret = nerikiri::removeConsumerConnection(broker->process_->getBrokerByInfo(ci.at("consumer").at("broker")), ci);
+        auto ret = nerikiri::removeConsumerConnection(broker->process_->getBrokerByInfo(ci.at("input").at("broker")), ci);
         return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", retval2.getErrorMessage()));
     }// 登録成功ならciを返す
     return ci;
@@ -101,7 +101,7 @@ Value nerikiri::registerProviderConnection(const Broker* broker, const Connectio
 Value nerikiri::removeConsumerConnection(const Broker_ptr broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     if (!broker) {
-      return Value::error(logger::error("makeConnection failed. The broker does not have the broker proxy ", str(ci.at("provider").at("broker"))));
+      return Value::error(logger::error("makeConnection failed. The broker does not have the broker proxy ", str(ci.at("output").at("broker"))));
     }
     return broker->removeConsumerConnection(ci);
 }
@@ -109,7 +109,7 @@ Value nerikiri::removeConsumerConnection(const Broker_ptr broker, const Connecti
 Value nerikiri::makeConnection(const BrokerAPI* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     if (!broker) {
-        return Value::error(logger::error("makeConnection failed. The broker does not have the broker proxy ", str(ci.at("provider").at("broker"))));
+        return Value::error(logger::error("makeConnection failed. The broker does not have the broker proxy ", str(ci.at("output").at("broker"))));
     }
     return broker->makeConnection(ci);
 }
@@ -129,7 +129,7 @@ Value Broker::makeConnection(const ConnectionInfo& ci) const {
 
     // Consumer側との接続確認
     // Consumer側のBrokerProxyを取得
-    ret = nerikiri::registerConsumerConnection(process_->getBrokerByInfo(ci.at("consumer").at("broker")), ret);
+    ret = nerikiri::registerConsumerConnection(process_->getBrokerByInfo(ci.at("input").at("broker")), ret);
     
     // ConsumerにregisterConnectionをリクエスト
     
@@ -143,42 +143,42 @@ Value Broker::makeConnection(const ConnectionInfo& ci) const {
 Value Broker::registerConsumerConnection(const ConnectionInfo& ci) const {
     logger::trace("Broker::registerConsumerConnection({}", str(ci));
     /// Consumer側でなければ失敗出力
-    auto& consumer = store_->getOperation(ci.at("consumer").at("info"));
+    auto& consumer = store_->getOperation(ci.at("input").at("info"));
     if (consumer.isNull()) {
         std::stringstream ss;
-        ss << "registerConsumerConnection failed. The broker does not have the consumer " << str(ci.at("consumer"));
+        ss << "registerConsumerConnection failed. The broker does not have the consumer " << str(ci.at("input"));
         logger::warn(ss.str());
         return Value::error(ss.str());
     }
 
-    if (consumer.hasConsumerConnection(ci)) {
+    if (consumer.hasInputConnection(ci)) {
         std::stringstream ss;
-        ss << "registerConsumerConnection failed. Consumer already have the same connection." << str(ci.at("consumer"));
+        ss << "registerConsumerConnection failed. Consumer already have the same connection." << str(ci.at("input"));
         logger::warn(ss.str());
         return Value::error(ss.str());
     }
-    return consumer.addConsumerConnection(consumerConnection(ci, process_->getBrokerByInfo(ci.at("provider").at("broker"))));
+    return consumer.addConsumerConnection(consumerConnection(ci, process_->getBrokerByInfo(ci.at("output").at("broker"))));
 }
 
 
 Value Broker::removeConsumerConnection(const ConnectionInfo& ci) const {
     logger::trace("Broker::removeConsumerConnection({}", str(ci));
     /// Consumer側でなければ失敗出力
-    auto& consumer = store_->getOperation(ci.at("consumer"));
+    auto& consumer = store_->getOperation(ci.at("input"));
     if (consumer.isNull()) {
-        return Value::error(logger::warn("removeConsumerConnection failed. The broker does not have the consumer ", str(ci.at("consumer"))));
+        return Value::error(logger::warn("removeConsumerConnection failed. The broker does not have the consumer ", str(ci.at("input"))));
     }
 
-    if (!consumer.hasConsumerConnection(ci)) {
-        return Value::error(logger::warn("removeConsumerConnection failed. Consumer does not have the same connection.", str(ci.at("consumer"))));
+    if (!consumer.hasInputConnection(ci)) {
+        return Value::error(logger::warn("removeConsumerConnection failed. Consumer does not have the same connection.", str(ci.at("input"))));
     }
     return consumer.removeConsumerConnection(ci);
 }
 
 Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
-    auto& op = store_->getOperation(ci.at("consumer"));
+    auto& op = store_->getOperation(ci.at("input"));
     if (op.isNull()) {
-        return Value::error(logger::error("Operation({}) can not be found.", str(ci.at("consumer"))));
+        return Value::error(logger::error("Operation({}) can not be found.", str(ci.at("input"))));
     }
     return op.push(ci, std::move(value));
 }

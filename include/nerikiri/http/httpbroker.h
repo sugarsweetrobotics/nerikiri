@@ -4,6 +4,7 @@
 #include <condition_variable>
 
 #include "nerikiri/broker.h"
+#include "nerikiri/brokerproxy.h"
 #include "nerikiri/http/server.h"
 
 

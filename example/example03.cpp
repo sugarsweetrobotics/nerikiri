@@ -15,7 +15,7 @@ int main(const int argc, const char* argv[]) {
   std::cout << nerikiri::str(broker->makeConnection(
     {
       {"name", "connection01"},
-      {"provider", {
+      {"output", {
           {"info", {
             {"name", {"one"}}
           }},
@@ -25,7 +25,7 @@ int main(const int argc, const char* argv[]) {
             {"port", 8080}
           }}
         }},
-      {"consumer", {
+      {"input", {
           {"info", {
             {"name", {"increment"}}
           }},

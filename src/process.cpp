@@ -55,7 +55,7 @@ static auto start_broker(std::vector<std::thread>& threads, Broker_ptr& brk) {
   return ftr;
 }
 
-static std::future<bool> start_systemEditor(std::vector<std::thread>& threads, SystemEditor_ptr& se) {
+static std::future<bool> start_systemEditor(std::vector<std::thread>& threads, const SystemEditor_ptr& se) {
   logger::trace("Creating a thread for SystemEditor {}", se->name());
   std::promise<bool> prms;
   auto ftr = prms.get_future();
@@ -76,7 +76,7 @@ void Process::startAsync() {
 								 });
   
   auto systemEditor_futures = nerikiri::map<std::future<bool>, std::string, SystemEditor_ptr>(this->systemEditors_,
-											      [this](auto& name, auto& se) {
+											      [this](const auto& name, const auto& se) {
 												return start_systemEditor(this->threads_, se); }
 											      );
 

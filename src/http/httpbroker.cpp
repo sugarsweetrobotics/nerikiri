@@ -50,6 +50,8 @@ public:
     std::unique_lock<std::mutex> lock(mutex_);
     
     logger::trace("HTTPBroker::run()");
+
+
     server_->response("/broker/info/", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){
         auto info = Broker::getBrokerInfo();
@@ -81,13 +83,6 @@ public:
       return response([this, &req](){return Broker::callContainerOperation(
         {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
     });
-    //server_->response("/process/container/([^/]*)/operation/([^/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-    //  return response([this, &req](){return Broker::invokeContainerOperation(
-    //    {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}});});
-    //});
-    //server_->response("/process/operation/([^\\/]*)/invoke", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
-    //  return response([this, &req](){return Broker::invokeOperationByName(req.matches[1]);});
-    //});
 
     server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
@@ -102,12 +97,12 @@ public:
       return response([this, &req](){return Broker::removeConsumerConnection(nerikiri::json::toValue(req.body));});
     });
     server_->response("/process/operation/([^\\/]*)/argument/([^\\/]*)/([-/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
-      std::string operation_name = req.matches[1];//ci.at("consumer").at("info").at("name").stringValue();
-      std::string argument_name  = req.matches[2];//ci.at("consumer").at("target").at("name").stringValue();
+      std::string operation_name = req.matches[1];//ci.at("input").at("info").at("name").stringValue();
+      std::string argument_name  = req.matches[2];//ci.at("input").at("target").at("name").stringValue();
       std::string connection_name = req.matches[3];//ci.at("name").stringValue();
       Value info = { 
         {"name", connection_name}, 
-        {"consumer", { 
+        {"input", { 
           {"info", { {"name", operation_name} } }, 
           {"target", { {"name", argument_name} } }
           }
@@ -184,8 +179,8 @@ public:
     }
 
     virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override {
-      auto operation_name = ci.at("consumer").at("info").at("name").stringValue();
-      auto argument_name  = ci.at("consumer").at("target").at("name").stringValue();
+      auto operation_name = ci.at("input").at("info").at("name").stringValue();
+      auto argument_name  = ci.at("input").at("target").at("name").stringValue();
       auto connection_name = ci.at("name").stringValue();
       return toValue(client_->request("/process/operation/" + operation_name + "/argument/" + argument_name + "/" + connection_name + "/push", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
