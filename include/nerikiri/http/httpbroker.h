@@ -30,4 +30,13 @@ namespace nerikiri::http {
 
   nerikiri::Broker_ptr brokerProxy(const std::string& address, const int32_t port); 
 
+  class HTTPBrokerFactory : public nerikiri::BrokerFactory {
+  public:
+
+    HTTPBrokerFactory(): BrokerFactory({{"name", "HTTPBroker"}}) {}
+    virtual ~HTTPBrokerFactory() {}
+
+  public:
+    virtual std::shared_ptr<BrokerAPI> create(const Value& param);
+  };
 };

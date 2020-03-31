@@ -61,4 +61,22 @@ namespace nerikiri {
 
     virtual Value createResource(const std::string& path, const Value& value) = 0;
   };
+
+
+  class BrokerFactory {
+  private:
+    const std::string typeName_;
+  public:
+    BrokerFactory(const Value& value) : typeName_(value.at("name").stringValue()) {}
+    virtual ~BrokerFactory() {}
+
+  public:
+    const std::string& typeName() { return typeName_; }
+    
+  public:
+    virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
+  };
+
+
+  
 }

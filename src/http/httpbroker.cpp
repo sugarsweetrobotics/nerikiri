@@ -198,3 +198,10 @@ public:
 nerikiri::Broker_ptr nerikiri::http::brokerProxy(const std::string& address, const int32_t port) {
   return nerikiri::Broker_ptr(new HTTPBrokerProxyImpl(address, port));
 }
+
+
+std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::create(const Value& value) {
+  auto address = value.at("host").stringValue();
+  auto port = value.at("port").intValue();
+  return nerikiri::Broker_ptr(new HTTPBrokerProxyImpl(address, port));
+}

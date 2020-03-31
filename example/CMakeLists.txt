@@ -4,6 +4,7 @@ set(example03_src example03.cpp)
 set(example04_src example04.cpp)
 set(example05_src example05.cpp)
 set(example06_src example06.cpp)
+set(example07_src example07.cpp)
 
 
 
@@ -24,3 +25,4 @@ add_example(example03)
 add_example(example04)
 add_example(example05)
 add_example(example06)
+add_example(example07)
