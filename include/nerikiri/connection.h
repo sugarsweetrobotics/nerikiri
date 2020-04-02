@@ -10,6 +10,8 @@
 
 namespace nerikiri {
 
+    class InvalidBrokerException : public std::exception {};
+
     using ConnectionInfo = nerikiri::Value;
 
     class Connection {

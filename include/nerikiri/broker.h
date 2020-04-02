@@ -43,16 +43,17 @@ namespace nerikiri {
 
   public:
     static std::shared_ptr<BrokerAPI> null;
+
   public:
     Broker(const BrokerInfo& info): info_(info), process_(nullptr), store_(nullptr) {}
     virtual ~Broker() {}
 
-    virtual bool run() override{
+    virtual bool run(Process* process) override{
       logger::trace("Broker::run()");
       return false;
     }
     
-    virtual void shutdown() override {
+    virtual void shutdown(Process* process) override {
       logger::trace("Broker::shutdown()");
     }
 
@@ -91,13 +92,15 @@ namespace nerikiri {
 
     virtual Value invokeOperationByName(const std::string& name) const override;
 
-    virtual Value makeConnection(const ConnectionInfo& ci) const override;
+    virtual Value makeConnection(const ConnectionInfo& ci) override;
 
     virtual Value getConnectionInfos() const override;
 
-    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const override;
+    virtual Value registerConsumerConnection(const ConnectionInfo& ci) override;
 
-    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const override;
+    virtual Value registerProviderConnection(const Value& ci) override;
+    
+    virtual Value removeConsumerConnection(const ConnectionInfo& ci) override;
 
     virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override;
 
@@ -116,7 +119,7 @@ namespace nerikiri {
 
     friend Value nerikiri::registerProviderConnection(const Broker* broker, const ConnectionInfo& ci);
     
-    friend Value makeConnection(const BrokerAPI* broker, const ConnectionInfo& ci);
+    friend Value makeConnection(BrokerAPI* broker, const ConnectionInfo& ci);
   };
 
 

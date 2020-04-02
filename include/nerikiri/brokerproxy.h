@@ -12,9 +12,9 @@ namespace nerikiri {
     virtual ~BrokerProxy() {}
 
   public:
-    virtual bool run() override {return false;}
+    virtual bool run(Process* proc) override {return false;}
     
-    virtual void shutdown() override {}
+    virtual void shutdown(Process* proc) override {}
 
     virtual void setProcess(Process_ptr process) override {}
 
@@ -48,28 +48,52 @@ namespace nerikiri {
     }
 
     virtual Value getContainerInfo(const Value& v) const override {
+      if (v.isError()) return v;    
       return requestResource("/process/containers/" + v.at("name").stringValue() + "/");
     }
 
     virtual Value getContainerOperationInfos(const Value& v) const override {
+      if (v.isError()) return v;    
       return requestResource("/process/containers/" + v.at("name").stringValue() + "/operations/");
     }
 
     virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
+      if (ci.isError()) return ci;    
       return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
     }
 
     virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
-     return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/invoke/");
+      if (ci.isError()) return ci;    
+      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/invoke/");
     }
 
     virtual Value getOperationInfo(const Value& v) const override {
+      if (v.isError()) return v;    
       return requestResource("/process/operations/" + v.at("name").stringValue() + "/");
     }
 
     virtual Value invokeOperationByName(const std::string& name) const override {
       return requestResource("/process/operations/" + name + "/invoke/");
     }
+
+    virtual Value makeConnection(const ConnectionInfo& ci) override {
+      return createResource("/process/connections/", ci);
+    }
+
+
+    virtual Value registerConsumerConnection(const ConnectionInfo& ci) override {
+      if (ci.isError()) return ci;    
+      auto operation_name = ci.at("input").at("info").at("name").stringValue();
+      auto argument_name  = ci.at("input").at("target").at("name").stringValue();
+      return createResource("/process/operations/" + operation_name + "/arguments/" + argument_name + "/connections/", ci);
+    }
+
+    virtual Value registerProviderConnection(const ConnectionInfo& ci) override {
+      if (ci.isError()) return ci;    
+      auto operation_name = ci.at("input").at("info").at("name").stringValue();
+      return createResource("/process/operations/" + operation_name + "/connections/", ci);
+    }
+
   };
 
 }

@@ -15,9 +15,9 @@ namespace nerikiri {
 
     virtual ~BrokerAPI() {}
 
-    virtual bool run() = 0;
+    virtual bool run(Process* process) = 0;
     
-    virtual void shutdown() = 0;
+    virtual void shutdown(Process* process) = 0;
 
     virtual void setProcess(Process* process)  = 0;
 
@@ -47,13 +47,14 @@ namespace nerikiri {
 
     virtual Value invokeOperationByName(const std::string& name) const = 0;
 
-    virtual Value makeConnection(const Value& ci) const = 0;
+    virtual Value makeConnection(const Value& ci)  = 0;
 
     virtual Value getConnectionInfos() const = 0;
 
-    virtual Value registerConsumerConnection(const Value& ci) const = 0;
+    virtual Value registerConsumerConnection(const Value& ci)  = 0;
+    virtual Value registerProviderConnection(const Value& ci)  = 0;
 
-    virtual Value removeConsumerConnection(const Value& ci) const = 0;
+    virtual Value removeConsumerConnection(const Value& ci) = 0;
 
     virtual Value pushViaConnection(const Value& ci, Value&& value)  const = 0;
 
@@ -75,6 +76,7 @@ namespace nerikiri {
     
   public:
     virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
+    virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param) = 0;
   };
 
 

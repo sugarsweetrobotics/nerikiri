@@ -2,6 +2,7 @@
 
 #include "nerikiri/objectmapper.h"
 #include "nerikiri/logger.h"
+#include "nerikiri/process.h"
 #include "nerikiri/process_store.h"
 
 using namespace nerikiri;
@@ -47,13 +48,24 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
 }
 
 
-Value ObjectMapper::createResource(ProcessStore* store, const std::string& path, const Value& value) {
+Value ObjectMapper::createResource(Process* process, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+  std::smatch match;
+  if (path == "/process/connections/") {
+      return process->makeConnection(value, receiverBroker);
+  }
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/arguments/([^/]*)/connections/"))) {
+    return process->registerConsumerConnection(value);
+  }
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
+    return process->registerProviderConnection(value);
+  }
 
-    std::smatch match;
-    if (path == "/process/connections/") {
-        return store->getOperationInfos();
-    }
-
-
-   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
+  if (path == "/process/register_consumer_connection/") {
+    return process->registerConsumerConnection(value);
+  }
+  if (path == "/process/register_provider_connection/") {
+    return process->registerProviderConnection(value);
+  }
+  
+  return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
 }

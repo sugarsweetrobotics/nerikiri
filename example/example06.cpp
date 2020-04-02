@@ -113,7 +113,8 @@ int main(const int argc, const char* argv[]) {
     .addOperation(one.create())
     .addExecutionContext(timer)
     .addContainer(c)
-    .addBroker(nerikiri::http::broker("0.0.0.0", 8080))
+    .addBrokerFactory(std::shared_ptr<BrokerFactory>(new nerikiri::http::HTTPBrokerFactory()))
+    .createBroker({{"name", "HTTPBroker"}, {"host", "0.0.0.0"}, {"port", 8080}})
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();
 }

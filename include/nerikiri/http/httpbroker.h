@@ -15,9 +15,9 @@ namespace nerikiri::http {
     HTTPBroker(): Broker({{"name", Value{"HTTPBroker"}}}) {};
     virtual ~HTTPBroker(){};
     
-    virtual bool run() = 0;
+    virtual bool run(Process *process) = 0;
 
-    virtual void shutdown() = 0;
+    virtual void shutdown(Process* process) = 0;
   };
   
   nerikiri::Broker_ptr broker(const std::string& address, const int32_t port); 
@@ -38,5 +38,6 @@ namespace nerikiri::http {
 
   public:
     virtual std::shared_ptr<BrokerAPI> create(const Value& param);
+    virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param);
   };
 };

@@ -9,6 +9,8 @@
 #include "nerikiri/container.h"
 #include "nerikiri/ec.h"
 #include "nerikiri/process_store.h"
+#include "nerikiri/objectfactory.h"
+#include "nerikiri/objectmapper.h"
 
 namespace nerikiri {
 
@@ -21,8 +23,9 @@ namespace nerikiri {
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
     std::vector<Broker_ptr> brokers_;
-
+    ObjectFactory objectFactory_;
     ProcessStore store_;
+    std::vector<std::shared_ptr<BrokerFactory>> brokerFactories_;
   public:
     Process(const std::string& name);
     ~Process();
@@ -30,6 +33,7 @@ namespace nerikiri {
     static Process null;
     
   public:
+    ProcessStore* store() { return &store_; }
     Value getOperationInfos() { return store_.getOperationInfos(); }
     Process& addOperation(std::shared_ptr<Operation> op) { store_.addOperation(op); return *this; }
     //Process& addOperation(const Operation& op) {store_.addOperation((op)); return *this; }
@@ -39,9 +43,11 @@ namespace nerikiri {
     ContainerBase& getContainerByName(const std::string& name) { return store_.getContainerByName(name); }
     Process& addContainer(std::shared_ptr<ContainerBase> container) { store_.addContainer(container); return *this; }
 
-    Process& addBroker(Broker_ptr&& brk);
+    Process& addBroker(const Broker_ptr& brk);
     Broker_ptr getBrokerByName(const std::string& name);
-    Broker_ptr getBrokerByInfo(const BrokerInfo& ci);
+    Broker_ptr createBrokerProxy(const BrokerInfo& ci);
+    Process& createBroker(const BrokerInfo& ci);
+    Process& addBrokerFactory(std::shared_ptr<BrokerFactory> factory) { brokerFactories_.push_back(factory); return *this;}
     
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
@@ -57,11 +63,22 @@ namespace nerikiri {
     ProcessInfo info() const { return info_; }
     
   public:
+    Value makeConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);
     Value invokeConnection(const Connection& con);
-
+    Value registerConsumerConnection(const ConnectionInfo& ci);
+    Value registerProviderConnection(const ConnectionInfo& ci);
+  
 
   public:
     void executeOperation(const OperationInfo& oinfo) const;
+
+    Value requestResource(const std::string& path) {
+      return nerikiri::ObjectMapper::requestResource(this->store(), path);
+    }
+
+    Value createResource(const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr) {
+      return nerikiri::ObjectMapper::createResource(this, path, value, receiverBroker);
+    }
   };
 
 

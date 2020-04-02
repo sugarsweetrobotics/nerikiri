@@ -16,6 +16,8 @@ Connection::Connection(const ConnectionInfo& _info, Broker_ptr providerBroker, B
         auto name = info_.at("output").at("info").at("name").stringValue();
         push_func_ = [this](Value&& value) { return consumerBroker_->pushViaConnection(info_, std::move(value)); };
     }
+
+    //throw InvalidBrokerException();
 }
 
 Connection::~Connection() {}

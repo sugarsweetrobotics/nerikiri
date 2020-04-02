@@ -30,6 +30,7 @@ nerikiri::Value connect(const std::string& connectionName, Broker_ptr providerBr
 int main(const int argc, const char* argv[]) {
   auto f = nerikiri::http::HTTPBrokerFactory();
   auto broker = f.create({{"name", "HTTPBroker"}, {"host","localhost"}, {"port", 8080}});
+  
   std::cout << nerikiri::str(broker->getBrokerInfo()) << std::endl;;
   std::cout << nerikiri::str(connect("connection01", 
           broker,

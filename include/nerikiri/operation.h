@@ -150,8 +150,8 @@ namespace nerikiri {
     Value addConsumerConnection(Connection&& c) {
       logger::trace("Operation::addConsumerConnection({})", str(c.info()));
       
-      if (c.info()["input"]["name"] != info().at("name")) {
-          logger::error("requestted connection does not match to this operation.");
+      if (c.info()["input"]["info"]["name"] != info().at("name")) {
+          logger::error("requested connection does not match to this operation.");
       }
 
       const auto argumentName = c.info()["input"]["target"]["name"].stringValue();
@@ -203,7 +203,7 @@ namespace nerikiri {
       return inputConnectionListDictionary_.at(argName);
     }
 
-    bool hasInputConnection(const ConnectionInfo& ci) const {
+    bool hasInputConnectionRoute(const ConnectionInfo& ci) const {
       for(const auto v : getInputConnectionsByArgName(ci.at("input").at("target").at("name").stringValue())) {
         if (v.info().at("output") == ci.at("output")) 
             return true;
@@ -211,9 +211,25 @@ namespace nerikiri {
       return false;
     }
 
-    bool hasOutputConnection(const ConnectionInfo& ci) const {
+    bool hasInputConnectionName(const ConnectionInfo& ci) const {
+      for(const auto v : getInputConnectionsByArgName(ci.at("input").at("target").at("name").stringValue())) {
+        if (v.info().at("name") == ci.at("name")) 
+            return true;
+      }
+      return false;
+    }
+
+
+    bool hasOutputConnectionRoute(const ConnectionInfo& ci) const {
       for(const auto v : outputConnectionList_) {
         if (v.info().at("input") == ci.at("input")) return true;
+      }
+      return false;
+    }
+
+    bool hasOutputConnectionName(const ConnectionInfo& ci) const {
+      for(const auto v : outputConnectionList_) {
+        if (v.info().at("name") == ci.at("name")) return true;
       }
       return false;
     }

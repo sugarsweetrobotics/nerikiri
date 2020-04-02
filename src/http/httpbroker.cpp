@@ -7,6 +7,7 @@
 #include "webi/http_server.h"
 #include "nerikiri/process.h"
 #include "webi/http_client.h"
+#include "nerikiri/objectmapper.h"
 
 using namespace nerikiri;
 using namespace nerikiri::http;
@@ -46,11 +47,10 @@ public:
     }
   }
 
-  bool run() override {
+  bool run(Process* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
     
     logger::trace("HTTPBroker::run()");
-
 
     server_->response("/broker/info/", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){
@@ -67,18 +67,23 @@ public:
                 addr = host.substr(0, pos);
             }
 
-            info["address"] = Value(addr);
+            info["host"] = Value(addr);
             info["port"] = Value(port);
           }
         }
         return info;
         });
     });
-    server_->response("/.*", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+    server_->response("/.*", "GET", "text/html", [this, process](const webi::Request& req) -> webi::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return response([this, &req](){return Broker::requestResource(req.matches[0]);});
+      return response([process, &req](){return process->requestResource(req.matches[0]);});
     });
-    
+
+    server_->response("/.*", "POST", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+      logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
+      return response([this, process, &req](){return process->createResource(req.matches[0], nerikiri::json::toValue(req.body), this);});
+    });
+
     server_->response("/process/container/([^/]*)/operation/([^/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callContainerOperation(
         {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
@@ -87,19 +92,15 @@ public:
     server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
     });
-    server_->response("/process/connections/", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return nerikiri::makeConnection(this, nerikiri::json::toValue(req.body));});
-    });
-    server_->response("/process/register_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::registerConsumerConnection(nerikiri::json::toValue(req.body));});
-    });
-    server_->response("/process/remove_consumer_connection", "POST", "application/json", [this](const webi::Request& req) -> webi::Response {
+    
+    server_->response("/process/remove_consumer_connection", "DELETE", "application/json", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::removeConsumerConnection(nerikiri::json::toValue(req.body));});
     });
-    server_->response("/process/operation/([^\\/]*)/argument/([^\\/]*)/([-/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
-      std::string operation_name = req.matches[1];//ci.at("input").at("info").at("name").stringValue();
-      std::string argument_name  = req.matches[2];//ci.at("input").at("target").at("name").stringValue();
-      std::string connection_name = req.matches[3];//ci.at("name").stringValue();
+    
+    server_->response("/process/operation/([^/]*)/argument/([^/]*)/([^/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
+      std::string operation_name = req.matches[1];
+      std::string argument_name  = req.matches[2];
+      std::string connection_name = req.matches[3];
       Value info = { 
         {"name", connection_name}, 
         {"input", { 
@@ -116,7 +117,7 @@ public:
     return true;
   }
 
-  void shutdown() override {
+  void shutdown(Process* proc) override {
     cond_.notify_all();
   }
 
@@ -166,15 +167,8 @@ public:
       return toValue(client_->request("/process/operation/" + info.at("name").stringValue() + "/call", "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
-    virtual Value makeConnection(const ConnectionInfo& ci) const override {
-      return toValue(client_->request("/process/connections/", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
-    }
 
-    virtual Value registerConsumerConnection(const ConnectionInfo& ci) const override {
-      return toValue(client_->request("/process/register_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
-    }
-
-    virtual Value removeConsumerConnection(const ConnectionInfo& ci) const override {
+    virtual Value removeConsumerConnection(const ConnectionInfo& ci) override {
       return toValue(client_->request("/process/remove_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
@@ -189,7 +183,6 @@ public:
       return toValue(client_->request(path, "GET"));
     }
 
-
     virtual Value createResource(const std::string& path, const Value& value) override {
       return toValue(client_->request(path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
@@ -199,8 +192,13 @@ nerikiri::Broker_ptr nerikiri::http::brokerProxy(const std::string& address, con
   return nerikiri::Broker_ptr(new HTTPBrokerProxyImpl(address, port));
 }
 
-
 std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::create(const Value& value) {
+  auto address = value.at("host").stringValue();
+  auto port = value.at("port").intValue();
+  return nerikiri::Broker_ptr(new HTTPBrokerImpl(address, port));
+}
+
+std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::createProxy(const Value& value) {
   auto address = value.at("host").stringValue();
   auto port = value.at("port").intValue();
   return nerikiri::Broker_ptr(new HTTPBrokerProxyImpl(address, port));

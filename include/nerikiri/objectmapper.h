@@ -17,6 +17,6 @@ namespace nerikiri {
 
     public:
         static Value requestResource(ProcessStore* store, const std::string& path);
-        static Value createResource(ProcessStore* store, const std::string& path, const Value& value);
+        static Value createResource(Process* store, const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr);
     };
 }
