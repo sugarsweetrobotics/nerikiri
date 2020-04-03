@@ -102,11 +102,15 @@ namespace nerikiri {
     
     virtual Value removeConsumerConnection(const ConnectionInfo& ci) override;
 
+    virtual Value removeProviderConnection(const ConnectionInfo& ci) override;
+
     virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override;
 
     virtual Value requestResource(const std::string& path) const override;
 
     virtual Value createResource(const std::string& path, const Value& value) override;
+
+    virtual Value deleteResource(const std::string& path) override;
 
   public:
     friend Value relayProvider(const Broker* broker, const ConnectionInfo& ci);

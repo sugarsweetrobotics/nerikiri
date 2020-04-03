@@ -130,26 +130,25 @@ namespace nerikiri {
       bufferMap_ = op.bufferMap_;
       return *this;
     }
+  
   public:
     const OperationInfo& info() const { return info_; }
-
     bool isNull() const { return is_null_; }
 
     Value addProviderConnection(Connection&& c) {
       logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
+      if (isNull()) return Value::error(logger::error("Operation::addProviderConnection failed. Operation is null"));
       outputConnectionList_.emplace_back(std::move(c));
       return c.info();
     }
 
-    Value removeProviderConnection(const ConnectionInfo& ci) {
-      logger::trace("OperationBase::removeProviderConnection({})", str(ci));
-      // 未実装
-      return ci;
-    }
-
     Value addConsumerConnection(Connection&& c) {
       logger::trace("Operation::addConsumerConnection({})", str(c.info()));
-      
+      if (isNull()) return Value::error(logger::error("Operation::addConsumerConnection failed. Operation is null"));
+      if (c.isNull()) {
+        return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
+      }
+
       if (c.info()["input"]["info"]["name"] != info().at("name")) {
           logger::error("requested connection does not match to this operation.");
       }
@@ -164,23 +163,32 @@ namespace nerikiri {
       return Value::error("Argument can not found");
     }
 
+    Value removeProviderConnection(const ConnectionInfo& ci) {
+      logger::trace("Operation::removeProviderConnection({})", str(ci));
+      if (isNull()) return Value::error(logger::error("Operation::removeProviderConnection failed. Operation is null"));
+      //auto olist = getOutputConnectionList();
+      for(auto it = this->outputConnectionList_.begin();it != outputConnectionList_.end();) {
+        if ((*it).info().at("name") == ci.at("name")) {
+          it = outputConnectionList_.erase(it);
+        } else { ++ it; }
+      }
+      return ci;
+    }
+
     Value removeConsumerConnection(const ConnectionInfo& ci) {
       logger::trace("Operation::removeConsumerConnection({})", str(ci));
+      if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
       const auto argName = ci.at("input").at("target").at("name").stringValue();
-      auto clist = inputConnectionListDictionary_[argName];
-      for (auto it = clist.begin(); it != clist.end();) {
+      //auto clist = inputConnectionListDictionary_[argName];
+      for (auto it = inputConnectionListDictionary_[argName].begin(); it != inputConnectionListDictionary_[argName].end();) {
           if ((*it).info().at("name") == ci.at("name")) {
-            it = clist.erase(it);
+            it = inputConnectionListDictionary_[argName].erase(it);
           } else { ++it; }
       }
       return ci;
     }
 
     
-    ConnectionList getOutputConnectionList() const {
-      return outputConnectionList_;
-    }
-
     Value getConnectionInfos() const {
       return {
         {"output", getOutputConnectionInfos()},
@@ -188,14 +196,53 @@ namespace nerikiri {
       };
     }
 
+    ConnectionList getOutputConnectionList() const {
+      return outputConnectionList_;
+    }
+
     Value getOutputConnectionInfos() const {
       return nerikiri::map<Value, nerikiri::Connection>(getOutputConnectionList(), [](const auto& con) { return con.info(); });
     }
 
+    Connection getOutputConnection(const Value& ci) const {
+      auto olist = getOutputConnectionList();
+      for(auto it = olist.begin();it != olist.end();++it) {
+        if ((*it).info().at("name") == ci.at("name")) {
+          return (*it);
+        }
+      }
+      return Connection::null;
+    }
+
+    Value getOutputConnectionInfo(const Value& ci) const {
+      return nerikiri::find_first<Value, nerikiri::Connection>(getOutputConnectionList(), 
+          [&ci](const auto& con) -> bool { return con.info().at("name") == ci.at("name"); },
+          [](const auto& con) { return con.info(); },
+          Value::error("Output Connection can not be found."));
+    }
+
     Value getInputConnectionInfos() const {
-      return nerikiri::map<std::pair<std::string,Value>, std::string, nerikiri::ConnectionList>(inputConnectionListDictionary_, [](const auto& k, const ConnectionList& v) -> std::pair<std::string,Value> {
+      return nerikiri::map<std::pair<std::string, Value>, std::string, nerikiri::ConnectionList>(inputConnectionListDictionary_, [](const auto& k, const ConnectionList& v) -> std::pair<std::string,Value> {
         return {k, nerikiri::map<Value, nerikiri::Connection>(v, [](const Connection& con) -> Value { return con.info(); })};
       });
+    }
+
+    Value getInputConnectionInfo(const std::string& arg) const {
+      if (inputConnectionListDictionary_.count(arg) == 0) {
+        return Value::error(logger::error("Operation::getInputConnectionInfo({}) failed. No key.", arg));
+      }
+      return nerikiri::map<Value, nerikiri::Connection>(inputConnectionListDictionary_.at(arg), 
+        [](const Connection& con) -> Value { return con.info(); });
+    }
+
+    Value getInputConnectionInfo(const std::string& arg, const Value& ci) const {
+      auto ret = getInputConnectionInfo(arg);
+      if (ret.isError()) return ret;
+      return nerikiri::find_first<Value, Value>(ret.listValue(),
+        [&ci](const auto& v) { return v.at("name") == ci.at("name"); },
+        [](const auto& v) { return v; },
+        Value::error("Can not find in getInputConnectionInfo(str, value)")
+      );
     }
 
     ConnectionList getInputConnectionsByArgName(const std::string& argName) const {

@@ -158,16 +158,12 @@ Value Broker::registerProviderConnection(const Value& ci) {
 
 Value Broker::removeConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("Broker::removeConsumerConnection({}", str(ci));
-    /// Consumer側でなければ失敗出力
-    auto& consumer = store_->getOperation(ci.at("input"));
-    if (consumer.isNull()) {
-        return Value::error(logger::warn("removeConsumerConnection failed. The broker does not have the consumer ", str(ci.at("input"))));
-    }
+    return this->process_->deleteConsumerConnection(ci);
+}
 
-    if (!consumer.hasInputConnectionRoute(ci)) {
-        return Value::error(logger::warn("removeConsumerConnection failed. Consumer does not have the same connection.", str(ci.at("input"))));
-    }
-    return consumer.removeConsumerConnection(ci);
+Value Broker::removeProviderConnection(const ConnectionInfo& ci) {
+    logger::trace("Broker::removeProviderConnection({}", str(ci));
+    return this->process_->deleteProviderConnection(ci);
 }
 
 Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
@@ -184,4 +180,9 @@ Value Broker::requestResource(const std::string& path) const {
 
 Value Broker::createResource(const std::string& path, const Value& value) {
     return process_->createResource(path, value);
+}
+
+
+Value Broker::deleteResource(const std::string& path) {
+    return process_->deleteResource(path);
 }

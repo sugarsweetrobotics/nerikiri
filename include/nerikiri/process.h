@@ -63,11 +63,13 @@ namespace nerikiri {
     ProcessInfo info() const { return info_; }
     
   public:
-    Value makeConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);
+    //Value makeConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);
     Value invokeConnection(const Connection& con);
     Value registerConsumerConnection(const ConnectionInfo& ci);
-    Value registerProviderConnection(const ConnectionInfo& ci);
+    Value registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);
   
+    Value deleteConsumerConnection(const ConnectionInfo& ci);
+    Value deleteProviderConnection(const ConnectionInfo& ci);
 
   public:
     void executeOperation(const OperationInfo& oinfo) const;
@@ -78,6 +80,10 @@ namespace nerikiri {
 
     Value createResource(const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr) {
       return nerikiri::ObjectMapper::createResource(this, path, value, receiverBroker);
+    }
+
+    Value deleteResource(const std::string& path, BrokerAPI* receiverBroker = nullptr) {
+      return nerikiri::ObjectMapper::deleteResource(this, path, receiverBroker);
     }
   };
 

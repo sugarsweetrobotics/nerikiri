@@ -84,6 +84,10 @@ public:
       return response([this, process, &req](){return process->createResource(req.matches[0], nerikiri::json::toValue(req.body), this);});
     });
 
+    server_->response("/.*", "DELETE", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+      return response([this, process, &req](){return process->deleteResource(req.matches[0], this);});
+    });
+    
     server_->response("/process/container/([^/]*)/operation/([^/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callContainerOperation(
         {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
@@ -91,10 +95,6 @@ public:
 
     server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
-    });
-    
-    server_->response("/process/remove_consumer_connection", "DELETE", "application/json", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::removeConsumerConnection(nerikiri::json::toValue(req.body));});
     });
     
     server_->response("/process/operation/([^/]*)/argument/([^/]*)/([^/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
@@ -168,8 +168,8 @@ public:
     }
 
 
-    virtual Value removeConsumerConnection(const ConnectionInfo& ci) override {
-      return toValue(client_->request("/process/remove_consumer_connection", "POST", {"POST", nerikiri::json::toJSONString(ci), "application/json"}));
+    virtual Value removeProviderConnection(const ConnectionInfo& ci) override {
+      return toValue(client_->request("/process/remove_consumer_connection", "DELETE", {"DELETE", nerikiri::json::toJSONString(ci), "application/json"}));
     }
 
     virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override {
@@ -185,6 +185,10 @@ public:
 
     virtual Value createResource(const std::string& path, const Value& value) override {
       return toValue(client_->request(path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
+    }
+
+    virtual Value deleteResource(const std::string& path) override {
+      return toValue(client_->request(path, "DELETE"));
     }
 };
 

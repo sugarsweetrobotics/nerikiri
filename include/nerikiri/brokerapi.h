@@ -54,6 +54,7 @@ namespace nerikiri {
     virtual Value registerConsumerConnection(const Value& ci)  = 0;
     virtual Value registerProviderConnection(const Value& ci)  = 0;
 
+    virtual Value removeProviderConnection(const Value& ci) = 0;
     virtual Value removeConsumerConnection(const Value& ci) = 0;
 
     virtual Value pushViaConnection(const Value& ci, Value&& value)  const = 0;
@@ -61,6 +62,8 @@ namespace nerikiri {
     virtual Value requestResource(const std::string& path) const = 0;
 
     virtual Value createResource(const std::string& path, const Value& value) = 0;
+
+    virtual Value deleteResource(const std::string& path) = 0;
   };
 
 

@@ -176,22 +176,15 @@ Value checkProcessHasProviderOperation(Process* process, const ConnectionInfo& c
     return ci;
 }
 
-Value Process::makeConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker) {
-  logger::trace("Process::makeConnection({})", str(ci));
-  auto ret = ci;
-  // 自分プロセスがProvider側Operatinを持っていなければ，provider側のブローカープロキシを作ってそちらを呼び出す．
-  if (checkProcessHasProviderOperation(this, ci).isError()) {
-    auto providerBroker = createBrokerProxy(ci.at("output").at("broker"));
-    if (!providerBroker) {
-      return Value::error(logger::error("makeConnection failed. Provider side broker can not be created. {}", str(ci.at("output"))));
-    }
-  }
-
-  if (store()->getOperation(ci.at("output").at("info")).hasOutputConnectionRoute(ci)) {
+Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker) {
+  logger::trace("Process::registerProviderConnection({})", str(ci));
+  auto ret = checkProcessHasProviderOperation(this, ci);
+  
+  auto& provider = store()->getOperation(ret.at("output").at("info"));
+  if (provider.hasOutputConnectionRoute(ci)) {
       return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ci.at("output"))));
   }
-
-  while (store()->getOperation(ret.at("output").at("info")).hasOutputConnectionName(ret)) {
+  while (provider.hasOutputConnectionName(ret)) {
       logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output")));
       ret["name"] = ci.at("name").stringValue() + "_2";
   }
@@ -200,62 +193,65 @@ Value Process::makeConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroke
   if (!consumerBroker) {
     return Value::error(logger::error("makeConnection failed. Consumer side broker can not be created. {}", str(ci.at("output"))));
   }
-  ret = consumerBroker->registerConsumerConnection(ci);
 
-  auto providerBroker = createBrokerProxy(ci.at("output").at("broker"));
-  if (!providerBroker) {
-    return Value::error(logger::error("makeConnection failed. Provider side broker can not be created. {}", str(ci.at("output"))));
-  }
-  return providerBroker->registerProviderConnection(ret);
+  auto ret2 = consumerBroker->registerConsumerConnection(ret);
+  if(ret2.isError()) return ret;
+
+  // リクエストが成功なら、こちらもConnectionを登録。
+  auto ret3 = provider.addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
+  if (ret3.isError()) {
+      // 登録が失敗ならConsumer側のConnectionを破棄。
+      auto ret3 = nerikiri::removeConsumerConnection(createBrokerProxy(ret2.at("input").at("broker")), ret2);
+      return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
+  }// 登録成功ならciを返す
+  return ret2;
 }
 
 Value Process::registerConsumerConnection(const ConnectionInfo& ci) {
-    logger::trace("Process::registerConsumerConnection({}", str(ci));
-    if (ci.isError()) return ci;
-    auto ret = ci;
-    /// Consumer側でなければ失敗出力
-    auto& consumer = store()->getOperation(ci.at("input").at("info"));
-    if (consumer.isNull()) {
-        return Value::error(logger::error("registerConsumerConnection failed. The broker does not have the consumer ", str(ci.at("input"))));
-    }
+  logger::trace("Process::registerConsumerConnection({}", str(ci));
+  if (ci.isError()) return ci;
 
-    if (consumer.hasInputConnectionRoute(ci)) {
-        return Value::error(logger::error("registerConsumerConnection failed. Consumer already have the same connection.", str(ci.at("input"))));
-    }
-
-    while (consumer.hasInputConnectionName(ret)) {
-        logger::warn("registerConsumerConnection failed. Consumer already have the same connection.", str(ci.at("input")));
-        ret["name"] = ret["name"].stringValue() + "_2";
-    }
-
-    auto brokerProxy = createBrokerProxy(ci.at("output").at("broker"));
-    if (!brokerProxy) {
-      return Value::error(logger::error("registerConsumerConnection failed. Can not create Provider side broker in consumer process. {}", str(ci.at("output").at("broker"))));
-    }
-    ret = consumer.addConsumerConnection(consumerConnection(ret, brokerProxy));
-    if (ret.isError()) {
-      // 登録が失敗ならConsumer側のConnectionを破棄。
-      auto ret = nerikiri::removeConsumerConnection(createBrokerProxy(ci.at("output").at("broker")), ci);
-      return Value::error(logger::error("request registerConsumerConnection for consumer's broker failed. ", ret.getErrorMessage()));
-    }
-    return ret;
+  auto ret = ci;
+  /// Consumer側でなければ失敗出力
+  auto& consumer = store()->getOperation(ci.at("input").at("info"));
+  if (consumer.isNull()) {
+      return Value::error(logger::error("registerConsumerConnection failed. The broker does not have the consumer ", str(ci.at("input"))));
+  }
+  if (consumer.hasInputConnectionRoute(ret)) {
+      return Value::error(logger::error("registerConsumerConnection failed. Consumer already have the same connection.", str(ci.at("input"))));
+  }
+  while (consumer.hasInputConnectionName(ret)) {
+      logger::warn("registerConsumerConnection failed. Consumer already have the same connection.", str(ret.at("input")));
+      ret["name"] = ret["name"].stringValue() + "_2";
   }
 
+  return consumer.addConsumerConnection(consumerConnection(ret,
+             createBrokerProxy(ci.at("output").at("broker"))));
+}
 
-Value Process::registerProviderConnection(const ConnectionInfo& ci) {
-    logger::trace("Process::registerProviderConnection({}", str(ci));
+
+Value Process::deleteProviderConnection(const ConnectionInfo& ci) {
+    logger::trace("Process::deleteProviderConnection({}", str(ci));
     if (ci.isError()) return ci;
-    // リクエストが成功なら、こちらもConnectionを登録。
+
     auto& provider = store()->getOperation(ci.at("output").at("info"));
-    auto brokerProxy = createBrokerProxy(ci.at("input").at("broker"));
-    if (!brokerProxy) {
-      return Value::error(logger::error("registerProviderConnection failed. Can not create Consumer side broker in provider process. {}", str(ci.at("output").at("broker"))));
+    const auto& connection = provider.getOutputConnection(ci);
+
+    auto ret = connection.info();
+    auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
+    if (!consumerBroker) {
+      return Value::error(logger::error("Process::deleteProviderConnection failed. ConsumerBrokerProxy cannot be created."));
     }
-    auto ret = provider.addProviderConnection(providerConnection(ci, brokerProxy));
+    ret = consumerBroker->removeConsumerConnection(ret);
     if (ret.isError()) {
-        // 登録が失敗ならConsumer側のConnectionを破棄。
-        auto ret = nerikiri::removeConsumerConnection(createBrokerProxy(ci.at("input").at("broker")), ci);
-        return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret.getErrorMessage()));
-    }// 登録成功ならciを返す
-    return ret;
+      return Value::error(logger::error("Process::deleteProviderConnection failed. RemoveConsumerConnection failed."));
+    }
+    return provider.removeProviderConnection(ret);
+}
+
+Value Process::deleteConsumerConnection(const ConnectionInfo& ci) {
+  logger::trace("Process::deleteConsumerConnection({}", str(ci));
+  if (ci.isError()) return ci;
+  auto& op = store()->getOperation(ci.at("input").at("info"));
+  return op.removeConsumerConnection(ci);
 }

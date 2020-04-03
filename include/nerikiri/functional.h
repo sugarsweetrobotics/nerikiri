@@ -91,7 +91,17 @@ namespace nerikiri {
     }
     return ret;
   }
-    
+
+  template<typename T, typename V>
+  T find_first(const std::vector<V>& vec, std::function<bool(const V&)> filter, std::function<T(const V&)> output, const T& defaultValue) {
+    for(auto& v : vec) {
+      if (filter(v)) {
+        return output(v);
+      }
+    }
+    return defaultValue;
+  }
+
   template<typename T, typename V>
   std::vector<T> map(const std::vector<V>& vec, std::function<T(const V&)> func) {
     std::vector<T> ret;

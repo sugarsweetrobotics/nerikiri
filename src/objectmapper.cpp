@@ -27,7 +27,21 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
         return store->getOperation({{"name", Value(match[1])}}).getConnectionInfos();
     }
-
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/connections/"))) {
+        return store->getOperation({{"name", Value(match[1])}}).getInputConnectionInfos();
+    }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
+        return store->getOperation({{"name", Value(match[1])}}).getInputConnectionInfo(match[2]);
+    }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
+        return store->getOperation({{"name", Value(match[1])}}).getInputConnectionInfo(match[2], {{"name", Value(match[3])}});
+    }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
+        return store->getOperation({{"name", Value(match[1])}}).getOutputConnectionInfos();
+    }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/([^/]*)/"))) {
+        return store->getOperation({{"name", Value(match[1])}}).getOutputConnectionInfo({{"name", Value(match[2])}});
+    }
 
     if (path == "/process/containers/") {
         return store->getContainerInfos();
@@ -50,22 +64,52 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
 
 Value ObjectMapper::createResource(Process* process, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
-  if (path == "/process/connections/") {
-      return process->makeConnection(value, receiverBroker);
-  }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/arguments/([^/]*)/connections/"))) {
+  //if (path == "/process/connections/") {
+  //    return process->makeConnection(value, receiverBroker);
+ // }
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
     return process->registerConsumerConnection(value);
   }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
-    return process->registerProviderConnection(value);
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
+    return process->registerProviderConnection(value, receiverBroker);
   }
 
+  /*
   if (path == "/process/register_consumer_connection/") {
     return process->registerConsumerConnection(value);
   }
   if (path == "/process/register_provider_connection/") {
     return process->registerProviderConnection(value);
   }
-  
+  */
   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
+}
+
+
+Value ObjectMapper::deleteResource(Process* process, const std::string& path, BrokerAPI* receiverBroker) {
+  std::smatch match;
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
+    return process->deleteConsumerConnection({
+        {"name", Value(match[3])},
+        {"input", {
+            {"target", {
+                {"name", Value(match[2])}
+            }},
+            {"info", {
+                {"name", Value(match[1])}
+            }}
+        }}
+    });
+  }
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/([^/]*)/"))) {
+    return process->deleteProviderConnection({
+        {"name", Value(match[2])},
+        {"output", {
+            {"info", {
+                {"name", Value(match[1])}
+            }}
+        }}
+    });
+  }
+  return Value::error(logger::error("ObjectMapper::deleteResource({}) failed.", path));
 }

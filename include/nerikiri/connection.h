@@ -15,13 +15,15 @@ namespace nerikiri {
     using ConnectionInfo = nerikiri::Value;
 
     class Connection {
-        private:
+    private:
         ConnectionInfo info_;
         Broker_ptr providerBroker_;
         Broker_ptr consumerBroker_;
         std::function<Value()> pull_func_;
         std::function<Value(Value&& value)> push_func_;
+        bool is_null_;
     public:
+        Connection();
         Connection(const ConnectionInfo& info, Broker_ptr providerBroker, Broker_ptr consumerBroker);
         ~Connection();
 
@@ -32,6 +34,10 @@ namespace nerikiri {
         bool isPush() const { return true; }
 
         Value push(Value&& value) { return this->push_func_(std::move(value)); }
+
+        bool isNull() const { return is_null_; }
+
+        static Connection null;
 
     public:
         ConnectionInfo info() const { return info_; }
