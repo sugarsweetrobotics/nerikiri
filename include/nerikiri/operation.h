@@ -64,6 +64,7 @@ namespace nerikiri {
 
     virtual ~Buffer() {}
   public:
+    virtual Value push(const Value& v) { buffer_ = (v); empty_ = false; return buffer_; }
     virtual Value push(Value&& v) { buffer_ = std::move(v); empty_ = false; return buffer_; }
     virtual Value pop() { return empty_ ? defaultValue_ : buffer_; }
     virtual bool isEmpty() const { return empty_; }
@@ -293,6 +294,14 @@ namespace nerikiri {
           return {key, value};
         }
       ));
+    }
+
+    Value putToArgument(const std::string& argName, const Value& value) {
+      if (bufferMap_.count(argName) > 0) {
+        bufferMap_[argName]->push(value);
+        return value;
+      }
+      return Value::error(logger::error("OperationBaseBase::putToArgument({}) failed.", argName));
     }
 
     Value push(const Value& ci, Value&& value) {

@@ -255,3 +255,11 @@ Value Process::deleteConsumerConnection(const ConnectionInfo& ci) {
   auto& op = store()->getOperation(ci.at("input").at("info"));
   return op.removeConsumerConnection(ci);
 }
+
+
+Value Process::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
+  logger::trace("Process::putToArgument({})", str(opInfo));
+  auto& op = store()->getOperation(opInfo);
+  return op.putToArgument(argName, value);
+}
+

@@ -39,6 +39,6 @@ int main(const int argc, const char* argv[]) {
           "increment", 
           "arg01")) << std::endl;
 
-  std::cout << nerikiri::str(broker->invokeOperationByName("increment")) << std::endl;;
+  std::cout << nerikiri::str(broker->invokeOperation({{"name", "increment"}})) << std::endl;;
   return 0;
 }

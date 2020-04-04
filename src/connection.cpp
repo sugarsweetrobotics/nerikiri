@@ -16,9 +16,9 @@ info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), 
     }
 
     if (providerBroker_) {
-        auto name = info_.at("output").at("info").at("name").stringValue();
-        pull_func_ = [providerBroker, name]() {
-            return providerBroker->invokeOperationByName(name);
+        auto info = info_.at("output").at("info");
+        pull_func_ = [providerBroker, info]() {
+            return providerBroker->invokeOperation(info);
         };
         is_null_ = false;
     }

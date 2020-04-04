@@ -90,9 +90,9 @@ namespace nerikiri {
 
     virtual Value callOperation(const Value& info, Value&& value) const override;
 
-    virtual Value invokeOperationByName(const std::string& name) const override;
+    virtual Value invokeOperation(const Value& v) const override;
 
-    virtual Value makeConnection(const ConnectionInfo& ci) override;
+    //virtual Value makeConnection(const ConnectionInfo& ci) override;
 
     virtual Value getConnectionInfos() const override;
 

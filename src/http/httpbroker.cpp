@@ -87,13 +87,25 @@ public:
     server_->response("/.*", "DELETE", "text/html", [this, process](const webi::Request& req) -> webi::Response {
       return response([this, process, &req](){return process->deleteResource(req.matches[0], this);});
     });
-    
-    server_->response("/process/container/([^/]*)/operation/([^/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
+
+    server_->response("/.*", "PUT", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+      return response([this, process, &req](){return process->writeResource(req.matches[0], nerikiri::json::toValue(req.body), this); });
+    });
+
+    server_->response("/process/operations/([^\\/]*)/input/arguments/([^/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
+    });
+
+    server_->response("/process/container/([^/]*)/operations/([^/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callContainerOperation(
         {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
     });
 
-    server_->response("/process/operation/([^\\/]*)/call", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
+    server_->response("/process/operations/([^\\/]*)/input/arguments/([^/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
+      return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
+    });
+    
+    server_->response("/process/operations/([^\\/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
     });
     

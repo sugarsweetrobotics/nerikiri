@@ -59,27 +59,22 @@ namespace nerikiri {
 
     virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
+      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/info/");
     }
 
     virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/invoke/");
+      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
     }
 
     virtual Value getOperationInfo(const Value& v) const override {
       if (v.isError()) return v;    
+      return requestResource("/process/operations/" + v.at("name").stringValue() + "/info/");
+    }
+
+    virtual Value invokeOperation(const Value& v) const override {
       return requestResource("/process/operations/" + v.at("name").stringValue() + "/");
     }
-
-    virtual Value invokeOperationByName(const std::string& name) const override {
-      return requestResource("/process/operations/" + name + "/invoke/");
-    }
-
-    virtual Value makeConnection(const ConnectionInfo& ci) override {
-      return createResource("/process/connections/", ci);
-    }
-
 
     virtual Value registerConsumerConnection(const ConnectionInfo& ci) override {
       if (ci.isError()) return ci;    

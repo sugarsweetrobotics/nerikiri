@@ -45,9 +45,9 @@ namespace nerikiri {
 
     virtual Value callOperation(const Value& info, Value&& value) const = 0;
 
-    virtual Value invokeOperationByName(const std::string& name) const = 0;
+    virtual Value invokeOperation(const Value& name) const = 0;
 
-    virtual Value makeConnection(const Value& ci)  = 0;
+    //virtual Value makeConnection(const Value& ci)  = 0;
 
     virtual Value getConnectionInfos() const = 0;
 

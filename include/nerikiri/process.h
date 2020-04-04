@@ -52,6 +52,8 @@ namespace nerikiri {
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
 
+    Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value);
+
 
     Process& addExecutionContext(const ExecutionContext& ec);
 
@@ -80,6 +82,10 @@ namespace nerikiri {
 
     Value createResource(const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr) {
       return nerikiri::ObjectMapper::createResource(this, path, value, receiverBroker);
+    }
+
+    Value writeResource(const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr) {
+      return nerikiri::ObjectMapper::writeResource(this, path, value, receiverBroker);
     }
 
     Value deleteResource(const std::string& path, BrokerAPI* receiverBroker = nullptr) {

@@ -18,10 +18,10 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
     if (path == "/process/operations/") {
         return store->getOperationInfos();
     }
-    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/info/"))) {
         return store->getOperation({{"name", Value(match[1])}}).info();
     }
-    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/invoke/"))) {
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
         return nerikiri::invoke_operation(store->getOperation({{"name", Value(match[1])}}));
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
@@ -39,7 +39,7 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
         return store->getOperation({{"name", Value(match[1])}}).getOutputConnectionInfos();
     }
-    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/([^/]*)/"))) {
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/([^/]*)/"))) {
         return store->getOperation({{"name", Value(match[1])}}).getOutputConnectionInfo({{"name", Value(match[2])}});
     }
 
@@ -52,10 +52,10 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
         return store->getContainerByName(match[1]).getOperationInfos();
     }
-    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/info/"))) {
         return store->getContainerByName(match[1]).getOperation({{"name", Value(match[2])}}).info();
     }
-    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/invoke/"))) {
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
         return nerikiri::invoke_operation(store->getContainerByName(match[1]).getOperation({{"name", Value(match[2])}}));
     }
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
@@ -85,6 +85,14 @@ Value ObjectMapper::createResource(Process* process, const std::string& path, co
   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
 }
 
+Value ObjectMapper::writeResource(Process* proc, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+  std::smatch match;
+
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {
+    return proc->putToArgument({{"name", Value(match[1])}}, match[2], value);
+  }
+  return Value::error(logger::error("ObjectMapper::writeResource({}) failed.", path));
+}
 
 Value ObjectMapper::deleteResource(Process* process, const std::string& path, BrokerAPI* receiverBroker) {
   std::smatch match;

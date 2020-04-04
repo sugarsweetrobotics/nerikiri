@@ -47,8 +47,8 @@ Value Broker::callOperation(const Value& info, Value&& value) const {
     return nerikiri::call_operation(store_->getOperation(info), std::move(value));
 }
 
-Value Broker::invokeOperationByName(const std::string& name) const {
-    return nerikiri::invoke_operation(store_->getOperation({{"name", name}}));
+Value Broker::invokeOperation(const Value& v) const {
+    return nerikiri::invoke_operation(store_->getOperation(v));
 }
 
 /**
@@ -106,7 +106,7 @@ Value nerikiri::removeConsumerConnection(const Broker_ptr broker, const Connecti
     }
     return broker->removeConsumerConnection(ci);
 }
-
+/*
 Value nerikiri::makeConnection(BrokerAPI* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     if (!broker) {
@@ -114,7 +114,7 @@ Value nerikiri::makeConnection(BrokerAPI* broker, const ConnectionInfo& ci) {
     }
     return broker->makeConnection(ci);
 }
-
+*/
 Value Broker::getConnectionInfos() const {
     return store_->getConnectionInfos();
 }
@@ -123,7 +123,7 @@ Value requestConnection(const Value& providerInfo, const Value& connectionInfo) 
 
 }
 
-
+/*
 Value Broker::makeConnection(const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     logger::trace("Broker::makeConnection({}", str(ci));
@@ -145,6 +145,7 @@ Value Broker::makeConnection(const ConnectionInfo& ci) {
 
     return ret;
 }
+*/
 
 Value Broker::registerConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("Broker::registerConsumerConnection({}", str(ci));
