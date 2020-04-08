@@ -20,12 +20,18 @@ namespace nerikiri {
         Broker_ptr providerBroker_;
         Broker_ptr consumerBroker_;
         std::function<Value()> pull_func_;
-        std::function<Value(Value&& value)> push_func_;
+        std::function<Value(const Value& value)> push_func_;
         bool is_null_;
+        bool is_event_;
     public:
         Connection();
         Connection(const ConnectionInfo& info, Broker_ptr providerBroker, Broker_ptr consumerBroker);
         ~Connection();
+
+        Connection(const Connection& c) : info_(c.info_), 
+        providerBroker_(c.providerBroker_), consumerBroker_(c.consumerBroker_), 
+        pull_func_(c.pull_func_), push_func_(c.push_func_),
+        is_null_(c.is_null_), is_event_(c.is_event_) {}
 
         bool isPull() const { return true; }
 
@@ -33,9 +39,11 @@ namespace nerikiri {
 
         bool isPush() const { return true; }
 
-        Value push(Value&& value) { return this->push_func_(std::move(value)); }
+        Value putToArgumentViaConnection(const Value& value) { return this->push_func_(value); }
 
         bool isNull() const { return is_null_; }
+
+        bool isEvent() const { return is_event_; }
 
         static Connection null;
 

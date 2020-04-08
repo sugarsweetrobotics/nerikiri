@@ -18,7 +18,7 @@ auto increment = nerikiri::OperationFactory(
 int main(const int argc, const char* argv[]) {
   return nerikiri::Process(argv[0])
     .addOperation(increment.create())
-    .addBroker(nerikiri::http::broker("localhost", 8080))
+    //.addBroker(nerikiri::http::broker("localhost", 8080))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();
 }

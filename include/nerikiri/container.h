@@ -1,7 +1,9 @@
 #pragma once
 
 #include "nerikiri/value.h"
+#include "nerikiri/object.h"
 #include "nerikiri/operation.h"
+#include "nerikiri/naming.h"
 
 namespace nerikiri {
 
@@ -10,37 +12,46 @@ namespace nerikiri {
     class ContainerOperationBase;
     using ContainerOperationBase_ptr = std::shared_ptr<ContainerOperationBase>;
 
-    class ContainerBase {
+    class ContainerOperationFactoryBase;
+    class ContainerFactoryBase;
+
+    class ContainerBase : public Object {
     protected:
-        ContainerInfo info_;
         std::string type_;
         std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
+        ContainerFactoryBase* parentFactory_;
         bool is_null_;
 
     public:
-        const ContainerInfo& info() const { return info_; }
         std::string type() const { return type_; }
 
         bool isNull() const { return is_null_; }
+
     public:
-        ContainerBase(const std::string& typeName, ContainerInfo&& info) : type_(typeName), info_(std::move(info)), is_null_(false) { }
+        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, ContainerInfo&& info) : parentFactory_(parentFactory), type_(typeName), Object(info), is_null_(false) { }
         virtual ~ContainerBase() {}
 
-        ContainerBase& addOperation(std::shared_ptr<ContainerOperationBase> operation);
+        Value addOperation(std::shared_ptr<ContainerOperationBase> operation);
 
         std::vector<Value> getOperationInfos() const;
 
         ContainerOperationBase& getOperation(const Value& info) const;
 
         static ContainerBase null;
+
+        std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info);
+
+        Value createContainerOperation(const Value& info);
+
     };
 
     template<typename T>
     class Container : public ContainerBase {
     private:
         std::shared_ptr<T> _ptr;
+
     public:
-        Container(ContainerInfo&& info): ContainerBase(typeid(T).name(), std::move(info)), _ptr(std::make_shared<T>()) {
+        Container(ContainerFactoryBase* parentFactory, ContainerInfo&& info): ContainerBase(parentFactory, demangle(typeid(T).name()), std::move(info)), _ptr(std::make_shared<T>()) {
             if (!nameValidator(info.at("name").stringValue())) {
                 logger::error("Container ({}) can not be created. Invalid name format.", str(info_));
                 is_null_ = true;
@@ -83,7 +94,7 @@ namespace nerikiri {
 
         virtual Value getContainerOperationInfo() const override { return this->info(); }
 
-        virtual Value call(Value&& value) const override {
+        virtual Value call(const Value& value) override {
             if (this->isNullContainerOperation()) return Value::error("ContainerOperation is Null.");
             return this->function_(*((static_cast<Container<T>*>(container_))->ptr()), value);
         }
@@ -94,26 +105,58 @@ namespace nerikiri {
             this->info_["name"] = container->info().at("name").stringValue() + ":" + this->info_["name"].stringValue();
          }
 
-        virtual Value invoke() const override {
+        virtual Value invoke() override {
             if (this->isNullContainerOperation()) {
                 return Value::error("Opertaion is null");
             }
-            return nerikiri::call_operation(*this, this->collectValues());
+            return this->call(collectValues());// erikiri::call_operation(*this, this->collectValues());
         }
     };
 
-    template<typename T>
-    class ContainerFactory {
-    public:
-        ContainerFactory() {}
-        ~ContainerFactory() {}
 
+    class ContainerFactoryBase {
+    private:
+      std::vector<std::shared_ptr<ContainerOperationFactoryBase>> operationFactories_;
     public:
-        std::shared_ptr<ContainerBase> create() { return std::shared_ptr<ContainerBase>(new Container<T>({{"name", typeid(T).name()}})); }
+      virtual ~ContainerFactoryBase() {}
+    public:
+      virtual std::string typeName() = 0;
+    public:
+      virtual std::shared_ptr<ContainerBase> create() = 0;
+      virtual ContainerFactoryBase& addOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof) { 
+          operationFactories_.push_back(cof);
+          return *this;
+      }
+
+      friend class ContainerBase;
     };
 
     template<typename T>
-    class ContainerOperationFactory {
+    class ContainerFactory : public ContainerFactoryBase {
+    public:
+        ContainerFactory() {}
+        virtual ~ContainerFactory() {}
+    public:
+        virtual std::string typeName() override { return demangle(typeid(T).name()); }
+    public:
+        virtual std::shared_ptr<ContainerBase> create() override { 
+          return std::shared_ptr<ContainerBase>(new Container<T>(this, {{"name", demangle(typeid(T).name())}})); 
+        }
+    };
+
+    class ContainerOperationFactoryBase {
+    public:
+      virtual ~ContainerOperationFactoryBase() {}
+    public:
+      virtual std::string containerTypeName() = 0;
+      virtual std::string typeName() = 0;
+    public:
+      virtual std::shared_ptr<ContainerOperationBase> create() = 0;
+    };
+
+
+    template<typename T>
+    class ContainerOperationFactory : public ContainerOperationFactoryBase {
     private:
         Value info_;
         std::function<Value(T&,Value&&)> function_;
@@ -122,8 +165,16 @@ namespace nerikiri {
         ~ContainerOperationFactory() {}
 
     public:
-        std::shared_ptr<ContainerOperation<T>> create() { 
-            return std::make_shared<ContainerOperation<T>>(info_, function_); 
+        virtual std::string containerTypeName() {
+            return demangle(typeid(T).name());
+        }
+
+        virtual std::string typeName() {
+            return demangle(typeid(T).name()) + ":" + info_.at("name").stringValue();
+        }
+    public:
+        virtual std::shared_ptr<ContainerOperationBase> create() { 
+            return std::shared_ptr<ContainerOperationBase>(new ContainerOperation<T>(info_, function_)); 
         }
     };
 

@@ -4,6 +4,7 @@
 #include "nerikiri/process.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/signal.h"
+#include "nerikiri/naming.h"
 
 
 #include <iostream>
@@ -33,17 +34,17 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   return *this;
 }
 
-Process& Process::addBroker(const Broker_ptr& brk) {
+Value Process::addBroker(const Broker_ptr& brk) {
   logger::trace("Process::addBroker()");
   if (brk) {
     brk->setProcess(Process_ptr(this));
     brk->setProcessStore(&store_);
+    auto name = nerikiri::numbering_policy<Broker_ptr>(brokers_, brk->info().at("name").stringValue(), ".brk");
+    brk->setInstanceName(name);
     brokers_.push_back(brk);
-    //brokers_.emplace_back(std::forward<Broker_ptr>(brk));
-  } else {
-    logger::error("addBroker failed. Added broker is null.");
-  }
-  return *this;
+    return brk->info();
+  } 
+  return Value::error(logger::error("addBroker failed. Added broker is null."));
 }
 
 static auto start_broker(std::vector<std::thread>& threads, Process* process, Broker_ptr& brk) {
@@ -115,7 +116,9 @@ void Process::shutdown() {
 
 int32_t Process::start() {
   logger::trace("Process::start()");
+  if (on_starting_) on_starting_(this);
   startAsync();
+  if (on_started_) on_started_(this);
   if (wait() < 0) return -1;
   shutdown();
   return 0;
@@ -147,12 +150,28 @@ void Process::executeOperation(const OperationInfo& info) const {
   
 }
 
-Process& Process::addExecutionContext(const ExecutionContext& ec) {
-  
-  return *this;
+Value Process::createContainer(const  Value& info) {
+  logger::trace("Process::createContainer({})", str(info));
+  auto f = store()->getContainerFactory(info);
+  if (!f) {
+    return Value::error(logger::error("createContainer failed. Can not find appropreate container factory."));
+  }
+  logger::info("Creating Container({})", str(info));
+  return store()->addContainer(f->create());
 }
 
-Process& Process::createBroker(const BrokerInfo& ci) {
+Value Process::createOperation(const OperationInfo& info) {
+  logger::trace("Process::createOperation({})", str(info));
+  auto f = store()->getOperationFactory(info);
+  if (!f) {
+    return Value::error(logger::error("createOperation failed. Can not find appropreate operation factory."));
+  }
+  logger::info("Creating Operation({})", str(info));
+  return store()->addOperation(f->create());
+}
+    
+
+Value Process::createBroker(const BrokerInfo& ci) {
   logger::trace("Process::createBroker({})", str(ci));
   for(auto f : brokerFactories_) {
     if(f->typeName() == ci.at("name").stringValue()) {
@@ -160,10 +179,17 @@ Process& Process::createBroker(const BrokerInfo& ci) {
       return addBroker(f->create(ci));
     }
   }
-  logger::error("createBroker failed. Can not found appropreate broker factory.");
-  return *this;
+  return Value::error(logger::error("createBroker failed. Can not found appropreate broker factory."));
 }
-    
+  
+Value Process::createExecutionContext(const Value& value) {
+  auto f = store()->getExecutionContextFactory(value);
+  if (!f) {
+    return Value::error(logger::error("createExecutionContext failed. Can not find appropreate execution context factory."));
+  }
+  logger::info("Creating Execution Context({})", str(value));
+  return store()->addExecutionContext(f->create(value));
+}
 
 /**
  * もしConnectionInfoで指定されたBrokerが引数のbrokerでなければ，親プロセスに対して別のブローカーをリクエストする
@@ -263,3 +289,17 @@ Value Process::putToArgument(const Value& opInfo, const std::string& argName, co
   return op.putToArgument(argName, value);
 }
 
+Value Process::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
+  logger::trace("Process::putToArgumentViaConnection({})", str(conInfo));
+  auto& op = store()->getOperation(conInfo.at("input").at("info"));
+  return op.putToArgumentViaConnection(conInfo, value);  
+}
+
+Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo) {
+  auto ec = store()->getExecutionContext({{"instanceName", ecName}});
+  if (ec) {
+    return ec->bind(std::reference_wrapper<OperationBaseBase>(getOperation(opInfo)));
+  } else {
+    return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));
+  }
+}

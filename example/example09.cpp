@@ -12,7 +12,7 @@ nerikiri::Value disconnect(const std::string& connectionName, Broker_ptr provide
   // ここは無駄が多い．providerのNameとBrokerを同時に物OperationProxyなどのクラスを定義するべきか，
   // OperationInfoもショートバージョンなどを作れば軽量にできるかも．今のところnameしか使わない．defaultArgsは無駄負荷だし，
   // 今後はtestSetが入るから・・・
-  return providerBroker->deleteProviderConnection(
+  return providerBroker->removeProviderConnection(
     { {"name", connectionName},
       {"output", {
           {"info", providerBroker->getOperationInfo({{"name", providerName}})},

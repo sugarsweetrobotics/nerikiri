@@ -1,17 +1,18 @@
 #pragma once
 
 #include "nerikiri/value.h"
+#include "nerikiri/object.h"
 
 namespace nerikiri {
 
     class Process;
     class ProcessStore;
 
-  class BrokerAPI {
+  class BrokerAPI : public Object {
   private:
 
   public:
-    BrokerAPI() {}
+    BrokerAPI(const Value& info) : Object(info) {}
 
     virtual ~BrokerAPI() {}
 
@@ -47,8 +48,6 @@ namespace nerikiri {
 
     virtual Value invokeOperation(const Value& name) const = 0;
 
-    //virtual Value makeConnection(const Value& ci)  = 0;
-
     virtual Value getConnectionInfos() const = 0;
 
     virtual Value registerConsumerConnection(const Value& ci)  = 0;
@@ -57,8 +56,10 @@ namespace nerikiri {
     virtual Value removeProviderConnection(const Value& ci) = 0;
     virtual Value removeConsumerConnection(const Value& ci) = 0;
 
-    virtual Value pushViaConnection(const Value& ci, Value&& value)  const = 0;
+    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) = 0;
 
+    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) = 0;
+    
     virtual Value requestResource(const std::string& path) const = 0;
 
     virtual Value createResource(const std::string& path, const Value& value) = 0;

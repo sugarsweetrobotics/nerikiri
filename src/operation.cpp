@@ -7,6 +7,7 @@ using namespace nerikiri::logger;
 
 Operation Operation::null;
 
+/*
 Value nerikiri::call_operation(const Callable& operation, Value&& value) {
   logger::trace("nerikir::call_operation({})", str(value));
   try {
@@ -21,4 +22,4 @@ Value nerikiri::invoke_operation(const Invokable& operation) {
   return operation.invoke();
 }
   
-
+*/

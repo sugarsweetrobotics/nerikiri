@@ -24,7 +24,7 @@ namespace nerikiri::http {
 
   class HTTPBrokerProxy : public AbstractBrokerProxy {
   public:
-    HTTPBrokerProxy() {}
+    HTTPBrokerProxy(const Value& info) : AbstractBrokerProxy(info) {}
     virtual ~HTTPBrokerProxy() {}
   };
 

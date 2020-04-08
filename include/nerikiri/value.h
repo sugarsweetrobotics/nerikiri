@@ -34,6 +34,7 @@ namespace nerikiri {
   class Value;
 
 
+  std::string str(const Value& value);
   Value merge(const Value& v1, const Value& v2);
 
   /**
@@ -192,12 +193,15 @@ namespace nerikiri {
     }
 
     Value& operator[](const int key) {
-      if (!isListValue()) throw new ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
+      if (!isListValue()) throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
       return listvalue_[key];
     }
 
     const Value& at(const std::string& key) const {
-      if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+      if (!isObjectValue()) throw ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+      if (objectvalue_.count(key) == 0) {
+        throw ValueTypeError(std::string("trying object access in key(" + key + ") but not found. Value is " + str(*this)));
+      }
       return objectvalue_.at(key);
     }
     /*

@@ -35,7 +35,6 @@ namespace nerikiri {
 
   class Broker  : public BrokerAPI{
   private:
-    const BrokerInfo info_;
 
   protected:
     Process_ptr process_;
@@ -45,7 +44,7 @@ namespace nerikiri {
     static std::shared_ptr<BrokerAPI> null;
 
   public:
-    Broker(const BrokerInfo& info): info_(info), process_(nullptr), store_(nullptr) {}
+    Broker(const BrokerInfo& info): BrokerAPI(info), process_(nullptr), store_(nullptr) {}
     virtual ~Broker() {}
 
     virtual bool run(Process* process) override{
@@ -104,7 +103,9 @@ namespace nerikiri {
 
     virtual Value removeProviderConnection(const ConnectionInfo& ci) override;
 
-    virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override;
+    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override;
+
+    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override;
 
     virtual Value requestResource(const std::string& path) const override;
 

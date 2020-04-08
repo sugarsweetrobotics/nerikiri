@@ -6,6 +6,7 @@
 #include "nerikiri/value.h"
 #include "nerikiri/connection.h"
 #include "nerikiri/functional.h"
+#include "nerikiri/object.h"
 
 namespace nerikiri {
 
@@ -36,33 +37,34 @@ namespace nerikiri {
 
   class Callable {
   public:
-    virtual Value call(Value&& value) const = 0;
+    virtual Value call(const Value& value) = 0;
   };
 
   class Invokable {
   public:
-    virtual Value invoke() const = 0;
+    virtual Value invoke() = 0;
   };
 
   class Executable {
   public:
-    virtual void execute() const = 0;
+    virtual Value execute() = 0;
   };
 
-  Value call_operation(const Callable& operation, Value&& value);
+  //Value call_operation(const Callable& operation, Value&& value);
  
-  Value invoke_operation(const Invokable& operation);
+  //Value invoke_operation(const Invokable& operation);
 
-  class Buffer {
+  class NewestValueBuffer {
   private:
     bool empty_;
     Value buffer_;
     Value defaultValue_;
   public:
-    Buffer(): empty_(true) {}
-    Buffer(const Value& defaultValue) : buffer_(defaultValue), defaultValue_(defaultValue), empty_(true) {}
 
-    virtual ~Buffer() {}
+    NewestValueBuffer(): empty_(true) {}
+    NewestValueBuffer(const Value& defaultValue) : buffer_(defaultValue), defaultValue_(defaultValue), empty_(true) {}
+
+    virtual ~NewestValueBuffer() {}
   public:
     virtual Value push(const Value& v) { buffer_ = (v); empty_ = false; return buffer_; }
     virtual Value push(Value&& v) { buffer_ = std::move(v); empty_ = false; return buffer_; }
@@ -70,34 +72,35 @@ namespace nerikiri {
     virtual bool isEmpty() const { return empty_; }
   };
 
-  class OperationBaseBase : public Callable, public Invokable, public Executable {
+  class OperationBaseBase : public Callable, public Invokable, public Executable, public Object {
   protected:
     Process_ptr process_;
     bool is_null_;
-    OperationInfo info_;
+    //OperationInfo info_;
     ConnectionList outputConnectionList_;
     ConnectionListDictionary inputConnectionListDictionary_;
-    std::map<std::string, std::shared_ptr<Buffer>> bufferMap_;
+    std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
+    NewestValueBuffer outputBuffer_;
   public:
     
   public:
-    OperationBaseBase() : process_(nullptr), is_null_(true), info_(Value::error("null operation")) {
+    OperationBaseBase() : process_(nullptr), is_null_(true), Object(Value::error("null operation")) {
       logger::trace("OperationBase construct with ()");
       
     }
 
-    OperationBaseBase(OperationInfo&& info) : is_null_(true), info_(std::move(info)) {
+    OperationBaseBase(OperationInfo&& info) : is_null_(true), Object(std::move(info)) {
       logger::trace("OperationBase construct with (info)");
       if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
       }
       info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
           inputConnectionListDictionary_.emplace(key, ConnectionList());
-          bufferMap_.emplace(key, std::make_shared<Buffer>(info_.at("defaultArg").at(key)));
+          bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
       });
     }
 
-    OperationBaseBase(const OperationBaseBase& op): process_(op.process_), info_(op.info_), is_null_(op.is_null_),
+    OperationBaseBase(const OperationBaseBase& op): process_(op.process_), Object(op.info_), is_null_(op.is_null_),
       outputConnectionList_(op.outputConnectionList_), inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_) {
       logger::trace("OperationBase copy construction."); 
       if (!operationValidator(info_)) {
@@ -106,14 +109,14 @@ namespace nerikiri {
     }
 
     OperationBaseBase(const OperationInfo& info):
-      info_(info), is_null_(false) {
+      Object(info), is_null_(false) {
       logger::trace("OperationBase::OperationBase({})", str(info));
       if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
       }
       info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
           inputConnectionListDictionary_.emplace(key, ConnectionList());
-          bufferMap_.emplace(key, std::make_shared<Buffer>(info_.at("defaultArg").at(key)));
+          bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
       });
     }
 
@@ -228,6 +231,18 @@ namespace nerikiri {
       });
     }
 
+
+    Connection getInputConnection(const Value& conInfo) const {
+      if (inputConnectionListDictionary_.count(conInfo.at("input").at("target").at("name").stringValue()) == 0) {
+        return Connection::null;
+      }
+
+      return nerikiri::find_first<Connection, nerikiri::Connection>(inputConnectionListDictionary_.at(conInfo.at("input").at("target").at("name").stringValue()), 
+        [&conInfo](const Connection& con) -> bool { return con.info().at("name") == conInfo.at("name"); },
+        [](const auto& con) { return con; },
+        Connection::null);
+    }
+
     Value getInputConnectionInfo(const std::string& arg) const {
       if (inputConnectionListDictionary_.count(arg) == 0) {
         return Value::error(logger::error("Operation::getInputConnectionInfo({}) failed. No key.", arg));
@@ -304,6 +319,25 @@ namespace nerikiri {
       return Value::error(logger::error("OperationBaseBase::putToArgument({}) failed.", argName));
     }
 
+    Value putToArgumentViaConnection(const Value& conInfo, const Value& value) {
+      logger::trace("OperationBaseBase::putToArgumentViaConnection()");
+      const std::string& argName = conInfo.at("input").at("target").at("name").stringValue();
+      const std::string& conName = conInfo.at("name").stringValue();
+      auto connection = this->getInputConnection(conInfo);
+      if (bufferMap_.count(argName) > 0) {
+        bufferMap_[argName]->push(value);
+        if (connection.isEvent()) {
+          execute();
+        }
+        return value;
+      }
+      return Value::error(logger::error("OperationBaseBase::putToArgument({}) failed.", argName));
+    }
+
+    Value getOutput() {
+      return outputBuffer_.pop();
+    }
+
     Value push(const Value& ci, Value&& value) {
       for (auto& c : inputConnectionListDictionary_[ci.at("target").at("name").stringValue()]) {
         if (c.info().at("name") == ci.at("name")) {
@@ -313,16 +347,14 @@ namespace nerikiri {
       return Value::error(logger::error("OperationBase::push(Value) can not found connection ({})", str(ci)));
     }
     
-    virtual void execute() const override {
+    virtual Value execute() override {
+      logger::trace("Operation({})::execute()", str(info()));
       auto v = this->invoke();
-      for(auto c : outputConnectionList_) {
-        c.push(std::forward<Value>(v));
+      for(auto& c : outputConnectionList_) {
+        c.putToArgumentViaConnection(v);
       }
+      return v;
     }
-
-    friend Value call_operation(const Callable& operation, Value&& value);
-
-    friend Value nerikiri::invoke_operation(const Invokable& operation);
   };
 
 
@@ -366,17 +398,19 @@ namespace nerikiri {
     }
 
 
-    virtual Value call(Value&& value) const override {
+    virtual Value call(const Value& value) override {
       if (this->isNull()) return Value::error("Opertaion is null");
-      return this->function_(value);
+      outputBuffer_.push(std::move(this->function_(value)));
+      return getOutput();
     }
 
     
-    virtual Value invoke() const override {
+    virtual Value invoke() override {
       if (isNull()) {
         return Value::error("Opertaion is null");
       }
-      return nerikiri::call_operation(*this, collectValues());
+      return call(collectValues());
+      //return nerikiri::call_operation(*this, collectValues());
     }
 
     static Operation null;
@@ -386,9 +420,13 @@ namespace nerikiri {
   private:
     OperationInfo info_;
     std::function<Value(Value)> function_;
-
+    std::string typeName_;
   public:
-    OperationFactory(const OperationInfo& info, std::function<Value(Value)>&& func): info_(info), function_(func) {}
+    std::string typeName() { return typeName_; }
+  public:
+    OperationFactory(const OperationInfo& info, std::function<Value(Value)>&& func): info_(info), function_(func) {
+      typeName_ = info.at("name").stringValue();
+    }
     virtual ~OperationFactory() {}
 
     std::shared_ptr<Operation> create() {   

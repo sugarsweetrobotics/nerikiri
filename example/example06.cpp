@@ -96,7 +96,7 @@ MyContainerOperation addInt(
     }
 );
 
-TimerEC timer(1.0); // Hz
+auto f = std::shared_ptr<nerikiri::ExecutionContextFactory>(new TimerECFactory());
 
 int main(const int argc, const char* argv[]) {
   std::cout << "MyContainer:" << typeid(MyContainer).name() << std::endl;
@@ -109,10 +109,12 @@ int main(const int argc, const char* argv[]) {
     .addOperation(add.create())
     .addOperation(zero.create())
     .addOperation(one.create())
-    .addExecutionContext(timer)
+    .addExecutionContextFactory(f)
+    .addExecutionContext(f->create({{"name", "TimerEC"}, {"rate", 10.0}}))
+    //.createExecutionContext({{"name", "TimerEC"}, {"rate", 10.0}})
     .addContainer(c)
     .addBrokerFactory(std::shared_ptr<BrokerFactory>(new nerikiri::http::HTTPBrokerFactory()))
-    .createBroker({{"name", "HTTPBroker"}, {"host", "0.0.0.0"}, {"port", 8080}})
+    //.createBroker({{"name", "HTTPBroker"}, {"host", "0.0.0.0"}, {"port", 8080}})
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .start();
 }

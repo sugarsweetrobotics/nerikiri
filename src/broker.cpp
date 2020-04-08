@@ -36,19 +36,19 @@ Value Broker::getOperationInfo(const Value& info) const {
 }
 
 Value Broker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const {
-    return nerikiri::call_operation(store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo), std::move(arg));
+    return store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).call(std::move(arg));
 }
 
 Value Broker::invokeContainerOperation(const Value& cinfo, const Value& oinfo) const {
-    return nerikiri::invoke_operation(store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo));
+    return store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).invoke();
 }
 
 Value Broker::callOperation(const Value& info, Value&& value) const {
-    return nerikiri::call_operation(store_->getOperation(info), std::move(value));
+    return store_->getOperation(info).call(std::move(value));
 }
 
 Value Broker::invokeOperation(const Value& v) const {
-    return nerikiri::invoke_operation(store_->getOperation(v));
+    return store_->getOperation(v).invoke();
 }
 
 /**
@@ -167,6 +167,17 @@ Value Broker::removeProviderConnection(const ConnectionInfo& ci) {
     return this->process_->deleteProviderConnection(ci);
 }
 
+Value Broker::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
+    logger::trace("Broker::putToArgument()");
+    return this->process_->putToArgument(opInfo, argName, value);
+}
+
+Value Broker::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
+    logger::trace("Broker::putToArgumentViaConnection()");
+    return this->process_->putToArgumentViaConnection(conInfo, value);
+}
+
+/* 
 Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
     auto& op = store_->getOperation(ci.at("input"));
     if (op.isNull()) {
@@ -174,7 +185,7 @@ Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
     }
     return op.push(ci, std::move(value));
 }
-
+*/
 Value Broker::requestResource(const std::string& path) const {
     return process_->requestResource(path);//
 }

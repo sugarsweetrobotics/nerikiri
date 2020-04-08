@@ -39,10 +39,16 @@ public:
     try {
       return webi::Response(200, nerikiri::json::toJSONString(func()), "application/json");
     } catch (nerikiri::json::JSONParseError& e) {
-      logger::error("JSON Parse Error: \"{}\"", e.what());
+      logger::error("JSON Parse Error in HTTPBroker::response(): \"{}\"", e.what());
       return webi::Response(400, "Bad Request", "text/html");
     } catch (nerikiri::json::JSONConstructError& e) {
-      logger::error("JSON Construct Error: \"{}\"", e.what());
+      logger::error("JSON Construct Error in HTTPBroker::response(): \"{}\"", e.what());
+      return webi::Response(400, e.what(), "text/html");
+    } catch (nerikiri::ValueTypeError &e) {
+      logger::error("ValueTypeError in HTTPBroker::response(): \"{}\"", e.what());
+      return webi::Response(400, e.what(), "text/html");
+    } catch (std::exception &e) {
+      logger::error("Exception in HTTPBroker::response(): \"{}\"", e.what());
       return webi::Response(400, e.what(), "text/html");
     }
   }
@@ -100,15 +106,11 @@ public:
       return response([this, &req](){return Broker::callContainerOperation(
         {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
     });
-
-    server_->response("/process/operations/([^\\/]*)/input/arguments/([^/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
-    });
     
     server_->response("/process/operations/([^\\/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
       return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
     });
-    
+    /*
     server_->response("/process/operation/([^/]*)/argument/([^/]*)/([^/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
       std::string operation_name = req.matches[1];
       std::string argument_name  = req.matches[2];
@@ -121,7 +123,7 @@ public:
           }
         }};
       return response([this, info, &req](){return Broker::pushViaConnection(info, nerikiri::json::toValue(req.body));});
-    });
+    }); */
     server_->runBackground(port_);
     cond_.wait(lock);
     
@@ -144,7 +146,7 @@ class HTTPBrokerProxyImpl : public HTTPBrokerProxy {
 private:
   webi::HttpClient_ptr client_;
 public:
-  HTTPBrokerProxyImpl(const std::string& addr, const int port) : client_(webi::client(addr, port)) {}
+  HTTPBrokerProxyImpl(const std::string& addr, const int64_t port) : HTTPBrokerProxy({ {"host", addr}, {"port", Value(port)} }), client_(webi::client(addr, port)) {}
 
   virtual ~HTTPBrokerProxyImpl() {}
 
@@ -171,24 +173,30 @@ public:
      return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/call", "PUT"));
     }
 
-    virtual Value callOperationByName(const std::string& name, Value&& value) const {
-      return toValue(client_->request("/process/operation/" + name + "/call", "POST"));
-    }
-
     virtual Value callOperation(const Value& info, Value&& value) const override {
       return toValue(client_->request("/process/operation/" + info.at("name").stringValue() + "/call", "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
+    /*
 
     virtual Value removeProviderConnection(const ConnectionInfo& ci) override {
       return toValue(client_->request("/process/remove_consumer_connection", "DELETE", {"DELETE", nerikiri::json::toJSONString(ci), "application/json"}));
     }
+    */
 
-    virtual Value pushViaConnection(const ConnectionInfo& ci, Value&& value)  const override {
-      auto operation_name = ci.at("input").at("info").at("name").stringValue();
-      auto argument_name  = ci.at("input").at("target").at("name").stringValue();
-      auto connection_name = ci.at("name").stringValue();
-      return toValue(client_->request("/process/operation/" + operation_name + "/argument/" + argument_name + "/" + connection_name + "/push", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
+      auto operation_name = opInfo.at("instanceName").stringValue();
+      return toValue(client_->request("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+    }
+
+    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override {
+      if (conInfo.isNull()) {
+        return Value::error(logger::error("HTTPBrokerProxyImpl::putToArgumentViaConnection failed. Connection is null."));
+      }
+      auto operation_name = conInfo.at("input").at("info").at("instanceName").stringValue();
+      auto connection_name = conInfo.at("name").stringValue();
+      auto argument_name = conInfo.at("input").at("target").at("name").stringValue();
+      return toValue(client_->request("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value requestResource(const std::string& path) const override {
