@@ -20,15 +20,15 @@ Value Broker::getContainerInfos() const {
 }
 
 Value Broker::getContainerInfo(const Value& value) const {
-    return store_->getContainerByName(value.at("name").stringValue()).info();
+    return store_->getContainer(value).info();
 }
 
 Value Broker::getContainerOperationInfos(const Value& info) const {
-    return store_->getContainerByName(info.at("name").stringValue()).getOperationInfos();
+    return store_->getContainer(info).getOperationInfos();
 }
 
 Value Broker::getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const {
-    return store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).getContainerOperationInfo();
+    return store_->getContainer(cinfo).getOperation(oinfo).getContainerOperationInfo();
 }
 
 Value Broker::getOperationInfo(const Value& info) const {
@@ -36,11 +36,11 @@ Value Broker::getOperationInfo(const Value& info) const {
 }
 
 Value Broker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const {
-    return store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).call(std::move(arg));
+    return store_->getContainer(cinfo).getOperation(oinfo).call(std::move(arg));
 }
 
 Value Broker::invokeContainerOperation(const Value& cinfo, const Value& oinfo) const {
-    return store_->getContainerByName(cinfo.at("name").stringValue()).getOperation(oinfo).invoke();
+    return store_->getContainer(cinfo).getOperation(oinfo).invoke();
 }
 
 Value Broker::callOperation(const Value& info, Value&& value) const {
@@ -51,22 +51,6 @@ Value Broker::invokeOperation(const Value& v) const {
     return store_->getOperation(v).invoke();
 }
 
-/**
- * もしConnectionInfoで指定されたBrokerが引数のbrokerでなければ，親プロセスに対して別のブローカーをリクエストする
- 
-Value nerikiri::relayProvider(const Broker* broker, const ConnectionInfo& ci) {
-    if (ci.isError()) return ci;
-    // まず、もし出力側 (Provider) 出なければProvider側にmakeConnectionを連鎖する
-    
-    if (broker->store_->getOperation(ci.at("output").at("info")).isNull()) {
-      logger::warn("The broker received makeConnection does not have the provider operation.");
-      // Provider側のBrokerProxyを取得
-      
-      return makeConnection(broker->process_->createBrokerProxy(ci.at("output").at("broker")).get(), ci);
-    }
-    return ci;
-}
-*/
 Value nerikiri::checkDuplicateConsumerConnection(const Broker* broker, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;
     // 同じコネクションを持っていないか確認
@@ -123,30 +107,6 @@ Value requestConnection(const Value& providerInfo, const Value& connectionInfo) 
 
 }
 
-/*
-Value Broker::makeConnection(const ConnectionInfo& ci) {
-    if (ci.isError()) return ci;
-    logger::trace("Broker::makeConnection({}", str(ci));
-    // まず、もし出力側 (Provider) 出なければProvider側にmakeConnectionを連鎖する
-   
-    auto ret = ci;;//= nerikiri::relayProvider(this, ci);
-    
-    ret = nerikiri::checkDuplicateConsumerConnection(this, ret);
-
-    // Consumer側との接続確認
-    // Consumer側のBrokerProxyを取得
-    ret = nerikiri::registerConsumerConnection(process_->createBrokerProxy(ci.at("input").at("broker")), ret);
-    
-    // ConsumerにregisterConnectionをリクエスト
-    
-    // リクエストが成功なら、こちらもConnectionを登録。
-    ret = nerikiri::registerProviderConnection(this, ret);
-    
-
-    return ret;
-}
-*/
-
 Value Broker::registerConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("Broker::registerConsumerConnection({}", str(ci));
     return this->process_->registerConsumerConnection(ci);
@@ -177,15 +137,6 @@ Value Broker::putToArgumentViaConnection(const Value& conInfo, const Value& valu
     return this->process_->putToArgumentViaConnection(conInfo, value);
 }
 
-/* 
-Value Broker::pushViaConnection(const ConnectionInfo& ci, Value&& value) const {
-    auto& op = store_->getOperation(ci.at("input"));
-    if (op.isNull()) {
-        return Value::error(logger::error("Operation({}) can not be found.", str(ci.at("input"))));
-    }
-    return op.push(ci, std::move(value));
-}
-*/
 Value Broker::requestResource(const std::string& path) const {
     return process_->requestResource(path);//
 }

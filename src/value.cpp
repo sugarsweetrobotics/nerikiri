@@ -83,7 +83,8 @@ std::string nerikiri::str(const nerikiri::Value& value) {
         return "{}";
     }
     if (value.isError()) {
-        throw ValueTypeError(value.getErrorMessage());
+    return "{\"Error\": \"Value is error('" + value.getErrorMessage() + "').\"}";
+        //throw ValueTypeError(value.getErrorMessage());
     }
     return "{\"Error\": \"Value is not supported type.\"}";
 }

@@ -98,32 +98,7 @@ public:
       return response([this, process, &req](){return process->writeResource(req.matches[0], nerikiri::json::toValue(req.body), this); });
     });
 
-    server_->response("/process/operations/([^\\/]*)/input/arguments/([^/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
-    });
-
-    server_->response("/process/container/([^/]*)/operations/([^/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::callContainerOperation(
-        {{"name", Value(req.matches[1])}}, {{"name", Value(req.matches[2])}}, nerikiri::json::toValue(req.body));});
-    });
     
-    server_->response("/process/operations/([^\\/]*)/", "PUT", "text/html", [this](const webi::Request& req) -> webi::Response {
-      return response([this, &req](){return Broker::callOperation({{"name", Value(req.matches[1])}}, nerikiri::json::toValue(req.body));});
-    });
-    /*
-    server_->response("/process/operation/([^/]*)/argument/([^/]*)/([^/]*)/push", "PUT", "application/json", [this](const webi::Request& req) -> webi::Response {
-      std::string operation_name = req.matches[1];
-      std::string argument_name  = req.matches[2];
-      std::string connection_name = req.matches[3];
-      Value info = { 
-        {"name", connection_name}, 
-        {"input", { 
-          {"info", { {"name", operation_name} } }, 
-          {"target", { {"name", argument_name} } }
-          }
-        }};
-      return response([this, info, &req](){return Broker::pushViaConnection(info, nerikiri::json::toValue(req.body));});
-    }); */
     server_->runBackground(port_);
     cond_.wait(lock);
     
@@ -146,7 +121,9 @@ class HTTPBrokerProxyImpl : public HTTPBrokerProxy {
 private:
   webi::HttpClient_ptr client_;
 public:
-  HTTPBrokerProxyImpl(const std::string& addr, const int64_t port) : HTTPBrokerProxy({ {"host", addr}, {"port", Value(port)} }), client_(webi::client(addr, port)) {}
+  HTTPBrokerProxyImpl(const std::string& addr, const int64_t port) : HTTPBrokerProxy({ {"host", addr}, {"port", Value(port)} }), client_(webi::client(addr, port)) {
+    client_->setTimeout(1);
+  }
 
   virtual ~HTTPBrokerProxyImpl() {}
 

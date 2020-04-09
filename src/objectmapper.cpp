@@ -47,16 +47,16 @@ Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::st
         return store->getContainerInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/"))) {
-        return store->getContainerByName(match[1]).info();
+        return store->getContainer({{"instanceName", Value(match[1])}}).info();
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
-        return store->getContainerByName(match[1]).getOperationInfos();
+        return store->getContainer({{"instanceName", Value(match[1])}}).getOperationInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/info/"))) {
-        return store->getContainerByName(match[1]).getOperation({{"name", Value(match[2])}}).info();
+        return store->getContainer({{"instanceName", Value(match[1])}}).getOperation({{"instanceName", Value(match[2])}}).info();
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-        return store->getContainerByName(match[1]).getOperation({{"name", Value(match[2])}}).invoke();
+        return store->getContainer({{"instanceName", Value(match[1])}}).getOperation({{"instanceName", Value(match[2])}}).invoke();
     }
 
     if (path == "/process/ecfactories/") {
@@ -129,7 +129,7 @@ Value ObjectMapper::writeResource(Process* proc, const std::string& path, const 
         {"name", Value(match[3])} }, value);
   }
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-    return proc->getContainerByName(match[1]).getOperation({{"name", Value(match[2])}}).call(value);
+    return proc->getContainer({{"instanceName", Value(match[1])}}).getOperation({{"instanceName", Value(match[2])}}).call(value);
   }
   return Value::error(logger::error("ObjectMapper::writeResource({}) failed.", path));
 }

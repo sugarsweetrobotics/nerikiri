@@ -1,5 +1,7 @@
 #include "nerikiri/container.h"
-
+#include "nerikiri/containerfactory.h"
+#include "nerikiri/containeroperation.h"
+#include "nerikiri/containeroperationfactory.h"
 #include "nerikiri/functional.h"
 #include "nerikiri/naming.h"
 
@@ -22,7 +24,7 @@ std::vector<Value> ContainerBase::getOperationInfos() const {
 
 ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
     for(auto op: operations_) {
-        if (op->getContainerOperationInfo().at("operationName") == info.at("name")) {
+        if (op->getContainerOperationInfo().at("instanceName") == info.at("instanceName")) {
             return *op;
         }
     }
@@ -35,7 +37,7 @@ ContainerBase ContainerBase::null(nullptr, "null", {{"name", "null"}});
 
 std::shared_ptr<ContainerOperationFactoryBase> ContainerBase::getContainerOperationFactory(const Value& info) {
     for(auto& opf : parentFactory_->operationFactories_) {
-        if (opf->typeName() == info.at("name").stringValue()) {
+        if (opf->typeName() == opf->containerTypeName() + ":"+ info.at("name").stringValue()) {
         return opf;
         }
     }
@@ -43,11 +45,11 @@ std::shared_ptr<ContainerOperationFactoryBase> ContainerBase::getContainerOperat
 }
 
 Value ContainerBase::createContainerOperation(const Value& info) {
-    logger::trace("Process::createOperation({})", str(info));
+    logger::trace("ContainerBase::createContainerOperation({})", str(info));
     auto f = getContainerOperationFactory(info);
     if (!f) {
-        return Value::error(logger::error("createOperation failed. Can not find appropreate operation factory."));
+        return Value::error(logger::error("createContainerOperation failed. Can not find appropreate operation factory."));
     }
-    logger::info("Creating Operation({})", str(info));
+    logger::info("Creating ContainerOperation({})", str(info));
     return addOperation(f->create());
 }

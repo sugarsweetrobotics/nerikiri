@@ -33,17 +33,12 @@ Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
   return container->info();
 }
 
-ContainerBase& ProcessStore::getContainerByName(const std::string& name) {
-  auto cs = nerikiri::filter<std::shared_ptr<ContainerBase>>(containers_, [&name](auto& c){return c->info().at("name").stringValue() == name;});
-  if (cs.size() == 1) return *cs[0];
-  if (cs.size() == 0) {
-    logger::warn("Process::getContainerByName({}) failed. Not found.", name);
-    return ContainerBase::null;
-  } else {
-    logger::warn("Process::getContainerByName({}) failed. Multiple containers with the same name are found.", name);
-    return ContainerBase::null;
-
-  }
+ContainerBase& ProcessStore::getContainer(const Value& info) {
+  return nerikiri::find_first<ContainerBase&, std::shared_ptr<ContainerBase>>(containers_,
+    [&info](auto& c){return c->info().at("instanceName") == info.at("instanceName");},
+    [] (auto& c) -> ContainerBase& { return *(c.get()); },
+    ContainerBase::null
+    );
 }
 
 Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
@@ -58,6 +53,7 @@ Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
 }
 
 OperationBaseBase& ProcessStore::getOperation(const OperationInfo& oi) {
+  if (oi.isError()) return Operation::null;
   Operation& null = Operation::null;
   auto& name = oi.at("instanceName");
   auto pos = name.stringValue().find(":");
@@ -65,7 +61,7 @@ OperationBaseBase& ProcessStore::getOperation(const OperationInfo& oi) {
     auto containerName = name.stringValue().substr(0, pos);
     auto operationName = name.stringValue().substr(pos+1);
     std::cout << "Con:" << containerName << ", " << operationName << std::endl;
-    return getContainerByName(containerName).getOperation({{"instanceName", operationName}});
+    return getContainer({{"instanceName", containerName}}).getOperation({{"instanceName", operationName}});
   } else {
     for(auto& op : operations_) {
       if (op->info().at("instanceName") == name) return *op;
@@ -127,10 +123,10 @@ Value ProcessStore::addContainerOperationFactory(std::shared_ptr<ContainerOperat
   for(auto& cf : containerFactories_) {
     if(cf->typeName() == cof->containerTypeName()) {
       cf->addOperationFactory(cof);
+      return {{"name", cf->typeName()}};
     }
   }
-  
-
+  return Value::error(logger::error("ProcessStore::addContainerOperationFactory({}) can not find appropreate Container Factory.", cof->typeName()));
 }
 
 

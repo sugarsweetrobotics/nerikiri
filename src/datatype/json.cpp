@@ -40,6 +40,9 @@ namespace {
         auto a = value.GetObject();
         std::vector<std::pair<std::string, nerikiri::Value>> ps;
         for(auto& e : a) {
+            if (strcmp(e.name.GetString(), "__ERROR__") == 0) {
+                return nerikiri::Value::error(e.value.GetString());
+            }
             ps.push_back(std::pair<std::string, nerikiri::Value>(e.name.GetString(), construct(e.value)));
         }
         return nerikiri::Value(std::move(ps));
@@ -85,7 +88,9 @@ std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
         return "{}";
     }
     if (value.isError()) {
-        throw JSONConstructError(value.getErrorMessage());
+
+      return "{\"__ERROR__\": \"Value is error('" + value.getErrorMessage() + "').\"}"; 
+  //      throw JSONConstructError(value.getErrorMessage());
     }
     return "{\"Error\": \"Value is not supported type.\"}";
 }

@@ -205,7 +205,7 @@ Value checkProcessHasProviderOperation(Process* process, const ConnectionInfo& c
 Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker) {
   logger::trace("Process::registerProviderConnection({})", str(ci));
   auto ret = checkProcessHasProviderOperation(this, ci);
-  
+  if (ret.isError()) return ret;
   auto& provider = store()->getOperation(ret.at("output").at("info"));
   if (provider.hasOutputConnectionRoute(ci)) {
       return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ci.at("output"))));
@@ -296,10 +296,63 @@ Value Process::putToArgumentViaConnection(const Value& conInfo, const Value& val
 }
 
 Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo) {
+  if (opInfo.isError()) {
+    logger::error("Process::bindECtoOperation failed. Operation Information is Error. ({})", str(opInfo));
+    return opInfo;
+  }
   auto ec = store()->getExecutionContext({{"instanceName", ecName}});
   if (ec) {
     return ec->bind(std::reference_wrapper<OperationBaseBase>(getOperation(opInfo)));
   } else {
     return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));
   }
+}
+
+
+Value Process::loadOperationFactory(const Value& info) {
+  logger::trace("Process::loadOperationFactory({})", str(info));
+  auto name = info.at("name").stringValue();
+  auto dllproxy = createDLLProxy(info);
+  if (dllproxy) {
+    dllproxies_.push_back(dllproxy);
+    auto f = dllproxy->functionSymbol(info.at("name").stringValue());
+    if (f) {
+        addOperationFactory(std::shared_ptr<OperationFactory>(  static_cast<OperationFactory*>(f())  ) );
+        return info;
+    } 
+    return Value::error(logger::error("Process::loadOperationFactory failed. Can not load Symbol ({})", str(info)));
+  }
+  return Value::error(logger::error("Process::loadOperationFactory failed. Can not load DLL ({})", str(info)));
+}
+
+Value Process::loadContainerOperationFactory(const Value& info) {
+  logger::trace("Process::loadContainerOperationFactory({})", str(info));
+  auto name = info.at("container_name").stringValue() + "_" + info.at("name").stringValue();
+  auto dllproxy = createDLLProxy(name);
+  if (dllproxy) {
+    dllproxies_.push_back(dllproxy);
+    auto f = dllproxy->functionSymbol(name);
+    if (f) {
+        addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase>(  static_cast<ContainerOperationFactoryBase*>(f())  ) );
+        return info;
+    } 
+    return Value::error(logger::error("Process::loadContainerOperationFactory failed. Can not load Symbol ({})", str(info)));
+  }
+  return Value::error(logger::error("Process::loadContainerOperationFactory failed. Can not load DLL ({})", str(info)));
+}
+
+Value Process::loadContainerFactory(const Value& info) {
+  logger::trace("Process::loadContainerFactory({})", str(info));
+  auto name = info.at("name").stringValue();
+  auto dllproxy = createDLLProxy(name);
+  if (dllproxy) {
+    dllproxies_.push_back(dllproxy);
+    auto f = dllproxy->functionSymbol("create" + name);
+    if (f) {
+        addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );
+        return info;
+    } 
+    return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));
+  }
+  return Value::error(logger::error("Process::loadContainerFactory failed. Can not load DLL ({})", str(info)));
 }

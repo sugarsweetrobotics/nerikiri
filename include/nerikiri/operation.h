@@ -380,12 +380,12 @@ namespace nerikiri {
     }
   };
   
-  class Operation : public OperationBase<std::function<Value(Value)>> {
+  class Operation : public OperationBase<std::function<Value(const Value&)>> {
   public:
-    Operation(): OperationBase<std::function<Value(Value)>>() {}
+    Operation(): OperationBase<std::function<Value(const Value&)>>() {}
     Operation(OperationInfo&& info) : OperationBase(std::move(info)) {}
-    Operation(OperationInfo&& info, std::function<Value(Value)>&& func): OperationBase<std::function<Value(Value)>>(std::move(info), std::move(func)) {}
-    Operation(const OperationInfo& info, std::function<Value(Value)>& func) : OperationBase<std::function<Value(Value)>>(info, func) {}
+    Operation(OperationInfo&& info, std::function<Value(const Value&)>&& func): OperationBase<std::function<Value(const Value&)>>(std::move(info), std::move(func)) {}
+    Operation(const OperationInfo& info, std::function<Value(const Value&)>& func) : OperationBase<std::function<Value(const Value&)>>(info, func) {}
 
     virtual ~Operation() {}
 
@@ -416,21 +416,4 @@ namespace nerikiri {
     static Operation null;
   };
 
-  class OperationFactory {
-  private:
-    OperationInfo info_;
-    std::function<Value(Value)> function_;
-    std::string typeName_;
-  public:
-    std::string typeName() { return typeName_; }
-  public:
-    OperationFactory(const OperationInfo& info, std::function<Value(Value)>&& func): info_(info), function_(func) {
-      typeName_ = info.at("name").stringValue();
-    }
-    virtual ~OperationFactory() {}
-
-    std::shared_ptr<Operation> create() {   
-        return std::make_shared<Operation>(info_, function_); 
-    }
-  };
 }

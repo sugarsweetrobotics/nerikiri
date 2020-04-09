@@ -92,7 +92,18 @@ namespace nerikiri {
     }
 
     virtual Value registerProviderConnection(const ConnectionInfo& ci) override {
-      if (ci.isError()) return ci;    
+      if (ci.isError()) {
+        logger::error("BrokerProxy::registerProviderConnection failed. ({})", str(ci));
+        return ci;
+      }
+      if (ci.at("output").at("info").isError()) {
+        logger::error("BrokerProxy::registerProviderConnection failed. ({})", str(ci));
+        return ci.at("output").at("info");
+      }
+      if (ci.at("input").at("info").isError()) {
+        logger::error("BrokerProxy::registerProviderConnection failed. ({})", str(ci));
+        return ci.at("input").at("info");
+      }
       auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
       return createResource("/process/operations/" + operation_name + "/output/connections/", ci);
     }

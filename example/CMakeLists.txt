@@ -9,17 +9,40 @@ set(example08_src example08.cpp)
 set(example09_src example09.cpp)
 set(example10_src example10.cpp)
 
-
-
 include_directories(${CMAKE_SOURCE_DIR}/include)
-set(EXAMPLE_LIBS nerikiri)
 
 find_package(Threads REQUIRED)
+
+# add_library(one SHARED one.cpp)
+# target_link_libraries(one nerikiri Threads::Threads)
+
+set(EXAMPLE_LIBS nerikiri)
+set(EXTRA_MODULES one)
+
+set(OPERATIONS)
+function(add_operation NAME)
+  add_library(${NAME} SHARED ${NAME}.cpp)
+  target_link_libraries(${NAME} ${EXAMPLE_LIBS} Threads::Threads)
+  set(OPERATIONS ${NAME} ${OPERATIONS})
+  set(OPERATIONS ${OPERATIONS} PARENT_SCOPE)
+endfunction(add_operation)
+
 
 function(add_example NAME)
   add_executable(${NAME} ${${NAME}_src})
   target_link_libraries(${NAME} ${EXAMPLE_LIBS} Threads::Threads)
+  add_dependencies(${NAME} ${OPERATIONS})
 endfunction(add_example)
+
+
+add_operation(one)
+add_operation(increment)
+add_operation(decrement)
+add_operation(add)
+add_operation(zero)
+add_operation(MyStruct)
+add_operation(MyStruct_addInt)
+add_operation(MyStruct_intGetter)
 
 
 add_example(example01)

@@ -7,10 +7,16 @@
 #include "nerikiri/runnable.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/container.h"
+#include "nerikiri/containerfactory.h"
+#include "nerikiri/containeroperation.h"
+#include "nerikiri/containeroperationfactory.h"
 #include "nerikiri/ec.h"
 #include "nerikiri/process_store.h"
 #include "nerikiri/objectfactory.h"
+#include "nerikiri/operationfactory.h"
 #include "nerikiri/objectmapper.h"
+
+#include "nerikiri/dllproxy.h"
 
 namespace nerikiri {
 
@@ -31,6 +37,8 @@ namespace nerikiri {
 
     std::vector<Broker_ptr> brokers_;
     std::vector<std::shared_ptr<BrokerFactory>> brokerFactories_;
+
+    std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
 
     static Process null;
   public:
@@ -56,17 +64,20 @@ namespace nerikiri {
     Process& addOperationFactory(std::shared_ptr<OperationFactory> opf) { store_.addOperationFactory(opf); return *this; }
     Value createOperation(const OperationInfo& info);
     OperationBaseBase& getOperation(const OperationInfo& oi) { return store_.getOperation(oi); }
+    Value loadOperationFactory(const Value& info);
 
     Value getContainerInfos() {return store_.getContainerInfos(); }
-    ContainerBase& getContainerByName(const std::string& name) { return store_.getContainerByName(name); }
+    ContainerBase& getContainer(const Value& info) { return store_.getContainer(info); }
     Process& addContainer(std::shared_ptr<ContainerBase> container) { store_.addContainer(container); return *this; }
     Value createContainer(const Value& ci);
     Process& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf) { store_.addContainerFactory(cf); return *this; }
+    Value loadContainerFactory(const Value& info);
 
     Process& addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof) { store_.addContainerOperationFactory(cof); return *this; }
     Value createContainerOperation(const Value& containerInfo, const Value& operationInfo) {
       return store_.getContainer(containerInfo).createContainerOperation(operationInfo);
     }
+    Value loadContainerOperationFactory(const Value& info);
 
     Value addBroker(const Broker_ptr& brk);
     Broker_ptr getBrokerByName(const std::string& name);

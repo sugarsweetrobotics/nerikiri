@@ -6,6 +6,7 @@
 #include "nerikiri/connection.h"
 #include "nerikiri/connectiondictionary.h"
 
+#include "nerikiri/operationfactory.h"
 namespace nerikiri {
 
 
@@ -30,8 +31,8 @@ namespace nerikiri {
   public:
     Value info() const;
     Value getContainerInfos();
-    ContainerBase& getContainer(const Value& info) { return getContainerByName(info.at("name").stringValue()); }
-    ContainerBase& getContainerByName(const std::string& name);
+    ContainerBase& getContainer(const Value& info);
+    //ContainerBase& getContainerByName(const std::string& name);
     Value addContainer(std::shared_ptr<ContainerBase> container);
     ProcessStore& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf);
     std::shared_ptr<ContainerFactoryBase> getContainerFactory(const Value& info);
