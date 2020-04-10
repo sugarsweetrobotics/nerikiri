@@ -1,0 +1,17 @@
+{
+
+    "operations": {
+        "preload": ["one", "increment"],
+        "precreate": ["one", "increment"]
+    },
+
+    "containers": {
+        "preload": {"MyStruct": ["addInt", "intGetter"]},
+        "precreate": {"MyStruct": ["addInt", "intGetter"]}
+    },
+
+    "brokers": {
+        "preload": ["HTTPBroker"],
+        "precreate": ["HTTPBroker"]
+    }
+}

@@ -85,6 +85,12 @@ namespace nerikiri {
       return v;
     }
     virtual ~Value();
+
+    static Value list() {
+      Value v;
+      v.typecode_ = VALUE_TYPE_LIST;
+      return v;
+    }
   private:
     
     void _clear() {
@@ -154,7 +160,7 @@ namespace nerikiri {
       return r;
     }
 
-    void list_for_each(std::function<void(Value&)>&& func) {
+    void list_for_each(std::function<void(const Value&)>&& func) const {
       for(auto& v: listvalue_) {
         func(v);
       }
@@ -305,8 +311,17 @@ namespace nerikiri {
   inline Value merge(const Value& v1, const Value& v2) {
     if((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_LIST)) {
       std::vector<Value> result;
-      result.insert(result.end(), v1.listvalue_.begin(), v1.listvalue_.end());
       result.insert(result.end(), v2.listvalue_.begin(), v2.listvalue_.end());
+      for(auto& v : v1.listvalue_) {
+        bool match = false;
+        for(auto& v2 : v2.listvalue_) {
+          if (v2 == v) match = true;
+        }
+        if (!match) {
+          result.push_back(v);
+        }
+      }
+//      result.insert(result.end(), v1.listvalue_.begin(), v1.listvalue_.end());
       //      std::merge(v1.listvalue_.begin(), v1.listvalue_.end(),
       //       v2.listvalue_.begin(), v2.listvalue_.end(), std::back_inserter(result));
       return {result};
@@ -314,14 +329,21 @@ namespace nerikiri {
       Value rvalue;
       rvalue.typecode_ = Value::VALUE_TYPE_OBJECT;
       for(auto& [key, value] : v2.objectvalue_) {
-        rvalue[key] = value;
+        if (v1.objectvalue_.count(key) > 0) {
+          rvalue[key] = merge(v1.at(key), v2.at(key));
+        } else {
+          rvalue[key] = value;
+        }
       }
       for(auto& [key, value] : v1.objectvalue_) {
-        rvalue[key] = value;
+        if (v2.objectvalue_.count(key) == 0) {
+          rvalue[key] = value;
+        }
       }
       return rvalue;
     }
-    return Value::error("Value::merge failed. Invalid Value types of arguments v1 and v2.");
+    return v2;
+//    return Value::error("Value::merge failed. Invalid Value types of arguments v1 and v2.");
   }
 
 

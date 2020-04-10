@@ -33,9 +33,13 @@ ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
 
 ContainerOperationBase* ContainerOperationBase::null = new ContainerOperation<int>();
 
-ContainerBase ContainerBase::null(nullptr, "null", {{"name", "null"}});
+ContainerBase ContainerBase::null;
 
 std::shared_ptr<ContainerOperationFactoryBase> ContainerBase::getContainerOperationFactory(const Value& info) {
+    if (this->isNull()) {
+        logger::error("ContainerBase::getContainerOperationFactory failed. Container is null.");
+        return nullptr;
+    }
     for(auto& opf : parentFactory_->operationFactories_) {
         if (opf->typeName() == opf->containerTypeName() + ":"+ info.at("name").stringValue()) {
         return opf;

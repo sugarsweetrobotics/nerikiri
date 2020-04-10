@@ -104,7 +104,7 @@ Value Broker::getConnectionInfos() const {
 }
 
 Value requestConnection(const Value& providerInfo, const Value& connectionInfo) {
-
+    return providerInfo;
 }
 
 Value Broker::registerConsumerConnection(const ConnectionInfo& ci) {

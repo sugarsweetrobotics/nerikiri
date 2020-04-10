@@ -10,7 +10,7 @@ void nerikiri::logger::setLogLevel(const LOG_LEVEL& level) {
 }
 
 LOG_LEVEL nerikiri::logger::getLogLevel() {
-  return FATAL;
+  return INFO;
 }
 
 format_type nerikiri::logger::formatter(format_type&& fmt, const LOG_LEVEL& severity) {

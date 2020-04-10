@@ -6,6 +6,7 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2)
 OPTION(TEST_HTTP "Http Server Client Test" OFF)
 OPTION(TEST_HTTPBROKER "HttpBroker Test" OFF)
 OPTION(TEST_PROCESS "HttpBroker Test" OFF)
+OPTION(TEST_OPTION "Option Parser Test" OFF)
 
 
 function(declare_test arg1)
@@ -27,3 +28,7 @@ if (${TEST_PROCESS})
   declare_test(process)
 endif ()
 
+
+if (${TEST_OPTION})
+  declare_test(option)
+endif ()

@@ -28,6 +28,8 @@ namespace nerikiri {
         bool isNull() const { return is_null_; }
 
     public:
+
+        ContainerBase() : parentFactory_(nullptr), type_("NullContainer"), Object({{"name", "NullContainer"}, {"instanceName", "null"}}), is_null_(true) { }
         ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, ContainerInfo&& info) : parentFactory_(parentFactory), type_(typeName), Object(info), is_null_(false) { }
         virtual ~ContainerBase() {}
 

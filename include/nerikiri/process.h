@@ -29,6 +29,7 @@ namespace nerikiri {
   class Process {
   private:
     ProcessInfo info_;
+    Value config_;
 
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
@@ -49,14 +50,22 @@ namespace nerikiri {
      */
     Process(const std::string& name);
 
+
+    Process(const int argc, const char** argv);
+
     /**
      * デストラクタ
      */
     ~Process();
-   
+  private:
+    void _preloadOperations();
+    void _preloadContainers();
+    
   public:
     ProcessStore* store() { return &store_; }
-
+  private: 
+    std::string path_;
+    void setExecutablePath(const std::string& path) { path_ = path; }
   public:
     Value getOperationInfos() { return store_.getOperationInfos(); }
     Value getOperationFactoryInfos() { return store_.getOperationFactoryInfos(); }
@@ -149,6 +158,8 @@ namespace nerikiri {
     Value deleteResource(const std::string& path, BrokerAPI* receiverBroker = nullptr) {
       return nerikiri::ObjectMapper::deleteResource(this, path, receiverBroker);
     }
+
+    void parseConfigFile(const std::string& filepath);
   };
 
 

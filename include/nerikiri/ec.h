@@ -57,6 +57,9 @@ namespace nerikiri {
         }
 
         Value bind(std::reference_wrapper<OperationBaseBase> op) {
+            if (op.get().isNull()) {
+                return Value::error(logger::error("ExecutionContext::bind failed. Operation is null"));
+            }
             operations_.push_back(op);
             return op.get().info();
         }

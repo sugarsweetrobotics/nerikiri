@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <string>
+#include <cstdio>
 #include "nerikiri/value.h"
 
 namespace nerikiri::json {
@@ -26,5 +27,7 @@ namespace nerikiri::json {
     std::string toJSONString(const nerikiri::Value& value);
 
     nerikiri::Value toValue(const std::string& json_str);
+
+    nerikiri::Value toValue(std::FILE* fp);
 
 };

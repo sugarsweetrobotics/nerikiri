@@ -1,5 +1,6 @@
 #include "nerikiri/datatype/json.h"
 #include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
 #include "nerikiri/logger.h"
 #include <iostream>
 #include <ios>
@@ -59,6 +60,20 @@ nerikiri::Value nerikiri::json::toValue(const std::string& json_str) {
     return construct(doc);
 }
 
+
+nerikiri::Value nerikiri::json::toValue(std::FILE* fp) {
+
+    rapidjson::Document doc;
+    char readBuffer[65536];
+    rapidjson::FileReadStream ip(fp, readBuffer, sizeof(readBuffer));
+    doc.ParseStream(ip);
+    if (doc.HasParseError()) {
+        logger::error("JSONParseError - {}", "FILE");
+        throw JSONParseError();
+    } 
+    return construct(doc);
+
+}
 std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
     if (value.isIntValue()) return std::to_string(value.intValue());
     if (value.isDoubleValue()) return std::to_string(value.doubleValue());

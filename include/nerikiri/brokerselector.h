@@ -23,6 +23,7 @@ namespace nerikiri {
     public:
       BrokerSelector& addFactory(std::shared_ptr<BrokerFactory> brokerFactory) {
           brokerFactories_.push_back(brokerFactory);
+          return *this;
       }
 
       std::shared_ptr<BrokerAPI> create(const Value& value);

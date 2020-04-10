@@ -10,16 +10,16 @@ DLLProxy::DLLProxy(const Value& info):info_(info) {
     int open_mode = RTLD_LAZY;
     auto dll_name = "lib" + name + ".dylib";
     if (!(handle_ = ::dlopen(dll_name.c_str(), open_mode))) {
-        logger::error("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name);
+        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name);
     }
 }
 
-DLLProxy::DLLProxy(const std::string& filename): info_({{"name", filename}}) {
-    auto name = filename;
+DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"name", name}}) {
     int open_mode = RTLD_LAZY;
-    auto dll_name = "lib" + name + ".dylib";
+    if (path.rfind("/") != path.length()) path = path + "/";
+    auto dll_name = path + "lib" + name + ".dylib";
     if (!(handle_ = ::dlopen(dll_name.c_str(), open_mode))) {
-        logger::error("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name);
+        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name);
     }
 }
 
@@ -39,6 +39,6 @@ std::function<void*()> DLLProxy::functionSymbol(const std::string& name) {
 std::shared_ptr<DLLProxy> nerikiri::createDLLProxy(const Value& info) {
     return std::make_shared<DLLProxy>(info);
 }
-std::shared_ptr<DLLProxy> nerikiri::createDLLProxy(const std::string& filename) {
-    return std::make_shared<DLLProxy>(filename);
+std::shared_ptr<DLLProxy> nerikiri::createDLLProxy(const std::string& path, const std::string& name) {
+    return std::make_shared<DLLProxy>(path, name);
 }

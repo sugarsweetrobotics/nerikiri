@@ -18,7 +18,7 @@ namespace nerikiri {
     public:
       DLLProxy(const Value& info);
 
-      DLLProxy(const std::string& filename);
+      DLLProxy(std::string path, const std::string& filename);
       ~DLLProxy();
 
     public:
@@ -28,6 +28,6 @@ namespace nerikiri {
 
     std::shared_ptr<DLLProxy> createDLLProxy(const Value& info);
 
-    std::shared_ptr<DLLProxy> createDLLProxy(const std::string& filename);
+    std::shared_ptr<DLLProxy> createDLLProxy(const std::string& path, const std::string& filename);
 
 }
