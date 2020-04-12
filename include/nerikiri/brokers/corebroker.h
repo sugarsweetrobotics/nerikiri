@@ -41,6 +41,8 @@ public:
 
     virtual Value invokeOperation(const Value& v) const override;
 
+    virtual Value executeOperation(const Value& v) override;
+
     virtual Value getConnectionInfos() const override;
 
     virtual Value registerConsumerConnection(const Value& ci) override;

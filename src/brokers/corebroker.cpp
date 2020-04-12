@@ -51,6 +51,11 @@ Value CoreBroker::invokeOperation(const Value& v) const {
     return process_->store()->getOperation(v).invoke();
 }
 
+Value CoreBroker::executeOperation(const Value& v) {
+    return process_->store()->getOperation(v).execute();
+}
+
+
 Value CoreBroker::getConnectionInfos() const {
     return process_->store()->getConnectionInfos();
 }

@@ -39,6 +39,8 @@ namespace nerikiri {
 
     virtual Value invokeOperation(const Value& name) const = 0;
 
+    virtual Value executeOperation(const Value& info) = 0;
+
     virtual Value getConnectionInfos() const = 0;
 
     virtual Value registerConsumerConnection(const Value& ci)  = 0;

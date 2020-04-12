@@ -14,7 +14,7 @@ namespace nerikiri {
     private:
         std::vector<std::reference_wrapper<OperationBaseBase>> operations_;
 
-        std::vector<std::shared_ptr<BrokerAPI>> operationBrokers_;
+        std::vector<std::pair<Value, std::shared_ptr<BrokerAPI>>> operationBrokers_;
     public:
         ExecutionContext(const Value& info) : Object(info) {
             info_["state"] = Value("stopped");
@@ -53,7 +53,14 @@ namespace nerikiri {
                 } catch (std::exception& ex) {
                     logger::error("Exception in ExecutionContext::svc(): {}", ex.what());
                 }
-            }   
+            }
+            for(auto& b : operationBrokers_) {
+                try {
+                    b.second->executeOperation(b.first);
+                } catch (std::exception& ex) {
+                    logger::error("Exception in ExecutionContext::svc(): {}", ex.what());
+                }
+            }
         }
 
         Value bind(std::reference_wrapper<OperationBaseBase> op) {
@@ -64,8 +71,8 @@ namespace nerikiri {
             return op.get().info();
         }
 
-        Value bind(std::shared_ptr<BrokerAPI> br) {
-            operationBrokers_.push_back(br);
+        Value bind(const Value& opInfo, std::shared_ptr<BrokerAPI> br) {
+            operationBrokers_.push_back({opInfo, br});
             return br->info();
         }
 
@@ -77,7 +84,7 @@ namespace nerikiri {
                 }
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it)->info().at("name") == info.at("name")) {
+                if ((*it).second->info().at("name") == info.at("name")) {
                     it = operationBrokers_.erase(it);
                     return info;
                 } 

@@ -51,6 +51,11 @@ namespace nerikiri {
       return readResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
     }
 
+    virtual Value executeOperation(const Value& info) override {
+      if (info.isError()) return info;    
+      return updateResource("/process/operations/" + info.at("instanceName").stringValue() + "/execution/", {});
+    }
+
     virtual Value getOperationInfo(const Value& v) const override {
       if (v.isError()) return v;    
       return readResource("/process/operations/" + v.at("instanceName").stringValue() + "/info/");
