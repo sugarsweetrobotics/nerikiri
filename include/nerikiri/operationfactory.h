@@ -16,8 +16,9 @@ namespace nerikiri {
     OperationFactory(const OperationInfo& info, std::function<Value(const Value&)>&& func): info_(info), function_(func) {}
     virtual ~OperationFactory() {}
 
-    std::shared_ptr<Operation> create() {   
-        return std::make_shared<Operation>(info_, function_); 
+    std::shared_ptr<Operation> create(const Value& info) {
+      auto i = nerikiri::merge(info, info_);
+        return std::make_shared<Operation>(i, function_); 
     }
   };
 

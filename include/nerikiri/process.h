@@ -2,9 +2,9 @@
 
 #include "nerikiri/operation.h"
 #include "nerikiri/value.h"
-#include "nerikiri/broker.h"
+#include "nerikiri/brokers/brokerapi.h"
+#include "nerikiri/brokers/corebroker.h"
 
-#include "nerikiri/runnable.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/container.h"
 #include "nerikiri/containerfactory.h"
@@ -35,13 +35,12 @@ namespace nerikiri {
     std::vector<std::thread> threads_;
     ObjectFactory objectFactory_;
     ProcessStore store_;
-
-    std::vector<Broker_ptr> brokers_;
-    std::vector<std::shared_ptr<BrokerFactory>> brokerFactories_;
+    std::shared_ptr<CoreBroker> coreBroker_;
 
     std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
 
     static Process null;
+
   public:
 
     /**
@@ -60,7 +59,9 @@ namespace nerikiri {
   private:
     void _preloadOperations();
     void _preloadContainers();
-    
+    void _preloadExecutionContexts();
+    void _preStartExecutionContexts();
+    void _preloadBrokers();
   public:
     ProcessStore* store() { return &store_; }
   private: 
@@ -88,11 +89,10 @@ namespace nerikiri {
     }
     Value loadContainerOperationFactory(const Value& info);
 
-    Value addBroker(const Broker_ptr& brk);
-    Broker_ptr getBrokerByName(const std::string& name);
-    Broker_ptr createBrokerProxy(const BrokerInfo& ci);
-    Value createBroker(const BrokerInfo& ci);
-    Process& addBrokerFactory(std::shared_ptr<BrokerFactory> factory) { brokerFactories_.push_back(factory); return *this;}
+    Process& addBroker(const std::shared_ptr<Broker> brk) { store_.addBroker(brk, this); return *this; }
+    Value createBroker(const Value& ci);
+    std::shared_ptr<BrokerAPI>  createBrokerProxy(const Value& ci);
+    Process& addBrokerFactory(std::shared_ptr<BrokerFactory> factory) { store_.addBrokerFactory(factory); return *this;}
     
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
@@ -106,6 +106,7 @@ namespace nerikiri {
     Process& addExecutionContext(std::shared_ptr<ExecutionContext> ec) { store_.addExecutionContext(ec); return *this; }
     Process& addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec) { store_.addExecutionContextFactory(ec); return *this; }
     Value createExecutionContext(const Value& value);
+    Value loadExecutionContextFactory(const Value& info);
 
 
     int32_t start();
@@ -143,20 +144,20 @@ namespace nerikiri {
 
     Value bindECtoOperation(const std::string& ecName, const Value& opInfo);
 
-    Value requestResource(const std::string& path) {
-      return nerikiri::ObjectMapper::requestResource(this->store(), path);
+    Value readResource(const std::string& path) {
+      return nerikiri::ObjectMapper::readResource(this->store(), path);
     }
 
-    Value createResource(const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr) {
-      return nerikiri::ObjectMapper::createResource(this, path, value, receiverBroker);
+    Value createResource(const std::string& path, const Value& value) {
+      return nerikiri::ObjectMapper::createResource(this, path, value);
     }
 
-    Value writeResource(const std::string& path, const Value& value, BrokerAPI* receiverBroker = nullptr) {
-      return nerikiri::ObjectMapper::writeResource(this, path, value, receiverBroker);
+    Value updateResource(const std::string& path, const Value& value) {
+      return nerikiri::ObjectMapper::updateResource(this, path, value);
     }
 
-    Value deleteResource(const std::string& path, BrokerAPI* receiverBroker = nullptr) {
-      return nerikiri::ObjectMapper::deleteResource(this, path, receiverBroker);
+    Value deleteResource(const std::string& path) {
+      return nerikiri::ObjectMapper::deleteResource(this, path);
     }
 
     void parseConfigFile(const std::string& filepath);

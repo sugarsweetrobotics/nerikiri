@@ -8,7 +8,7 @@
 using namespace nerikiri;
 
 
-Value ObjectMapper::requestResource(nerikiri::ProcessStore* store, const std::string& path) {
+Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::string& path) {
 
     std::smatch match;
 
@@ -114,7 +114,7 @@ Value ObjectMapper::createResource(Process* process, const std::string& path, co
   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
 }
 
-Value ObjectMapper::writeResource(Process* proc, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+Value ObjectMapper::updateResource(Process* proc, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
 
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {

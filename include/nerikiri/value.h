@@ -24,9 +24,7 @@ namespace nerikiri {
     ValueTypeError(const std::string& msg) : msg_(msg) {}
     
     const char* what() const noexcept {
-      std::stringstream ss;
-      ss << "Invalid Value Data Access (" << msg_ << ")" << std::endl;
-      return ss.str().c_str();
+      return ("Invalid Value Data Access (" + msg_ + ")").c_str();
     }
   };
 
@@ -210,28 +208,6 @@ namespace nerikiri {
       }
       return objectvalue_.at(key);
     }
-    /*
-    Value& operator=(const int64_t value) {
-      typecode_ = VALUE_TYPE_INT;
-      objectvalue_.clear();
-      intvalue_ = value;
-      return *this;
-    }
-
-    Value& operator=(const double value) {
-      typecode_ = VALUE_TYPE_DOUBLE;
-      objectvalue_.clear();
-      doublevalue_ = value;
-      return *this;
-    }
-
-    Value& operator=(const std::string& str) {
-      typecode_ = VALUE_TYPE_STRING;
-      objectvalue_.clear();
-      stringvalue_ = str;
-      return *this;
-    }
-     */
 
     Value& operator=(const Value& value) {
       typecode_ = value.typecode_;

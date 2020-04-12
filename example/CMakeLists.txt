@@ -44,6 +44,8 @@ add_operation(MyStruct)
 add_operation(MyStruct_addInt)
 add_operation(MyStruct_intGetter)
 
+add_operation(TimerEC)
+
 
 add_example(example01)
 add_example(example02)

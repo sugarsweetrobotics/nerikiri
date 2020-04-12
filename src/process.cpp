@@ -6,6 +6,7 @@
 #include "nerikiri/signal.h"
 #include "nerikiri/naming.h"
 #include "nerikiri/argparse.h"
+#include "nerikiri/brokers/broker.h"
 #include "nerikiri/processconfigparser.h"
 
 
@@ -40,6 +41,7 @@ Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}})
   logger::info("Process::Process(\"{}\")", argv[0]);
   std::string fullpath = argv[0];
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
+  coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
 
   ArgParser parser;
   parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
@@ -67,8 +69,18 @@ void Process::_preloadOperations() {
   });
 
   c = config_.at("operations").at("precreate");
-  c.list_for_each([this](auto& value) {
-    this->createOperation({{"name", value}});
+  c.object_for_each([this](auto& key, auto& value) {
+    if (value.isStringValue()) {
+      Value v{{"name", key}, {"instanceName", value}};
+      auto opInfo = this->createOperation(v);
+      if (opInfo.isError()) {
+        logger::error("Porcess::_preloadOperation({}) failed. createOperation error: ({})", v, str(opInfo));
+      }
+    } else if (value.isObjectValue()) {
+      auto vv = value;
+      vv["name"] = key;
+      createOperation(vv);  
+    }
   });
 }
 
@@ -85,14 +97,65 @@ void Process::_preloadContainers() {
 
   c = config_.at("containers").at("precreate");
   c.object_for_each([this](auto& key, auto& value) {
-    auto cinfo = createContainer({{"name", key}});
-    auto cont = this->store()->getContainer(cinfo);
-    value.list_for_each([this, &cont](auto& v) {
-      cont.createContainerOperation({{"name", v}});
+    auto v = value;
+    v["name"] = key;
+    auto cinfo = createContainer(v);
+    if (cinfo.isError()) {
+      logger::error("Porcess::_preloadContainers({}) failed. createContainer error: ({})", v, str(cinfo));
+    }
+  });
+}
+
+void Process::_preloadExecutionContexts() {
+  auto c = config_.at("ecs").at("preload");
+  c.list_for_each([this](auto& value) {
+    this->loadExecutionContextFactory({{"name", value}});
+  });
+
+  c = config_.at("ecs").at("precreate");
+  c.object_for_each([this](auto& key, auto& value) {
+    auto v = value;
+    v["name"] = key;
+    auto cinfo = createExecutionContext(v);
+  });
+
+  c = config_.at("ecs").at("bind");
+  c.object_for_each([this](auto& key, auto& value) {
+    value.list_for_each([this, key](auto& v) {
+      this->bindECtoOperation(key, {{"instanceName", v.stringValue()}});      
     });
   });
 }
 
+
+void Process::_preStartExecutionContexts() {
+  auto c = config_.at("ecs").at("start");
+  c.list_for_each([this](auto& value) {
+    this->store()->getExecutionContext({{"instanceName", value}})->start();
+  });
+}
+
+void Process::_preloadBrokers() {
+  try {
+    auto c = config_.at("brokers").at("preload");
+    c.list_for_each([this](auto& value) {
+      this->loadOperationFactory({{"name", value}});
+    });
+  } catch (ValueTypeError& ex) {
+    logger::error("Process::_preloadBrokers failed. Exception: {}", ex.what());
+  }
+
+  try {
+    auto c = config_.at("brokers").at("precreate");
+    c.object_for_each([this](auto& key, auto& value) {
+      auto vv = value;
+      vv["name"] = key;
+      createBroker(vv);  
+    });
+  } catch (ValueTypeError& ex) {
+    logger::error("Process::_preloadBrokers failed. Exception: {}", ex.what());
+  }
+}
 
 void Process::parseConfigFile(const std::string& filepath) {
 
@@ -128,27 +191,14 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   return *this;
 }
 
-Value Process::addBroker(const Broker_ptr& brk) {
-  logger::trace("Process::addBroker()");
-  if (brk) {
-    brk->setProcess(Process_ptr(this));
-    brk->setProcessStore(&store_);
-    auto name = nerikiri::numbering_policy<Broker_ptr>(brokers_, brk->info().at("name").stringValue(), ".brk");
-    brk->setInstanceName(name);
-    brokers_.push_back(brk);
-    return brk->info();
-  } 
-  return Value::error(logger::error("addBroker failed. Added broker is null."));
-}
-
-static auto start_broker(std::vector<std::thread>& threads, Process* process, Broker_ptr& brk) {
-  logger::trace("Creating a thread for broker {}", brk->getBrokerInfo());
+static auto start_broker(std::vector<std::thread>& threads, Process* process, std::shared_ptr<Broker> brk) {
+  logger::trace("Creating a thread for broker {}", brk->info());
   std::promise<bool> prms;
   auto ftr = prms.get_future();
-  threads.emplace_back(std::thread([&brk, process](std::promise<bool> p) {
+  threads.emplace_back(std::thread([brk, process](std::promise<bool> p) {
 				     std::stringstream ss;
 				     ss << std::this_thread::get_id();
-				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->getBrokerInfo()));
+				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->info()));
 				     p.set_value(brk->run(process));
 				     logger::trace("A thread {} finished", ss.str());
 				   }, std::move(prms)));
@@ -171,7 +221,7 @@ static std::future<bool> start_systemEditor(std::vector<std::thread>& threads, c
 
 void Process::startAsync() {
   logger::trace("Process::startAsync()");
-  auto broker_futures = nerikiri::map<std::future<bool>, Broker_ptr>(brokers_, [this](auto& brk) -> std::future<bool> {
+  auto broker_futures = nerikiri::map<std::future<bool>, std::shared_ptr<Broker>>(store_.brokers_, [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, this, brk);
 								 });
   
@@ -193,7 +243,7 @@ int32_t Process::wait() {
 
 void Process::shutdown() {
   logger::trace("Process::shutdown()");
-  nerikiri::foreach<Broker_ptr>(brokers_, [this](auto& brk) {
+  nerikiri::foreach<std::shared_ptr<Broker> >(store_.brokers_, [this](auto& brk) {
 			      brk->shutdown(this);
 			    });
   nerikiri::foreach<std::string, SystemEditor_ptr>(systemEditors_, [this](auto& name, auto& se) {
@@ -212,7 +262,10 @@ int32_t Process::start() {
   logger::trace("Process::start()");
   _preloadOperations();
   _preloadContainers();
+  _preloadExecutionContexts();
+  _preloadBrokers();
   if (on_starting_) on_starting_(this);
+  _preStartExecutionContexts();
   startAsync();
   if (on_started_) on_started_(this);
   if (wait() < 0) return -1;
@@ -220,18 +273,9 @@ int32_t Process::start() {
   return 0;
 }
 
-Broker_ptr Process::getBrokerByName(const std::string& name) {
-  for(auto& brk : brokers_) {
-    if (brk->getBrokerInfo().at("name").stringValue() == name) {
-      return brk;
-    }
-  }
-  return Broker::null;
-}
-
-Broker_ptr Process::createBrokerProxy(const BrokerInfo& bi) {
+std::shared_ptr<BrokerAPI> Process::createBrokerProxy(const Value& bi) {
   logger::trace("Process::createBrokerProxy({})", (bi));
-  for(auto f : brokerFactories_) {
+  for(auto f : store_.brokerFactories_) {
     if(f->typeName() == bi.at("name").stringValue()) {
       logger::info("Creating BrokerProxy ({})", (bi));
       return f->createProxy(bi);
@@ -246,15 +290,6 @@ void Process::executeOperation(const OperationInfo& info) const {
   
 }
 
-Value Process::createContainer(const  Value& info) {
-  logger::trace("Process::createContainer({})", (info));
-  auto f = store()->getContainerFactory(info);
-  if (!f) {
-    return Value::error(logger::error("createContainer failed. Can not find appropreate container factory."));
-  }
-  logger::info("Creating Container({})", (info));
-  return store()->addContainer(f->create());
-}
 
 Value Process::createOperation(const OperationInfo& info) {
   logger::trace("Process::createOperation({})", (info));
@@ -263,16 +298,27 @@ Value Process::createOperation(const OperationInfo& info) {
     return Value::error(logger::error("createOperation failed. Can not find appropreate operation factory."));
   }
   logger::info("Creating Operation({})", (info));
-  return store()->addOperation(f->create());
+  return store()->addOperation(f->create(info));
 }
     
+Value Process::createContainer(const  Value& info) {
+  logger::trace("Process::createContainer({})", (info));
+  auto f = store()->getContainerFactory(info);
+  if (!f) {
+    return Value::error(logger::error("createContainer failed. Can not find appropreate container factory."));
+  }
+  logger::info("Creating Container({})", (info));
+  return store()->addContainer(f->create(info));
+}
 
-Value Process::createBroker(const BrokerInfo& ci) {
+
+
+Value Process::createBroker(const Value& ci) {
   logger::trace("Process::createBroker({})", (ci));
-  for(auto f : brokerFactories_) {
+  for(auto f : store_.brokerFactories_) {
     if(f->typeName() == ci.at("name").stringValue()) {
       logger::info("Creating Broker ({})", (ci));
-      return addBroker(f->create(ci));
+      return store_.addBroker(f->create(ci), this);
     }
   }
   return Value::error(logger::error("createBroker failed. Can not found appropreate broker factory."));
@@ -323,7 +369,7 @@ Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* r
   auto ret3 = provider.addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
   if (ret3.isError()) {
       // 登録が失敗ならConsumer側のConnectionを破棄。
-      auto ret3 = nerikiri::removeConsumerConnection(createBrokerProxy(ret2.at("input").at("broker")), ret2);
+      auto ret3 = deleteConsumerConnection(ret2);
       return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
   }// 登録成功ならciを返す
   return ret2;
@@ -392,6 +438,7 @@ Value Process::putToArgumentViaConnection(const Value& conInfo, const Value& val
 }
 
 Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo) {
+  logger::info("Process::bindECtoOperation({}, {})", ecName, str(opInfo));
   if (opInfo.isError()) {
     logger::error("Process::bindECtoOperation failed. Operation Information is Error. ({})", (opInfo));
     return opInfo;
@@ -461,6 +508,28 @@ Value Process::loadContainerFactory(const Value& info) {
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
           addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );
+          return info;
+      } 
+      //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));
+    }
+  }
+  return Value::error(logger::error("Process::loadContainerFactory failed. Can not load DLL ({})", str(info)));
+}
+
+
+Value Process::loadExecutionContextFactory(const Value& info) {
+  logger::trace("Process::loadExecutionContextFactory({})", (info));
+  auto name = info.at("name").stringValue();
+
+  std::vector<std::string> search_paths{"./", path_};
+
+  for(auto& p : search_paths) {
+    auto dllproxy = createDLLProxy(p, name);
+    if (dllproxy) {
+      dllproxies_.push_back(dllproxy);
+      auto f = dllproxy->functionSymbol("create" + name);
+      if (f) {
+          addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory>(  static_cast<ExecutionContextFactory*>(f())  ) );
           return info;
       } 
       //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));

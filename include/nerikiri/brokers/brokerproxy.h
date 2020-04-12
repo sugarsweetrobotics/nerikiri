@@ -1,79 +1,63 @@
 #pragma once
 
-#include "nerikiri/brokerapi.h"
-#include "nerikiri/logger.h"
+#include "nerikiri/brokers/brokerapi.h"
 
 namespace nerikiri {
 
 
-  class BrokerProxy : public BrokerAPI{
+  class AbstractBrokerProxy : public BrokerAPI {
   public:
-    BrokerProxy(const Value& v) : BrokerAPI(v) {}
-    virtual ~BrokerProxy() {}
-
-  public:
-    virtual bool run(Process* proc) override {return false;}
-    
-    virtual void shutdown(Process* proc) override {}
-
-    virtual void setProcess(Process_ptr process) override {}
-
-    virtual void setProcessStore(ProcessStore* process) override {}
-  };
-
-  class AbstractBrokerProxy : public BrokerProxy {
-  public:
-    AbstractBrokerProxy(const Value& v) : BrokerProxy(v) {}
+    AbstractBrokerProxy(const Value& v) : BrokerAPI(v) {}
     virtual ~AbstractBrokerProxy() {}
 
   public:
-    virtual BrokerInfo getBrokerInfo() const override {
-      return requestResource("/broker/info/");
+    virtual Value getBrokerInfo() const override {
+      return readResource("/broker/info/");
     }
 
     virtual Value getProcessInfo() const override {
-      return requestResource("/process/info/");
+      return readResource("/process/info/");
     }
 
     virtual Value getOperationInfos() const override {
-      return requestResource("/process/operations/");
+      return readResource("/process/operations/");
     }
 
     virtual Value getContainerInfos() const override {
-      return requestResource("/process/containers/");
+      return readResource("/process/containers/");
     }
 
     virtual Value getConnectionInfos() const override {
-      return requestResource("/process/connections/");
+      return readResource("/process/connections/");
     }
 
     virtual Value getContainerInfo(const Value& v) const override {
       if (v.isError()) return v;    
-      return requestResource("/process/containers/" + v.at("name").stringValue() + "/");
+      return readResource("/process/containers/" + v.at("name").stringValue() + "/");
     }
 
     virtual Value getContainerOperationInfos(const Value& v) const override {
       if (v.isError()) return v;    
-      return requestResource("/process/containers/" + v.at("name").stringValue() + "/operations/");
+      return readResource("/process/containers/" + v.at("name").stringValue() + "/operations/");
     }
 
     virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/info/");
+      return readResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/info/");
     }
 
     virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return requestResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
+      return readResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
     }
 
     virtual Value getOperationInfo(const Value& v) const override {
       if (v.isError()) return v;    
-      return requestResource("/process/operations/" + v.at("instanceName").stringValue() + "/info/");
+      return readResource("/process/operations/" + v.at("instanceName").stringValue() + "/info/");
     }
 
     virtual Value invokeOperation(const Value& v) const override {
-      return requestResource("/process/operations/" + v.at("instanceName").stringValue() + "/");
+      return readResource("/process/operations/" + v.at("instanceName").stringValue() + "/");
     }
 
     virtual Value registerConsumerConnection(const ConnectionInfo& ci) override {

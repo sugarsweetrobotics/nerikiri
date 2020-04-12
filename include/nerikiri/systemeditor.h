@@ -2,21 +2,20 @@
 #include <memory>
 #include <string>
 #include <condition_variable>
-#include "nerikiri/runnable.h"
 
 
 namespace nerikiri {
 
 
-  class SystemEditor : public Runnable {
+  class SystemEditor  {
 
   public:
     virtual ~SystemEditor() {}
 
   public:
-    virtual bool run() override { return false; };
+    virtual bool run() { return false; };
 
-    virtual bool shutdown() override { return false; };
+    virtual bool shutdown() { return false; };
 
   public:
 

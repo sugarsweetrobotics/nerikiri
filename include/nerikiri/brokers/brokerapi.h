@@ -1,12 +1,11 @@
 #pragma once
 
+#include <string>
+
 #include "nerikiri/value.h"
 #include "nerikiri/object.h"
 
 namespace nerikiri {
-
-    class Process;
-    class ProcessStore;
 
   class BrokerAPI : public Object {
   private:
@@ -15,14 +14,6 @@ namespace nerikiri {
     BrokerAPI(const Value& info) : Object(info) {}
 
     virtual ~BrokerAPI() {}
-
-    virtual bool run(Process* process) = 0;
-    
-    virtual void shutdown(Process* process) = 0;
-
-    virtual void setProcess(Process* process)  = 0;
-
-    virtual void setProcessStore(ProcessStore* store)  = 0;
 
     virtual Value getBrokerInfo() const = 0; 
 
@@ -51,35 +42,42 @@ namespace nerikiri {
     virtual Value getConnectionInfos() const = 0;
 
     virtual Value registerConsumerConnection(const Value& ci)  = 0;
+
     virtual Value registerProviderConnection(const Value& ci)  = 0;
 
     virtual Value removeProviderConnection(const Value& ci) = 0;
+
     virtual Value removeConsumerConnection(const Value& ci) = 0;
 
     virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) = 0;
 
     virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) = 0;
     
-    virtual Value requestResource(const std::string& path) const = 0;
-
     virtual Value createResource(const std::string& path, const Value& value) = 0;
+
+    virtual Value readResource(const std::string& path) const = 0;
+
+    virtual Value updateResource(const std::string& path, const Value& value) = 0;
 
     virtual Value deleteResource(const std::string& path) = 0;
   };
 
+  class Broker;
 
   class BrokerFactory {
   private:
     const std::string typeName_;
   public:
     BrokerFactory(const Value& value) : typeName_(value.at("name").stringValue()) {}
+
     virtual ~BrokerFactory() {}
 
   public:
     const std::string& typeName() { return typeName_; }
     
   public:
-    virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
+    virtual std::shared_ptr<Broker> create(const Value& param) = 0;
+
     virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param) = 0;
   };
 

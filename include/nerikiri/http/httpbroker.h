@@ -3,9 +3,8 @@
 #include <string>
 #include <condition_variable>
 
-#include "nerikiri/broker.h"
-#include "nerikiri/brokerproxy.h"
-#include "nerikiri/http/server.h"
+#include "nerikiri/brokers/broker.h"
+#include "nerikiri/brokers/brokerproxy.h"
 
 
 namespace nerikiri::http {
@@ -20,7 +19,7 @@ namespace nerikiri::http {
     virtual void shutdown(Process* process) = 0;
   };
   
-  nerikiri::Broker_ptr broker(const std::string& address, const int32_t port); 
+  std::shared_ptr<nerikiri::Broker> broker(const std::string& address, const int32_t port); 
 
   class HTTPBrokerProxy : public AbstractBrokerProxy {
   public:
@@ -28,7 +27,7 @@ namespace nerikiri::http {
     virtual ~HTTPBrokerProxy() {}
   };
 
-  nerikiri::Broker_ptr brokerProxy(const std::string& address, const int32_t port); 
+  std::shared_ptr<nerikiri::Broker> brokerProxy(const std::string& address, const int32_t port); 
 
   class HTTPBrokerFactory : public nerikiri::BrokerFactory {
   public:
@@ -37,7 +36,8 @@ namespace nerikiri::http {
     virtual ~HTTPBrokerFactory() {}
 
   public:
-    virtual std::shared_ptr<BrokerAPI> create(const Value& param);
+    virtual std::shared_ptr<Broker> create(const Value& param);
+    
     virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param);
   };
 };

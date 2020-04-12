@@ -30,7 +30,7 @@ namespace nerikiri {
     public:
 
         ContainerBase() : parentFactory_(nullptr), type_("NullContainer"), Object({{"name", "NullContainer"}, {"instanceName", "null"}}), is_null_(true) { }
-        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, ContainerInfo&& info) : parentFactory_(parentFactory), type_(typeName), Object(info), is_null_(false) { }
+        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const ContainerInfo& info) : parentFactory_(parentFactory), type_(typeName), Object(info), is_null_(false) { }
         virtual ~ContainerBase() {}
 
         Value addOperation(std::shared_ptr<ContainerOperationBase> operation);
@@ -53,7 +53,7 @@ namespace nerikiri {
         std::shared_ptr<T> _ptr;
 
     public:
-        Container(ContainerFactoryBase* parentFactory, ContainerInfo&& info): ContainerBase(parentFactory, demangle(typeid(T).name()), std::move(info)), _ptr(std::make_shared<T>()) {
+        Container(ContainerFactoryBase* parentFactory, const ContainerInfo& info): ContainerBase(parentFactory, demangle(typeid(T).name()), info), _ptr(std::make_shared<T>()) {
             if (!nameValidator(info.at("name").stringValue())) {
                 logger::error("Container ({}) can not be created. Invalid name format.", str(info_));
                 is_null_ = true;

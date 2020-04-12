@@ -1,6 +1,6 @@
 #include "nerikiri/connection.h"
 
-
+#include "nerikiri/logger.h"
 
 using namespace nerikiri;
 
@@ -8,7 +8,7 @@ Connection::Connection():
   info_(Value::error("Connection is null")), providerBroker_(nullptr), consumerBroker_(nullptr), is_null_(true), is_event_(false) {
 }
 
-Connection::Connection(const ConnectionInfo& _info, Broker_ptr providerBroker, Broker_ptr consumerBroker) : 
+Connection::Connection(const ConnectionInfo& _info, std::shared_ptr<BrokerAPI> providerBroker, std::shared_ptr<BrokerAPI> consumerBroker) : 
 info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), is_null_(true), is_event_(false) {
     if (info_.isError()) {
         logger::error("Connection::Connection failed. Given ConnectionInfo is Error ({})", info_.getErrorMessage());

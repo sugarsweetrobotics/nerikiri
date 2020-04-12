@@ -5,7 +5,7 @@
 #include <map>
 
 #include "nerikiri/value.h"
-#include "nerikiri/broker.h"
+#include "nerikiri/brokers/brokerapi.h"
 
 
 namespace nerikiri {
@@ -17,15 +17,15 @@ namespace nerikiri {
     class Connection {
     private:
         ConnectionInfo info_;
-        Broker_ptr providerBroker_;
-        Broker_ptr consumerBroker_;
+        std::shared_ptr<BrokerAPI> providerBroker_;
+        std::shared_ptr<BrokerAPI> consumerBroker_;
         std::function<Value()> pull_func_;
         std::function<Value(const Value& value)> push_func_;
         bool is_null_;
         bool is_event_;
     public:
         Connection();
-        Connection(const ConnectionInfo& info, Broker_ptr providerBroker, Broker_ptr consumerBroker);
+        Connection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker, std::shared_ptr<BrokerAPI> consumerBroker);
         ~Connection();
 
         Connection(const Connection& c) : info_(c.info_), 
@@ -58,11 +58,11 @@ namespace nerikiri {
     using ConnectionListDictionary = std::map<std::string, ConnectionList>;
 
 
-    inline Connection providerConnection(const ConnectionInfo& info, Broker_ptr consumerBroker) {
+    inline Connection providerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> consumerBroker) {
         return Connection(info, nullptr, consumerBroker);
     }
 
-    inline Connection consumerConnection(const ConnectionInfo& info, Broker_ptr providerBroker) {
+    inline Connection consumerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker) {
         return Connection(info, providerBroker, nullptr);
     }
 
