@@ -116,7 +116,9 @@ Value ObjectMapper::createResource(Process* process, const std::string& path, co
 
 Value ObjectMapper::updateResource(Process* proc, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
-
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/execution/"))) {
+    return proc->executeOperation({{"instanceName", Value(match[1])}});
+  }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {
     return proc->putToArgument({{"instanceName", Value(match[1])}}, match[2], value);
   }

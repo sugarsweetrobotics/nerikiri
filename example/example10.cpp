@@ -18,7 +18,6 @@ int main(const int argc, const char* argv[]) {
     .addBrokerFactory(std::shared_ptr<BrokerFactory>(new nerikiri::http::HTTPBrokerFactory()))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .setOnStarting([](auto process) {
-      //auto binfo = process->createBroker({{"name", "HTTPBroker"}, {"host", "0.0.0.0"}, {"port", 8080}});
     })
     .setOnStarted([](auto process) {
       auto b = process->createBrokerProxy({{"name", "HTTPBroker"}, {"host", "localhost"}, {"port", 8080}});

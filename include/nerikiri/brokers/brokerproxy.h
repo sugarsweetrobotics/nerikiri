@@ -33,22 +33,22 @@ namespace nerikiri {
 
     virtual Value getContainerInfo(const Value& v) const override {
       if (v.isError()) return v;    
-      return readResource("/process/containers/" + v.at("name").stringValue() + "/");
+      return readResource("/process/containers/" + v.at("instanceName").stringValue() + "/");
     }
 
     virtual Value getContainerOperationInfos(const Value& v) const override {
       if (v.isError()) return v;    
-      return readResource("/process/containers/" + v.at("name").stringValue() + "/operations/");
+      return readResource("/process/containers/" + v.at("instanceName").stringValue() + "/operations/");
     }
 
     virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return readResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/info/");
+      return readResource("/process/containers/" + ci.at("instanceName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/info/");
     }
 
     virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return readResource("/process/containers/" + ci.at("name").stringValue() + "/operations/" + oi.at("name").stringValue() + "/");
+      return readResource("/process/containers/" + ci.at("instanceName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/");
     }
 
     virtual Value executeOperation(const Value& info) override {
@@ -101,6 +101,16 @@ namespace nerikiri {
       auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
       auto connection_name = ci.at("name").stringValue();
       return deleteResource("/process/operations/" + operation_name + "/output/connections/" + connection_name + "/");
+    }
+
+    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override {
+      if (conInfo.isNull()) {
+        return Value::error(logger::error("HTTPBrokerProxyImpl::putToArgumentViaConnection failed. Connection is null."));
+      }
+      const auto operation_name = conInfo.at("input").at("info").at("instanceName").stringValue();
+      const auto connection_name = conInfo.at("name").stringValue();
+      const auto argument_name = conInfo.at("input").at("target").at("name").stringValue();
+      return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/", value);
     }
   };
 

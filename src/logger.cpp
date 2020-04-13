@@ -6,11 +6,15 @@
 using namespace nerikiri;
 using namespace nerikiri::logger; 
 
+static LOG_LEVEL g_loglevel = logger::INFO;
+
+
 void nerikiri::logger::setLogLevel(const LOG_LEVEL& level) {
+  g_loglevel = level;
 }
 
 LOG_LEVEL nerikiri::logger::getLogLevel() {
-  return INFO;
+  return g_loglevel;
 }
 
 format_type nerikiri::logger::formatter(format_type&& fmt, const LOG_LEVEL& severity) {

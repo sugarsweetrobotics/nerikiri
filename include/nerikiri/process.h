@@ -38,7 +38,7 @@ namespace nerikiri {
     std::shared_ptr<CoreBroker> coreBroker_;
 
     std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
-
+    bool started_;
     static Process null;
 
   public:
@@ -116,7 +116,8 @@ namespace nerikiri {
     
     ProcessInfo info() const { return info_; }
     
-
+  public:
+    bool isRunning() { return started_; }
   public:
     std::function<void(Process*)> on_starting_;
     std::function<void(Process*)> on_started_;
@@ -140,7 +141,7 @@ namespace nerikiri {
     Value deleteProviderConnection(const ConnectionInfo& ci);
 
   public:
-    void executeOperation(const OperationInfo& oinfo) const;
+    Value executeOperation(const OperationInfo& oinfo);
 
     Value bindECtoOperation(const std::string& ecName, const Value& opInfo);
 

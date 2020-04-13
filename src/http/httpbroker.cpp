@@ -77,8 +77,6 @@ public:
         });
     });
 
-    //Process& p = *process;
-
     server_->response("/.*", "GET", "text/html", [this, process](const webi::Request& req) -> webi::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
       return response([process, &req](){return process->readResource(req.matches[0]);});
@@ -97,7 +95,6 @@ public:
       return response([this, &process, &req](){return process->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); });
     });
 
-    
     server_->runBackground(port_);
     cond_.wait(lock);
     
@@ -157,16 +154,6 @@ public:
     virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
       auto operation_name = opInfo.at("instanceName").stringValue();
       return toValue(client_->request("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
-    }
-
-    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override {
-      if (conInfo.isNull()) {
-        return Value::error(logger::error("HTTPBrokerProxyImpl::putToArgumentViaConnection failed. Connection is null."));
-      }
-      auto operation_name = conInfo.at("input").at("info").at("instanceName").stringValue();
-      auto connection_name = conInfo.at("name").stringValue();
-      auto argument_name = conInfo.at("input").at("target").at("name").stringValue();
-      return toValue(client_->request("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value createResource(const std::string& path, const Value& value) override {

@@ -58,9 +58,9 @@ namespace nerikiri {
     int64_t intvalue_;
     double doublevalue_;
     std::string stringvalue_;
-
     std::map<std::string, Value> objectvalue_;
     std::vector<Value> listvalue_;
+
     std::string errormessage_;
   public:
     Value();

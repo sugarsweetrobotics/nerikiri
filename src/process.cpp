@@ -9,37 +9,41 @@
 #include "nerikiri/brokers/broker.h"
 #include "nerikiri/processconfigparser.h"
 
-
+#include "nerikiri/os.h"
 #include <iostream>
 
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
 Value defaultProcessConfig({
-  {"modules", {
-    {"operations", {
-      {"preload", Value::list()}
-    }},
-    {"containers", {
-      {"preload", Value::list()}
-    }},
-    {"containerOperations", {
-      {"preload", Value::list()}
-    }},
-    {"ecs", {
-      {"preload", Value::list()}
-    }},
-    {"brokers", {
-      {"preload", Value::list()}
-    }}
+  {"operations", {
+    {"preload", Value::list()}
+  }},
+  {"containers", {
+    {"preload", Value::list()}
+  }},
+  {"containerOperations", {
+    {"preload", Value::list()}
+  }},
+  {"ecs", {
+    {"preload", Value::list()}
+  }},
+  {"brokers", {
+    {"preload", Value::list()}
   }}
+
 });
 
 Process Process::null("");
 
-Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}}), store_(this), config_(defaultProcessConfig) {
+Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}}), store_(this), config_(defaultProcessConfig), started_(false) {
   logger::info("Process::Process(\"{}\")", argv[0]);
   std::string fullpath = argv[0];
+
+  if (fullpath.find("/") != 0) {
+    fullpath = nerikiri::getCwd() + fullpath;
+  }
+
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
   coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
 
@@ -51,7 +55,7 @@ Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}})
   parseConfigFile(options.get<std::string>("file"));
 }
 
-Process::Process(const std::string& name) : info_({{"name", name}}), store_(this) {
+Process::Process(const std::string& name) : info_({{"name", name}}), store_(this), started_(false) {
   logger::trace("Process::Process(\"{}\")", name);
   if (name.length() == 0) { 
     info_ = Value::error("Process is Null."); 
@@ -60,15 +64,24 @@ Process::Process(const std::string& name) : info_({{"name", name}}), store_(this
 
 Process::~Process() {
   logger::trace("Process::~Process()");
+  if (started_) {
+    shutdown();
+  }
 }
 
 void Process::_preloadOperations() {
+  try {
   auto c = config_.at("operations").at("preload");
   c.list_for_each([this](auto& value) {
     this->loadOperationFactory({{"name", value}});
   });
-
-  c = config_.at("operations").at("precreate");
+  
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  } 
+  
+  try {
+  auto c = config_.at("operations").at("precreate");
   c.object_for_each([this](auto& key, auto& value) {
     if (value.isStringValue()) {
       Value v{{"name", key}, {"instanceName", value}};
@@ -82,10 +95,14 @@ void Process::_preloadOperations() {
       createOperation(vv);  
     }
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 }
 
 
 void Process::_preloadContainers() {
+  try {
   auto c = config_.at("containers").at("preload");
   c.object_for_each([this](auto& key, auto& value) {
     this->loadContainerFactory({{"name", key}});
@@ -94,8 +111,12 @@ void Process::_preloadContainers() {
       this->loadContainerOperationFactory({{"name", v}, {"container_name", key}});
     });
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 
-  c = config_.at("containers").at("precreate");
+  try {
+  auto c = config_.at("containers").at("precreate");
   c.object_for_each([this](auto& key, auto& value) {
     auto v = value;
     v["name"] = key;
@@ -104,35 +125,54 @@ void Process::_preloadContainers() {
       logger::error("Porcess::_preloadContainers({}) failed. createContainer error: ({})", v, str(cinfo));
     }
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 }
 
 void Process::_preloadExecutionContexts() {
+  try {
   auto c = config_.at("ecs").at("preload");
   c.list_for_each([this](auto& value) {
     this->loadExecutionContextFactory({{"name", value}});
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 
-  c = config_.at("ecs").at("precreate");
+  try {
+  auto c = config_.at("ecs").at("precreate");
   c.object_for_each([this](auto& key, auto& value) {
     auto v = value;
     v["name"] = key;
     auto cinfo = createExecutionContext(v);
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 
-  c = config_.at("ecs").at("bind");
+  try {
+  auto c = config_.at("ecs").at("bind");
   c.object_for_each([this](auto& key, auto& value) {
     value.list_for_each([this, key](auto& v) {
       this->bindECtoOperation(key, {{"instanceName", v.stringValue()}});      
     });
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 }
 
 
 void Process::_preStartExecutionContexts() {
+  try {
   auto c = config_.at("ecs").at("start");
   c.list_for_each([this](auto& value) {
     this->store()->getExecutionContext({{"instanceName", value}})->start();
   });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+  }
 }
 
 void Process::_preloadBrokers() {
@@ -221,6 +261,15 @@ static std::future<bool> start_systemEditor(std::vector<std::thread>& threads, c
 
 void Process::startAsync() {
   logger::trace("Process::startAsync()");
+
+  _preloadOperations();
+  _preloadContainers();
+  _preloadExecutionContexts();
+  _preloadBrokers();
+  if (on_starting_) on_starting_(this);
+  _preStartExecutionContexts();
+
+  
   auto broker_futures = nerikiri::map<std::future<bool>, std::shared_ptr<Broker>>(store_.brokers_, [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, this, brk);
 								 });
@@ -229,7 +278,8 @@ void Process::startAsync() {
 											      [this](const auto& name, const auto& se) {
 												return start_systemEditor(this->threads_, se); }
 											      );
-
+  started_ = true;
+  if (on_started_) on_started_(this);
 }
   
 int32_t Process::wait() {
@@ -254,20 +304,14 @@ void Process::shutdown() {
   for(auto& t : this->threads_) {
     t.join();
   }
+  started_ = false;
   logger::trace(" - joined");
 }
 
 
 int32_t Process::start() {
   logger::trace("Process::start()");
-  _preloadOperations();
-  _preloadContainers();
-  _preloadExecutionContexts();
-  _preloadBrokers();
-  if (on_starting_) on_starting_(this);
-  _preStartExecutionContexts();
   startAsync();
-  if (on_started_) on_started_(this);
   if (wait() < 0) return -1;
   shutdown();
   return 0;
@@ -285,11 +329,10 @@ std::shared_ptr<BrokerAPI> Process::createBrokerProxy(const Value& bi) {
   return nullptr;
 }
 
-void Process::executeOperation(const OperationInfo& info) const {
+Value Process::executeOperation(const OperationInfo& info) {
   logger::trace("Process::executeOpration({})", (info));
-  
+  return store()->getOperation(info).execute();
 }
-
 
 Value Process::createOperation(const OperationInfo& info) {
   logger::trace("Process::createOperation({})", (info));
@@ -310,8 +353,6 @@ Value Process::createContainer(const  Value& info) {
   logger::info("Creating Container({})", (info));
   return store()->addContainer(f->create(info));
 }
-
-
 
 Value Process::createBroker(const Value& ci) {
   logger::trace("Process::createBroker({})", (ci));
@@ -450,7 +491,6 @@ Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo)
     return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));
   }
 }
-
 
 Value Process::loadOperationFactory(const Value& info) {
   logger::trace("Process::loadOperationFactory({})",(info));

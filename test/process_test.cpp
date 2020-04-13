@@ -1,7 +1,7 @@
 
 #include <iostream>
-#include <nerikiri/nerikiri.h>
-#include <nerikiri/http/httpbroker.h>
+#include "nerikiri/logger.h"
+#include "nerikiri/nerikiri.h"
 
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
@@ -9,23 +9,22 @@
 using namespace nerikiri;
 
 
-SCENARIO( "HTTP Service", "[http]" ) {
-  logger::setLogLevel(logger::TRACE);
-  GIVEN("Broker Composition") {
-    Process p("process_test");
-      p.addOperation({{"increment"},
-		     [](auto arg) { 
-		       arg["arg01"] = arg["arg01"].intValue() + 1;
-		       return arg;
-		     }})
-      .addBroker(nerikiri::Broker_ptr(new http::HTTPBroker()));
+SCENARIO( "Process test", "[process]" ) {
+  GIVEN("Process basic behavior") {
+    const int argc = 3;
+    const char* argv[] = {"process_test", "-f", "nk_process_test.json"};
+    Process p(argc, argv);
 
-    //BrokerDictionary bd;
-    //bd.add(nerikiri::Broker_ptr(new http::HTTPBroker()));
-    //THEN("Process info") {
-      //auto infos = p.getOperationInfos();
-      
-    //    }
+  logger::setLogLevel(logger::OFF);
+    THEN("Process is running") {
+      p.startAsync();
+      REQUIRE(p.isRunning() == true);
+    }
+
+    THEN("Process is not running") {
+      REQUIRE(p.isRunning() == false);
+    }
+
   }
   
 }
