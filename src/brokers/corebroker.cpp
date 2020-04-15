@@ -20,39 +20,39 @@ Value CoreBroker::getContainerInfos() const {
 }
 
 Value CoreBroker::getContainerInfo(const Value& value) const {
-    return process_->store()->getContainer(value).info();
+    return process_->store()->getContainer(value)->info();
 }
 
 Value CoreBroker::getContainerOperationInfos(const Value& info) const {
-    return process_->store()->getContainer(info).getOperationInfos();
+    return process_->store()->getContainer(info)->getOperationInfos();
 }
 
 Value CoreBroker::getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const {
-    return process_->store()->getContainer(cinfo).getOperation(oinfo).getContainerOperationInfo();
+    return process_->store()->getContainer(cinfo)->getOperation(oinfo)->info();
 }
 
 Value CoreBroker::getOperationInfo(const Value& info) const {
-    return process_->store()->getOperation(info).info();
+    return process_->store()->getOperation(info)->info();
 }
 
 Value CoreBroker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const {
-    return process_->store()->getContainer(cinfo).getOperation(oinfo).call(std::move(arg));
+    return process_->store()->getContainer(cinfo)->getOperation(oinfo)->call(std::move(arg));
 }
 
 Value CoreBroker::invokeContainerOperation(const Value& cinfo, const Value& oinfo) const {
-    return process_->store()->getContainer(cinfo).getOperation(oinfo).invoke();
+    return process_->store()->getContainer(cinfo)->getOperation(oinfo)->invoke();
 }
 
 Value CoreBroker::callOperation(const Value& info, Value&& value) const {
-    return process_->store()->getOperation(info).call(std::move(value));
+    return process_->store()->getOperation(info)->call(std::move(value));
 }
 
 Value CoreBroker::invokeOperation(const Value& v) const {
-    return process_->store()->getOperation(v).invoke();
+    return process_->store()->getOperation(v)->invoke();
 }
 
 Value CoreBroker::executeOperation(const Value& v) {
-    return process_->store()->getOperation(v).execute();
+    return process_->store()->getOperation(v)->execute();
 }
 
 

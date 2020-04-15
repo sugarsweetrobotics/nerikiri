@@ -12,7 +12,7 @@ namespace nerikiri {
     class ExecutionContext : public Object {
     private:
     private:
-        std::vector<std::reference_wrapper<OperationBaseBase>> operations_;
+        std::vector<std::shared_ptr<OperationBase>> operations_;
         std::vector<std::pair<Value, std::shared_ptr<BrokerAPI>>> operationBrokers_;
 
     public:
@@ -52,7 +52,7 @@ namespace nerikiri {
         virtual void svc() {
             for(auto& op : operations_) {
                 try {
-                    op.get().execute();
+                    op->execute();
                 } catch (std::exception& ex) {
                     logger::error("Exception in ExecutionContext::svc(): {}", ex.what());
                 }
@@ -66,12 +66,12 @@ namespace nerikiri {
             }
         }
 
-        Value bind(std::reference_wrapper<OperationBaseBase> op) {
-            if (op.get().isNull()) {
+        Value bind(std::shared_ptr<OperationBase> op) {
+            if (op->isNull()) {
                 return Value::error(logger::error("ExecutionContext::bind failed. Operation is null"));
             }
             operations_.push_back(op);
-            return op.get().info();
+            return op->info();
         }
 
         Value bind(const Value& opInfo, std::shared_ptr<BrokerAPI> br) {
@@ -81,7 +81,7 @@ namespace nerikiri {
 
         Value unbind(const Value& info) {
             for(auto it = operations_.begin(); it != operations_.end();++it) {
-                if ((*it).get().info().at("name") == info.at("name")) {
+                if ((*it)->info().at("name") == info.at("name")) {
                     it = operations_.erase(it);
                     return info;
                 }
@@ -96,8 +96,8 @@ namespace nerikiri {
         }
 
         Value getBoundOperationInfos() {
-            return nerikiri::map<Value, std::reference_wrapper<OperationBaseBase>>(operations_,
-              [](auto op) { return op.get().info(); });
+            return nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_,
+              [](auto op) { return op->info(); });
         }
 
     private:

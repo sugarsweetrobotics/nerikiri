@@ -36,7 +36,7 @@ namespace nerikiri {
   public:
     Value info() const;
     Value getContainerInfos();
-    ContainerBase& getContainer(const Value& info);
+    std::shared_ptr<ContainerBase> getContainer(const Value& info);
     Value addContainer(std::shared_ptr<ContainerBase> container);
     ProcessStore& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf);
     std::shared_ptr<ContainerFactoryBase> getContainerFactory(const Value& info);
@@ -44,7 +44,7 @@ namespace nerikiri {
 
     Value getOperationInfos();
     Value getOperationFactoryInfos();
-    OperationBaseBase& getOperation(const OperationInfo& oi);
+    std::shared_ptr<OperationBase> getOperation(const Value& oi);
     Value addOperation(std::shared_ptr<Operation> op);
     ProcessStore& addOperationFactory(std::shared_ptr<OperationFactory> opf);
     std::shared_ptr<OperationFactory> getOperationFactory(const Value& info);
@@ -64,6 +64,7 @@ namespace nerikiri {
     Value addBroker(std::shared_ptr<Broker> brk, Process* process);
     std::shared_ptr<Broker> getBroker(const Value& info);
     Value addBrokerFactory(std::shared_ptr<BrokerFactory> factory);
+    Value getBrokerInfos() const;
 
 
   };

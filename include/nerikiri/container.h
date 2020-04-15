@@ -20,26 +20,22 @@ namespace nerikiri {
         std::string type_;
         std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
         ContainerFactoryBase* parentFactory_;
-        bool is_null_;
 
     public:
         std::string type() const { return type_; }
 
-        bool isNull() const { return is_null_; }
-
+        static std::shared_ptr<ContainerBase> null;
     public:
 
-        ContainerBase() : parentFactory_(nullptr), type_("NullContainer"), Object({{"name", "NullContainer"}, {"instanceName", "null"}}), is_null_(true) { }
-        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const ContainerInfo& info) : parentFactory_(parentFactory), type_(typeName), Object(info), is_null_(false) { }
+        ContainerBase() : Object(), parentFactory_(nullptr), type_("NullContainer") {}
+        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const ContainerInfo& info) : parentFactory_(parentFactory), type_(typeName), Object(info) { }
         virtual ~ContainerBase() {}
 
         Value addOperation(std::shared_ptr<ContainerOperationBase> operation);
 
         std::vector<Value> getOperationInfos() const;
 
-        ContainerOperationBase& getOperation(const Value& info) const;
-
-        static ContainerBase null;
+        std::shared_ptr<OperationBase> getOperation(const Value& info) const;
 
         std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info);
 

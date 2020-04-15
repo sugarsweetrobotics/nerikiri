@@ -3,6 +3,7 @@
 #include "nerikiri/operation.h"
 #include "nerikiri/value.h"
 #include "nerikiri/brokers/brokerapi.h"
+#include "nerikiri/brokers/broker.h"
 #include "nerikiri/brokers/corebroker.h"
 
 #include "nerikiri/systemeditor.h"
@@ -76,12 +77,12 @@ namespace nerikiri {
     Value getOperationFactoryInfos() { return store_.getOperationFactoryInfos(); }
     Process& addOperation(std::shared_ptr<Operation> op) { store_.addOperation(op); return *this; }
     Process& addOperationFactory(std::shared_ptr<OperationFactory> opf) { store_.addOperationFactory(opf); return *this; }
-    Value createOperation(const OperationInfo& info);
-    OperationBaseBase& getOperation(const OperationInfo& oi) { return store_.getOperation(oi); }
+    Value createOperation(const Value& info);
+    std::shared_ptr<OperationBase> getOperation(const Value& oi) { return store_.getOperation(oi); }
     Value loadOperationFactory(const Value& info);
 
     Value getContainerInfos() {return store_.getContainerInfos(); }
-    ContainerBase& getContainer(const Value& info) { return store_.getContainer(info); }
+    std::shared_ptr<ContainerBase> getContainer(const Value& info) { return store_.getContainer(info); }
     Process& addContainer(std::shared_ptr<ContainerBase> container) { store_.addContainer(container); return *this; }
     Value createContainer(const Value& ci);
     Process& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf) { store_.addContainerFactory(cf); return *this; }
@@ -89,16 +90,17 @@ namespace nerikiri {
 
     Process& addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof) { store_.addContainerOperationFactory(cof); return *this; }
     Value createContainerOperation(const Value& containerInfo, const Value& operationInfo) {
-      return store_.getContainer(containerInfo).createContainerOperation(operationInfo);
+      return store_.getContainer(containerInfo)->createContainerOperation(operationInfo);
     }
     Value loadContainerOperationFactory(const Value& info);
 
+    Value getBrokerInfos() const { return store_.getBrokerInfos(); }
     Process& addBroker(const std::shared_ptr<Broker> brk) { store_.addBroker(brk, this); return *this; }
     Value createBroker(const Value& ci);
     std::shared_ptr<BrokerAPI>  createBrokerProxy(const Value& ci);
     Process& addBrokerFactory(std::shared_ptr<BrokerFactory> factory) { store_.addBrokerFactory(factory); return *this;}
     Value loadBrokerFactory(const Value& info);
-
+    std::shared_ptr<Broker> getBroker(const Value& info) { return store_.getBroker(info); }
 
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
@@ -113,6 +115,7 @@ namespace nerikiri {
     Process& addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec) { store_.addExecutionContextFactory(ec); return *this; }
     Value createExecutionContext(const Value& value);
     Value loadExecutionContextFactory(const Value& info);
+    std::shared_ptr<ExecutionContext> getExecutionContext(const Value& info) { return store_.getExecutionContext(info); }
 
 
     int32_t start();
@@ -147,7 +150,7 @@ namespace nerikiri {
     Value deleteProviderConnection(const ConnectionInfo& ci);
 
   public:
-    Value executeOperation(const OperationInfo& oinfo);
+    Value executeOperation(const Value& oinfo);
 
     Value bindECtoOperation(const std::string& ecName, const Value& opInfo);
 

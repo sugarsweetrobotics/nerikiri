@@ -7,12 +7,12 @@
 
 namespace nerikiri {
 
-    class ContainerOperationBase : public nerikiri::OperationBaseBase {
+    class ContainerOperationBase : public nerikiri::OperationBase {
     private:
         bool is_null_container_operation_;
     public:
     ContainerOperationBase(bool is_null) : is_null_container_operation_(is_null) {}
-    ContainerOperationBase(const Value& info) : is_null_container_operation_(false), OperationBaseBase(info) {}
+    ContainerOperationBase(const Value& info) : is_null_container_operation_(false), OperationBase(info) {}
     
     virtual ~ContainerOperationBase() {}
     protected:
@@ -31,7 +31,7 @@ namespace nerikiri {
         std::function<Value(T&,Value)> function_;
     public:
         ContainerOperation(): ContainerOperationBase(true) {}
-        ContainerOperation(const OperationInfo& info, const std::function<Value(T&, Value)>& func): ContainerOperationBase(info), function_(func){}
+        ContainerOperation(const Value& info, const std::function<Value(T&, Value)>& func): ContainerOperationBase(info), function_(func){}
 
         virtual ~ContainerOperation() {}
 

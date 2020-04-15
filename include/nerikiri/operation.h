@@ -12,7 +12,6 @@ namespace nerikiri {
 
   class Process;
   
-  using OperationInfo = Value;
 
   using Process_ptr = Process*;
 
@@ -33,26 +32,7 @@ namespace nerikiri {
     return true;
   }
   
-  
 
-  class Callable {
-  public:
-    virtual Value call(const Value& value) = 0;
-  };
-
-  class Invokable {
-  public:
-    virtual Value invoke() = 0;
-  };
-
-  class Executable {
-  public:
-    virtual Value execute() = 0;
-  };
-
-  //Value call_operation(const Callable& operation, Value&& value);
- 
-  //Value invoke_operation(const Invokable& operation);
 
   class NewestValueBuffer {
   private:
@@ -72,7 +52,7 @@ namespace nerikiri {
     virtual bool isEmpty() const { return empty_; }
   };
 
-  class OperationBaseBase : public Callable, public Invokable, public Executable, public Object {
+  class OperationBase : public Object {
   protected:
     Process_ptr process_;
     ConnectionList outputConnectionList_;
@@ -82,12 +62,12 @@ namespace nerikiri {
   public:
     
   public:
-    OperationBaseBase() : process_(nullptr), Object() {
+    OperationBase() : process_(nullptr), Object() {
       logger::trace("OperationBase construct with ()");
       
     }
 
-    OperationBaseBase(const OperationBaseBase& op): process_(op.process_), Object(op.info_),
+    OperationBase(const OperationBase& op): process_(op.process_), Object(op.info_),
       outputConnectionList_(op.outputConnectionList_), inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_) {
       logger::trace("OperationBase copy construction."); 
       if (!operationValidator(info_)) {
@@ -95,7 +75,7 @@ namespace nerikiri {
       }
     }
 
-    OperationBaseBase(const OperationInfo& info):
+    OperationBase(const Value& info):
       Object(info) {
       logger::trace("OperationBase::OperationBase({})", str(info));
       if (!operationValidator(info_)) {
@@ -107,11 +87,11 @@ namespace nerikiri {
       });
     }
 
-    virtual ~OperationBaseBase() {
+    virtual ~OperationBase() {
       logger::trace("Operation desctructed.");
     }
 
-    OperationBaseBase& operator=(const OperationBaseBase& op) {
+    OperationBase& operator=(const OperationBase& op) {
       logger::trace("Operation copy");
       process_ = op.process_;
       info_ = op.info_;
@@ -123,8 +103,6 @@ namespace nerikiri {
     }
   
   public:
-    const OperationInfo& info() const { return info_; }
-    bool isNull() const { return is_null_; }
 
     Value addProviderConnection(Connection&& c) {
       logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
@@ -334,7 +312,7 @@ namespace nerikiri {
       return Value::error(logger::error("OperationBase::push(Value) can not found connection ({})", str(ci)));
     }
     
-    virtual Value execute() override {
+    virtual Value execute() {
       if (isNull()) {
         return Value::error(logger::error("OperationBase::execute() failed. Operation is null"));
       }
@@ -345,37 +323,30 @@ namespace nerikiri {
       }
       return v;
     }
-  };
 
 
-  template<typename F>
-  class OperationBase : public OperationBaseBase {
-  protected:
-    F function_;
-  public:
-    
-  public:
-    OperationBase() : OperationBaseBase() {}
 
-    OperationBase(OperationInfo&& info) : OperationBaseBase(std::move(info)) {}
-
-    OperationBase(const OperationBase& op): OperationBaseBase(op), function_(op.function_) { }
-
-    OperationBase(OperationInfo&& info, F&& func): OperationBaseBase(std::move(info)), function_(func) {}
-
-    OperationBase(const OperationInfo& info, F& func): OperationBaseBase(info), function_(func) {}
-
-    virtual ~OperationBase() {
-      logger::trace("Operation desctructed.");
+    virtual Value call(const Value& value) {
+      return Value::error("Opertaion is null");
     }
+
+    
+    virtual Value invoke() {
+      return Value::error("Opertaion is null");
+    }
+
+    static std::shared_ptr<OperationBase> null;
   };
-  
-  class Operation : public OperationBase<std::function<Value(const Value&)>> {
+
+
+  class Operation : public OperationBase {
+  private:
+    std::function<Value(const Value&)> function_;
   public:
-    Operation(): OperationBase<std::function<Value(const Value&)>>() {}
-    Operation(OperationInfo&& info) : OperationBase(std::move(info)) {}
-    Operation(OperationInfo&& info, std::function<Value(const Value&)>&& func): OperationBase<std::function<Value(const Value&)>>(std::move(info), std::move(func)) {}
-    Operation(const OperationInfo& info, std::function<Value(const Value&)>& func) : OperationBase<std::function<Value(const Value&)>>(info, func) {}
+    Operation(): OperationBase() {}
+    Operation(Value&& info) : OperationBase(std::move(info)) {}
+    Operation(Value&& info, std::function<Value(const Value&)>&& func): OperationBase(std::move(info)), function_(std::move(func)) {}
+    Operation(const Value& info, std::function<Value(const Value&)>& func) : OperationBase(info), function_(func) {}
 
     virtual ~Operation() {}
 
@@ -403,7 +374,6 @@ namespace nerikiri {
       //return nerikiri::call_operation(*this, collectValues());
     }
 
-    static Operation null;
   };
 
 }

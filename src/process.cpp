@@ -15,6 +15,9 @@
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
+std::shared_ptr<Broker> Broker::null = std::make_shared<Broker>();;
+
+
 Value defaultProcessConfig({
   {"operations", {
     {"preload", Value::list()}
@@ -365,12 +368,12 @@ std::shared_ptr<BrokerAPI> Process::createBrokerProxy(const Value& bi) {
   return nullptr;
 }
 
-Value Process::executeOperation(const OperationInfo& info) {
+Value Process::executeOperation(const Value& info) {
   logger::trace("Process::executeOpration({})", (info));
-  return store()->getOperation(info).execute();
+  return store()->getOperation(info)->execute();
 }
 
-Value Process::createOperation(const OperationInfo& info) {
+Value Process::createOperation(const Value& info) {
   logger::trace("Process::createOperation({})", (info));
   auto f = store()->getOperationFactory(info);
   if (!f) {
@@ -415,7 +418,7 @@ Value Process::createExecutionContext(const Value& value) {
  */
 Value checkProcessHasProviderOperation(Process* process, const ConnectionInfo& ci) {
     if (ci.isError()) return ci;    
-    if (process->store()->getOperation(ci.at("output").at("info")).isNull()) {
+    if (process->store()->getOperation(ci.at("output").at("info"))->isNull()) {
       return Value::error(logger::warn("The broker received makeConnection does not have the provider operation."));
     }
     return ci;
@@ -425,11 +428,11 @@ Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* r
   logger::trace("Process::registerProviderConnection({})", (ci));
   auto ret = checkProcessHasProviderOperation(this, ci);
   if (ret.isError()) return ret;
-  auto& provider = store()->getOperation(ret.at("output").at("info"));
-  if (provider.hasOutputConnectionRoute(ci)) {
+  auto provider = store()->getOperation(ret.at("output").at("info"));
+  if (provider->hasOutputConnectionRoute(ci)) {
       return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ci.at("output"))));
   }
-  while (provider.hasOutputConnectionName(ret)) {
+  while (provider->hasOutputConnectionName(ret)) {
       logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output")));
       ret["name"] = ci.at("name").stringValue() + "_2";
   }
@@ -443,7 +446,7 @@ Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* r
   if(ret2.isError()) return ret;
 
   // リクエストが成功なら、こちらもConnectionを登録。
-  auto ret3 = provider.addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
+  auto ret3 = provider->addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
   if (ret3.isError()) {
       // 登録が失敗ならConsumer側のConnectionを破棄。
       auto ret3 = deleteConsumerConnection(ret2);
@@ -458,19 +461,19 @@ Value Process::registerConsumerConnection(const ConnectionInfo& ci) {
 
   auto ret = ci;
   /// Consumer側でなければ失敗出力
-  auto& consumer = store()->getOperation(ci.at("input").at("info"));
-  if (consumer.isNull()) {
+  auto consumer = store()->getOperation(ci.at("input").at("info"));
+  if (consumer->isNull()) {
       return Value::error(logger::error("registerConsumerConnection failed. The broker does not have the consumer ", str(ci.at("input"))));
   }
-  if (consumer.hasInputConnectionRoute(ret)) {
+  if (consumer->hasInputConnectionRoute(ret)) {
       return Value::error(logger::error("registerConsumerConnection failed. Consumer already have the same connection.", str(ci.at("input"))));
   }
-  while (consumer.hasInputConnectionName(ret)) {
+  while (consumer->hasInputConnectionName(ret)) {
       logger::warn("registerConsumerConnection failed. Consumer already have the same connection.", (ret.at("input")));
       ret["name"] = ret["name"].stringValue() + "_2";
   }
 
-  return consumer.addConsumerConnection(consumerConnection(ret,
+  return consumer->addConsumerConnection(consumerConnection(ret,
              createBrokerProxy(ci.at("output").at("broker"))));
 }
 
@@ -479,8 +482,8 @@ Value Process::deleteProviderConnection(const ConnectionInfo& ci) {
     logger::trace("Process::deleteProviderConnection({}", (ci));
     if (ci.isError()) return ci;
 
-    auto& provider = store()->getOperation(ci.at("output").at("info"));
-    const auto& connection = provider.getOutputConnection(ci);
+    auto provider = store()->getOperation(ci.at("output").at("info"));
+    const auto& connection = provider->getOutputConnection(ci);
 
     auto ret = connection.info();
     auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
@@ -491,27 +494,27 @@ Value Process::deleteProviderConnection(const ConnectionInfo& ci) {
     if (ret.isError()) {
       return Value::error(logger::error("Process::deleteProviderConnection failed. RemoveConsumerConnection failed."));
     }
-    return provider.removeProviderConnection(ret);
+    return provider->removeProviderConnection(ret);
 }
 
 Value Process::deleteConsumerConnection(const ConnectionInfo& ci) {
   logger::trace("Process::deleteConsumerConnection({}", (ci));
   if (ci.isError()) return ci;
-  auto& op = store()->getOperation(ci.at("input").at("info"));
-  return op.removeConsumerConnection(ci);
+  auto op = store()->getOperation(ci.at("input").at("info"));
+  return op->removeConsumerConnection(ci);
 }
 
 
 Value Process::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
   logger::trace("Process::putToArgument({})", (opInfo));
-  auto& op = store()->getOperation(opInfo);
-  return op.putToArgument(argName, value);
+  auto op = store()->getOperation(opInfo);
+  return op->putToArgument(argName, value);
 }
 
 Value Process::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
   logger::trace("Process::putToArgumentViaConnection({})", (conInfo));
-  auto& op = store()->getOperation(conInfo.at("input").at("info"));
-  return op.putToArgumentViaConnection(conInfo, value);  
+  auto op = store()->getOperation(conInfo.at("input").at("info"));
+  return op->putToArgumentViaConnection(conInfo, value);  
 }
 
 Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo) {
@@ -522,7 +525,7 @@ Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo)
   }
   auto ec = store()->getExecutionContext({{"instanceName", ecName}});
   if (ec) {
-    return ec->bind(std::reference_wrapper<OperationBaseBase>(getOperation(opInfo)));
+    return ec->bind(getOperation(opInfo));
   } else {
     return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));
   }
@@ -548,7 +551,6 @@ Value Process::loadOperationFactory(const Value& info) {
           addOperationFactory(std::shared_ptr<OperationFactory>(  static_cast<OperationFactory*>(f())  ) );
           return info;
       } 
-      //return Value::error(logger::error("Process::loadOperationFactory failed. Can not load Symbol ({})", str(info)));
     }
   }
   return Value::error(logger::error("Process::loadOperationFactory failed. Can not load DLL ({})", str(info)));

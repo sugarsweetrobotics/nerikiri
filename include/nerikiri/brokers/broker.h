@@ -17,6 +17,7 @@ namespace nerikiri {
   public:
 
   public:
+    Broker() : Object() {}
     Broker(const Value& info) : Object(info) {}
     virtual ~Broker() {}
 
@@ -32,6 +33,8 @@ namespace nerikiri {
     }
 
     bool isRunning() const { return info_.at("state").stringValue() == "running"; }
+
+    static std::shared_ptr<Broker> null;
   };
 
 

@@ -10,7 +10,7 @@ using namespace nerikiri;
 Value ContainerBase::addOperation(std::shared_ptr<ContainerOperationBase> operation) { 
     auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("name").stringValue(), ".ope");
     operation->setInstanceName(name);
-    if (!getOperation(operation->getContainerOperationInfo()).isNullContainerOperation()) {
+    if (!getOperation(operation->getContainerOperationInfo())->isNull()) {
         return Value::error(logger::error("ContainerBase::addOperation({}) failed. ContainerOperation with same name is registered.", str(operation->getContainerOperationInfo())));
     }
     operation->setContainer(this);
@@ -22,18 +22,17 @@ std::vector<Value> ContainerBase::getOperationInfos() const {
     return nerikiri::map<Value, ContainerOperationBase_ptr>(operations_, [](auto op) { return op->getContainerOperationInfo();});
 }
 
-ContainerOperationBase& ContainerBase::getOperation(const Value& info) const {
+ std::shared_ptr<OperationBase> ContainerBase::getOperation(const Value& info) const {
     for(auto op: operations_) {
         if (op->getContainerOperationInfo().at("instanceName") == info.at("instanceName")) {
-            return *op;
+            return op;
         }
     }
-    return *ContainerOperationBase::null;
+    return OperationBase::null;
 }
 
-ContainerOperationBase* ContainerOperationBase::null = new ContainerOperation<int>();
 
-ContainerBase ContainerBase::null;
+std::shared_ptr<ContainerBase> ContainerBase::null = std::make_shared<ContainerBase>();
 
 std::shared_ptr<ContainerOperationFactoryBase> ContainerBase::getContainerOperationFactory(const Value& info) {
     if (this->isNull()) {
