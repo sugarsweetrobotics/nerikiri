@@ -28,16 +28,20 @@ namespace nerikiri {
    */
   class Process {
   private:
+
+    std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
+    
+    
     ProcessInfo info_;
     Value config_;
 
+    
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::thread> threads_;
     ObjectFactory objectFactory_;
     ProcessStore store_;
     std::shared_ptr<CoreBroker> coreBroker_;
 
-    std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
     bool started_;
     static Process null;
 

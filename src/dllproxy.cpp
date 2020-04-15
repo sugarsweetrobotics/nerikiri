@@ -8,18 +8,18 @@ using namespace nerikiri;
 DLLProxy::DLLProxy(const Value& info):info_(info) {
     auto name = info.at("name").stringValue();
     int open_mode = RTLD_LAZY;
-    auto dll_name = "lib" + name + ".dylib";
-    if (!(handle_ = ::dlopen(dll_name.c_str(), open_mode))) {
-        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name);
+    dll_name_ = "lib" + name + ".dylib";
+    if (!(handle_ = ::dlopen(dll_name_.c_str(), open_mode))) {
+        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name_);
     }
 }
 
 DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"name", name}}) {
     int open_mode = RTLD_LAZY;
     if (path.rfind("/") != path.length()) path = path + "/";
-    auto dll_name = path + "lib" + name + ".dylib";
-    if (!(handle_ = ::dlopen(dll_name.c_str(), open_mode))) {
-        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name);
+    dll_name_ = path + "lib" + name + ".dylib";
+    if (!(handle_ = ::dlopen(dll_name_.c_str(), open_mode))) {
+        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name_);
     }
 }
 

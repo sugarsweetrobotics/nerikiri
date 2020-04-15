@@ -26,8 +26,30 @@ namespace nerikiri::logger {
     }
   }
   
+  inline LOG_LEVEL from_string(const std::string& level) {
+    if (level == "TRACE") {
+      return TRACE;
+    } else if (level == "DEBUG") { 
+      return DEBUG;
+    } else if (level == "INFO") {
+      return INFO;
+    } else if (level == "WARN") {
+      return WARN;
+    } else if (level == "ERROR") {
+      return ERROR;
+    } else if (level == "FATAL") {
+      return FATAL;
+    } else if (level == "OFF") {
+      return OFF;
+    } 
+    return INFO;
+  }
+  
 
   void setLogLevel(const LOG_LEVEL& level);
+
+  inline void setLogLevel(const std::string& level) { setLogLevel(from_string(level)); }
+
   LOG_LEVEL getLogLevel();
 
   inline bool doLog(const LOG_LEVEL& lvl) {

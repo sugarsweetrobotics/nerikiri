@@ -13,14 +13,17 @@ namespace nerikiri {
     private:
     private:
         std::vector<std::reference_wrapper<OperationBaseBase>> operations_;
-
         std::vector<std::pair<Value, std::shared_ptr<BrokerAPI>>> operationBrokers_;
+
     public:
         ExecutionContext(const Value& info) : Object(info) {
             info_["state"] = Value("stopped");
         }
+
+        ExecutionContext() : Object() {}
         virtual ~ExecutionContext() {}
 
+        static std::shared_ptr<ExecutionContext> null;
     public:
         virtual bool start() {
             if (info_["state"].stringValue() != "started") {

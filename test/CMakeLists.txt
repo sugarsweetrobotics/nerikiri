@@ -9,9 +9,12 @@ OPTION(TEST_PROCESS "HttpBroker Test" OFF)
 OPTION(TEST_OPTION "Option Parser Test" OFF)
 
 
+set(EXAMPLE_LIBS nerikiri)
+
 function(declare_test arg1)
   add_executable(${arg1}_test ${arg1}_test.cpp)
   target_link_libraries(${arg1}_test nerikiri Catch2::Catch2)
+  add_dependencies(${arg1}_test nerikiri ${EXAMPLE_MODULES})
   add_test(NAME ${arg1}_test COMMAND $<TARGET_FILE:${arg1}_test>)
 endfunction()
 

@@ -31,8 +31,8 @@ namespace nerikiri {
 
     friend class Process;
   public:
-    ProcessStore(Process* process): process_(process) {}
-
+    ProcessStore(Process* process);
+    ~ProcessStore();
   public:
     Value info() const;
     Value getContainerInfos();

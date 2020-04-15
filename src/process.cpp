@@ -20,7 +20,7 @@ Value defaultProcessConfig({
     {"preload", Value::list()}
   }},
   {"containers", {
-    {"preload", Value::list()}
+    {"preload", Value::object()}
   }},
   {"containerOperations", {
     {"preload", Value::list()}
@@ -71,10 +71,14 @@ Process::~Process() {
 
 void Process::_preloadOperations() {
   try {
-  auto c = config_.at("operations").at("preload");
-  c.list_for_each([this](auto& value) {
-    this->loadOperationFactory({{"name", value}});
-  });
+    auto c = config_.at("operations").at("preload");
+    c.list_for_each([this](auto& value) {
+      Value v = {{"name", value}};
+      if (config_.at("operations").hasKey("load_paths")) {
+        v["load_paths"] = config_.at("operations").at("load_paths");
+      }
+      this->loadOperationFactory(std::move(v));
+    });
   
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
@@ -105,14 +109,25 @@ void Process::_preloadContainers() {
   try {
   auto c = config_.at("containers").at("preload");
   c.object_for_each([this](auto& key, auto& value) {
-    this->loadContainerFactory({{"name", key}});
+    Value v = {{"name", key}};
+    if (config_.at("containers").hasKey("load_paths")) {
+      v["load_paths"] = config_.at("containers").at("load_paths");
+    }
+    v = this->loadContainerFactory(v);
+    if (v.isError()) {
+      logger::error("Process::_preloadContainers({}) failed. {}", key, v.getErrorMessage());
+    }
     value.list_for_each([this, &key](auto& v) {
-      //auto n = key + "_" + v.stringValue();
-      this->loadContainerOperationFactory({{"name", v}, {"container_name", key}});
+      Value vv = {{"name", v}};
+      if (config_.at("containers").hasKey("load_paths")) {
+        vv["load_paths"] = config_.at("containers").at("load_paths");
+      }
+      vv["container_name"] = key;
+      this->loadContainerOperationFactory(vv);
     });
   });
   } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+    logger::debug("Process::_preloadContainers(). ValueTypeException:{}", e.what());
   }
 
   try {
@@ -126,7 +141,7 @@ void Process::_preloadContainers() {
     }
   });
   } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+    logger::debug("Process::_preloadContainers(). ValueTypeException:{}", e.what());
   }
 }
 
@@ -134,10 +149,14 @@ void Process::_preloadExecutionContexts() {
   try {
   auto c = config_.at("ecs").at("preload");
   c.list_for_each([this](auto& value) {
-    this->loadExecutionContextFactory({{"name", value}});
+    Value v = {{"name", value}};
+    if (config_.at("ecs").hasKey("load_paths")) {
+      v["load_paths"] = config_.at("ecs").at("load_paths");
+    }
+    this->loadExecutionContextFactory(v);
   });
   } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
   }
 
   try {
@@ -148,7 +167,7 @@ void Process::_preloadExecutionContexts() {
     auto cinfo = createExecutionContext(v);
   });
   } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
   }
 
   try {
@@ -159,7 +178,7 @@ void Process::_preloadExecutionContexts() {
     });
   });
   } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
+    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
   }
 }
 
@@ -220,6 +239,14 @@ void Process::parseConfigFile(const std::string& filepath) {
     config_ = merge(ProcessConfigParser::parseConfig(fp), config_);
   } else {
     logger::info("Process::parseConfigFile. Can not open file ({})", filepath);
+  }
+
+  if (config_.hasKey("logger")) {
+    auto loggerConf = config_.at("logger");
+    if (loggerConf.hasKey("logLevel")) {
+      auto loglevel_str = loggerConf.at("logLevel").stringValue();
+      logger::setLogLevel(loglevel_str);
+    }
   }
 
   logger::info("Process::parseConfigFile -> {}", config_);
@@ -497,6 +524,11 @@ Value Process::loadOperationFactory(const Value& info) {
   auto name = info.at("name").stringValue();
 
   std::vector<std::string> search_paths{"./", path_};
+  if (info.hasKey("load_paths")) {
+    info.at("load_paths").list_for_each([this, &search_paths](auto& value) {
+      search_paths.push_back(value.stringValue());
+    });
+  }
   for(auto& p : search_paths) {
     
     auto dllproxy = createDLLProxy(p, name);
@@ -517,12 +549,16 @@ Value Process::loadContainerOperationFactory(const Value& info) {
   logger::trace("Process::loadContainerOperationFactory({})", (info));
   auto name = info.at("container_name").stringValue() + "_" + info.at("name").stringValue();
 
-
   std::vector<std::string> search_paths{"./", path_};
+  if (info.hasKey("load_paths")) {
+    info.at("load_paths").list_for_each([this, &search_paths](auto& value) {
+      search_paths.push_back(value.stringValue());
+    });
+  }
 
   for(auto& p : search_paths) {
     auto dllproxy = createDLLProxy(p, name);
-    if (dllproxy) {
+    if (!dllproxy->isNull()) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol(name);
       if (f) {
@@ -540,10 +576,14 @@ Value Process::loadContainerFactory(const Value& info) {
   auto name = info.at("name").stringValue();
 
   std::vector<std::string> search_paths{"./", path_};
-
+  if (info.hasKey("load_paths")) {
+    info.at("load_paths").list_for_each([this, &search_paths](auto& value) {
+      search_paths.push_back(value.stringValue());
+    });
+  }
   for(auto& p : search_paths) {
     auto dllproxy = createDLLProxy(p, name);
-    if (dllproxy) {
+    if (!dllproxy->isNull()) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
@@ -562,10 +602,14 @@ Value Process::loadExecutionContextFactory(const Value& info) {
   auto name = info.at("name").stringValue();
 
   std::vector<std::string> search_paths{"./", path_};
-
+  if (info.hasKey("load_paths")) {
+    info.at("load_paths").list_for_each([this, &search_paths](auto& value) {
+      search_paths.push_back(value.stringValue());
+    });
+  }
   for(auto& p : search_paths) {
     auto dllproxy = createDLLProxy(p, name);
-    if (dllproxy) {
+    if (!dllproxy->isNull()) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {

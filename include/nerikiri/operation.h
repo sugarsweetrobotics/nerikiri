@@ -75,8 +75,6 @@ namespace nerikiri {
   class OperationBaseBase : public Callable, public Invokable, public Executable, public Object {
   protected:
     Process_ptr process_;
-    bool is_null_;
-    //OperationInfo info_;
     ConnectionList outputConnectionList_;
     ConnectionListDictionary inputConnectionListDictionary_;
     std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
@@ -84,23 +82,12 @@ namespace nerikiri {
   public:
     
   public:
-    OperationBaseBase() : process_(nullptr), is_null_(true), Object(Value::error("null operation")) {
+    OperationBaseBase() : process_(nullptr), Object() {
       logger::trace("OperationBase construct with ()");
       
     }
 
-    OperationBaseBase(OperationInfo&& info) : is_null_(true), Object(std::move(info)) {
-      logger::trace("OperationBase construct with (info)");
-      if (!operationValidator(info_)) {
-        logger::error("OperationInformation is invalid.");
-      }
-      info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-          inputConnectionListDictionary_.emplace(key, ConnectionList());
-          bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
-      });
-    }
-
-    OperationBaseBase(const OperationBaseBase& op): process_(op.process_), Object(op.info_), is_null_(op.is_null_),
+    OperationBaseBase(const OperationBaseBase& op): process_(op.process_), Object(op.info_),
       outputConnectionList_(op.outputConnectionList_), inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_) {
       logger::trace("OperationBase copy construction."); 
       if (!operationValidator(info_)) {
@@ -109,7 +96,7 @@ namespace nerikiri {
     }
 
     OperationBaseBase(const OperationInfo& info):
-      Object(info), is_null_(false) {
+      Object(info) {
       logger::trace("OperationBase::OperationBase({})", str(info));
       if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
@@ -348,6 +335,9 @@ namespace nerikiri {
     }
     
     virtual Value execute() override {
+      if (isNull()) {
+        return Value::error(logger::error("OperationBase::execute() failed. Operation is null"));
+      }
       logger::trace("Operation({})::execute()", str(info()));
       auto v = this->invoke();
       for(auto& c : outputConnectionList_) {

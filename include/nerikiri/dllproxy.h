@@ -15,12 +15,14 @@ namespace nerikiri {
         int m_closeflag;
         void* handle_;
         int m_error;
+        std::string dll_name_;
     public:
       DLLProxy(const Value& info);
 
       DLLProxy(std::string path, const std::string& filename);
       ~DLLProxy();
-
+      
+      bool isNull() { return handle_ == 0; }
     public:
 
       std::function<void*()> functionSymbol(const std::string& name);

@@ -13,6 +13,16 @@
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
+ProcessStore::ProcessStore(Process* process): process_(process) {}
+
+ProcessStore::~ProcessStore() {
+  this->executionContexts_.clear();
+  this->executionContextFactories_.clear();
+  this->operations_.clear();
+  this->operationFactories_.clear();
+  this->containers_.clear();
+  containerFactories_.clear();
+}
 
 
 
@@ -74,7 +84,7 @@ Value ProcessStore::addExecutionContext(std::shared_ptr<ExecutionContext> ec) {
   if (ec->getInstanceName() == "") {
     auto name = nerikiri::numbering_policy<std::shared_ptr<ExecutionContext>>(executionContexts_, ec->info().at("name").stringValue(), ".ec");
     ec->setInstanceName(name);
-  } else if (getExecutionContext(ec->info())) {
+  } else if (!getExecutionContext(ec->info())->isNull()) {
      return Value::error(logger::error("Process::addExecutionContext({}) Error. Process already has the same name ec", ec->info().at("name").stringValue()));
   }
   executionContexts_.push_back(ec);
@@ -187,7 +197,7 @@ std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const Value&
       return ec;
     }
   }
-  return nullptr;
+  return ExecutionContext::null;
 }
 
 

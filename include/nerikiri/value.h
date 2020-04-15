@@ -89,6 +89,12 @@ namespace nerikiri {
       v.typecode_ = VALUE_TYPE_LIST;
       return v;
     }
+
+    static Value object() {
+      Value v;
+      v.typecode_ = VALUE_TYPE_OBJECT;
+      return v;
+    }
   private:
     
     void _clear() {

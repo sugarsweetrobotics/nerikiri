@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/http/httpbroker.h"
+//#include "nerikiri/http/httpbroker.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/container.h"
 #include "nerikiri/containeroperation.h"
@@ -15,7 +15,7 @@ using namespace nerikiri;
 int main(const int argc, const char* argv[]) {
   return nerikiri::Process(argc, argv)
     //.addExecutionContextFactory(f)
-    .addBrokerFactory(std::shared_ptr<BrokerFactory>(new nerikiri::http::HTTPBrokerFactory()))
+    //.addBrokerFactory(std::shared_ptr<BrokerFactory>(new nerikiri::http::HTTPBrokerFactory()))
     .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
     .setOnStarting([](auto process) {
     })

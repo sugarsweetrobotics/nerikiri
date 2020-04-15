@@ -21,11 +21,19 @@ set(EXTRA_MODULES one)
 
 set(OPERATIONS)
 function(add_operation NAME)
-  add_library(${NAME} SHARED ${NAME}.cpp)
-  target_link_libraries(${NAME} ${EXAMPLE_LIBS} Threads::Threads)
+  add_library(${NAME} SHARED operations/${NAME}.cpp)
+  target_link_libraries(${NAME} ${EXAMPLE_LIBS})
   set(OPERATIONS ${NAME} ${OPERATIONS})
   set(OPERATIONS ${OPERATIONS} PARENT_SCOPE)
 endfunction(add_operation)
+
+set(CONTAINERS)
+function(add_container NAME)
+  add_library(${NAME} SHARED containers/${NAME}.cpp)
+  target_link_libraries(${NAME} ${EXAMPLE_LIBS})
+  set(CONTAINERS ${NAME} ${CONTAINERS})
+  set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
+endfunction(add_container)
 
 
 function(add_example NAME)
@@ -40,11 +48,11 @@ add_operation(increment)
 add_operation(decrement)
 add_operation(add)
 add_operation(zero)
-add_operation(MyStruct)
-add_operation(MyStruct_addInt)
-add_operation(MyStruct_intGetter)
 
-add_operation(TimerEC)
+add_container(MyStruct)
+add_container(MyStruct_addInt)
+add_container(MyStruct_intGetter)
+
 
 
 add_example(example01)
@@ -57,3 +65,5 @@ add_example(example01)
 #add_example(example08)
 #add_example(example09)
 #add_example(example10)
+
+set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
