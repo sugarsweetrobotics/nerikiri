@@ -198,7 +198,7 @@ void Process::_preloadBrokers() {
   try {
     auto c = config_.at("brokers").at("preload");
     c.list_for_each([this](auto& value) {
-      this->loadOperationFactory({{"name", value}});
+      this->loadBrokerFactory({{"name", value}});
     });
   } catch (ValueTypeError& ex) {
     logger::error("Process::_preloadBrokers failed. Exception: {}", ex.what());
@@ -307,6 +307,15 @@ void Process::startAsync() {
 											      );
   started_ = true;
   if (on_started_) on_started_(this);
+
+  for(auto& b : store_.brokers_) {
+    while(true) {
+      if (b->isRunning()) { 
+        break;
+      }
+      std::this_thread::sleep_for( std::chrono::milliseconds( 10 ));
+    }
+  }
 }
   
 int32_t Process::wait() {
@@ -619,5 +628,30 @@ Value Process::loadExecutionContextFactory(const Value& info) {
       //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));
     }
   }
-  return Value::error(logger::error("Process::loadContainerFactory failed. Can not load DLL ({})", str(info)));
+  return Value::error(logger::error("Process::loadExecutionContextFactory failed. Can not load DLL ({})", str(info)));
+}
+
+Value Process::loadBrokerFactory(const Value& info) {
+  logger::trace("Process::loadBrokerFactory({})", (info));
+  auto name = info.at("name").stringValue();
+
+  std::vector<std::string> search_paths{"./", path_};
+  if (info.hasKey("load_paths")) {
+    info.at("load_paths").list_for_each([this, &search_paths](auto& value) {
+      search_paths.push_back(value.stringValue());
+    });
+  }
+  for(auto& p : search_paths) {
+    auto dllproxy = createDLLProxy(p, name);
+    if (!dllproxy->isNull()) {
+      dllproxies_.push_back(dllproxy);
+      auto f = dllproxy->functionSymbol("create" + name);
+      if (f) {
+          addBrokerFactory(std::shared_ptr<BrokerFactory>(  static_cast<BrokerFactory*>(f())  ) );
+          return info;
+      } 
+      //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));
+    }
+  }
+  return Value::error(logger::error("Process::loadBrokerFactory failed. Can not load DLL ({})", str(info)));
 }

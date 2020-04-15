@@ -97,7 +97,9 @@ namespace nerikiri {
     Value createBroker(const Value& ci);
     std::shared_ptr<BrokerAPI>  createBrokerProxy(const Value& ci);
     Process& addBrokerFactory(std::shared_ptr<BrokerFactory> factory) { store_.addBrokerFactory(factory); return *this;}
-    
+    Value loadBrokerFactory(const Value& info);
+
+
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
 

@@ -39,6 +39,7 @@ std::function<void*()> DLLProxy::functionSymbol(const std::string& name) {
 std::shared_ptr<DLLProxy> nerikiri::createDLLProxy(const Value& info) {
     return std::make_shared<DLLProxy>(info);
 }
+
 std::shared_ptr<DLLProxy> nerikiri::createDLLProxy(const std::string& path, const std::string& name) {
     return std::make_shared<DLLProxy>(path, name);
 }

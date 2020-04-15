@@ -3,7 +3,7 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/datatype/json.h"
-#include "./httpbroker.h"
+#include "./HTTPBroker.h"
 #include "webi/http_server.h"
 #include "nerikiri/process.h"
 #include "webi/http_client.h"
@@ -12,6 +12,12 @@
 using namespace nerikiri;
 using namespace nerikiri::http;
 using namespace nerikiri::logger;
+
+
+extern "C" {
+    void* createHTTPBroker();
+};
+
 
 
 class HTTPBrokerImpl : public HTTPBroker {
@@ -95,6 +101,7 @@ public:
       return response([this, &process, &req](){return process->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); });
     });
 
+    Broker::run(process);
     server_->runBackground(port_);
     cond_.wait(lock);
     
@@ -103,6 +110,7 @@ public:
   }
 
   void shutdown(Process* proc) override {
+    Broker::shutdown(proc);
     cond_.notify_all();
   }
 
@@ -188,4 +196,10 @@ std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::createPr
   auto address = value.at("host").stringValue();
   auto port = value.at("port").intValue();
   return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
+}
+
+
+
+void* createHTTPBroker() {
+    return new HTTPBrokerFactory();
 }

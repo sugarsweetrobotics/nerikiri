@@ -24,7 +24,7 @@
 
     "brokers": {
         "load_paths": ["test", "build/test", "../build/test", "../build/example"],
-        "preload": [],
+        "preload": ["HTTPBroker"],
         "precreate": {"HTTPBroker": {"instanceName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080}}
@@ -36,7 +36,7 @@
         "precreate": {"TimerEC": {"instanceName": "TimerEC0.ec",
             "rate": 1.0}},
         "bind": {"TimerEC0.ec": ["one0.ope"]},
-        "start": ["TimerEC0.ec"]
+        "start": []
     },
 
     "connections": [{ 

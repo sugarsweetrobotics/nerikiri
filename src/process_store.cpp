@@ -22,6 +22,8 @@ ProcessStore::~ProcessStore() {
   this->operationFactories_.clear();
   this->containers_.clear();
   containerFactories_.clear();
+  brokers_.clear();
+  brokerFactories_.clear();
 }
 
 

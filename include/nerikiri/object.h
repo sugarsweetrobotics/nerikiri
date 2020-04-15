@@ -28,8 +28,10 @@ namespace nerikiri {
       }
 
     public:
-      Object(): info_({{"name", "null"}}), is_null_(true) {}
-      Object(const Value& info) : info_(info), is_null_(false) {}
+      Object(): info_({{"name", "null"}, {"state", "created"}}), is_null_(true) {}
+      Object(const Value& info) : info_(info), is_null_(false) {
+        info_["state"] = "created";
+      }
       virtual ~Object() {}
 
     };

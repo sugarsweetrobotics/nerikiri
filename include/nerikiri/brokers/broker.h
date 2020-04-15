@@ -22,13 +22,16 @@ namespace nerikiri {
 
     virtual bool run(Process* process) {
       logger::trace("Broker::run()");
-      return false;
+      info_["state"] = "running";
+      return true;
     }
     
     virtual void shutdown(Process* process) {
       logger::trace("Broker::shutdown()");
+      info_["state"] = "stopped";
     }
 
+    bool isRunning() const { return info_.at("state").stringValue() == "running"; }
   };
 
 
