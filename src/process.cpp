@@ -204,7 +204,7 @@ void Process::_preloadBrokers() {
       this->loadBrokerFactory({{"name", value}});
     });
   } catch (ValueTypeError& ex) {
-    logger::error("Process::_preloadBrokers failed. Exception: {}", ex.what());
+    logger::error("Process::_preloadBrokers in preload stage failed. Exception: {}", ex.what());
   }
 
   try {
@@ -215,7 +215,18 @@ void Process::_preloadBrokers() {
       createBroker(vv);  
     });
   } catch (ValueTypeError& ex) {
-    logger::error("Process::_preloadBrokers failed. Exception: {}", ex.what());
+    logger::error("Process::_preloadBrokers failed in precreate stage failed. Exception: {}", ex.what());
+  }
+}
+
+void Process::_preloadConnections() {
+  try {
+    auto c = config_.at("connections");
+    c.list_for_each([this](auto& value) {
+      this->registerProviderConnection(value);
+    });
+  } catch (ValueTypeError& ex) {
+    logger::error("Process::_preloadConnections failed. Exception: {}", ex.what());
   }
 }
 
@@ -311,6 +322,7 @@ void Process::startAsync() {
   started_ = true;
   if (on_started_) on_started_(this);
 
+  _preloadConnections();
   for(auto& b : store_.brokers_) {
     while(true) {
       if (b->isRunning()) { 
@@ -426,33 +438,37 @@ Value checkProcessHasProviderOperation(Process* process, const ConnectionInfo& c
 
 Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker) {
   logger::trace("Process::registerProviderConnection({})", (ci));
-  auto ret = checkProcessHasProviderOperation(this, ci);
-  if (ret.isError()) return ret;
-  auto provider = store()->getOperation(ret.at("output").at("info"));
-  if (provider->hasOutputConnectionRoute(ci)) {
-      return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ci.at("output"))));
-  }
-  while (provider->hasOutputConnectionName(ret)) {
-      logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output")));
-      ret["name"] = ci.at("name").stringValue() + "_2";
-  }
+  try {
+    auto ret = checkProcessHasProviderOperation(this, ci);
+    if (ret.isError()) return ret;
+    auto provider = store()->getOperation(ret.at("output").at("info"));
+    if (provider->hasOutputConnectionRoute(ci)) {
+        return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ci.at("output"))));
+    }
+    while (provider->hasOutputConnectionName(ret)) {
+        logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output")));
+        ret["name"] = ci.at("name").stringValue() + "_2";
+    }
 
-  auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
-  if (!consumerBroker) {
-    return Value::error(logger::error("makeConnection failed. Consumer side broker can not be created. {}", str(ci.at("output"))));
+    auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
+    if (!consumerBroker) {
+      return Value::error(logger::error("makeConnection failed. Consumer side broker can not be created. {}", str(ci.at("output"))));
+    }
+
+    auto ret2 = consumerBroker->registerConsumerConnection(ret);
+    if(ret2.isError()) return ret;
+
+    // リクエストが成功なら、こちらもConnectionを登録。
+    auto ret3 = provider->addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
+    if (ret3.isError()) {
+        // 登録が失敗ならConsumer側のConnectionを破棄。
+        auto ret3 = deleteConsumerConnection(ret2);
+        return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
+    }// 登録成功ならciを返す
+    return ret2;
+  } catch (ValueTypeError& ex) {
+    return Value::error(logger::error("Process::registerProviderConnection() failed. Exception: {}", ex.what()));
   }
-
-  auto ret2 = consumerBroker->registerConsumerConnection(ret);
-  if(ret2.isError()) return ret;
-
-  // リクエストが成功なら、こちらもConnectionを登録。
-  auto ret3 = provider->addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
-  if (ret3.isError()) {
-      // 登録が失敗ならConsumer側のConnectionを破棄。
-      auto ret3 = deleteConsumerConnection(ret2);
-      return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
-  }// 登録成功ならciを返す
-  return ret2;
 }
 
 Value Process::registerConsumerConnection(const ConnectionInfo& ci) {
@@ -474,7 +490,7 @@ Value Process::registerConsumerConnection(const ConnectionInfo& ci) {
   }
 
   return consumer->addConsumerConnection(consumerConnection(ret,
-             createBrokerProxy(ci.at("output").at("broker"))));
+             createBrokerProxy(ci.at("input").at("broker"))));
 }
 
 
@@ -524,7 +540,7 @@ Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo)
     return opInfo;
   }
   auto ec = store()->getExecutionContext({{"instanceName", ecName}});
-  if (ec) {
+  if (!ec->isNull()) {
     return ec->bind(getOperation(opInfo));
   } else {
     return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));

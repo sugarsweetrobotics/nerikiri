@@ -1,6 +1,7 @@
-set(nk_base_srcs process.cpp process_store.cpp operation.cpp 
+set(nk_base_srcs process.cpp process_store.cpp 
+operation.cpp 
 #operationinfo.cpp 
-value.cpp 
+# value.cpp 
 ec.cpp
 # valuemap.cpp 
 logger.cpp 
@@ -33,6 +34,9 @@ function(add_ec NAME)
   set(ECS ${ECS} PARENT_SCOPE)
 endfunction(add_ec)
 
+
+add_ec(TimerEC)
+
 set(BROKERS)
 function(add_broker DIR NAME)
   add_library(${NAME} SHARED brokers/${DIR}/${NAME}.cpp)
@@ -40,4 +44,7 @@ function(add_broker DIR NAME)
   set(BROKERS ${NAME} ${BROKERS})
   set(BROKERS ${BROKERS} PARENT_SCOPE)
 endfunction(add_broker)
+
+
 add_broker(http HTTPBroker)
+

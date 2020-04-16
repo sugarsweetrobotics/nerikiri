@@ -29,7 +29,7 @@ info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), 
     }
 
     if (consumerBroker_) {
-        auto name = info_.at("output").at("info").at("name").stringValue();
+        //auto name = info_.at("output").at("info").at("name").stringValue();
         push_func_ = [_info, consumerBroker](const Value& value) { 
             return consumerBroker->putToArgumentViaConnection(_info, std::move(value)); };
         is_null_ = false;
@@ -39,7 +39,6 @@ info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), 
             is_event_ = true;
         }
     }
-    //throw InvalidBrokerException();
 }
 
 Connection::~Connection() {}

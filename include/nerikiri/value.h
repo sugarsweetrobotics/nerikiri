@@ -82,6 +82,7 @@ namespace nerikiri {
       v.errormessage_ = msg;
       return v;
     }
+    
     virtual ~Value();
 
     static Value list() {
@@ -328,8 +329,84 @@ namespace nerikiri {
 //    return Value::error("Value::merge failed. Invalid Value types of arguments v1 and v2.");
   }
 
+  inline std::string str(const nerikiri::Value& value) {
+    if (value.isIntValue()) return std::to_string(value.intValue());
+    if (value.isDoubleValue()) return std::to_string(value.doubleValue());
+    if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
+    if (value.isObjectValue()) {
+        std::stringstream ss;
+        for(auto [k, v] : value.objectValue()) {
+            ss << ",\"" << k << "\":" << str(v);
+        }
+        ss << "}";
+        return ss.str().replace(0, 1, "{");
+    }
+    if (value.isListValue()) {
+        std::stringstream ss;
+        for(auto& v : value.listValue()) {
+            ss << "," << str(v);
+        }
+        ss << "]";
+        return ss.str().replace(0, 1, "[");
+    }
+    if (value.isNull()) {
+        return "{}";
+    }
+    if (value.isError()) {
+    return "{\"Error\": \"Value is error('" + value.getErrorMessage() + "').\"}";
+        //throw ValueTypeError(value.getErrorMessage());
+    }
+    return "{\"Error\": \"Value is not supported type.\"}";
+  }
 
-  std::string str(const Value& value);
+inline Value::Value(int&& value) : typecode_(VALUE_TYPE_INT), intvalue_(std::move(value)) {}
+inline Value::Value(const int64_t value) : typecode_(VALUE_TYPE_INT), intvalue_(value) {}
+inline Value::Value(const double value) : typecode_(VALUE_TYPE_DOUBLE), doublevalue_(value) {}
+inline Value::Value(const std::string& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(value) {}
+inline Value::Value(std::string&& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(std::move(value)) {}
+inline Value::Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(value) {}
+inline Value::Value(const Value& value): typecode_(value.typecode_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_) {}
+
+inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
+  for(auto &p : ps) {
+    objectvalue_[p.first] = p.second;
+  }
+}
+
+inline Value::Value(std::initializer_list<std::pair<std::string, Value>>&& ps) : typecode_(VALUE_TYPE_OBJECT) {
+  for(auto &p : ps) {
+    objectvalue_[p.first] = p.second;
+  }
+}
+
+inline Value::Value(): typecode_(VALUE_TYPE_NULL){}
+
+inline Value::~Value() {}
+
+inline int64_t Value::intValue() const {
+  if (isIntValue()) return intvalue_;
+  throw new ValueTypeError(std::string("trying int value acecss. actual ") + getTypeString());
+}
+
+inline double Value::doubleValue() const {
+  if (isDoubleValue()) return doublevalue_;
+  throw new ValueTypeError(std::string("trying double value acecss. actual ") + getTypeString());
+}
+
+inline const std::string& Value::stringValue() const {
+  if (isStringValue()) return stringvalue_;
+  throw new ValueTypeError(std::string("trying string value acecss. actual ") + getTypeString());
+}
+
+inline const std::map<std::string, Value>& Value::objectValue() const {
+  if (isObjectValue()) return objectvalue_;
+  throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+}
+
+inline const std::vector<Value>& Value::listValue() const {
+  if (isListValue()) return listvalue_;
+  throw new ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
+}
 
 }
 

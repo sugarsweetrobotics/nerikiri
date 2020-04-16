@@ -40,18 +40,22 @@ SCENARIO( "Process test", "[process]" ) {
     Process p(argc, argv);
     THEN("Process has one operation") {
       p.startAsync();
-      auto v = p.getOperationInfos();
-      REQUIRE(v.listValue().size() >= 1);
-      auto op = p.getOperation({{"instanceName", "one0.ope"}});
-      REQUIRE(op->isNull() == false);
+      {
+        auto v = p.getOperationInfos();
+        REQUIRE(v.listValue().size() >= 1);
+        auto op = p.getOperation({{"instanceName", "one0.ope"}});
+        REQUIRE(op->isNull() == false);
+      }
     }
 
     THEN("Process has increment operation") {
       p.startAsync();
-      auto v = p.getOperationInfos();
-      REQUIRE(v.listValue().size() >= 1);
-      auto op = p.getOperation({{"instanceName", "increment0.ope"}});
-      REQUIRE(op->isNull() == false);
+      {
+        auto v = p.getOperationInfos();
+        REQUIRE(v.listValue().size() >= 1);
+        auto op = p.getOperation({{"instanceName", "increment0.ope"}});
+        REQUIRE(op->isNull() == false);
+      }
     }
   }
 
@@ -76,10 +80,12 @@ SCENARIO( "Process test", "[process]" ) {
     Process p(argc, argv);
     THEN("Process has HTTBroker") {
       p.startAsync();
+      {
       auto v = p.getBrokerInfos();
       REQUIRE(v.listValue().size() >= 1);
       auto brk = p.getBroker({{"instanceName", "HTTPBroker0.brk"}});
       REQUIRE(brk->isNull() == false);
+      }
     }
   }
 

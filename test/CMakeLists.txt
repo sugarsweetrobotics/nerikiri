@@ -5,8 +5,9 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2)
 
 OPTION(TEST_HTTP "Http Server Client Test" OFF)
 OPTION(TEST_HTTPBROKER "HttpBroker Test" OFF)
-OPTION(TEST_PROCESS "HttpBroker Test" OFF)
 OPTION(TEST_OPTION "Option Parser Test" OFF)
+OPTION(TEST_PROCESS "Process Test" OFF)
+OPTION(TEST_OPERATION "Operation Test" OFF)
 
 
 set(EXAMPLE_LIBS nerikiri)
@@ -31,6 +32,9 @@ if (${TEST_PROCESS})
   declare_test(process)
 endif ()
 
+if (${TEST_OPERATION})
+  declare_test(operation)
+endif ()
 
 if (${TEST_OPTION})
   declare_test(option)

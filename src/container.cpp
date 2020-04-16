@@ -28,7 +28,7 @@ std::vector<Value> ContainerBase::getOperationInfos() const {
             return op;
         }
     }
-    return OperationBase::null;
+    return Operation::null;
 }
 
 

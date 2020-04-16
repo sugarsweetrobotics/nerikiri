@@ -67,6 +67,7 @@ namespace nerikiri {
     void _preloadExecutionContexts();
     void _preStartExecutionContexts();
     void _preloadBrokers();
+    void _preloadConnections();
   public:
     ProcessStore* store() { return &store_; }
   private: 

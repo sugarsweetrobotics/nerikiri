@@ -108,7 +108,7 @@ std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
       if (op->info().at("instanceName") == name) return op;
     }
   }
-  return OperationBase::null;
+  return Operation::null;
 }
 
 std::shared_ptr<OperationFactory> ProcessStore::getOperationFactory(const Value& oi) {

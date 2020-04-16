@@ -21,7 +21,10 @@ namespace nerikiri {
         }
 
         ExecutionContext() : Object() {}
-        virtual ~ExecutionContext() {}
+        virtual ~ExecutionContext() {
+            operations_.clear();
+            operationBrokers_.clear();
+        }
 
         static std::shared_ptr<ExecutionContext> null;
     public:
@@ -70,6 +73,18 @@ namespace nerikiri {
             if (op->isNull()) {
                 return Value::error(logger::error("ExecutionContext::bind failed. Operation is null"));
             }
+            auto info = op->info();           
+            for(auto it = operations_.begin(); it != operations_.end();++it) {
+                if ((*it)->info().at("instanceName") == info.at("instanceName")) {
+                    it = operations_.erase(it);
+                 }
+            }
+            for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
+                if ((*it).second->info().at("name") == info.at("name")) {
+                    it = operationBrokers_.erase(it);
+                } 
+            }
+
             operations_.push_back(op);
             return op->info();
         }
@@ -81,7 +96,7 @@ namespace nerikiri {
 
         Value unbind(const Value& info) {
             for(auto it = operations_.begin(); it != operations_.end();++it) {
-                if ((*it)->info().at("name") == info.at("name")) {
+                if ((*it)->info().at("instanceName") == info.at("instanceName")) {
                     it = operations_.erase(it);
                     return info;
                 }
