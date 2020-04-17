@@ -1,0 +1,122 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug example01",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example01",
+            "args": [],
+            "cwd": "${workspaceFolder}/example"
+        },
+        {
+            "name": "Debug example02",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example02",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/example"
+        },
+        {
+            "name": "Debug example03",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example03",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/example"
+        },
+        {
+            "name": "Debug example04",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example04",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/example"
+        },
+        {
+            "name": "Debug example05",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example05",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/example"
+
+        },
+        {
+            "name": "Debug example06",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example06",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/example"
+
+        },
+        {
+            "name": "Debug example07",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example07",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/example"
+
+        
+        },
+        {
+            "name": "Debug example10",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/example10",
+            "args": [],
+            "cwd": "${workspaceFolder}/example"
+
+        },
+        {
+            "name": "Debug option_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/option_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/test"
+
+        },
+        {
+            "name": "Debug process_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/process_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
+            "name": "Debug operation_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/operation_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
+            "name": "Debug container_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/container_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
+            "name": "Debug ec_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/ec_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        }
+    ]
+}
