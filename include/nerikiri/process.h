@@ -118,7 +118,6 @@ namespace nerikiri {
     Value loadExecutionContextFactory(const Value& info);
     std::shared_ptr<ExecutionContext> getExecutionContext(const Value& info) { return store_.getExecutionContext(info); }
 
-
     int32_t start();
     void startAsync();
     int32_t wait();

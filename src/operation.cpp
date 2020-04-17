@@ -36,8 +36,9 @@ OperationBase::~OperationBase() {
     logger::trace("Operation desctructed.");
 }
 
-Value Operation::addProviderConnection(Connection&& c) {
+Value OperationBase::addProviderConnection(Connection&& c) {
     logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     if (c.isNull()) {
         return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
     }
@@ -45,8 +46,9 @@ Value Operation::addProviderConnection(Connection&& c) {
     return c.info();
 }
 
-Value Operation::addConsumerConnection(Connection&& c) {
+Value OperationBase::addConsumerConnection(Connection&& c) {
     logger::trace("Operation::addConsumerConnection({})", str(c.info()));
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     if (c.isNull()) {
         return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
     }
@@ -66,7 +68,8 @@ Value Operation::addConsumerConnection(Connection&& c) {
 }
 
 
-Value Operation::collectValues() const {
+Value OperationBase::collectValues() const {
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
     [this](const std::string& key, const Value& value) -> std::pair<std::string, Value>{
         if (!bufferMap_.at(key)->isEmpty()) {
@@ -81,7 +84,13 @@ Value Operation::collectValues() const {
 }
 
 Value OperationBase::execute() {
-    return Value::error(logger::error("OperationBase::execute() failed. Operation is null"));
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
+    logger::trace("OperationBase({})::execute()", str(info()));
+    auto v = this->invoke();
+    for(auto& c : outputConnectionList_) {
+        c.putToArgumentViaConnection(v);
+    }
+    return v;
 }
 
 Value OperationBase::getConnectionInfos() const {
@@ -92,6 +101,7 @@ Value OperationBase::getConnectionInfos() const {
 }
 
 Value OperationBase::getInputConnectionInfos() const {
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     return nerikiri::map<std::pair<std::string, Value>, std::string, nerikiri::ConnectionList>(inputConnectionListDictionary_, [](const auto& k, const ConnectionList& v) -> std::pair<std::string,Value> {
         return {k, nerikiri::map<Value, nerikiri::Connection>(v, [](const Connection& con) -> Value { return con.info(); })};
     });
@@ -191,10 +201,12 @@ bool OperationBase::hasOutputConnectionName(const ConnectionInfo& ci) const {
 }
 
 Value OperationBase::invoke() {
-    return Value::error("Opertaion is null");
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
+    return call(collectValues());
 }
 
 Value OperationBase::push(const Value& ci, Value&& value) {
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     for (auto& c : inputConnectionListDictionary_[ci.at("target").at("name").stringValue()]) {
         if (c.info().at("name") == ci.at("name")) {
             return bufferMap_[ci.at("target").at("name").stringValue()]->push(std::move(value));
@@ -204,6 +216,7 @@ Value OperationBase::push(const Value& ci, Value&& value) {
 }
 
 Value OperationBase::putToArgument(const std::string& argName, const Value& value) {
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     if (bufferMap_.count(argName) > 0) {
         bufferMap_[argName]->push(value);
         return value;
@@ -213,6 +226,7 @@ Value OperationBase::putToArgument(const std::string& argName, const Value& valu
 
 Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
     logger::trace("OperationBaseBase::putToArgumentViaConnection()");
+    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     const std::string& argName = conInfo.at("input").at("target").at("name").stringValue();
     const std::string& conName = conInfo.at("name").stringValue();
     auto connection = this->getInputConnection(conInfo);
@@ -242,7 +256,6 @@ Value OperationBase::removeConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("Operation::removeConsumerConnection({})", str(ci));
     if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
     const auto argName = ci.at("input").at("target").at("name").stringValue();
-    //auto clist = inputConnectionListDictionary_[argName];
     for (auto it = inputConnectionListDictionary_[argName].begin(); it != inputConnectionListDictionary_[argName].end();) {
         if ((*it).info().at("name") == ci.at("name")) {
             it = inputConnectionListDictionary_[argName].erase(it);

@@ -54,5 +54,5 @@ Value ContainerBase::createContainerOperation(const Value& info) {
         return Value::error(logger::error("createContainerOperation failed. Can not find appropreate operation factory."));
     }
     logger::info("Creating ContainerOperation({})", str(info));
-    return addOperation(f->create());
+    return addOperation(f->create(info));
 }

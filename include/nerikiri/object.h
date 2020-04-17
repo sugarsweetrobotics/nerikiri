@@ -17,7 +17,7 @@ namespace nerikiri {
           return info_;
       }
 
-      bool isNull() { return is_null_; }
+      bool isNull() const { return is_null_; }
 
       std::string getInstanceName() const { 
         if (info_.objectValue().count("instanceName") == 0) { return ""; }

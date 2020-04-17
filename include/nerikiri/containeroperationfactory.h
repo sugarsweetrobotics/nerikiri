@@ -13,7 +13,7 @@ namespace nerikiri {
       virtual std::string containerTypeName() = 0;
       virtual std::string typeName() = 0;
     public:
-      virtual std::shared_ptr<ContainerOperationBase> create() = 0;
+      virtual std::shared_ptr<ContainerOperationBase> create(const Value& info) = 0;
     };
 
     template<typename T>
@@ -34,8 +34,9 @@ namespace nerikiri {
             return demangle(typeid(T).name()) + ":" + info_.at("name").stringValue();
         }
     public:
-        virtual std::shared_ptr<ContainerOperationBase> create() { 
-            return std::shared_ptr<ContainerOperationBase>(new ContainerOperation<T>(info_, function_)); 
+        virtual std::shared_ptr<ContainerOperationBase> create(const Value& info) { 
+            auto i = nerikiri::merge(info, info_);
+            return std::shared_ptr<ContainerOperationBase>(new ContainerOperation<T>(i, function_)); 
         }
     };
 

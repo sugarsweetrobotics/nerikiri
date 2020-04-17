@@ -11,7 +11,6 @@ namespace nerikiri {
 
     class ExecutionContext : public Object {
     private:
-    private:
         std::vector<std::shared_ptr<OperationBase>> operations_;
         std::vector<std::pair<Value, std::shared_ptr<BrokerAPI>>> operationBrokers_;
 
@@ -27,6 +26,7 @@ namespace nerikiri {
         }
 
         static std::shared_ptr<ExecutionContext> null;
+
     public:
         virtual bool start() {
             if (info_["state"].stringValue() != "started") {
@@ -115,7 +115,14 @@ namespace nerikiri {
               [](auto op) { return op->info(); });
         }
 
-    private:
+        std::shared_ptr<OperationBase> getBoundOperation(const Value& info) const {
+            for(auto& op : operations_) {
+                if (op->info().at("instanceName") == info.at("instanceName")) {
+                    return op;
+                }
+            }
+            return OperationBase::null;
+        }
     };
     
     class ExecutionContextFactory {

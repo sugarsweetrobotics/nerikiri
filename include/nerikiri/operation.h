@@ -82,21 +82,15 @@ namespace nerikiri {
   
   public:
 
-    virtual Value addProviderConnection(Connection&& c) { 
-      return Value::error(logger::error("{} failed. Operation is null", __func__));
-    }
+    virtual Value addProviderConnection(Connection&& c);
 
-    virtual Value addConsumerConnection(Connection&& c) { 
-      return Value::error(logger::error("{} failed. Operation is null", __func__));
-    }
+    virtual Value addConsumerConnection(Connection&& c);
 
     virtual Value call(const Value& value) {
-       return Value::error(logger::error("{} failed. Operation is null", __func__));
-    }
+       return Value::error(logger::error("{} failed. Caller Operation is null.", __func__));
+    };
 
-    virtual Value collectValues() const {
-       return Value::error(logger::error("{} failed. Operation is null", __func__));
-    }
+    virtual Value collectValues() const;
 
     virtual Value removeProviderConnection(const ConnectionInfo& ci);
 
@@ -166,29 +160,13 @@ namespace nerikiri {
     }
 
 
-    virtual Value addProviderConnection(Connection&& c) override;
-
-    virtual Value addConsumerConnection(Connection&& c) override;
 
     virtual Value call(const Value& value) override {
       outputBuffer_.push(std::move(this->function_(value)));
       return getOutput();
     }
-    
-    virtual Value collectValues() const override;
 
-    virtual Value invoke() override {
-      return call(collectValues());
-    }
 
-    virtual Value execute() override {
-        logger::trace("Operation({})::execute()", str(info()));
-        auto v = this->invoke();
-        for(auto& c : outputConnectionList_) {
-            c.putToArgumentViaConnection(v);
-        }
-        return v;
-    }
 
 
   };

@@ -47,13 +47,6 @@ namespace nerikiri {
             this->info_["operationName"] = this->info_["name"];
             this->info_["name"] = container->info().at("name").stringValue() + ":" + this->info_["name"].stringValue();
          }
-
-        virtual Value invoke() override {
-            if (this->isNullContainerOperation()) {
-                return Value::error("Opertaion is null");
-            }
-            return this->call(collectValues());// erikiri::call_operation(*this, this->collectValues());
-        }
     };
 
 
