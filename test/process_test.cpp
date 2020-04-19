@@ -9,8 +9,8 @@ using namespace nerikiri;
 
 SCENARIO( "Process test", "[process]" ) {
   GIVEN("Process basic behavior") {
-    const int argc = 3;
-    const char* argv[] = {"process_test", "-f", "nk_process_test.json"};
+    const int argc = 1;
+    const char* argv[] = {"process_test_basic_behavior"};
     Process p(argc, argv);
     THEN("Process is running") {
       p.startAsync();
@@ -19,20 +19,15 @@ SCENARIO( "Process test", "[process]" ) {
     THEN("Process is not running") {
       REQUIRE(p.isRunning() == false);
     }
-  }
-
-  GIVEN("Process Logger behavior") {
-    const int argc = 3;
-    const char* argv[] = {"process_test", "-f", "nk_process_test.json"};
-    Process p(argc, argv);
     THEN("Process logger") {
-      REQUIRE(logger::getLogLevel() == logger::DEBUG);
+      REQUIRE(logger::getLogLevel() == logger::OFF);
     }
   }
 
+/*
   GIVEN("Process loads operation") {
     const int argc = 3;
-    const char* argv[] = {"process_test", "-f", "nk_process_test.json"};
+    const char* argv[] = {"process_test_load_operation", "-f", "nk_process_operation_test.json"};
     Process p(argc, argv);
     THEN("Process has one operation") {
       p.startAsync();
@@ -83,4 +78,5 @@ SCENARIO( "Process test", "[process]" ) {
       }
     }
   }
+  */
 }

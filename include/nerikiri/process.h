@@ -54,9 +54,11 @@ namespace nerikiri {
      */
     Process(const std::string& name);
 
-
     Process(const int argc, const char** argv);
 
+    Process(const std::string& name, const Value& config);
+
+    Process(const std::string& name, const std::string& jsonStr);
     /**
      * デストラクタ
      */

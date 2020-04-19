@@ -19,6 +19,9 @@ std::shared_ptr<Broker> Broker::null = std::make_shared<Broker>();;
 
 
 Value defaultProcessConfig({
+  {"logger", {
+    {"logLevel", "OFF"}
+  }},
   {"operations", {
     {"preload", Value::list()}
   }},
@@ -39,8 +42,18 @@ Value defaultProcessConfig({
 
 Process Process::null("");
 
+Process::Process(const std::string& name) : info_({{"name", name}}), store_(this), config_(defaultProcessConfig), started_(false) {
+  std::string fullpath = name;
+  if (fullpath.find("/") != 0) {
+    fullpath = nerikiri::getCwd() + fullpath;
+  }
+
+  std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
+  coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
+  setExecutablePath(path);
+}
+
 Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}}), store_(this), config_(defaultProcessConfig), started_(false) {
-  logger::info("Process::Process(\"{}\")", argv[0]);
   std::string fullpath = argv[0];
 
   if (fullpath.find("/") != 0) {
@@ -48,28 +61,90 @@ Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}})
   }
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
+  setExecutablePath(path);
+
   coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
 
   ArgParser parser;
   parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
   auto options = parser.parse(argc, argv);
-  
-  setExecutablePath(path);
   parseConfigFile(options.get<std::string>("file"));
+
+  if (config_.hasKey("logger")) {
+    auto loggerConf = config_.at("logger");
+    if (loggerConf.hasKey("logLevel")) {
+      auto loglevel_str = loggerConf.at("logLevel").stringValue();
+      logger::setLogLevel(loglevel_str);
+    }
+  }
+
+  logger::info("Process::Process(\"{}\")", argv[0]);
 }
 
-Process::Process(const std::string& name) : info_({{"name", name}}), store_(this), started_(false) {
-  logger::trace("Process::Process(\"{}\")", name);
-  if (name.length() == 0) { 
-    info_ = Value::error("Process is Null."); 
-  } 
+Process::Process(const std::string& name, const Value& config) : Process(name) {
+  config_ = nerikiri::merge(config, config_);  
+  
+  if (config_.hasKey("logger")) {
+    auto loggerConf = config_.at("logger");
+    if (loggerConf.hasKey("logLevel")) {
+      auto loglevel_str = loggerConf.at("logLevel").stringValue();
+      logger::setLogLevel(loglevel_str);
+    }
+  }
+
+  logger::info("Process::Process(\"{}\")", name);
 }
+
+
+Process::Process(const std::string& name, const std::string& jsonStr): Process(name) {
+  config_ = merge(ProcessConfigParser::parseConfig(jsonStr), config_);  
+  if (config_.hasKey("logger")) {
+    auto loggerConf = config_.at("logger");
+    if (loggerConf.hasKey("logLevel")) {
+      auto loglevel_str = loggerConf.at("logLevel").stringValue();
+      logger::setLogLevel(loglevel_str);
+    }
+  }
+
+  logger::info("Process::Process(\"{}\")", name);
+}
+
 
 Process::~Process() {
   logger::trace("Process::~Process()");
   if (started_) {
     shutdown();
   }
+}
+
+
+void Process::parseConfigFile(const std::string& filepath) {
+
+  std::FILE* fp = nullptr;
+
+  /// if path is starts with "/", fullpath.
+  if (filepath.at(1) == '/') {
+    fp = std::fopen(filepath.c_str(), "r");
+  }
+  /// else (relative path) 
+  else {
+    /// Current Directory
+    fp = std::fopen(filepath.c_str(), "r");
+    if (!fp) {
+      /// Directory same as executable
+      std::string fullPath = this->path_ + filepath;
+      fp = std::fopen(fullPath.c_str(), "r");
+    }
+  }
+
+  if (fp) {
+    config_ = merge(ProcessConfigParser::parseConfig(fp), config_);
+  } else {
+    logger::info("Process::parseConfigFile. Can not open file ({})", filepath);
+  }
+
+
+  logger::info("Process::parseConfigFile -> {}", config_);
 }
 
 void Process::_preloadOperations() {
@@ -89,18 +164,8 @@ void Process::_preloadOperations() {
   
   try {
   auto c = config_.at("operations").at("precreate");
-  c.object_for_each([this](auto& key, auto& value) {
-    if (value.isStringValue()) {
-      Value v{{"name", key}, {"instanceName", value}};
-      auto opInfo = this->createOperation(v);
-      if (opInfo.isError()) {
-        logger::error("Porcess::_preloadOperation({}) failed. createOperation error: ({})", v, str(opInfo));
-      }
-    } else if (value.isObjectValue()) {
-      auto vv = value;
-      vv["name"] = key;
-      createOperation(vv);  
-    }
+  c.list_for_each([this](auto& oinfo) {
+     createOperation(oinfo);  
   });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
@@ -150,36 +215,34 @@ void Process::_preloadContainers() {
 
 void Process::_preloadExecutionContexts() {
   try {
-  auto c = config_.at("ecs").at("preload");
-  c.list_for_each([this](auto& value) {
-    Value v = {{"name", value}};
-    if (config_.at("ecs").hasKey("load_paths")) {
-      v["load_paths"] = config_.at("ecs").at("load_paths");
-    }
-    this->loadExecutionContextFactory(v);
-  });
-  } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
-  }
-
-  try {
-  auto c = config_.at("ecs").at("precreate");
-  c.object_for_each([this](auto& key, auto& value) {
-    auto v = value;
-    v["name"] = key;
-    auto cinfo = createExecutionContext(v);
-  });
-  } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
-  }
-
-  try {
-  auto c = config_.at("ecs").at("bind");
-  c.object_for_each([this](auto& key, auto& value) {
-    value.list_for_each([this, key](auto& v) {
-      this->bindECtoOperation(key, {{"instanceName", v.stringValue()}});      
+    auto c = config_.at("ecs").at("preload");
+    c.list_for_each([this](auto& value) {
+      Value v = {{"name", value}};
+      if (config_.at("ecs").hasKey("load_paths")) {
+        v["load_paths"] = config_.at("ecs").at("load_paths");
+      }
+      this->loadExecutionContextFactory(v);
     });
-  });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
+  }
+
+  try {
+    auto c = config_.at("ecs").at("precreate");
+    c.list_for_each([this](auto& value) {
+      auto cinfo = createExecutionContext(value);
+    });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
+  }
+
+  try {
+    auto c = config_.at("ecs").at("bind");
+    c.object_for_each([this](auto& key, auto& value) {
+      value.list_for_each([this, key](auto& v) {
+        this->bindECtoOperation(key, {{"instanceName", v.stringValue()}});      
+      });
+    });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadExecutionContexts(). ValueTypeException:{}", e.what());
   }
@@ -204,15 +267,13 @@ void Process::_preloadBrokers() {
       this->loadBrokerFactory({{"name", value}});
     });
   } catch (ValueTypeError& ex) {
-    logger::error("Process::_preloadBrokers in preload stage failed. Exception: {}", ex.what());
+    logger::error("Process::_preloadBrokers in preload stage failed. ValueTypeError: {}", ex.what());
   }
 
   try {
     auto c = config_.at("brokers").at("precreate");
-    c.object_for_each([this](auto& key, auto& value) {
-      auto vv = value;
-      vv["name"] = key;
-      createBroker(vv);  
+    c.list_for_each([this](auto& value) {
+      createBroker(value);
     });
   } catch (ValueTypeError& ex) {
     logger::error("Process::_preloadBrokers failed in precreate stage failed. Exception: {}", ex.what());
@@ -230,41 +291,6 @@ void Process::_preloadConnections() {
   }
 }
 
-void Process::parseConfigFile(const std::string& filepath) {
-
-  std::FILE* fp = nullptr;
-
-  /// if path is starts with "/", fullpath.
-  if (filepath.at(1) == '/') {
-    fp = std::fopen(filepath.c_str(), "r");
-  }
-  /// else (relative path) 
-  else {
-    /// Current Directory
-    fp = std::fopen(filepath.c_str(), "r");
-    if (!fp) {
-      /// Directory same as executable
-      std::string fullPath = this->path_ + filepath;
-      fp = std::fopen(fullPath.c_str(), "r");
-    }
-  }
-
-  if (fp) {
-    config_ = merge(ProcessConfigParser::parseConfig(fp), config_);
-  } else {
-    logger::info("Process::parseConfigFile. Can not open file ({})", filepath);
-  }
-
-  if (config_.hasKey("logger")) {
-    auto loggerConf = config_.at("logger");
-    if (loggerConf.hasKey("logLevel")) {
-      auto loglevel_str = loggerConf.at("logLevel").stringValue();
-      logger::setLogLevel(loglevel_str);
-    }
-  }
-
-  logger::info("Process::parseConfigFile -> {}", config_);
-}
 
 Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   logger::trace("Process::addSystemEditor()");

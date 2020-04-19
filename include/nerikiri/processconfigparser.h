@@ -21,5 +21,9 @@ namespace nerikiri {
       static Value parseConfig(std::FILE* fp) {
           return nerikiri::json::toValue(fp);
       }
+
+      static Value parseConfig(const std::string& jsonStr) {
+          return nerikiri::json::toValue(jsonStr);
+      }
     };
 }

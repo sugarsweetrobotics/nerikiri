@@ -15,11 +15,11 @@ void* increment() {
         {
             {"name", "increment"},
             {"defaultArg", {
-                {"arg01", 0}
+                {"data", 0}
             }}
         },
 		[](auto arg) { 
           std::cout << "Increment is called." << std::endl;
-		    return Value(arg["arg01"].intValue() + 1);
+		    return Value(arg["data"].intValue() + 1);
 		});
 }

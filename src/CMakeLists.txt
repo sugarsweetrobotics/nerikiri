@@ -36,6 +36,7 @@ endfunction(add_ec)
 
 
 add_ec(TimerEC)
+add_ec(OneShotEC)
 
 set(BROKERS)
 function(add_broker DIR NAME)

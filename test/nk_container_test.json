@@ -1,13 +1,6 @@
 {
     "logger": { "logLevel": "DEBUG" },
 
-    "operations": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example"],
-        "preload": ["one", "increment"],
-        "precreate": {"one": {"instanceName": "one0.ope"}, "increment": {"instanceName": "increment0.ope"}}
-    },
-
-
     "containers": {
         "load_paths": ["test", "build/test", "../build/test", "../build/example"],
         "preload": {
@@ -20,61 +13,5 @@
                      "intGetter": {"instanceName": "intGetter0.ope"}}
                 }
             }
-    },
-
-    "brokers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example"],
-        "preload": ["HTTPBroker"],
-        "precreate": {"HTTPBroker": {"instanceName": "HTTPBroker0.brk",
-            "host": "0.0.0.0",
-            "port": 8080}}
-    },
-
-    "ecs": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example"],
-        "preload": ["TimerEC"],
-        "precreate": {"TimerEC": {"instanceName": "TimerEC0.ec",
-            "rate": 1.0}},
-        "bind": {"TimerEC0.ec": ["one0.ope"]},
-        "start": []
-    },
-
-    "connections": [
-        { 
-            "name": "connection01",
-            "type": "event", 
-            "broker": {"name": "HTTPBroker"},
-            "output": {
-                "info": {"instanceName": "one0.ope"},
-                "broker": {"name": "HTTPBroker",
-                            "host": "localhost",
-                            "port": 8080}
-            },
-            "input": {
-                "info": {"instanceName": "increment0.ope"},
-                "broker": {"name": "HTTPBroker",
-                    "host": "localhost",
-                    "port": 8080},
-                "target": {"name": "arg01"}
-            }
-        },
-        { 
-            "name": "connection02",
-            "type": "event", 
-            "broker": {"name": "HTTPBroker"},
-            "output": {
-                "info": {"instanceName": "increment0.ope"},
-                "broker": {"name": "HTTPBroker",
-                            "host": "localhost",
-                            "port": 8080}
-            },
-            "input": {
-                "info": {"instanceName": "MyStruct0.ctn:addInt0.ope"},
-                "broker": {"name": "HTTPBroker",
-                    "host": "localhost",
-                    "port": 8080},
-                "target": {"name": "data"}
-            }
-        }
-    ]
+    }
 }

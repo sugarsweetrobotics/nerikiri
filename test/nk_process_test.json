@@ -1,10 +1,19 @@
 {
-    "logger": { "logLevel": "DEBUG" },
+    "logger": { "logLevel": "ERROR" },
 
     "operations": {
         "load_paths": ["test", "build/test", "../build/test", "../build/example"],
         "preload": ["one", "increment"],
-        "precreate": {"one": {"instanceName": "one0.ope"}, "increment": {"instanceName": "increment0.ope"}}
+        "precreate": [
+            {
+                "name": "one",
+                "instanceName": "one0.ope"
+            }, 
+            {
+                "name": "increment",
+                "instanceName": "increment0.ope"
+            }
+        ]
     },
 
 
@@ -33,9 +42,9 @@
     "ecs": {
         "load_paths": ["test", "build/test", "../build/test", "../build/example"],
         "preload": ["TimerEC"],
-        "precreate": {"TimerEC": {"instanceName": "TimerEC0.ec",
-            "rate": 1.0}},
-        "bind": {"TimerEC0.ec": ["one0.ope"]},
+        "precreate": {"TimerEC": {"instanceName": "TimerEC0.ec", "rate": 1.0}},
+        "bind": {"TimerEC0.ec": [
+            {"instanceName": "one0.ope"}]},
         "start": []
     },
 

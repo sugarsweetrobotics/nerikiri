@@ -32,6 +32,7 @@ SCENARIO( "Container test", "[container]" ) {
         REQUIRE(v.intValue() == 25);
       }
 
+/*
       AND_THEN("Container operation connect test") {
         auto one0 = p.getOperation({{"instanceName", "one0.ope"}});
         REQUIRE(!one0->isNull());
@@ -50,7 +51,7 @@ SCENARIO( "Container test", "[container]" ) {
         REQUIRE(v.isIntValue());
         REQUIRE(v.intValue() == 2);
       }
+*/
     }
-
   }
 }

@@ -32,7 +32,10 @@ namespace nerikiri {
             if (info_["state"].stringValue() != "started") {
                 onStarting();
                 info_["state"] = Value("started");
-                onStarted();
+                if (!onStarted()) {
+                    stop();
+                    return false;
+                }
             }
             return true;
         }
@@ -102,7 +105,7 @@ namespace nerikiri {
                 }
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it).second->info().at("name") == info.at("name")) {
+                if ((*it).first.at("instanceName") == info.at("instanceName")) {
                     it = operationBrokers_.erase(it);
                     return info;
                 } 
@@ -111,8 +114,14 @@ namespace nerikiri {
         }
 
         Value getBoundOperationInfos() {
-            return nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_,
+            auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_,
               [](auto op) { return op->info(); });
+            for(auto p : operationBrokers_) {
+                Value info = p.first;
+                info["broker"] = p.second->info();
+                ops.push_back(info);
+            }
+            return ops;
         }
 
         std::shared_ptr<OperationBase> getBoundOperation(const Value& info) const {

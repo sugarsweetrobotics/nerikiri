@@ -205,6 +205,7 @@ namespace nerikiri {
 
     Value& operator[](const int key) {
       if (!isListValue()) throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
+      if (listvalue_.size() <= key) throw ValueTypeError(std::string("Value list access failed. Index is exceeded from size"));
       return listvalue_[key];
     }
 
