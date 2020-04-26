@@ -3,26 +3,11 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include "nerikiri/container.h"
 
 namespace nerikiri {
 
 
-    class ContainerFactoryBase {
-    private:
-      std::vector<std::shared_ptr<ContainerOperationFactoryBase>> operationFactories_;
-    public:
-      virtual ~ContainerFactoryBase() {}
-    public:
-      virtual std::string typeName() = 0;
-    public:
-      virtual std::shared_ptr<ContainerBase> create(const Value& info) = 0;
-      virtual ContainerFactoryBase& addOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof) { 
-          operationFactories_.push_back(cof);
-          return *this;
-      }
-
-      friend class ContainerBase;
-    };
 
     template<typename T>
     class ContainerFactory : public ContainerFactoryBase {
@@ -38,12 +23,10 @@ namespace nerikiri {
           auto c = std::shared_ptr<ContainerBase>(new Container<T>(this, i)); 
           if (i.objectValue().count("operations") > 0) {
 
-            i.at("operations").object_for_each([&c, this](auto& key, auto& value) {
-              auto ii = value;
-              ii["name"] = key;
-              auto ret = c->createContainerOperation(ii);
+            i.at("operations").list_for_each([&c, this](auto& value) {
+              auto ret = c->createContainerOperation(value);
               if (ret.isError()) {
-                logger::error("ContainerFactory({}) failed. Can not create ContainerOperation({})", typeName(), str(ii));
+                //logger::error("ContainerFactory({}) failed. Can not create ContainerOperation({})", typeName(), str(ii));
               }
             });
 

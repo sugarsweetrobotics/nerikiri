@@ -106,7 +106,6 @@ namespace nerikiri::logger {
     return log(formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
   }
 
-
   template<typename... Args>
   inline std::string trace(const char* fmt, const Args &... args) {
     return log(TRACE, fmt, args...);

@@ -1,5 +1,5 @@
 #include "nerikiri/ec.h"
-
+#include "nerikiri/logger.h"
 
 using namespace nerikiri;
 

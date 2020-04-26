@@ -57,6 +57,8 @@ public:
 
   bool run(Process* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
+
+    server_->baseDirectory(".");
     
     logger::trace("HTTPBroker::run()");
 
@@ -83,7 +85,7 @@ public:
         });
     });
 
-    server_->response("/.*", "GET", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+    server_->response("/process/.*", "GET", "text/html", [this, process](const webi::Request& req) -> webi::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
       return response([process, &req](){return process->readResource(req.matches[0]);});
     });

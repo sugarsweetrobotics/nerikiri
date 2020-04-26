@@ -4,7 +4,8 @@
 #include <chrono>
 
 #include "nerikiri/object.h"
-#include "nerikiri/operation.h"
+#include "nerikiri/logger.h"
+#include "nerikiri/operationbase.h"
 
 namespace nerikiri {
 
@@ -79,7 +80,18 @@ namespace nerikiri {
             auto info = op->info();           
             for(auto it = operations_.begin(); it != operations_.end();++it) {
                 if ((*it)->info().at("instanceName") == info.at("instanceName")) {
-                    it = operations_.erase(it);
+                    if ( !((*it)->info().hasKey("ownerContainerInstanceName")) && 
+                         !( info.hasKey("ownerContainerInstanceName")) ) {
+                        it = operations_.erase(it);
+                    }
+                    else if ( ((*it)->info().hasKey("ownerContainerInstanceName")) && 
+                         ( info.hasKey("ownerContainerInstanceName")) ) {
+                        
+                        if ((*it)->info().at("ownerContainerInstanceName") == 
+                             info.at("ownerContainerInstanceName")) {
+                            it = operations_.erase(it);
+                        }
+                    }
                  }
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {

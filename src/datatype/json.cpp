@@ -10,7 +10,9 @@ using namespace nerikiri::json;
 
 namespace {
     nerikiri::Value construct(rapidjson::Value& value) {
-        if(value.IsInt()) {
+        if(value.IsBool()) {
+            return nerikiri::Value(value.GetBool());
+        } else if(value.IsInt()) {
             return nerikiri::Value(value.GetInt());
         } else if(value.IsUint()) {
             return nerikiri::Value((int)value.GetUint());
@@ -75,6 +77,7 @@ nerikiri::Value nerikiri::json::toValue(std::FILE* fp) {
 
 }
 std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
+    if (value.isBoolValue()) return std::to_string(value.boolValue());
     if (value.isIntValue()) return std::to_string(value.intValue());
     if (value.isDoubleValue()) return std::to_string(value.doubleValue());
     if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";

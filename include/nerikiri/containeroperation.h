@@ -7,23 +7,6 @@
 
 namespace nerikiri {
 
-    class ContainerOperationBase : public nerikiri::OperationBase {
-    private:
-        bool is_null_container_operation_;
-    public:
-    ContainerOperationBase(bool is_null) : is_null_container_operation_(is_null) {}
-    ContainerOperationBase(const Value& info) : is_null_container_operation_(false), OperationBase(info) {}
-    
-    virtual ~ContainerOperationBase() {}
-    protected:
-        ContainerBase* container_;
-    public:
-        virtual Value getContainerOperationInfo() const = 0;
-        virtual bool isNullContainerOperation() const { return is_null_container_operation_; }
-        virtual void setContainer(ContainerBase* container) { container_ = container; }
-
-        static ContainerOperationBase *null;
-    };
 
     template<typename T>
     class ContainerOperation : public nerikiri::ContainerOperationBase {
@@ -45,6 +28,7 @@ namespace nerikiri {
         virtual void setContainer(ContainerBase* container) override { 
             nerikiri::ContainerOperationBase::setContainer(container);
             this->info_["operationName"] = this->info_["name"];
+            this->info_["ownerContainerInstanceName"] = container->info().at("instanceName");
             this->info_["name"] = container->info().at("name").stringValue() + ":" + this->info_["name"].stringValue();
          }
     };

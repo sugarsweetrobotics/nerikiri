@@ -82,7 +82,7 @@ Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}})
 }
 
 Process::Process(const std::string& name, const Value& config) : Process(name) {
-  config_ = nerikiri::merge(config, config_);  
+  config_ = nerikiri::merge(config_, config);  
   
   if (config_.hasKey("logger")) {
     auto loggerConf = config_.at("logger");
@@ -97,7 +97,7 @@ Process::Process(const std::string& name, const Value& config) : Process(name) {
 
 
 Process::Process(const std::string& name, const std::string& jsonStr): Process(name) {
-  config_ = merge(ProcessConfigParser::parseConfig(jsonStr), config_);  
+  config_ = merge(config_, ProcessConfigParser::parseConfig(jsonStr));  
   if (config_.hasKey("logger")) {
     auto loggerConf = config_.at("logger");
     if (loggerConf.hasKey("logLevel")) {
@@ -200,12 +200,10 @@ void Process::_preloadContainers() {
 
   try {
   auto c = config_.at("containers").at("precreate");
-  c.object_for_each([this](auto& key, auto& value) {
-    auto v = value;
-    v["name"] = key;
-    auto cinfo = createContainer(v);
+  c.list_for_each([this](auto& value) {
+    auto cinfo = createContainer(value);
     if (cinfo.isError()) {
-      logger::error("Porcess::_preloadContainers({}) failed. createContainer error: ({})", v, str(cinfo));
+      logger::error("Porcess::_preloadContainers({}) failed. createContainer error: ({})", value, str(cinfo));
     }
   });
   } catch (nerikiri::ValueTypeError& e) {

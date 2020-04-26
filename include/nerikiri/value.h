@@ -45,6 +45,7 @@ namespace nerikiri {
     enum VALUE_TYPE_CODE {
 			  VALUE_TYPE_NULL,
 			  VALUE_TYPE_INT,
+        VALUE_TYPE_BOOL,
 			  VALUE_TYPE_DOUBLE,
 			  VALUE_TYPE_STRING,
 			  VALUE_TYPE_OBJECT,
@@ -55,16 +56,19 @@ namespace nerikiri {
   private:
     VALUE_TYPE_CODE typecode_;
     
+    bool boolvalue_;
     int64_t intvalue_;
     double doublevalue_;
     std::string stringvalue_;
     std::map<std::string, Value> objectvalue_;
     std::vector<Value> listvalue_;
-
+    
     std::string errormessage_;
   public:
     Value();
 
+    explicit Value(const bool value);
+    //explicit Value(bool&& value);
     Value(const int64_t value);
     Value(int&& value);
     Value(const double value);
@@ -75,6 +79,13 @@ namespace nerikiri {
     Value(const std::vector<Value>& value);
     Value(std::vector<std::pair<std::string, Value>>&& value);
     Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
+
+
+    explicit Value(const std::vector<float>& dbls);
+
+    explicit Value(const std::vector<double>& dbls);
+
+    explicit Value(const std::vector<bool>& bls);
 
     static Value error(const std::string& msg) {
       Value v;
@@ -109,8 +120,11 @@ namespace nerikiri {
       else if (isStringValue()) return "string";
       else if (isObjectValue()) return "object";
       else if (isListValue()) return "list";
+      else if (isBoolValue()) return "bool";
       return "null";
     }
+
+    bool isBoolValue() const { return typecode_ == VALUE_TYPE_BOOL; }
 
     bool isIntValue() const { return typecode_ == VALUE_TYPE_INT; }
     
@@ -180,6 +194,8 @@ namespace nerikiri {
       return r;
     }
 
+    bool boolValue() const;
+
     int64_t intValue() const;
     
     double  doubleValue() const;
@@ -220,6 +236,7 @@ namespace nerikiri {
     Value& operator=(const Value& value) {
       typecode_ = value.typecode_;
       objectvalue_.clear();
+      boolvalue_ = value.boolvalue_;
       intvalue_ = value.intvalue_;
       doublevalue_ = value.doublevalue_;
       objectvalue_ = value.objectvalue_;
@@ -231,6 +248,7 @@ namespace nerikiri {
     Value& operator=(Value&& value) {
       typecode_ = value.typecode_;
       objectvalue_.clear();
+      boolvalue_ = value.boolvalue_;
       intvalue_ = value.intvalue_;
       doublevalue_ = value.doublevalue_;
       objectvalue_ = value.objectvalue_;
@@ -258,6 +276,7 @@ namespace nerikiri {
       if (isStringValue()) return stringValue() == v2.stringValue();
       if (isIntValue()) return intValue() == v2.intValue();
       if (isDoubleValue()) return doubleValue() == v2.doubleValue();
+      if (isBoolValue()) return boolValue() == v2.boolValue();
       if (isListValue()) {
         if (listvalue_.size() != v2.listvalue_.size()) return false;
         for(size_t i = 0;i < listvalue_.size();i++) {
@@ -335,6 +354,7 @@ namespace nerikiri {
     if (value.isDoubleValue()) return std::to_string(value.doubleValue());
     if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
     if (value.isObjectValue()) {
+      if (value.objectValue().size() == 0) return "{}";
         std::stringstream ss;
         for(auto [k, v] : value.objectValue()) {
             ss << ",\"" << k << "\":" << str(v);
@@ -343,6 +363,7 @@ namespace nerikiri {
         return ss.str().replace(0, 1, "{");
     }
     if (value.isListValue()) {
+      if (value.listValue().size() == 0) return "[]";
         std::stringstream ss;
         for(auto& v : value.listValue()) {
             ss << "," << str(v);
@@ -360,13 +381,34 @@ namespace nerikiri {
     return "{\"Error\": \"Value is not supported type.\"}";
   }
 
+//inline Value::Value(bool&& value) : typecode_(VALUE_TYPE_BOOL), boolvalue_(std::move(value)) {}
 inline Value::Value(int&& value) : typecode_(VALUE_TYPE_INT), intvalue_(std::move(value)) {}
+inline Value::Value(const bool value) : typecode_(VALUE_TYPE_BOOL), boolvalue_(value) {}
 inline Value::Value(const int64_t value) : typecode_(VALUE_TYPE_INT), intvalue_(value) {}
 inline Value::Value(const double value) : typecode_(VALUE_TYPE_DOUBLE), doublevalue_(value) {}
 inline Value::Value(const std::string& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(value) {}
 inline Value::Value(std::string&& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(std::move(value)) {}
 inline Value::Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(value) {}
-inline Value::Value(const Value& value): typecode_(value.typecode_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_) {}
+inline Value::Value(const Value& value): typecode_(value.typecode_), boolvalue_(value.boolvalue_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_) {}
+
+inline Value::Value(const std::vector<float>& dbls) : typecode_(VALUE_TYPE_LIST) {
+  for(auto v : dbls) {
+    listvalue_.emplace_back(Value((double)v));
+  }
+}
+
+inline Value::Value(const std::vector<double>& dbls) : typecode_(VALUE_TYPE_LIST) {
+  for(auto v : dbls) {
+    listvalue_.emplace_back(Value(v));
+  }
+}
+
+inline Value::Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
+  for(auto v : bls) {
+    Value val{v};
+    listvalue_.emplace_back(val);
+  }
+}
 
 inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
   for(auto &p : ps) {
@@ -383,6 +425,11 @@ inline Value::Value(std::initializer_list<std::pair<std::string, Value>>&& ps) :
 inline Value::Value(): typecode_(VALUE_TYPE_NULL){}
 
 inline Value::~Value() {}
+
+inline bool Value::boolValue() const {
+  if (isBoolValue()) return boolvalue_;
+  throw new ValueTypeError(std::string("trying bool value acecss. actual ") + getTypeString());
+}
 
 inline int64_t Value::intValue() const {
   if (isIntValue()) return intvalue_;

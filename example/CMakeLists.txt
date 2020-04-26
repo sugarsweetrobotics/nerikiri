@@ -10,6 +10,7 @@ set(example09_src example09.cpp)
 set(example10_src example10.cpp)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/libaqua2/include)
 
 find_package(Threads REQUIRED)
 
@@ -28,16 +29,16 @@ function(add_operation NAME)
 endfunction(add_operation)
 
 set(CONTAINERS)
-function(add_container NAME)
-  add_library(${NAME} SHARED containers/${NAME}.cpp)
-  target_link_libraries(${NAME} ${EXAMPLE_LIBS})
+function(add_container DIRNAME NAME)
+  add_library(${NAME} SHARED containers/${DIRNAME}/${NAME}.cpp)
+  #target_link_libraries(${NAME} ${EXAMPLE_LIBS})
   set(CONTAINERS ${NAME} ${CONTAINERS})
   set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
 endfunction(add_container)
 
 
 function(add_example NAME)
-  add_executable(${NAME} ${${NAME}_src})
+  add_executable(${NAME} ${NAME}.cpp)
   target_link_libraries(${NAME} ${EXAMPLE_LIBS} Threads::Threads)
   add_dependencies(${NAME} ${OPERATIONS})
 endfunction(add_example)
@@ -48,13 +49,30 @@ add_operation(increment)
 add_operation(decrement)
 add_operation(add)
 add_operation(zero)
+add_operation(joy2turtlevel)
 
-add_container(MyStruct)
-add_container(MyStruct_addInt)
-add_container(MyStruct_intGetter)
+add_container(MyStruct MyStruct)
+add_container(MyStruct MyStruct_addInt)
+add_container(MyStruct MyStruct_intGetter)
+
+add_container(TurtleSim TurtleSim)
+add_container(TurtleSim TurtleSim_spawn)
+add_container(TurtleSim TurtleSim_kill)
+add_container(TurtleSim TurtleSim_update)
+add_container(TurtleSim TurtleSim_getPose)
+add_container(TurtleSim TurtleSim_setVelocity)
 
 
+add_container(JoyController JoyController)
+add_container(JoyController JoyController_initialize)
+add_container(JoyController JoyController_update)
+add_container(JoyController JoyController_get)
 
+
+find_library( FOUNDATION_LIBRARY Foundation )
+find_library( IOKIT_LIBRARY IOKit )
+target_link_libraries(JoyController_initialize ${IOKIT_LIBRARY} ${FOUNDATION_LIBRARY})
+add_example(turtle_sim)
 add_example(example01)
 #add_example(example02)
 #add_example(example03)

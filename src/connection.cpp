@@ -41,6 +41,5 @@ info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), 
     }
 }
 
-Connection::~Connection() {}
 
 Connection Connection::null;

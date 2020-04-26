@@ -26,7 +26,7 @@ namespace nerikiri {
     public:
         Connection();
         Connection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker, std::shared_ptr<BrokerAPI> consumerBroker);
-        ~Connection();
+        ~Connection() {}
 
         Connection(const Connection& c) : info_(c.info_), 
         providerBroker_(c.providerBroker_), consumerBroker_(c.consumerBroker_), 

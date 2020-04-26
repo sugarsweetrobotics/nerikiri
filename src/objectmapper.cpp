@@ -1,7 +1,7 @@
 #include <regex>
 
-#include "nerikiri/objectmapper.h"
 #include "nerikiri/logger.h"
+#include "nerikiri/objectmapper.h"
 #include "nerikiri/process.h"
 #include "nerikiri/process_store.h"
 

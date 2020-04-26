@@ -4,6 +4,8 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+    
+
         {
             "name": "Debug example01",
             "type": "lldb",
@@ -13,12 +15,12 @@
             "cwd": "${workspaceFolder}/example"
         },
         {
-            "name": "Debug example02",
+            "name": "Debug gamepad",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/example/example02",
+            "program": "${workspaceFolder}/build/thirdparty/libaqua2/gamepad_test",
             "args": [],
-            "cwd": "${workspaceFolder}/build/example"
+            "cwd": "${workspaceFolder}/build/thirdparty/libaqua2"
         },
         {
             "name": "Debug example03",
@@ -117,6 +119,14 @@
             "args": [],
             "cwd": "${workspaceFolder}/test"
 
+        },
+        {
+            "name": "Debug turtle_sim",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/example/turtle_sim",
+            "args": [],
+            "cwd": "${workspaceFolder}/example/containers/TurtleSim/"
         }
     ]
 }

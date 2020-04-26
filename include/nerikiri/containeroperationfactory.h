@@ -3,18 +3,8 @@
 #include <string>
 #include <memory>
 
+#include "containeroperationfactorybase.h"
 namespace nerikiri {
-
-
-    class ContainerOperationFactoryBase {
-    public:
-      virtual ~ContainerOperationFactoryBase() {}
-    public:
-      virtual std::string containerTypeName() = 0;
-      virtual std::string typeName() = 0;
-    public:
-      virtual std::shared_ptr<ContainerOperationBase> create(const Value& info) = 0;
-    };
 
     template<typename T>
     class ContainerOperationFactory : public ContainerOperationFactoryBase {

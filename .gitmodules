@@ -13,3 +13,6 @@
 [submodule "thirdparty/webi"]
 	path = thirdparty/webi
 	url = https://github.com/sugarsweetrobotics/webi.git
+[submodule "thirdparty/libaqua2"]
+	path = thirdparty/libaqua2
+	url = https://github.com/sugarsweetrobotics/libaqua2

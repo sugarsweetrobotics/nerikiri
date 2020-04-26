@@ -1,6 +1,5 @@
-#include "nerikiri/nerikiri.h"
+//#include "nerikiri/nerikiri.h"
 #include "nerikiri/containerfactory.h"
-
 #include "MyStruct.h"
 
 using namespace nerikiri;

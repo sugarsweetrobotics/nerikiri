@@ -11,9 +11,27 @@ using namespace nerikiri;
 
 SCENARIO( "Operation test", "[operaion]" ) {
   GIVEN("Operation basic behavior") {
-    const int argc = 3;
-    const char* argv[] = {"operaion_test", "-f", "nk_operation_test.json"};
-    Process p(argc, argv);
+    const std::string jsonStr = R"(
+{
+    "logger": { "logLevel": "ERROR" },
+
+    "operations": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example"],
+        "preload": ["one", "increment"],
+        "precreate": [
+            {
+                "name": "one",
+                "instanceName": "one0.ope"
+            }, 
+            {
+                "name": "increment",
+                "instanceName": "increment0.ope"
+            }
+        ]
+    }
+}  
+)";
+    Process p("operation_test", jsonStr);
     THEN("Operation is stanby") {
       p.startAsync();
       auto op = p.getOperation({{"instanceName", "one0.ope"}});

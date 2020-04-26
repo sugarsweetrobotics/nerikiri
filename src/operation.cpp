@@ -7,9 +7,6 @@ using namespace nerikiri;
 std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationBase>();
 
 
-OperationBase::OperationBase() : process_(nullptr), Object() {
-    logger::trace("OperationBase construct with ()");
-}
 
 OperationBase::OperationBase(const OperationBase& op): process_(op.process_), Object(op.info_),
   outputConnectionList_(op.outputConnectionList_), 
@@ -20,21 +17,6 @@ OperationBase::OperationBase(const OperationBase& op): process_(op.process_), Ob
     }
 }
 
-OperationBase::OperationBase(const Value& info):
-    Object(info) {
-    logger::trace("OperationBase::OperationBase({})", str(info));
-    if (!operationValidator(info_)) {
-        logger::error("OperationInformation is invalid.");
-    }
-    info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-        inputConnectionListDictionary_.emplace(key, ConnectionList());
-        bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
-    });
-}
-
-OperationBase::~OperationBase() {
-    logger::trace("Operation desctructed.");
-}
 
 Value OperationBase::addProviderConnection(Connection&& c) {
     logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
@@ -53,8 +35,14 @@ Value OperationBase::addConsumerConnection(Connection&& c) {
         return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
     }
 
+    // もし指定されたインスタンス名が自身のインスタンス名と違ったら・・・
     if (c.info()["input"]["info"]["instanceName"] != info().at("instanceName")) {
-        logger::error("Operation::addConsumerConnection failed. Requested connection ({}) does not match to this operation.", c.info());
+        if ( (info().hasKey("ownerContainerInstanceName")) ) {
+            if (c.info()["input"]["info"]["instanceName"].stringValue() !=
+               info().at("ownerContainerInstanceName").stringValue() + ":" + info().at("instanceName").stringValue()) {
+                return Value::error(logger::error("Operation::addConsumerConnection failed. Requested connection ({}) 's instanceName does not match to this operation.", c.info()));
+            }
+        }
     }
 
     const auto argumentName = c.info()["input"]["target"]["name"].stringValue();
