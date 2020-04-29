@@ -22,14 +22,26 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/spdlog/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/webi/include)
 set(NK_BASE_LIBS webi)
 
-add_library(nerikiri SHARED ${nk_srcs})
+add_library(nerikiri SHARED ${nk_srcs} ${nk_headers})
 target_link_libraries(nerikiri ${NK_BASE_LIBS})
+set_target_properties(nerikiri
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 
 set(ECS)
 function(add_ec NAME)
   add_library(${NAME} SHARED ecs/${NAME}.cpp)
   target_link_libraries(${NAME} nerikiri ${EXAMPLE_LIBS})
+  set_target_properties(${NAME}
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" 
+  )
   set(ECS ${NAME} ${ECS})
   set(ECS ${ECS} PARENT_SCOPE)
 endfunction(add_ec)
@@ -42,6 +54,12 @@ set(BROKERS)
 function(add_broker DIR NAME)
   add_library(${NAME} SHARED brokers/${DIR}/${NAME}.cpp)
   target_link_libraries(${NAME} nerikiri ${EXAMPLE_LIBS})
+  set_target_properties(${NAME}
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" 
+  )
   set(BROKERS ${NAME} ${BROKERS})
   set(BROKERS ${BROKERS} PARENT_SCOPE)
 endfunction(add_broker)

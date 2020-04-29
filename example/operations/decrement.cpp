@@ -6,17 +6,15 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* decrement();
-};
 
-
-void* decrement() {
-    return operationFactory( {{"name", "decrement"},
-          {"defaultArg", {
-            {"arg01", 0}
-          }}
-        },
-		   [](auto arg) { 
-		     return Value(arg["arg01"].intValue() - 1);
-		   });
+    NK_OPERATION void* decrement() {
+        return operationFactory({ {"name", "decrement"},
+              {"defaultArg", {
+                {"arg01", 0}
+              }}
+            },
+            [](auto arg) {
+                return Value(arg["arg01"].intValue() - 1);
+            });
+    }
 }

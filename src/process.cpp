@@ -296,11 +296,11 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   return *this;
 }
 
-static auto start_broker(std::vector<std::thread>& threads, Process* process, std::shared_ptr<Broker> brk) {
+static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, Process* process, std::shared_ptr<Broker> brk) {
   logger::trace("Creating a thread for broker {}", brk->info());
   std::promise<bool> prms;
   auto ftr = prms.get_future();
-  threads.emplace_back(std::thread([brk, process](std::promise<bool> p) {
+  threads.emplace_back(std::make_shared<std::thread>([brk, process](std::promise<bool> p) {
 				     std::stringstream ss;
 				     ss << std::this_thread::get_id();
 				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->info()));
@@ -310,11 +310,11 @@ static auto start_broker(std::vector<std::thread>& threads, Process* process, st
   return ftr;
 }
 
-static std::future<bool> start_systemEditor(std::vector<std::thread>& threads, const SystemEditor_ptr& se) {
+static std::future<bool> start_systemEditor(std::vector<std::shared_ptr<std::thread>>& threads, const SystemEditor_ptr& se) {
   logger::trace("Creating a thread for SystemEditor {}", se->name());
   std::promise<bool> prms;
   auto ftr = prms.get_future();
-  threads.emplace_back(std::thread([&se](std::promise<bool> p) {
+  threads.emplace_back(std::make_shared<std::thread>([&se](std::promise<bool> p) {
 				     std::stringstream ss;
 				     ss << std::this_thread::get_id();
 				     logger::trace("A thread {} is going to run SystemEditor {}", ss.str(), se->name());
@@ -377,7 +377,7 @@ void Process::shutdown() {
   
   logger::trace(" - joining...");
   for(auto& t : this->threads_) {
-    t.join();
+    t->join();
   }
   started_ = false;
   logger::trace(" - joined");

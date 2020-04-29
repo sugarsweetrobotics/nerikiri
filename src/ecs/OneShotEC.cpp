@@ -3,7 +3,7 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* createOneShotEC();
+    NK_OPERATION  void* createOneShotEC();
 };
 
 

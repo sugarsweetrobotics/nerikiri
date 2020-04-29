@@ -5,10 +5,8 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* createMyStruct();
-};
 
-
-void* createMyStruct() {
-    return containerFactory<MyStruct>();
+    NK_OPERATION  void* createMyStruct() {
+        return containerFactory<MyStruct>();
+    }
 }

@@ -2,8 +2,10 @@
 
 #include <string>
 #include <memory>
-
-#include "containeroperationfactorybase.h"
+#include "nerikiri/value.h"
+#include "nerikiri/container.h"
+#include "nerikiri/containeroperation.h"
+#include "nerikiri/containeroperationfactorybase.h"
 namespace nerikiri {
 
     template<typename T>

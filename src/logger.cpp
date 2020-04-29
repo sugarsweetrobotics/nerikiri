@@ -6,7 +6,7 @@
 using namespace nerikiri;
 using namespace nerikiri::logger; 
 
-static LOG_LEVEL g_loglevel = logger::INFO;
+static LOG_LEVEL g_loglevel = logger::LOG_INFO;
 
 
 void nerikiri::logger::setLogLevel(const LOG_LEVEL& level) {

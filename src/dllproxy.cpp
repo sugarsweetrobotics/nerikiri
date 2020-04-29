@@ -1,38 +1,55 @@
 #include "nerikiri/dllproxy.h"
 #include "nerikiri/logger.h"
+#ifdef WIN32
+#include <Windows.h>
+#else
 #include <dlfcn.h>
-
+#endif
 
 using namespace nerikiri;
 
 DLLProxy::DLLProxy(const Value& info):info_(info) {
     auto name = info.at("name").stringValue();
-    int open_mode = RTLD_LAZY;
-    dll_name_ = "lib" + name + ".dylib";
-    if (!(handle_ = ::dlopen(dll_name_.c_str(), open_mode))) {
-        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name_);
+    dll_name_ = name + ".dll";
+#ifdef WIN32
+    if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
+#else
+    if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
+#endif
+        logger::debug("DLLProxy::DLLProxy failed. Con not open file({})", dll_name_);
     }
 }
 
 DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"name", name}}) {
-    int open_mode = RTLD_LAZY;
     if (path.rfind("/") != path.length()) path = path + "/";
-    dll_name_ = path + "lib" + name + ".dylib";
-    if (!(handle_ = ::dlopen(dll_name_.c_str(), open_mode))) {
-        logger::debug("DLLProxy::DLLProxy failed. Can not open file ({})", dll_name_);
+    dll_name_ = path + name + ".dll";
+#ifdef WIN32
+    if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
+#else
+    if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
+#endif
+    logger::debug("DLLProxy::DLLProxy failed. Con not open file({})", dll_name_);
     }
 }
 
 DLLProxy::~DLLProxy() {
     if (handle_) {
+#if WIN32
+        ::FreeLibrary(handle_);
+#else
         ::dlclose(handle_); handle_ = nullptr;
+#endif
     }
 }
 
 std::function<void*()> DLLProxy::functionSymbol(const std::string& name) {
     if (!handle_) return nullptr;
-    using LPVOIDFUNC = void*(*)();
-    return reinterpret_cast<LPVOIDFUNC>(::dlsym(handle_, name.c_str()));
+#if WIN32
+    return reinterpret_cast<void* (*)()>(::GetProcAddress(handle_, name.c_str()) );
+
+#else
+    return reinterpret_cast<void* (*)()>(::dlsym(handle_, name.c_str()));
+#endif
  }
 
 

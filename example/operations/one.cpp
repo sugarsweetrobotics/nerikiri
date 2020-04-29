@@ -6,19 +6,16 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* one();
-};
 
-
-void* one() {
-    return operationFactory( {
-        {"name", "one"},
-        {"defaultArg", {}}
-    }, [](auto arg) { 
-        static int i ;
-        std::cout << "One is called (count=" << i++ << ")" << std::endl;
-        return Value({1});
-    });
+    NK_OPERATION  void* one() {
+        return operationFactory({
+            {"name", "one"},
+            {"defaultArg", {}}
+            }, [](auto arg) {
+                static int i;
+                std::cout << "One is called (count=" << i++ << ")" << std::endl;
+                return Value({ 1 });
+            });
+    }
 }
-
 

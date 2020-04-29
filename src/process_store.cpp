@@ -165,7 +165,8 @@ Value ProcessStore::addContainerOperationFactory(std::shared_ptr<ContainerOperat
 
 std::shared_ptr<ContainerFactoryBase> ProcessStore::getContainerFactory(const Value& info) {
   for(auto f : containerFactories_) {
-    if (f->typeName() == info.at("name").stringValue()) {
+      auto tn = f->typeName();
+    if (tn == info.at("name").stringValue()) {
       return f;
     }
   }

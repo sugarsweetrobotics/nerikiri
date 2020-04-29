@@ -5,10 +5,9 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* createTurtleSim();
-};
 
+    NK_OPERATION  void* createTurtleSim() {
+        return containerFactory<TurtleSim>();
+    }
 
-void* createTurtleSim() {
-    return containerFactory<TurtleSim>();
 }

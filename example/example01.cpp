@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "nerikiri/nerikiri.h"
+#include "nerikiri/process.h"
 //#include "nerikiri/http/httpbroker.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/container.h"

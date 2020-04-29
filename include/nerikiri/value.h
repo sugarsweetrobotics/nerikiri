@@ -11,7 +11,9 @@
 #include <exception>
 #include <map>
 #include <optional>
+#include <functional>
 #include <algorithm>
+#include "nerikiri/nerikiri.h"
 
 namespace nerikiri {
 

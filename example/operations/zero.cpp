@@ -6,15 +6,13 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* zero();
-};
 
-
-void* zero() {
-    return operationFactory( {{"name", "zero"},
-          {"defaultArg", {}}
-        },
-		   [](auto arg) { 
-		     return Value({0});
-		   });
+	NK_OPERATION  void* zero() {
+		return operationFactory({ {"name", "zero"},
+			  {"defaultArg", {}}
+			},
+			[](auto arg) {
+				return Value({ 0 });
+			});
+	}
 }

@@ -6,20 +6,19 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* increment();
-};
 
+    NK_OPERATION  void* increment() {
+        return operationFactory(
+            {
+                {"name", "increment"},
+                {"defaultArg", {
+                    {"data", 0}
+                }}
+            },
+            [](auto arg) {
+                std::cout << "Increment is called." << std::endl;
+                return Value(arg["data"].intValue() + 1);
+            });
+    }
 
-void* increment() {
-    return operationFactory( 
-        {
-            {"name", "increment"},
-            {"defaultArg", {
-                {"data", 0}
-            }}
-        },
-		[](auto arg) { 
-          std::cout << "Increment is called." << std::endl;
-		    return Value(arg["data"].intValue() + 1);
-		});
 }

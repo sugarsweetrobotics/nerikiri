@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "nerikiri/nerikiri.h"
 #include "nerikiri/operation.h"
 #include "nerikiri/container.h"
 #include "nerikiri/ec.h"
@@ -11,7 +12,7 @@ namespace nerikiri {
 
   class Process;
 
-  class ProcessStore {
+  class NK_API ProcessStore {
   private:
     Process* process_;
     std::vector<std::shared_ptr<Operation>> operations_;

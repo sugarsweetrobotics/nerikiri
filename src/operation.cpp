@@ -55,7 +55,7 @@ Value OperationBase::addConsumerConnection(Connection&& c) {
     return Value::error("Argument can not found");
 }
 
-
+/*
 Value OperationBase::collectValues() const {
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
@@ -70,7 +70,9 @@ Value OperationBase::collectValues() const {
     }
     ));
 }
+*/
 
+/*
 Value OperationBase::execute() {
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     logger::trace("OperationBase({})::execute()", str(info()));
@@ -80,6 +82,7 @@ Value OperationBase::execute() {
     }
     return v;
 }
+*/
 
 Value OperationBase::getConnectionInfos() const {
     return {
@@ -123,12 +126,12 @@ Value OperationBase::getInputConnectionInfo(const std::string& arg, const Value&
         Value::error("Can not find in getInputConnectionInfo(str, value)")
         );
 }
-
+/*
 ConnectionList OperationBase::getInputConnectionsByArgName(const std::string& argName) const {
     if (inputConnectionListDictionary_.count(argName) == 0) return ConnectionList();
     return inputConnectionListDictionary_.at(argName);
 }
-
+*/
 Value OperationBase::getOutput() {
     return outputBuffer_.pop();
 }
@@ -187,11 +190,12 @@ bool OperationBase::hasOutputConnectionName(const ConnectionInfo& ci) const {
     }
     return false;
 }
-
+/*
 Value OperationBase::invoke() {
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     return call(collectValues());
 }
+*/
 
 Value OperationBase::push(const Value& ci, Value&& value) {
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }

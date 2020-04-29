@@ -1,5 +1,6 @@
 #include <iostream>
 #include "nerikiri/nerikiri.h"
+#include "nerikiri/process.h"
 
 using namespace std::literals::string_literals;
 
@@ -9,7 +10,7 @@ const std::string jsonStr = R"(
 {
     "logger": { "logLevel": "INFO" },
     "operations": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
         "preload": ["joy2turtlevel"],
         "precreate": [
             {
@@ -20,7 +21,7 @@ const std::string jsonStr = R"(
     },
 
     "containers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
         "preload": {
             "TurtleSim": ["getPose", "kill", "setVelocity", "spawn", "update"],
             "JoyController": ["initialize", "update", "get"]
@@ -74,7 +75,7 @@ const std::string jsonStr = R"(
     },
 
     "brokers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
         "preload": ["HTTPBroker"],
         "precreate": [ 
           {
@@ -87,7 +88,7 @@ const std::string jsonStr = R"(
     },
 
     "ecs": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
         "preload": ["TimerEC"],
         "precreate": [
           {
@@ -97,7 +98,7 @@ const std::string jsonStr = R"(
           }
         ],
         "bind": {
-            "TimerEC0.ec": ["TurtleSim0.ctn:update0.ope", "JoyController0.ctn:update0.ope", "JoyController0.ctn:get0.ope"]
+            "TimerEC0.ec": ["TurtleSim0.ctn:update0.ope", "JoyController0.ctn:update0.ope", "JoyController0.ctn:get0.ope", "../build/bin/Debug", "../../build/bin/Debug"]
         },
         "start": ["TimerEC0.ec"]
     },
@@ -145,6 +146,7 @@ const std::string jsonStr = R"(
 )";
 
 int main(const int argc, const char* argv[]) {
+    WSAStartup(NULL, NULL);
   return nerikiri::Process("turtlesim", jsonStr)
     .start();
 }

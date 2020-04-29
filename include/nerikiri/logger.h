@@ -1,56 +1,57 @@
 #pragma once
 
 #include <string>
+#include "nerikiri/nerikiri.h"
 #include "nerikiri/value.h"
 
 namespace nerikiri::logger {
 
-  enum LOG_LEVEL { TRACE,
-		   DEBUG,
-		   INFO,
-		   WARN,
-		   ERROR,
-		   FATAL,
-		   OFF };
+  enum LOG_LEVEL { LOG_TRACE,
+      LOG_DEBUG,
+      LOG_INFO,
+      LOG_WARN,
+      LOG_ERROR,
+      LOG_FATAL,
+      LOG_OFF };
 
   inline std::string to_string(const LOG_LEVEL& level) {
     switch(level) {
-    case TRACE: return " TRACE ";
-    case DEBUG: return " DEBUG ";
-    case INFO:  return " INFO  ";
-    case WARN:  return " WARN  ";
-    case ERROR: return " ERROR ";
-    case FATAL: return " FATAL ";
-    case OFF:  return  " OFF   ";
+    case LOG_TRACE: return " TRACE ";
+    case LOG_DEBUG: return " DEBUG ";
+    case LOG_INFO:  return " INFO  ";
+    case LOG_WARN:  return " WARN  ";
+    case LOG_ERROR: return " ERROR ";
+    case LOG_FATAL: return " FATAL ";
+    case LOG_OFF:  return  " OFF   ";
     default:   return  "UNKNOWN";
     }
   }
   
   inline LOG_LEVEL from_string(const std::string& level) {
     if (level == "TRACE") {
-      return TRACE;
+      return LOG_TRACE;
     } else if (level == "DEBUG") { 
-      return DEBUG;
+      return LOG_DEBUG;
     } else if (level == "INFO") {
-      return INFO;
+      return LOG_INFO;
     } else if (level == "WARN") {
-      return WARN;
+      return LOG_WARN;
     } else if (level == "ERROR") {
-      return ERROR;
+      return LOG_ERROR;
     } else if (level == "FATAL") {
-      return FATAL;
+      return LOG_FATAL;
     } else if (level == "OFF") {
-      return OFF;
+      return LOG_OFF;
     } 
-    return INFO;
+    return LOG_INFO;
   }
   
 
-  void setLogLevel(const LOG_LEVEL& level);
+  NK_API void setLogLevel(const LOG_LEVEL& level);
 
   inline void setLogLevel(const std::string& level) { setLogLevel(from_string(level)); }
 
-  LOG_LEVEL getLogLevel();
+  NK_API LOG_LEVEL getLogLevel();
 
   inline bool doLog(const LOG_LEVEL& lvl) {
     return getLogLevel() <= lvl;
@@ -58,13 +59,13 @@ namespace nerikiri::logger {
 
   using format_type = std::string;
 
-  format_type formatter(format_type&& fmt, const LOG_LEVEL& severity);
+  NK_API format_type formatter(format_type&& fmt, const LOG_LEVEL& severity);
   
-  format_type formatter(format_type&& fmt, const int32_t& arg);
+  NK_API format_type formatter(format_type&& fmt, const int32_t& arg);
 
-  format_type formatter(format_type&& fmt, const double& arg);
+  NK_API format_type formatter(format_type&& fmt, const double& arg);
 
-  format_type formatter(format_type&& fmt, const std::string& arg);
+  NK_API format_type formatter(format_type&& fmt, const std::string& arg);
 
   /*
   format_type formatter(format_type&& fmt, const nerikiri::Value& arg) {
@@ -77,7 +78,7 @@ namespace nerikiri::logger {
   //    return formatter(std::forward<format_type>(fmt), nerikiri::str(arg));
   //  }
 
-  std::string log(std::string&& fmt);
+  NK_API std::string log(std::string&& fmt);
   inline std::string doNotLog(std::string&& fmt) { return std::move(fmt); }
 
   template<typename T, typename... Args>
@@ -108,44 +109,44 @@ namespace nerikiri::logger {
 
   template<typename... Args>
   inline std::string trace(const char* fmt, const Args &... args) {
-    return log(TRACE, fmt, args...);
+    return log(LOG_TRACE, fmt, args...);
   }
 
   template<typename... Args>
   inline std::string debug(const char* fmt, const Args &... args) {
-    return log(DEBUG, fmt, args...);
+    return log(LOG_DEBUG, fmt, args...);
   }
 
   template<typename... Args>
   inline std::string info(const char* fmt, const Args &... args) {
-    return log(INFO, fmt, args...);
+    return log(LOG_INFO, fmt, args...);
   }
 
   inline std::string warn(const std::string& str) {
-    return log(WARN, str.c_str());
+    return log(LOG_WARN, str.c_str());
   }
 
   template<typename... Args>
   inline std::string warn(const char* fmt, const Args &... args) {
-    return log(WARN, fmt, args...);
+    return log(LOG_WARN, fmt, args...);
   }
 
   inline std::string error(const std::string& str) {
-    return log(ERROR, str.c_str());
+    return log(LOG_ERROR, str.c_str());
   }
 
   template<typename... Args>
   inline std::string error(const char* fmt, const Args &... args) {
-    return log(ERROR, fmt, args...);
+    return log(LOG_ERROR, fmt, args...);
   }
 
   inline std::string fatal(const std::string& str) {
-    return log(FATAL, str.c_str());
+    return log(LOG_FATAL, str.c_str());
   }
 
   template<typename... Args>
   inline std::string fatal(const char* fmt, const Args &... args) {
-    return log(FATAL, fmt, args...);
+    return log(LOG_FATAL, fmt, args...);
   }
 
 }

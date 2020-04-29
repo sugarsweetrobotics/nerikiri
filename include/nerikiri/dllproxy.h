@@ -1,7 +1,12 @@
 #pragma once
 
+#include <string>
 #include <memory>
 #include "nerikiri/value.h"
+
+#ifdef WIN32
+#include <Windows.h> // For HINSTANCE
+#endif
 
 namespace nerikiri {
 
@@ -13,7 +18,11 @@ namespace nerikiri {
         
         int m_mode;
         int m_closeflag;
+#ifdef WIN32
+        HINSTANCE handle_;
+#else
         void* handle_;
+#endif
         int m_error;
         std::string dll_name_;
     public:

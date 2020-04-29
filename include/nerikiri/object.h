@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nerikiri/nerikiri.h"
 #include "nerikiri/value.h"
 
 namespace nerikiri {

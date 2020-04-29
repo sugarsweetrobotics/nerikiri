@@ -6,7 +6,8 @@ using namespace nerikiri;
 
 extern "C" {
     
-    void* createJoyController() {
+
+    NK_OPERATION  void* createJoyController() {
         return containerFactory<JoyController>();
     }
 

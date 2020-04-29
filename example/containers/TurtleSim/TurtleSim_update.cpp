@@ -22,7 +22,7 @@ extern "C" {
         std::cout << "Turtle(" << t->name << " (" << t->x << "," << t->y << "," << t->th << ") )" << std::endl;
     }
 
-    void* TurtleSim_update() {
+    NK_OPERATION  void* TurtleSim_update() {
         return containerOperationFactory<TurtleSim>(
             {
                 {"name", "update"},

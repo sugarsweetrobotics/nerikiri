@@ -65,14 +65,14 @@ namespace nerikiri {
       return readResource("/process/operations/" + v.at("instanceName").stringValue() + "/");
     }
 
-    virtual Value registerConsumerConnection(const ConnectionInfo& ci) override {
+    virtual Value registerConsumerConnection(const Value& ci) override {
       if (ci.isError()) return ci;    
       auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
       auto argument_name  = ci.at("input").at("target").at("name").stringValue();
       return createResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/", ci);
     }
 
-    virtual Value removeConsumerConnection(const ConnectionInfo& ci) override {
+    virtual Value removeConsumerConnection(const Value& ci) override {
       if (ci.isError()) return ci;    
       auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
       auto argument_name  = ci.at("input").at("target").at("name").stringValue();
@@ -80,7 +80,7 @@ namespace nerikiri {
       return deleteResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/");
     }
 
-    virtual Value registerProviderConnection(const ConnectionInfo& ci) override {
+    virtual Value registerProviderConnection(const Value& ci) override {
       if (ci.isError()) {
         logger::error("BrokerProxy::registerProviderConnection failed. ({})", str(ci));
         return ci;
@@ -97,7 +97,7 @@ namespace nerikiri {
       return createResource("/process/operations/" + operation_name + "/output/connections/", ci);
     }
 
-    virtual Value removeProviderConnection(const ConnectionInfo& ci) override {
+    virtual Value removeProviderConnection(const Value& ci) override {
       auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
       auto connection_name = ci.at("name").stringValue();
       return deleteResource("/process/operations/" + operation_name + "/output/connections/" + connection_name + "/");

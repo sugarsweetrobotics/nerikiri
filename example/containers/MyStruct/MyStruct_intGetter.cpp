@@ -6,17 +6,16 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* MyStruct_intGetter();
-};
 
+    NK_OPERATION  void* MyStruct_intGetter() {
+        return containerOperationFactory<MyStruct>(
+            {
+              {"name", "intGetter"},
+              {"defaultArg", {}},
+            },
+            [](auto& container, auto arg) {
+                return Value(container.intValue);
+            });
+    }
 
-void* MyStruct_intGetter() {
-    return containerOperationFactory<MyStruct>(
-    {
-      {"name", "intGetter"},
-      {"defaultArg", {}},
-    },
-    [](auto& container, auto arg) {
-      return Value(container.intValue);
-    });
 }

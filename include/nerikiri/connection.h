@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <functional>
 
 #include "nerikiri/value.h"
 #include "nerikiri/brokers/brokerapi.h"

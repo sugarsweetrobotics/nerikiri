@@ -7,20 +7,20 @@ using namespace nerikiri;
 
 extern "C" {
 
-void* JoyController_update() {
-    return containerOperationFactory<JoyController>(
-    {
-      {"name", "update"},
-      {"defaultArg", {
-          {}
-      }},
-    },
-    [](auto& container, auto arg) {
-        if (container.gamepad) {
-            container.gamepad->update();
-        }
-        return Value(arg);
-    });
-}
+    NK_OPERATION  void* JoyController_update() {
+        return containerOperationFactory<JoyController>(
+        {
+          {"name", "update"},
+          {"defaultArg", {
+              {}
+          }},
+        },
+        [](auto& container, auto arg) {
+            if (container.gamepad) {
+                container.gamepad->update();
+            }
+            return Value(arg);
+        });
+    }
 
 }

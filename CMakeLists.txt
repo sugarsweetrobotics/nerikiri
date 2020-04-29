@@ -12,7 +12,8 @@ project(nerikiri LANGUAGES CXX VERSION 0.0.1)
 
 add_subdirectory(thirdparty)
 
+add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(example)
 
-add_subdirectory(test)
+#add_subdirectory(test)

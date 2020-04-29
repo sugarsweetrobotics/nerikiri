@@ -2,6 +2,8 @@
 
 #include <map>
 #include <functional>
+
+#include "nerikiri/nerikiri.h"
 #include "nerikiri/object.h"
 #include "nerikiri/value.h"
 #include "nerikiri/connection.h"
@@ -53,46 +55,66 @@ namespace nerikiri {
 
   class OperationBase : public Object {
   protected:
-    Process_ptr process_;
-    ConnectionList outputConnectionList_;
-    ConnectionListDictionary inputConnectionListDictionary_;
-    std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
-    NewestValueBuffer outputBuffer_;
+      Process_ptr process_;
+      ConnectionList outputConnectionList_;
+      ConnectionListDictionary inputConnectionListDictionary_;
+      std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
+      NewestValueBuffer outputBuffer_;
   public:
-    
+
   public:
-    OperationBase() : process_(nullptr), Object() {}
+      OperationBase() : process_(nullptr), Object() {}
 
-    OperationBase(const OperationBase& op);
+      OperationBase(const OperationBase& op);
 
-    OperationBase(const Value& info);
+      OperationBase(const Value& info);
 
-    virtual ~OperationBase() {}
+      virtual ~OperationBase() {}
 
-    OperationBase& operator=(const OperationBase& op) {
-      //logger::trace("Operation copy");
-      process_ = op.process_;
-      info_ = op.info_;
-      is_null_ = op.is_null_;
-      outputConnectionList_ = op.outputConnectionList_;
-      inputConnectionListDictionary_ = op.inputConnectionListDictionary_;
-      bufferMap_ = op.bufferMap_;
-      return *this;
+      OperationBase& operator=(const OperationBase& op) {
+          //logger::trace("Operation copy");
+          process_ = op.process_;
+          info_ = op.info_;
+          is_null_ = op.is_null_;
+          outputConnectionList_ = op.outputConnectionList_;
+          inputConnectionListDictionary_ = op.inputConnectionListDictionary_;
+          bufferMap_ = op.bufferMap_;
+          return *this;
+      }
+
+  public:
+
+      Value addProviderConnection(Connection&& c);
+
+      Value addConsumerConnection(Connection&& c);
+
+      virtual Value call(const Value& value) {
+          return Value::error("OperationBase::call() failed. Caller Operation is null.");
+      };
+
+      Value collectValues() const {
+        if (isNull()) { return Value::error("OperationBase::collectValues() failed. Caller Operation is null."); }
+            return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
+                [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
+                    if (!bufferMap_.at(key)->isEmpty()) {
+                        return { key, bufferMap_.at(key)->pop() };
+                    }
+                    for (auto& con : getInputConnectionsByArgName(key)) {
+                        if (con.isPull()) { return { key, con.pull() }; }
+                    }
+                    return { key, value };
+                }
+            ));
     }
-  
-  public:
 
-    Value addProviderConnection(Connection&& c);
-
-    Value addConsumerConnection(Connection&& c);
-
-    virtual Value call(const Value& value) {
-       return Value::error("OperationBase::call() failed. Caller Operation is null.");
-    };
-
-    Value collectValues() const;
-
-    Value execute() ;
+    Value execute() {
+        if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
+        auto v = this->invoke();
+        for (auto& c : outputConnectionList_) {
+            c.putToArgumentViaConnection(v);
+        }
+        return v;
+    }
 
     Value getConnectionInfos() const;
 
@@ -104,7 +126,10 @@ namespace nerikiri {
 
     Value getInputConnectionInfo(const std::string& arg, const Value& ci) const;
 
-    ConnectionList getInputConnectionsByArgName(const std::string& argName) const;
+    ConnectionList getInputConnectionsByArgName(const std::string& argName) const {
+        if (inputConnectionListDictionary_.count(argName) == 0) return ConnectionList();
+        return inputConnectionListDictionary_.at(argName);
+    }
 
     ConnectionList getOutputConnectionList() const;
 
@@ -124,7 +149,10 @@ namespace nerikiri {
 
     bool hasOutputConnectionName(const ConnectionInfo& ci) const;
 
-    Value invoke();
+    Value invoke() {
+        if (isNull()) { return Value::error("OperationBase::invoke() failed. Caller Operation is null."); }
+        return call(collectValues());
+    }
 
     Value push(const Value& ci, Value&& value);
     

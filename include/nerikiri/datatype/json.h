@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <cstdio>
+#include "nerikiri/nerikiri.h"
 #include "nerikiri/value.h"
 
 namespace nerikiri::json {
@@ -24,10 +25,10 @@ namespace nerikiri::json {
         }
     };
 
-    std::string toJSONString(const nerikiri::Value& value);
+    std::string NK_API toJSONString(const nerikiri::Value& value);
 
-    nerikiri::Value toValue(const std::string& json_str);
+    nerikiri::Value NK_API toValue(const std::string& json_str);
 
-    nerikiri::Value toValue(std::FILE* fp);
+    nerikiri::Value NK_API toValue(std::FILE* fp);
 
 };

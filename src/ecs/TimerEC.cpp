@@ -3,7 +3,7 @@
 using namespace nerikiri;
 
 extern "C" {
-    void* createTimerEC();
+    NK_OPERATION  void* createTimerEC();
 };
 
 

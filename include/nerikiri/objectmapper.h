@@ -11,7 +11,7 @@ namespace nerikiri {
         std::string path;
     };
 
-    class ObjectMapper {
+    class NK_API ObjectMapper {
     private:
 
 

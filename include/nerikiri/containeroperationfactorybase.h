@@ -5,6 +5,4 @@
 
 namespace nerikiri {
     class ContainerOperationBase;
-
-
 }
