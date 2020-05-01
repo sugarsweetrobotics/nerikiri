@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nerikiri/nerikiri.h"
+#include "nerikiri/object.h"
 #include "nerikiri/operation.h"
 #include "nerikiri/value.h"
 #include "nerikiri/brokers/brokerapi.h"
@@ -22,19 +23,17 @@
 
 namespace nerikiri {
 
- using ProcessInfo = Value;
+ //using ProcessInfo = Value;
 
 
   /**
    * プロセスクラス
    */
-  class NK_API Process {
+  class NK_API Process : public Object {
   private:
 
     std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
     
-    
-    ProcessInfo info_;
     Value config_;
 
     
@@ -71,40 +70,27 @@ namespace nerikiri {
     void _preStartExecutionContexts();
     void _preloadBrokers();
     void _preloadConnections();
+
+    void _setupLogger();
   public:
     ProcessStore* store() { return &store_; }
   private: 
     std::string path_;
     void setExecutablePath(const std::string& path) { path_ = path; }
   public:
-    Value getOperationInfos() { return store_.getOperationInfos(); }
-    Value getOperationFactoryInfos() { return store_.getOperationFactoryInfos(); }
-    Process& addOperation(std::shared_ptr<Operation> op) { store_.addOperation(op); return *this; }
-    Process& addOperationFactory(std::shared_ptr<OperationFactory> opf) { store_.addOperationFactory(opf); return *this; }
     Value createOperation(const Value& info);
-    std::shared_ptr<OperationBase> getOperation(const Value& oi) { return store_.getOperation(oi); }
     Value loadOperationFactory(const Value& info);
 
-    Value getContainerInfos() {return store_.getContainerInfos(); }
-    std::shared_ptr<ContainerBase> getContainer(const Value& info) { return store_.getContainer(info); }
-    Process& addContainer(std::shared_ptr<ContainerBase> container) { store_.addContainer(container); return *this; }
     Value createContainer(const Value& ci);
-    Process& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf) { store_.addContainerFactory(cf); return *this; }
     Value loadContainerFactory(const Value& info);
-
-    Process& addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof) { store_.addContainerOperationFactory(cof); return *this; }
-    Value createContainerOperation(const Value& containerInfo, const Value& operationInfo) {
-      return store_.getContainer(containerInfo)->createContainerOperation(operationInfo);
-    }
     Value loadContainerOperationFactory(const Value& info);
 
-    Value getBrokerInfos() const { return store_.getBrokerInfos(); }
-    Process& addBroker(const std::shared_ptr<Broker> brk) { store_.addBroker(brk, this); return *this; }
     Value createBroker(const Value& ci);
     std::shared_ptr<BrokerAPI>  createBrokerProxy(const Value& ci);
-    Process& addBrokerFactory(std::shared_ptr<BrokerFactory> factory) { store_.addBrokerFactory(factory); return *this;}
     Value loadBrokerFactory(const Value& info);
-    std::shared_ptr<Broker> getBroker(const Value& info) { return store_.getBroker(info); }
+
+    Value createExecutionContext(const Value& value);
+    Value loadExecutionContextFactory(const Value& info);
 
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
@@ -113,20 +99,13 @@ namespace nerikiri {
 
     Value putToArgumentViaConnection(const Value& conInfo, const Value& value);
 
-    Value getExecutionContextInfos() { return store_.getExecutionContextInfos(); }
-    Value getExecutionCOntextFactoryInfos() { return store_.getExecutionContextFactoryInfos(); }
-    Process& addExecutionContext(std::shared_ptr<ExecutionContext> ec) { store_.addExecutionContext(ec); return *this; }
-    Process& addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec) { store_.addExecutionContextFactory(ec); return *this; }
-    Value createExecutionContext(const Value& value);
-    Value loadExecutionContextFactory(const Value& info);
-    std::shared_ptr<ExecutionContext> getExecutionContext(const Value& info) { return store_.getExecutionContext(info); }
 
     int32_t start();
     void startAsync();
     int32_t wait();
     void shutdown();
     
-    ProcessInfo info() const { return info_; }
+    //ProcessInfo info() const { return info_; }
     
   public:
     bool isRunning() { return started_; }
@@ -144,7 +123,6 @@ namespace nerikiri {
       return *this;
     }
   public:
-    //Value makeConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);
     Value invokeConnection(const Connection& con);
     Value registerConsumerConnection(const ConnectionInfo& ci);
     Value registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);

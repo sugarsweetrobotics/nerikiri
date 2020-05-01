@@ -42,7 +42,7 @@ Value defaultProcessConfig({
 
 Process Process::null("");
 
-Process::Process(const std::string& name) : info_({{"name", name}}), store_(this), config_(defaultProcessConfig), started_(false) {
+Process::Process(const std::string& name) : Object({{"name", "Process"}, {"instanceName", name}}), store_(this), config_(defaultProcessConfig), started_(false) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
     fullpath = nerikiri::getCwd() + fullpath;
@@ -53,62 +53,28 @@ Process::Process(const std::string& name) : info_({{"name", name}}), store_(this
   setExecutablePath(path);
 }
 
-Process::Process(const int argc, const char** argv) : info_({{"name", argv[0]}}), store_(this), config_(defaultProcessConfig), started_(false) {
-  std::string fullpath = argv[0];
-
-  if (fullpath.find("/") != 0) {
-    fullpath = nerikiri::getCwd() + fullpath;
-  }
-
-  std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
-  setExecutablePath(path);
-
-  coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
-
+Process::Process(const int argc, const char** argv) : Process(argv[0]) {
   ArgParser parser;
   parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
   auto options = parser.parse(argc, argv);
   parseConfigFile(options.get<std::string>("file"));
 
-  if (config_.hasKey("logger")) {
-    auto loggerConf = config_.at("logger");
-    if (loggerConf.hasKey("logLevel")) {
-      auto loglevel_str = loggerConf.at("logLevel").stringValue();
-      logger::setLogLevel(loglevel_str);
-    }
-  }
-
+  _setupLogger();
   logger::info("Process::Process(\"{}\")", argv[0]);
 }
 
 Process::Process(const std::string& name, const Value& config) : Process(name) {
   config_ = nerikiri::merge(config_, config);  
-  
-  if (config_.hasKey("logger")) {
-    auto loggerConf = config_.at("logger");
-    if (loggerConf.hasKey("logLevel")) {
-      auto loglevel_str = loggerConf.at("logLevel").stringValue();
-      logger::setLogLevel(loglevel_str);
-    }
-  }
-
+  _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
 }
 
 
 Process::Process(const std::string& name, const std::string& jsonStr): Process(name) {
-  config_ = merge(config_, ProcessConfigParser::parseConfig(jsonStr));  
-  if (config_.hasKey("logger")) {
-    auto loggerConf = config_.at("logger");
-    if (loggerConf.hasKey("logLevel")) {
-      auto loglevel_str = loggerConf.at("logLevel").stringValue();
-      logger::setLogLevel(loglevel_str);
-    }
-  }
-
+  config_ = merge(config_, ProcessConfigParser::parseConfig(jsonStr));
+  _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
 }
-
 
 Process::~Process() {
   logger::trace("Process::~Process()");
@@ -117,6 +83,15 @@ Process::~Process() {
   }
 }
 
+void Process::_setupLogger() {
+  if (config_.hasKey("logger")) {
+    auto loggerConf = config_.at("logger");
+    if (loggerConf.hasKey("logLevel")) {
+      auto loglevel_str = loggerConf.at("logLevel").stringValue();
+      logger::setLogLevel(loglevel_str);
+    }
+  }
+}
 
 void Process::parseConfigFile(const std::string& filepath) {
 
@@ -327,11 +302,11 @@ static std::future<bool> start_systemEditor(std::vector<std::shared_ptr<std::thr
 void Process::startAsync() {
   logger::trace("Process::startAsync()");
 
+  if (on_starting_) on_starting_(this);
   _preloadOperations();
   _preloadContainers();
   _preloadExecutionContexts();
   _preloadBrokers();
-  if (on_starting_) on_starting_(this);
   _preStartExecutionContexts();
 
   
@@ -343,10 +318,7 @@ void Process::startAsync() {
 											      [this](const auto& name, const auto& se) {
 												return start_systemEditor(this->threads_, se); }
 											      );
-  started_ = true;
-  if (on_started_) on_started_(this);
 
-  _preloadConnections();
   for(auto& b : store_.brokers_) {
     while(true) {
       if (b->isRunning()) { 
@@ -355,6 +327,10 @@ void Process::startAsync() {
       std::this_thread::sleep_for( std::chrono::milliseconds( 10 ));
     }
   }
+
+  started_ = true;
+  if (on_started_) on_started_(this);
+  _preloadConnections();
 }
   
 int32_t Process::wait() {
@@ -565,7 +541,7 @@ Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo)
   }
   auto ec = store()->getExecutionContext({{"instanceName", ecName}});
   if (!ec->isNull()) {
-    return ec->bind(getOperation(opInfo));
+    return ec->bind(store()->getOperation(opInfo));
   } else {
     return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));
   }
@@ -588,7 +564,7 @@ Value Process::loadOperationFactory(const Value& info) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol(info.at("name").stringValue());
       if (f) {
-          addOperationFactory(std::shared_ptr<OperationFactory>(  static_cast<OperationFactory*>(f())  ) );
+          store()->addOperationFactory(std::shared_ptr<OperationFactory>(  static_cast<OperationFactory*>(f())  ) );
           return info;
       } 
     }
@@ -613,7 +589,7 @@ Value Process::loadContainerOperationFactory(const Value& info) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol(name);
       if (f) {
-          addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase>(  static_cast<ContainerOperationFactoryBase*>(f())  ) );
+          store()->addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase>(  static_cast<ContainerOperationFactoryBase*>(f())  ) );
           return info;
       } 
       //return Value::error(logger::error("Process::loadContainerOperationFactory failed. Can not load Symbol ({})", str(info)));
@@ -638,7 +614,7 @@ Value Process::loadContainerFactory(const Value& info) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
-          addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );
+          store()->addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );
           return info;
       } 
       //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));
@@ -664,7 +640,7 @@ Value Process::loadExecutionContextFactory(const Value& info) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
-          addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory>(  static_cast<ExecutionContextFactory*>(f())  ) );
+          store()->addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory>(  static_cast<ExecutionContextFactory*>(f())  ) );
           return info;
       } 
       //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));
@@ -689,7 +665,7 @@ Value Process::loadBrokerFactory(const Value& info) {
       dllproxies_.push_back(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
-          addBrokerFactory(std::shared_ptr<BrokerFactory>(  static_cast<BrokerFactory*>(f())  ) );
+          store()->addBrokerFactory(std::shared_ptr<BrokerFactory>(  static_cast<BrokerFactory*>(f())  ) );
           return info;
       } 
       //return Value::error(logger::error("Process::loadContainerFactory failed. Can not load Symbol ({})", str(info)));

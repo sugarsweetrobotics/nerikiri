@@ -131,7 +131,7 @@ Value ObjectMapper::updateResource(Process* proc, const std::string& path, const
         {"name", Value(match[3])} }, value);
   }
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-    return proc->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
+    return proc->store()->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
   }
   return Value::error(logger::error("ObjectMapper::writeResource({}) failed.", path));
 }

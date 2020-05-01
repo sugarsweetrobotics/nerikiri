@@ -141,12 +141,20 @@ const std::string jsonStr = R"(
                 "target": {"name": "data"}
             }
         }
+    ],
+
+    "callbacks": [
+        {
+            "on_started": [
+                {"JoyController0.ctn:initialize0.ope", {}}
+            ]
+        }
     ]
 }  
 )";
 
 int main(const int argc, const char* argv[]) {
-    WSAStartup(NULL, NULL);
+    //WSAStartup(NULL, NULL);
   return nerikiri::Process("turtlesim", jsonStr)
     .start();
 }
