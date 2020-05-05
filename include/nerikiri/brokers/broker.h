@@ -38,6 +38,4 @@ namespace nerikiri {
   };
 
 
-  //static std::shared_ptr<Broker> null;
-
 }

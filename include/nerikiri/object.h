@@ -18,6 +18,15 @@ namespace nerikiri {
           return info_;
       }
 
+      Value setState(const std::string& state) { 
+        info_["state"] = state;
+        return info_;
+      }
+
+      std::string getState() const { 
+        return info_.at("state").stringValue();
+      }
+
       bool isNull() const { return is_null_; }
 
       std::string getInstanceName() const { 

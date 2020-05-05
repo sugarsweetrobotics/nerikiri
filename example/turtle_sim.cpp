@@ -154,7 +154,6 @@ const std::string jsonStr = R"(
 )";
 
 int main(const int argc, const char* argv[]) {
-    //WSAStartup(NULL, NULL);
   return nerikiri::Process("turtlesim", jsonStr)
     .start();
 }

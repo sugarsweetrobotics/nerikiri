@@ -32,7 +32,6 @@ namespace nerikiri {
   class NK_API Process : public Object {
   private:
 
-    std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
     
     Value config_;
 
@@ -70,6 +69,7 @@ namespace nerikiri {
     void _preStartExecutionContexts();
     void _preloadBrokers();
     void _preloadConnections();
+    void _preloadCallbacks();
 
     void _setupLogger();
   public:
@@ -78,32 +78,16 @@ namespace nerikiri {
     std::string path_;
     void setExecutablePath(const std::string& path) { path_ = path; }
   public:
-    Value createOperation(const Value& info);
-    Value loadOperationFactory(const Value& info);
-
-    Value createContainer(const Value& ci);
-    Value loadContainerFactory(const Value& info);
-    Value loadContainerOperationFactory(const Value& info);
-
-    Value createBroker(const Value& ci);
-    std::shared_ptr<BrokerAPI>  createBrokerProxy(const Value& ci);
-    Value loadBrokerFactory(const Value& info);
-
-    Value createExecutionContext(const Value& value);
-    Value loadExecutionContextFactory(const Value& info);
 
     Process& addSystemEditor(SystemEditor_ptr&& se);
     Process& addConnection(Connection_ptr&& con);
 
-    Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value);
-
-    Value putToArgumentViaConnection(const Value& conInfo, const Value& value);
 
 
     int32_t start();
     void startAsync();
     int32_t wait();
-    void shutdown();
+    void stop();
     
     //ProcessInfo info() const { return info_; }
     
@@ -132,7 +116,8 @@ namespace nerikiri {
 
   public:
     Value executeOperation(const Value& oinfo);
-
+    Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value);
+    Value putToArgumentViaConnection(const Value& conInfo, const Value& value);
     Value bindECtoOperation(const std::string& ecName, const Value& opInfo);
 
     Value readResource(const std::string& path) {

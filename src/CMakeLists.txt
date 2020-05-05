@@ -7,8 +7,12 @@ ec.cpp
 logger.cpp 
 #broker.cpp
 objectmapper.cpp 
+objectfactory.cpp
 #brokerselector.cpp 
-dllproxy.cpp brokers/corebroker.cpp
+dllproxy.cpp 
+brokers/corebroker.cpp
+brokers/broker.cpp
+moduleloader.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 signal.cpp connection.cpp connectiondictionary.cpp container.cpp)
 set(nk_http_srcs brokers/http/httpbroker.cpp datatype/json.cpp) 

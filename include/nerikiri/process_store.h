@@ -7,6 +7,10 @@
 #include "nerikiri/connection.h"
 #include "nerikiri/connectiondictionary.h"
 #include "nerikiri/operationfactory.h"
+#include "nerikiri/dllproxy.h"
+
+#include "nerikiri/brokers/brokerfactory.h"
+
 namespace nerikiri {
 
 
@@ -15,6 +19,9 @@ namespace nerikiri {
   class NK_API ProcessStore {
   private:
     Process* process_;
+
+    std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
+
     std::vector<std::shared_ptr<Operation>> operations_;
     std::vector<std::shared_ptr<OperationFactory>> operationFactories_;
     ConnectionDictionary connectionDictionary_;
@@ -62,11 +69,12 @@ namespace nerikiri {
     Value getExecutionContextFactoryInfos();
     std::shared_ptr<ExecutionContext> getExecutionContext(const Value& info);
 
-    Value addBroker(std::shared_ptr<Broker> brk, Process* process);
+    Value addBroker(std::shared_ptr<Broker> brk);
     std::shared_ptr<Broker> getBroker(const Value& info);
     Value addBrokerFactory(std::shared_ptr<BrokerFactory> factory);
     Value getBrokerInfos() const;
+    std::shared_ptr<BrokerFactory> getBrokerFactory(const Value& info);
 
-
+    Value addDLLProxy(std::shared_ptr<DLLProxy> dllproxy);
   };
 }

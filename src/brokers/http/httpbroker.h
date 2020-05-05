@@ -6,6 +6,7 @@
 #include "nerikiri/brokers/broker.h"
 #include "nerikiri/brokers/brokerproxy.h"
 
+#include "nerikiri/brokers/brokerfactory.h"
 
 namespace nerikiri::http {
 

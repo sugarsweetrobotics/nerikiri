@@ -88,15 +88,18 @@ Value ObjectMapper::createResource(Process* process, const std::string& path, co
   }
 
   if (path == "/process/ecs/") {
-    return process->createExecutionContext(value);
+    //return process->createExecutionContext(value);
+    return ObjectFactory::createExecutionContext(*process->store(), value);
   }
 
   if (path == "/process/operations/") {
-    return process->createOperation(value);
+    //return process->createOperation(value);
+    return ObjectFactory::createOperation(*process->store(), value);
   }
 
   if (path == "/process/containers/") {
-    return process->createContainer(value);
+    //return process->createContainer(value);
+    return ObjectFactory::createContainer(*process->store(), value);
   }
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {

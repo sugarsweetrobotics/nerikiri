@@ -96,7 +96,6 @@ Value ProcessStore::addExecutionContext(std::shared_ptr<ExecutionContext> ec) {
 
 std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
   if (oi.isError()) return Operation::null;
-  //Operation& null = Operation::null;
   auto& name = oi.at("instanceName");
   auto pos = name.stringValue().find(":");
   if (pos != std::string::npos) {
@@ -209,7 +208,7 @@ Value ProcessStore::addBrokerFactory(std::shared_ptr<BrokerFactory> factory) {
 }
 
 
-Value ProcessStore::addBroker(const std::shared_ptr<Broker> brk, Process* process) {
+Value ProcessStore::addBroker(const std::shared_ptr<Broker> brk) {
   logger::trace("ProcessStore::addBroker()");
   if (brk) {
     auto name = nerikiri::numbering_policy<std::shared_ptr<Broker>>(brokers_, brk->info().at("name").stringValue(), ".brk");
@@ -226,9 +225,24 @@ std::shared_ptr<Broker> ProcessStore::getBroker(const Value& info) {
       return brk;
     }
   }
-  return nullptr;
+  return Broker::null;
 }
 
 Value ProcessStore::getBrokerInfos() const {
   return nerikiri::map<Value, std::shared_ptr<Broker>>(brokers_, [](auto& brk) { return brk->info();});
+}
+
+
+std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info) {
+  for(auto f : brokerFactories_) {
+    if(f->typeName() == info.at("name").stringValue()) {
+      return f;
+    }
+  }
+  return BrokerFactory::null;
+}
+
+Value ProcessStore::addDLLProxy(std::shared_ptr<DLLProxy> dllproxy) {
+  dllproxies_.push_back(dllproxy);
+  return Value{{"STATUS", "OK"}};
 }

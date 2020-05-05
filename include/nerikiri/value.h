@@ -217,7 +217,6 @@ namespace nerikiri {
 
     Value& operator[](const std::string& key) {
       typecode_ = VALUE_TYPE_OBJECT;
-      //if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
       return objectvalue_[key];
     }
 
@@ -326,9 +325,6 @@ namespace nerikiri {
           result.push_back(v);
         }
       }
-//      result.insert(result.end(), v1.listvalue_.begin(), v1.listvalue_.end());
-      //      std::merge(v1.listvalue_.begin(), v1.listvalue_.end(),
-      //       v2.listvalue_.begin(), v2.listvalue_.end(), std::back_inserter(result));
       return {result};
     } else if ((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_OBJECT)) {
       Value rvalue;
