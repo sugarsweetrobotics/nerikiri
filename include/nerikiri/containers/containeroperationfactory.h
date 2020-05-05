@@ -3,9 +3,9 @@
 #include <string>
 #include <memory>
 #include "nerikiri/value.h"
-#include "nerikiri/container.h"
-#include "nerikiri/containeroperation.h"
-#include "nerikiri/containeroperationfactorybase.h"
+#include "nerikiri/containers/container.h"
+#include "nerikiri/containers/containeroperation.h"
+#include "nerikiri/containers/containeroperationfactorybase.h"
 namespace nerikiri {
 
     template<typename T>

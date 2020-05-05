@@ -2,10 +2,10 @@
 
 #include "nerikiri/value.h"
 #include "nerikiri/object.h"
+#include "nerikiri/util/naming.h"
+
 #include "nerikiri/operationbase.h"
-#include "nerikiri/naming.h"
-#include "nerikiri/containeroperationfactorybase.h"
-//#include "nerikiri/containeroperation.h"
+#include "nerikiri/containers/containeroperationfactorybase.h"
 
 namespace nerikiri {
 

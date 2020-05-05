@@ -3,7 +3,7 @@
 #include "nerikiri/value.h"
 #include "nerikiri/object.h"
 #include "nerikiri/operation.h"
-#include "nerikiri/naming.h"
+#include "nerikiri/util/naming.h"
 
 namespace nerikiri {
 

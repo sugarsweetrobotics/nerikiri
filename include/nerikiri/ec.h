@@ -4,7 +4,7 @@
 #include <chrono>
 
 #include "nerikiri/object.h"
-#include "nerikiri/logger.h"
+#include "nerikiri/util/logger.h"
 #include "nerikiri/operationbase.h"
 
 namespace nerikiri {

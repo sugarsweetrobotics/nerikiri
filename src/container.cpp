@@ -1,11 +1,11 @@
-#include "nerikiri/logger.h"
+#include "nerikiri/util/logger.h"
+#include "nerikiri/util/functional.h"
+#include "nerikiri/util/naming.h"
 
-#include "nerikiri/container.h"
-#include "nerikiri/containerfactory.h"
-#include "nerikiri/containeroperation.h"
-#include "nerikiri/containeroperationfactory.h"
-#include "nerikiri/functional.h"
-#include "nerikiri/naming.h"
+#include "nerikiri/containers/container.h"
+#include "nerikiri/containers/containerfactory.h"
+#include "nerikiri/containers/containeroperation.h"
+#include "nerikiri/containers/containeroperationfactory.h"
 
 using namespace nerikiri;
 

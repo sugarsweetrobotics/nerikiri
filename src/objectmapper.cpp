@@ -1,9 +1,11 @@
 #include <regex>
 
-#include "nerikiri/logger.h"
+#include "nerikiri/util/logger.h"
 #include "nerikiri/objectmapper.h"
 #include "nerikiri/process.h"
 #include "nerikiri/process_store.h"
+
+#include "nerikiri/connectionbuilder.h"
 
 using namespace nerikiri;
 
@@ -78,71 +80,84 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
 }
 
 
-Value ObjectMapper::createResource(Process* process, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+Value ObjectMapper::createResource(ProcessStore* store, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
+//  auto store = process->store();
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
-    return process->registerConsumerConnection(value);
+    //return process->registerConsumerConnection(value);
+    return ConnectionBuilder::registerConsumerConnection(store, value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
-    return process->registerProviderConnection(value, receiverBroker);
+    //return process->registerProviderConnection(value, receiverBroker);
+    return ConnectionBuilder::registerProviderConnection(store, value, receiverBroker);
   }
 
   if (path == "/process/ecs/") {
     //return process->createExecutionContext(value);
-    return ObjectFactory::createExecutionContext(*process->store(), value);
+    return ObjectFactory::createExecutionContext(*store, value);
   }
 
   if (path == "/process/operations/") {
     //return process->createOperation(value);
-    return ObjectFactory::createOperation(*process->store(), value);
+    return ObjectFactory::createOperation(*store, value);
   }
 
   if (path == "/process/containers/") {
     //return process->createContainer(value);
-    return ObjectFactory::createContainer(*process->store(), value);
+    return ObjectFactory::createContainer(*store, value);
   }
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {
     if (value.stringValue() == "started") {
-        return process->store()->getExecutionContext({{"instanceName", Value(match[1])}})->start();
+        return store->getExecutionContext({{"instanceName", Value(match[1])}})->start();
     } else if (value.stringValue() == "stopped") {
-        return process->store()->getExecutionContext({{"instanceName", Value(match[1])}})->stop();
+        return store->getExecutionContext({{"instanceName", Value(match[1])}})->stop();
     }
   }
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/"))) {
-    return process->bindECtoOperation(match[1], value);
+    return store->getExecutionContext({{"instanceName", {match[1]}}})->bind(store->getOperation(value));
   }
 
   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
 }
 
-Value ObjectMapper::updateResource(Process* proc, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+Value ObjectMapper::updateResource(ProcessStore* store, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/execution/"))) {
-    return proc->executeOperation({{"instanceName", Value(match[1])}});
+    //return proc->executeOperation({{"instanceName", Value(match[1])}});
+    return store->getOperation({{"instanceName", Value(match[1])}})->execute();
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {
-    return proc->putToArgument({{"instanceName", Value(match[1])}}, match[2], value);
+    //return proc->putToArgument({{"instanceName", Value(match[1])}}, match[2], value);
+    return store->getOperation({{"instanceName", Value(match[1])}})->putToArgument(match[2], value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
-    return proc->putToArgumentViaConnection({
+    /*return proc->putToArgumentViaConnection({
         {"input", {
             {"info", {{"instanceName", Value(match[1])}} },
             {"target", {{"name", Value(match[2])}} },
         }},
         {"name", Value(match[3])} }, value);
+    */
+    return store->getOperation({{"instanceName", Value(match[1])}})->putToArgumentViaConnection({
+        {"input", {
+            {"info", {{"instanceName", Value(match[1])}} },
+            {"target", {{"name", Value(match[2])}} },
+        }},
+        {"name", Value(match[3])} 
+        }, value);  
   }
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-    return proc->store()->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
+    return store->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
   }
   return Value::error(logger::error("ObjectMapper::writeResource({}) failed.", path));
 }
 
-Value ObjectMapper::deleteResource(Process* process, const std::string& path, BrokerAPI* receiverBroker) {
+Value ObjectMapper::deleteResource(ProcessStore* store, const std::string& path, BrokerAPI* receiverBroker) {
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
-    return process->deleteConsumerConnection({
+    return ConnectionBuilder::deleteConsumerConnection(store, {
         {"name", Value(match[3])},
         {"input", {
             {"target", {
@@ -155,7 +170,7 @@ Value ObjectMapper::deleteResource(Process* process, const std::string& path, Br
     });
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/([^/]*)/"))) {
-    return process->deleteProviderConnection({
+    return ConnectionBuilder::deleteProviderConnection(store, {
         {"name", Value(match[2])},
         {"output", {
             {"info", {

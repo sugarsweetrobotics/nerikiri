@@ -1,32 +1,31 @@
 set(nk_headers 
   nerikiri.h
-  argparse.h
-  dllproxy.h
+  util/argparse.h
+  util/dllproxy.h
+  util/os.h
+  util/functional.h
+  util/logger.h
+  util/naming.h
+  util/signal.h
   operationfactory.h
 #  brokers/
   ec.h
-  os.h
-  functional.h
   process.h
   connection.h
-  logger.h
   process_store.h
   connectiondictionary.h
-  naming.h
   processconfigparser.h
-  container.h
-  nerikiri.h
-  signal.h
-  containerfactory.h
+  containers/container.h
+  containers/containerfactory.h
   object.h
   systemeditor.h
-  containeroperation.h
+  containers/containeroperation.h
   objectfactory.h
   timerec.h
-  containeroperationfactory.h
+  containers/containeroperationfactory.h
   objectmapper.h
   value.h
-  containeroperationfactorybase.h
+  containers/containeroperationfactorybase.h
   operation.h
 #  datatype/
   operationbase.h

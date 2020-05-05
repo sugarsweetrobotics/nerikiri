@@ -14,6 +14,7 @@ brokers/corebroker.cpp
 brokers/broker.cpp
 moduleloader.cpp
 #brokerinfo.cpp brokerdictionary.cpp
+connectionbuilder.cpp
 signal.cpp connection.cpp connectiondictionary.cpp container.cpp)
 set(nk_http_srcs brokers/http/httpbroker.cpp datatype/json.cpp) 
 set(nk_se_srcs systemeditor/systemeditor.cpp)

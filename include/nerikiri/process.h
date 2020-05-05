@@ -1,25 +1,27 @@
 #pragma once
 
 #include "nerikiri/nerikiri.h"
+#include "nerikiri/util/dllproxy.h"
+
 #include "nerikiri/object.h"
-#include "nerikiri/operation.h"
 #include "nerikiri/value.h"
+
+#include "nerikiri/operation.h"
 #include "nerikiri/brokers/brokerapi.h"
 #include "nerikiri/brokers/broker.h"
 #include "nerikiri/brokers/corebroker.h"
 
 #include "nerikiri/systemeditor.h"
-#include "nerikiri/container.h"
-#include "nerikiri/containerfactory.h"
-#include "nerikiri/containeroperation.h"
-#include "nerikiri/containeroperationfactory.h"
+#include "nerikiri/containers/container.h"
+#include "nerikiri/containers/containerfactory.h"
+#include "nerikiri/containers/containeroperation.h"
+#include "nerikiri/containers/containeroperationfactory.h"
 #include "nerikiri/ec.h"
 #include "nerikiri/process_store.h"
 #include "nerikiri/objectfactory.h"
 #include "nerikiri/operationfactory.h"
 #include "nerikiri/objectmapper.h"
 
-#include "nerikiri/dllproxy.h"
 
 namespace nerikiri {
 
@@ -31,22 +33,19 @@ namespace nerikiri {
    */
   class NK_API Process : public Object {
   private:
-
-    
+    static Process null;
+   
     Value config_;
-
-    
+   
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::shared_ptr<std::thread>> threads_;
-    ObjectFactory objectFactory_;
     ProcessStore store_;
     std::shared_ptr<CoreBroker> coreBroker_;
-
     bool started_;
-    static Process null;
-
+    std::string path_;
+    std::function<void(Process*)> on_starting_;
+    std::function<void(Process*)> on_started_;
   public:
-
     /**
      * コンストラクタ
      * @param name
@@ -74,28 +73,21 @@ namespace nerikiri {
     void _setupLogger();
   public:
     ProcessStore* store() { return &store_; }
-  private: 
-    std::string path_;
     void setExecutablePath(const std::string& path) { path_ = path; }
+
+    std::shared_ptr<CoreBroker> coreBroker() { return coreBroker_; }
+
   public:
 
     Process& addSystemEditor(SystemEditor_ptr&& se);
-    Process& addConnection(Connection_ptr&& con);
-
-
-
+    
     int32_t start();
     void startAsync();
     int32_t wait();
     void stop();
     
-    //ProcessInfo info() const { return info_; }
-    
   public:
     bool isRunning() { return started_; }
-  public:
-    std::function<void(Process*)> on_starting_;
-    std::function<void(Process*)> on_started_;
 
   public:
     Process& setOnStarting(std::function<void(Process*)> f) {
@@ -107,34 +99,6 @@ namespace nerikiri {
       return *this;
     }
   public:
-    Value invokeConnection(const Connection& con);
-    Value registerConsumerConnection(const ConnectionInfo& ci);
-    Value registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker=nullptr);
-  
-    Value deleteConsumerConnection(const ConnectionInfo& ci);
-    Value deleteProviderConnection(const ConnectionInfo& ci);
-
-  public:
-    Value executeOperation(const Value& oinfo);
-    Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value);
-    Value putToArgumentViaConnection(const Value& conInfo, const Value& value);
-    Value bindECtoOperation(const std::string& ecName, const Value& opInfo);
-
-    Value readResource(const std::string& path) {
-      return nerikiri::ObjectMapper::readResource(this->store(), path);
-    }
-
-    Value createResource(const std::string& path, const Value& value) {
-      return nerikiri::ObjectMapper::createResource(this, path, value);
-    }
-
-    Value updateResource(const std::string& path, const Value& value) {
-      return nerikiri::ObjectMapper::updateResource(this, path, value);
-    }
-
-    Value deleteResource(const std::string& path) {
-      return nerikiri::ObjectMapper::deleteResource(this, path);
-    }
 
     void parseConfigFile(const std::string& filepath);
   };

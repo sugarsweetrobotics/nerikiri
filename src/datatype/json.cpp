@@ -1,10 +1,12 @@
-#include "nerikiri/datatype/json.h"
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
-#include "nerikiri/logger.h"
 #include <iostream>
 #include <ios>
 #include <sstream>
+
+#include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
+
+#include "nerikiri/datatype/json.h"
+#include "nerikiri/util/logger.h"
 
 using namespace nerikiri::json;
 

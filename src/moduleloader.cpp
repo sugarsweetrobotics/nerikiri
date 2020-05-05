@@ -1,8 +1,9 @@
+#include "nerikiri/util/logger.h"
+#include "nerikiri/util/dllproxy.h"
+
 #include "nerikiri/moduleloader.h"
 
-#include "nerikiri/logger.h"
 #include "nerikiri/operationfactory.h"
-#include "nerikiri/dllproxy.h"
 
 
 using namespace nerikiri;

@@ -1,11 +1,12 @@
 
 #include <sstream>
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/functional.h"
+#include "nerikiri/util/functional.h"
+#include "nerikiri/util/logger.h"
+#include "nerikiri/util/signal.h"
+#include "nerikiri/util/naming.h"
+
 #include "nerikiri/process.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/signal.h"
-#include "nerikiri/naming.h"
 
 #include "nerikiri/brokers/broker.h"
 #include <iostream>

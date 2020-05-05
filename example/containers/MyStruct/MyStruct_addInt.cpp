@@ -1,6 +1,6 @@
 
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/containeroperationfactory.h"
+#include "nerikiri/containers/containeroperationfactory.h"
 
 #include "MyStruct.h"
 

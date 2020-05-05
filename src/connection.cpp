@@ -1,6 +1,7 @@
+#include "nerikiri/util/logger.h"
+
 #include "nerikiri/connection.h"
 
-#include "nerikiri/logger.h"
 
 using namespace nerikiri;
 

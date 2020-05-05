@@ -1,8 +1,8 @@
 
 #include "webi/webi.h"
+#include "nerikiri/util/logger.h"
 
 #include "nerikiri/systemeditor.h"
-#include "nerikiri/logger.h"
 
 
 using namespace nerikiri;

@@ -7,7 +7,7 @@
 #include "nerikiri/object.h"
 #include "nerikiri/value.h"
 #include "nerikiri/connection.h"
-#include "nerikiri/functional.h"
+#include "nerikiri/util/functional.h"
 
 namespace nerikiri {
 

@@ -3,7 +3,7 @@
 #include "webi/http_server.h"
 
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/logger.h"
+#include "nerikiri/util/logger.h"
 #include "nerikiri/datatype/json.h"
 #include "./HTTPBroker.h"
 #include "nerikiri/process.h"
@@ -87,20 +87,32 @@ public:
 
     server_->response("/process/.*", "GET", "text/html", [this, process](const webi::Request& req) -> webi::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return response([process, &req](){return process->readResource(req.matches[0]);});
+      return response([process, &req](){
+        //return process->readResource(req.matches[0]);
+        return process->coreBroker()->readResource(req.matches[0]);
+      });
     });
 
     server_->response("/.*", "POST", "text/html", [this, process](const webi::Request& req) -> webi::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return response([this, process, &req](){return process->createResource(req.matches[0], nerikiri::json::toValue(req.body));});
+      return response([this, process, &req](){
+        //return process->createResource(req.matches[0], nerikiri::json::toValue(req.body));
+        return process->coreBroker()->createResource(req.matches[0], nerikiri::json::toValue(req.body));
+      });
     });
 
     server_->response("/.*", "DELETE", "text/html", [this, process](const webi::Request& req) -> webi::Response {
-      return response([this, process, &req](){return process->deleteResource(req.matches[0]);});
+      return response([this, process, &req](){
+        //return process->deleteResource(req.matches[0]);
+        return process->coreBroker()->deleteResource(req.matches[0]);
+      });
     });
 
     server_->response("/.*", "PUT", "text/html", [this, &process](const webi::Request& req) -> webi::Response {
-      return response([this, &process, &req](){return process->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); });
+      return response([this, &process, &req](){
+        //return process->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); 
+        return process->coreBroker()->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); 
+      });
     });
 
     Broker::run(process);
@@ -160,7 +172,6 @@ public:
       return toValue(client_->request("/process/operation/" + info.at("name").stringValue() + "/call", "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
-
     virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
       auto operation_name = opInfo.at("instanceName").stringValue();
       return toValue(client_->request("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
@@ -183,11 +194,6 @@ public:
     }
 };
 
-/*
-std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::brokerProxy(const std::string& address, const int32_t port) {
-  return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
-}*/
-
 std::shared_ptr<nerikiri::Broker> nerikiri::http::HTTPBrokerFactory::create(const Value& value) {
   auto address = value.at("host").stringValue();
   auto port = value.at("port").intValue();
@@ -199,8 +205,6 @@ std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::createPr
   auto port = value.at("port").intValue();
   return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
 }
-
-
 
 void* createHTTPBroker() {
     return new HTTPBrokerFactory();

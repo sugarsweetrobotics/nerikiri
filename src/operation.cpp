@@ -1,6 +1,6 @@
+#include "nerikiri/util/logger.h"
+#include "nerikiri/util/functional.h"
 #include "nerikiri/operation.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/functional.h"
 
 using namespace nerikiri;
 

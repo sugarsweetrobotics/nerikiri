@@ -1,8 +1,9 @@
 #pragma once
 
 #include <memory>
-//#include "nerikiri/brokerinfo.h"
-#include "nerikiri/logger.h"
+
+#include "nerikiri/util/logger.h"
+
 #include "nerikiri/value.h"
 #include "nerikiri/object.h"
 

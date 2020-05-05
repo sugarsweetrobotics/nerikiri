@@ -5,6 +5,8 @@
 #include "nerikiri/connection.h"
 #include "nerikiri/objectmapper.h"
 
+#include "nerikiri/connectionbuilder.h"
+
 using namespace nerikiri;
 
 //std::shared_ptr<BrokerAPI>  Broker::null = std::shared_ptr<BrokerAPI>(nullptr);
@@ -62,46 +64,53 @@ Value CoreBroker::getConnectionInfos() const {
 
 Value CoreBroker::registerConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("Broker::registerConsumerConnection({}", str(ci));
-    return this->process_->registerConsumerConnection(ci);
+    return ConnectionBuilder::registerConsumerConnection(process_->store(), ci);
 }
 
 Value CoreBroker::registerProviderConnection(const Value& ci) {
     logger::trace("Broker::registerProviderConnection({}", str(ci));
-    return this->process_->registerProviderConnection(ci);
+    return ConnectionBuilder::registerProviderConnection(process_->store(), ci);
 }
 
 Value CoreBroker::removeConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("Broker::removeConsumerConnection({}", str(ci));
-    return this->process_->deleteConsumerConnection(ci);
+    return ConnectionBuilder::deleteConsumerConnection(process_->store(), ci);
 }
 
 Value CoreBroker::removeProviderConnection(const ConnectionInfo& ci) {
     logger::trace("Broker::removeProviderConnection({}", str(ci));
-    return this->process_->deleteProviderConnection(ci);
+    return ConnectionBuilder::deleteProviderConnection(process_->store(), ci);
 }
 
 Value CoreBroker::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
     logger::trace("Broker::putToArgument()");
-    return this->process_->putToArgument(opInfo, argName, value);
+    //return this->process_->putToArgument(opInfo, argName, value);    
+    return process_->store()->getOperation(opInfo)->putToArgument(argName, value);
 }
 
 Value CoreBroker::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
     logger::trace("Broker::putToArgumentViaConnection()");
-    return this->process_->putToArgumentViaConnection(conInfo, value);
+    //return this->process_->putToArgumentViaConnection(conInfo, value);
+    return process_->store()->getOperation(conInfo.at("input").at("info"))->putToArgumentViaConnection(
+        conInfo, value);
 }
 
 Value CoreBroker::createResource(const std::string& path, const Value& value) {
-    return process_->createResource(path, value);
+    //return process_->createResource(path, value);
+    return ObjectMapper::createResource(process_->store(), path, value);
 }
 
 Value CoreBroker::readResource(const std::string& path) const {
-    return process_->readResource(path);//
+    //return process_->readResource(path);//
+    return ObjectMapper::readResource(process_->store(), path);
 }
 
 Value CoreBroker::updateResource(const std::string& path, const Value& value) {
-    return process_->updateResource(path, value);
+    //return process_->updateResource(path, value);
+    return ObjectMapper::updateResource(process_->store(), path, value);
 }
 
 Value CoreBroker::deleteResource(const std::string& path) {
-    return process_->deleteResource(path);
+    //return process_->deleteResource(path);
+    return ObjectMapper::deleteResource(process_->store(), path);
 }

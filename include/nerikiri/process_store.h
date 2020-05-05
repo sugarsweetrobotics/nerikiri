@@ -1,13 +1,15 @@
 #pragma once
 #include <vector>
 #include "nerikiri/nerikiri.h"
+#include "nerikiri/util/dllproxy.h"
+
+
 #include "nerikiri/operation.h"
-#include "nerikiri/container.h"
+#include "nerikiri/containers/container.h"
 #include "nerikiri/ec.h"
 #include "nerikiri/connection.h"
 #include "nerikiri/connectiondictionary.h"
 #include "nerikiri/operationfactory.h"
-#include "nerikiri/dllproxy.h"
 
 #include "nerikiri/brokers/brokerfactory.h"
 
