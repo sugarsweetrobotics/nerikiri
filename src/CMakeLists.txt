@@ -47,6 +47,8 @@ function(add_ec NAME)
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" 
   )
+
+  set_target_properties(${NAME} PROPERTIES PREFIX "")
   set(ECS ${NAME} ${ECS})
   set(ECS ${ECS} PARENT_SCOPE)
 endfunction(add_ec)
@@ -65,6 +67,8 @@ function(add_broker DIR NAME)
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" 
   )
+
+  set_target_properties(${NAME} PROPERTIES PREFIX "")
   set(BROKERS ${NAME} ${BROKERS})
   set(BROKERS ${BROKERS} PARENT_SCOPE)
 endfunction(add_broker)

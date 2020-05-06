@@ -275,7 +275,22 @@ void Process::_preloadConnections() {
   }
 }
 
-void Process::_preloadCallbacks() {
+void Process::_preloadCallbacksOnStarted() {
+  try {
+    auto c = config_.at("callbacks");
+    c.list_for_each([this](auto& value) {
+      // TODO: コールバックね
+      if (value.at("name").stringValue() == "on_started") {
+        value.at("target").list_for_each([this](auto& v) {
+          auto opName = v.at("name").stringValue();
+          auto argument = v.at("argument");
+          store()->getOperation({{"instanceName", opName}})->call(argument);
+        });
+      }
+    });
+  } catch (ValueTypeError& ex) {
+    logger::error("Process::_preloadConnections failed. Exception: {}", ex.what());
+  }
 }
 
 
@@ -346,7 +361,7 @@ void Process::startAsync() {
   setState("started");
   started_ = true;
   _preloadConnections();
-  _preloadCallbacks();
+  _preloadCallbacksOnStarted();
   if (on_started_) on_started_(this);
 }
   
@@ -386,53 +401,3 @@ int32_t Process::start() {
   stop();
   return 0;
 }
-
-/*
-Value Process::executeOperation(const Value& info) {
-  logger::trace("Process::executeOpration({})", (info));
-  return store()->getOperation(info)->execute();
-}
-
-Value Process::registerProviderConnection(const ConnectionInfo& ci, BrokerAPI* receiverBroker) {
-  return ConnectionBuilder::registerProviderConnection(store(), ci, receiverBroker);
-}
-
-Value Process::registerConsumerConnection(const ConnectionInfo& ci) {
-  return ConnectionBuilder::registerConsumerConnection(store(), ci);
-}
-
-
-Value Process::deleteProviderConnection(const ConnectionInfo& ci) {
-  return ConnectionBuilder::deleteProviderConnection(store(), ci);
-}
-
-Value Process::deleteConsumerConnection(const ConnectionInfo& ci) {
-  return ConnectionBuilder::deleteConsumerConnection(store(), ci);
-}
-
-Value Process::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
-  logger::trace("Process::putToArgument({})", (opInfo));
-  auto op = store()->getOperation(opInfo);
-  return op->putToArgument(argName, value);
-}
-
-Value Process::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
-  logger::trace("Process::putToArgumentViaConnection({})", (conInfo));
-  auto op = store()->getOperation(conInfo.at("input").at("info"));
-  return op->putToArgumentViaConnection(conInfo, value);  
-}
-
-Value Process::bindECtoOperation(const std::string& ecName, const Value& opInfo) {
-  logger::info("Process::bindECtoOperation({}, {})", ecName, str(opInfo));
-  if (opInfo.isError()) {
-    logger::error("Process::bindECtoOperation failed. Operation Information is Error. ({})", (opInfo));
-    return opInfo;
-  }
-  auto ec = store()->getExecutionContext({{"instanceName", ecName}});
-  if (!ec->isNull()) {
-    return ec->bind(store()->getOperation(opInfo));
-  } else {
-    return Value::error(logger::error("Process::bindECtoOperation failed. EC can not be found ({})", ecName));
-  }
-}
-*/

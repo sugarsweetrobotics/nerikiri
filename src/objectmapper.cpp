@@ -133,6 +133,10 @@ Value ObjectMapper::updateResource(ProcessStore* store, const std::string& path,
     return store->getOperation({{"instanceName", Value(match[1])}})->putToArgument(match[2], value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
+    if (value.isError()) {
+      logger::error("ObjectMapper::updateResource() error. ({})", value);
+      return value;
+    }
     /*return proc->putToArgumentViaConnection({
         {"input", {
             {"info", {{"instanceName", Value(match[1])}} },

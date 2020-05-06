@@ -8,9 +8,9 @@ using namespace nerikiri;
 
 const std::string jsonStr = R"(
 {
-    "logger": { "logLevel": "INFO" },
+    "logger": { "logLevel": "DEBUG" },
     "operations": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug",  "../../../build/lib", "../../build/lib", "../build/lib"],
         "preload": ["joy2turtlevel"],
         "precreate": [
             {
@@ -21,7 +21,7 @@ const std::string jsonStr = R"(
     },
 
     "containers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin"],
         "preload": {
             "TurtleSim": ["getPose", "kill", "setVelocity", "spawn", "update"],
             "JoyController": ["initialize", "update", "get"]
@@ -75,7 +75,7 @@ const std::string jsonStr = R"(
     },
 
     "brokers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin"],
         "preload": ["HTTPBroker"],
         "precreate": [ 
           {
@@ -88,7 +88,7 @@ const std::string jsonStr = R"(
     },
 
     "ecs": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug"],
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin"],
         "preload": ["TimerEC"],
         "precreate": [
           {
@@ -98,7 +98,7 @@ const std::string jsonStr = R"(
           }
         ],
         "bind": {
-            "TimerEC0.ec": ["TurtleSim0.ctn:update0.ope", "JoyController0.ctn:update0.ope", "JoyController0.ctn:get0.ope", "../build/bin/Debug", "../../build/bin/Debug"]
+            "TimerEC0.ec": ["TurtleSim0.ctn:update0.ope", "JoyController0.ctn:update0.ope", "JoyController0.ctn:get0.ope"]
         },
         "start": ["TimerEC0.ec"]
     },
@@ -145,8 +145,14 @@ const std::string jsonStr = R"(
 
     "callbacks": [
         {
-            "on_started": [
-                {"JoyController0.ctn:initialize0.ope", {}}
+            "name": "on_started",
+            "target": [
+                {
+                    "name": "JoyController0.ctn:initialize0.ope",
+                    "argument": {
+                        "arg": ""
+                    } 
+                }
             ]
         }
     ]

@@ -4,9 +4,9 @@
 #include "nerikiri/process.h"
 //#include "nerikiri/http/httpbroker.h"
 #include "nerikiri/systemeditor.h"
-#include "nerikiri/container.h"
-#include "nerikiri/containeroperation.h"
-#include "nerikiri/containeroperationfactory.h"
+#include "nerikiri/containers/container.h"
+#include "nerikiri/containers/containeroperation.h"
+#include "nerikiri/containers/containeroperationfactory.h"
 #include "nerikiri/ec.h"
 
 using namespace std::literals::string_literals;

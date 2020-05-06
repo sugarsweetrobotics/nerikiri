@@ -32,6 +32,8 @@ function(add_operation NAME)
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   )
 
+  set_target_properties(${NAME} PROPERTIES PREFIX "")
+
   set(OPERATIONS ${NAME} ${OPERATIONS})
   set(OPERATIONS ${OPERATIONS} PARENT_SCOPE)
 endfunction(add_operation)
@@ -48,6 +50,7 @@ function(add_container DIRNAME NAME)
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   )
 
+  set_target_properties(${NAME} PROPERTIES PREFIX "")
   set(CONTAINERS ${NAME} ${CONTAINERS})
   set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
 endfunction(add_container)
@@ -64,6 +67,7 @@ function(add_example NAME)
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   )
 
+  set_target_properties(${NAME} PROPERTIES PREFIX "")
   add_dependencies(${NAME} nerikiri)
   add_dependencies(${NAME} ${OPERATIONS})
 endfunction(add_example)

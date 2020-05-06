@@ -178,18 +178,22 @@ public:
     }
 
     virtual Value createResource(const std::string& path, const Value& value) override {
+      logger::debug("HTTPBrokerProxyImpl::createResource({})", path);
       return toValue(client_->request(path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value readResource(const std::string& path) const override {
+      logger::debug("HTTPBrokerProxyImpl::readResource({})", path);
       return toValue(client_->request(path, "GET"));
     }
 
     virtual Value updateResource(const std::string& path, const Value& value) override {
+      logger::debug("HTTPBrokerProxyImpl::updateResource({})", path);
       return toValue(client_->request(path, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value deleteResource(const std::string& path) override {
+      logger::debug("HTTPBrokerProxyImpl::deleteResource({})", path);
       return toValue(client_->request(path, "DELETE"));
     }
 };

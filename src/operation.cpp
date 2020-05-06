@@ -219,6 +219,10 @@ Value OperationBase::putToArgument(const std::string& argName, const Value& valu
 Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
     logger::trace("OperationBaseBase::putToArgumentViaConnection()");
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
+    if (value.isError()) {
+        logger::error("{} failed. Argument Value is Error. ({})", __func__, str(value));
+        return value;
+    }
     const std::string& argName = conInfo.at("input").at("target").at("name").stringValue();
     const std::string& conName = conInfo.at("name").stringValue();
     auto connection = this->getInputConnection(conInfo);

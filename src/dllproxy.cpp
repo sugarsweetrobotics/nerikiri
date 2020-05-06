@@ -10,10 +10,11 @@ using namespace nerikiri;
 
 DLLProxy::DLLProxy(const Value& info):info_(info) {
     auto name = info.at("name").stringValue();
-    dll_name_ = name + ".dll";
 #ifdef WIN32
+    dll_name_ = name + ".dll";
     if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
 #else
+    dll_name_ = name + ".dylib";
     if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
 #endif
         logger::debug("DLLProxy::DLLProxy failed. Con not open file({})", dll_name_);
@@ -22,10 +23,11 @@ DLLProxy::DLLProxy(const Value& info):info_(info) {
 
 DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"name", name}}) {
     if (path.rfind("/") != path.length()) path = path + "/";
-    dll_name_ = path + name + ".dll";
 #ifdef WIN32
+    dll_name_ = path + name + ".dll";
     if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
 #else
+    dll_name_ = path + name + ".dylib";
     if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
 #endif
     logger::debug("DLLProxy::DLLProxy failed. Con not open file({})", dll_name_);

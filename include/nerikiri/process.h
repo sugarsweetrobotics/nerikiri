@@ -61,6 +61,8 @@ namespace nerikiri {
      * デストラクタ
      */
     ~Process();
+
+    void parseConfigFile(const std::string& filepath);
   private:
     void _preloadOperations();
     void _preloadContainers();
@@ -68,7 +70,7 @@ namespace nerikiri {
     void _preStartExecutionContexts();
     void _preloadBrokers();
     void _preloadConnections();
-    void _preloadCallbacks();
+    void _preloadCallbacksOnStarted();
 
     void _setupLogger();
   public:
@@ -98,9 +100,6 @@ namespace nerikiri {
       on_started_ = f;
       return *this;
     }
-  public:
-
-    void parseConfigFile(const std::string& filepath);
   };
 
 
