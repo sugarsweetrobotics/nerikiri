@@ -45,6 +45,8 @@ namespace nerikiri {
     std::string path_;
     std::function<void(Process*)> on_starting_;
     std::function<void(Process*)> on_started_;
+
+    std::map<std::string, std::string> env_dictionary_;
   public:
     /**
      * コンストラクタ

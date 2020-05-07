@@ -19,7 +19,7 @@ extern "C" {
             },
             [](auto arg_data) {
                 std::cout << "joy2turtlevel" << std::endl;
-                auto& arg = arg_data.at("data");
+                auto arg = arg_data.at("data");
                 double vx = -arg.at("axis").listValue()[1].doubleValue();
                 double vth = -arg.at("axis").listValue()[0].doubleValue();
                 return Value{

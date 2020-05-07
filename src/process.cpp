@@ -22,6 +22,53 @@ using namespace nerikiri::logger;
 
 //std::shared_ptr<Broker> Broker::null = std::make_shared<Broker>();;
 
+std::string replaceAll(std::string s, const std::string& p, const std::string& m) {
+    auto pos = s.find(p);
+    int toLen = m.length();
+ 
+    if (p.empty()) {
+        return s;
+    }
+ 
+    while ((pos = s.find(p, pos)) != std::string::npos) {
+        s.replace(pos, p.length(), m);
+        pos += toLen;
+    }
+    return s;
+}
+
+static std::string stringReplace(std::string s, const std::map<std::string, std::string>& dictionary) {
+  nerikiri::foreach<std::string, std::string>(dictionary, [&s](const std::string& k, const std::string& v) {
+    s = replaceAll(s, k, v);
+  });
+  return s;
+}
+
+static Value replaceAndCopy(const Value& value, const std::map<std::string, std::string>& dictionary) {
+  if (value.isObjectValue()) {
+    Value v({});
+    value.object_for_each([&v, &dictionary](auto& key, auto& cvalue) {
+      v[key] = replaceAndCopy(cvalue, dictionary);
+    });
+    return v;
+  }
+  if (value.isListValue()) {
+    Value v = Value::list();
+    value.list_for_each([&v, &dictionary](auto& cvalue) {
+      v.push_back(replaceAndCopy(cvalue, dictionary));
+    });
+    return v;
+  }
+  if (value.isStringValue()) {
+    return stringReplace(value.stringValue(), dictionary);
+  }
+
+  return value;
+}
+
+std::map<std::string, std::string> env_dictionary_default{
+
+};
 
 Value defaultProcessConfig({
   {"logger", {
@@ -47,7 +94,7 @@ Value defaultProcessConfig({
 
 Process Process::null("");
 
-Process::Process(const std::string& name) : Object({{"name", "Process"}, {"instanceName", name}}), store_(this), config_(defaultProcessConfig), started_(false) {
+Process::Process(const std::string& name) : Object({{"name", "Process"}, {"instanceName", name}}), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
     fullpath = nerikiri::getCwd() + fullpath;
@@ -60,10 +107,15 @@ Process::Process(const std::string& name) : Object({{"name", "Process"}, {"insta
 
 Process::Process(const int argc, const char** argv) : Process(argv[0]) {
   ArgParser parser;
-  parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
-  auto options = parser.parse(argc, argv);
-  parseConfigFile(options.get<std::string>("file"));
+  //parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
 
+
+
+
+  auto options = parser.parse(argc, argv);
+  if (options.unknown_args.size() > 0) {
+    parseConfigFile(options.unknown_args[0]);
+  }
   _setupLogger();
   logger::info("Process::Process(\"{}\")", argv[0]);
 }
@@ -99,6 +151,15 @@ void Process::_setupLogger() {
 }
 
 void Process::parseConfigFile(const std::string& filepath) {
+  /// ここで環境変数の辞書の設定
+  std::string fullpath = filepath;
+  if (fullpath.find("/") != 0) {
+    fullpath = nerikiri::getCwd();
+  } else {
+    fullpath = fullpath.substr(0, fullpath.rfind("/")+1);
+  }
+  env_dictionary_["${ProjectDirectory}"] = fullpath;
+
 
   std::FILE* fp = nullptr;
 
@@ -118,11 +179,13 @@ void Process::parseConfigFile(const std::string& filepath) {
   }
 
   if (fp) {
-    config_ = merge(ProcessConfigParser::parseConfig(fp), config_);
+    config_ = merge(config_, ProcessConfigParser::parseConfig(fp));
   } else {
     logger::info("Process::parseConfigFile. Can not open file ({})", filepath);
   }
 
+  /// ここで環境変数の辞書の適用
+  config_ = replaceAndCopy(config_, env_dictionary_);
 
   logger::info("Process::parseConfigFile -> {}", config_);
 }

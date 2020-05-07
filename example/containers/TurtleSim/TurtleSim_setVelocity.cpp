@@ -24,7 +24,7 @@ extern "C" {
             },
             [](auto& container, auto argdata) {
                 std::cout << "TurtleSim_setVelocity()" << std::endl;
-                auto& arg = argdata.at("data");
+                auto arg = argdata.at("data");
                 if (!arg.hasKey("name")) {
                     return Value::error("TurtleSim _setVelocity argument must have name argument.");
                 }

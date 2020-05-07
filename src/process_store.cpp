@@ -97,7 +97,7 @@ Value ProcessStore::addExecutionContext(std::shared_ptr<ExecutionContext> ec) {
 
 std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
   if (oi.isError()) return Operation::null;
-  auto& name = oi.at("instanceName");
+  auto name = oi.at("instanceName");
   auto pos = name.stringValue().find(":");
   if (pos != std::string::npos) {
     auto containerName = name.stringValue().substr(0, pos);

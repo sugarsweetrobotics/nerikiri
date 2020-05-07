@@ -29,8 +29,9 @@ private:
   int32_t port_;
 public:
 
-  HTTPBrokerImpl(const std::string& address, const int32_t port): HTTPBroker(), server_(webi::server()), address_(address), port_(port) {
+  HTTPBrokerImpl(const std::string& address, const int32_t port, const std::string& base_dir="."): HTTPBroker(), server_(webi::server()), address_(address), port_(port) {
     logger::trace("HTTPBroker::HTTPBroker()");
+    server_->baseDirectory(base_dir);
   }
 
   virtual ~HTTPBrokerImpl() {
@@ -58,7 +59,7 @@ public:
   bool run(Process* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
 
-    server_->baseDirectory(".");
+    //server_->baseDirectory(".");
     
     logger::trace("HTTPBroker::run()");
 
@@ -140,7 +141,7 @@ private:
   webi::HttpClient_ptr client_;
 public:
   HTTPBrokerProxyImpl(const std::string& addr, const int64_t port) : HTTPBrokerProxy({ {"host", addr}, {"port", Value(port)} }), client_(webi::client(addr, port)) {
-    client_->setTimeout(0);
+    client_->setTimeout(1);
   }
 
   virtual ~HTTPBrokerProxyImpl() {}
@@ -201,7 +202,11 @@ public:
 std::shared_ptr<nerikiri::Broker> nerikiri::http::HTTPBrokerFactory::create(const Value& value) {
   auto address = value.at("host").stringValue();
   auto port = value.at("port").intValue();
-  return std::shared_ptr<nerikiri::Broker> (new HTTPBrokerImpl(address, port));
+  std::string base_dir = ".";
+  if (value.hasKey("baseDir")) {
+    base_dir = value.at("baseDir").stringValue();
+  }
+  return std::shared_ptr<nerikiri::Broker> (new HTTPBrokerImpl(address, port, base_dir));
 }
 
 std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::createProxy(const Value& value) {

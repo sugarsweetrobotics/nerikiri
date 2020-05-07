@@ -57,6 +57,13 @@ namespace nerikiri {
   }
 
   template<typename K, typename V>
+  void foreach(const std::map<K, V>& map, std::function<void(const K&, const V&)> func) {
+    for(const auto& [k, v] : map) {
+      func(k, v);
+    }
+  }
+
+  template<typename K, typename V>
   void foreach(std::multimap<K, V>& map, std::function<void(const K&,V&)> func) {
     for(auto& [k, v] : map) {
       func(k, v);

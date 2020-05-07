@@ -58,6 +58,7 @@ namespace nerikiri {
   private:
     VALUE_TYPE_CODE typecode_;
     
+  private:
     bool boolvalue_;
     int64_t intvalue_;
     double doublevalue_;
@@ -123,6 +124,7 @@ namespace nerikiri {
       else if (isObjectValue()) return "object";
       else if (isListValue()) return "list";
       else if (isBoolValue()) return "bool";
+      else if (isError()) return "error";
       return "null";
     }
 
@@ -151,6 +153,7 @@ namespace nerikiri {
 
     
     void object_for_each(std::function<void(const std::string&, Value&)>&& func) {
+      if (!isObjectValue()) return;
       for(auto& [k, v] : objectvalue_) {
         func(k, v);
       }
@@ -158,6 +161,7 @@ namespace nerikiri {
     
 
     void object_for_each(std::function<void(const std::string&, const Value&)>&& func) const {
+      if (!isObjectValue()) return;
       for(const auto& [k, v] : objectvalue_) {
         func(k, v);
       }
@@ -166,6 +170,7 @@ namespace nerikiri {
     template<typename T>
     std::vector<T> object_map(std::function<T(const std::string&, Value&)>&& func) {
       std::vector<T> r;
+      if (!isObjectValue()) return r;
       for(auto& [k, v] : objectvalue_) {
         r.emplace_back(func(k, v));
       }
@@ -174,6 +179,7 @@ namespace nerikiri {
 
     template<typename T>
     std::vector<T> object_map(std::function<T(const std::string&, const Value&)>&& func) const {
+      if (!isObjectValue()) return;
       std::vector<T> r;
       for(const auto& [k, v] : objectvalue_) {
         r.emplace_back(func(k, v));
@@ -182,6 +188,7 @@ namespace nerikiri {
     }
 
     void list_for_each(std::function<void(const Value&)>&& func) const {
+      if (!isListValue()) return;
       for(auto& v: listvalue_) {
         func(v);
       }
@@ -190,6 +197,7 @@ namespace nerikiri {
     template<typename T>
     std::vector<T> list_map(std::function<T(Value&)>&& func) {
       std::vector<T> r;
+      if (!isListValue()) return r;
       for(auto&  v : listvalue_) {
         r.emplace_back(func(v));
       }
@@ -220,16 +228,22 @@ namespace nerikiri {
       return objectvalue_[key];
     }
 
-    Value& operator[](const int key) {
-      if (!isListValue()) throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
-      if (listvalue_.size() <= key) throw ValueTypeError(std::string("Value list access failed. Index is exceeded from size"));
+    Value operator[](const int key) {
+      if (!isListValue()) {
+        return Value::error("Program tried to access as list (" + std::to_string(key) + ") access. But value was " + getTypeString());
+      }
+      if (listvalue_.size() <= key) {
+        return Value::error("Program tried to access as list (" + std::to_string(key) + ") access. But list out of bounds.");
+      } 
       return listvalue_[key];
     }
 
-    const Value& at(const std::string& key) const {
-      if (!isObjectValue()) throw ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+    Value at(const std::string& key) const {
+      if (!isObjectValue()) {
+        return Value::error("Program tried to access with key value access. But value was " + getTypeString());
+      }
       if (objectvalue_.count(key) == 0) {
-        throw ValueTypeError(std::string("trying object access in key(" + key + ") but not found. Value is " + str(*this)));
+        return Value::error("Program tried to access with key value (" + key + ")access. But key was not found.");
       }
       return objectvalue_.at(key);
     }
