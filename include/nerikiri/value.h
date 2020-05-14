@@ -52,6 +52,7 @@ namespace nerikiri {
 			  VALUE_TYPE_STRING,
 			  VALUE_TYPE_OBJECT,
         VALUE_TYPE_LIST,
+        VALUE_TYPE_BYTEARRAY,
         VALUE_TYPE_ERROR,
     };
     
@@ -65,7 +66,8 @@ namespace nerikiri {
     std::string stringvalue_;
     std::map<std::string, Value> objectvalue_;
     std::vector<Value> listvalue_;
-    
+    std::shared_ptr<uint8_t> bytevalue_;
+    uint32_t bytevaluesize_;
     std::string errormessage_;
   public:
     Value();
@@ -89,6 +91,8 @@ namespace nerikiri {
     explicit Value(const std::vector<double>& dbls);
 
     explicit Value(const std::vector<bool>& bls);
+
+    explicit Value(const uint8_t* byte, const uint32_t size);
 
     static Value error(const std::string& msg) {
       Value v;
@@ -230,20 +234,23 @@ namespace nerikiri {
 
     Value operator[](const int key) {
       if (!isListValue()) {
-        return Value::error("Program tried to access as list (" + std::to_string(key) + ") access. But value was " + getTypeString());
+        return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But value is " + getTypeString() + " type.");
       }
       if (listvalue_.size() <= key) {
-        return Value::error("Program tried to access as list (" + std::to_string(key) + ") access. But list out of bounds.");
+        return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But list out of bounds.");
       } 
       return listvalue_[key];
     }
 
     Value at(const std::string& key) const {
+      if (isError()) {
+        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type.");
+      }
       if (!isObjectValue()) {
-        return Value::error("Program tried to access with key value access. But value was " + getTypeString());
+        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But value is " + getTypeString() + "type.");
       }
       if (objectvalue_.count(key) == 0) {
-        return Value::error("Program tried to access with key value (" + key + ")access. But key was not found.");
+        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But key was not found.");
       }
       return objectvalue_.at(key);
     }
@@ -421,6 +428,15 @@ inline Value::Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
     listvalue_.emplace_back(val);
   }
 }
+
+
+
+inline Value::Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY) {
+  bytevalue_ = std::shared_ptr<uint8_t>(new uint8_t[size]);
+  bytevaluesize_ = size;
+  memcpy(bytevalue_, bytes, size);
+}
+
 
 inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
   for(auto &p : ps) {
