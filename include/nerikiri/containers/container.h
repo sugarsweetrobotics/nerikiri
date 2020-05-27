@@ -47,6 +47,11 @@ namespace nerikiri {
 
         std::vector<Value> getOperationInfos() const;
 
+        std::vector<std::shared_ptr<ContainerOperationBase>> getOperations() const {
+            auto vs = operations_;
+            return vs;
+        }
+
         std::shared_ptr<OperationBase> getOperation(const Value& info) const;
 
         std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info);

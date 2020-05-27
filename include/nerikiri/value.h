@@ -484,6 +484,39 @@ inline const std::vector<Value>& Value::listValue() const {
   throw new ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
 
+
+  inline nerikiri::Value lift(const nerikiri::Value& v) {
+    if (v.isError()) return v;
+    if (!v.isListValue()) return v;
+    if (v.listValue().size() == 0) return v;
+    if (!v.listValue()[0].isListValue()) return v;
+
+    std::vector<Value> vlist;
+    v.list_for_each([&vlist](auto& iv) {
+      iv.list_for_each([&vlist](auto& iiv) {
+        vlist.push_back(iiv);
+      });
+    });
+    return vlist;
+  }
+
+/*
+  inline nerikiri::Value merge(const nerikiri::Value& v0, const nerikiri::Value& v1) {
+    if (v0.isError()) return v0;
+    if (!v0.isListValue()) return v0;
+    if (v1.isError()) return v0;
+    if (!v1.isListValue()) return v0;
+
+    std::vector<Value> vlist;
+    v0.list_for_each([&vlist](auto& iv) {
+      vlist.push_back(iv);
+    });
+    v1.list_for_each([&vlist](auto& iv) {
+      vlist.push_back(iv);
+    });
+    return vlist;
+  }
+*/
 }
 
 

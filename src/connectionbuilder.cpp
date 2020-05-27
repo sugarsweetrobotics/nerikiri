@@ -60,8 +60,7 @@ Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const V
         ret["name"] = ci.at("name").stringValue() + "_2";
     }
 
-//    auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
-      auto consumerBroker = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"));
+    auto consumerBroker = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"));
     if (!consumerBroker) {
       return Value::error(logger::error("makeConnection failed. Consumer side broker can not be created. {}", str(ci.at("output"))));
     }
