@@ -122,18 +122,29 @@ std::shared_ptr<OperationFactory> ProcessStore::getOperationFactory(const Value&
 
 Value ProcessStore::getOperationInfos() {
   auto ops = nerikiri::map<Value, std::shared_ptr<Operation>>(operations_, [](auto& op) { return op->info();});
+  /*
   for(auto& c : this->containers_) {
     auto infos = c->getOperationInfos();
     ops.insert(ops.end(), infos.begin(), infos.end());
-  }
+  }*/
   return ops;
 }
 
 
+
 Value ProcessStore::getConnectionInfos() const {
-  return nerikiri::map<std::pair<std::string, Value>, std::shared_ptr<Operation>>(operations_, [](auto& op) -> std::pair<std::string, Value> {
-    return {op->info().at("name").stringValue(), op->getConnectionInfos()};
+  auto ocons = nerikiri::map<Value, std::shared_ptr<Operation>>(operations_, [](auto& op) -> Value {
+    return op->getOutputConnectionInfos();
   });
+
+  auto ccons = nerikiri::map<Value, std::shared_ptr<ContainerBase>>(containers_, [](auto& c) -> Value {
+    auto lcons = nerikiri::map<Value, std::shared_ptr<ContainerOperationBase>>(c->getOperations(), [](auto& co) -> Value {
+      return co->getOutputConnectionInfos();
+    });
+    return nerikiri::lift(lcons);
+  });
+
+  return nerikiri::merge(nerikiri::lift(ocons), nerikiri::lift(ccons));
 }
 
 ProcessStore& ProcessStore::addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec) {

@@ -1,6 +1,6 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/containers/containeroperationfactory.h"
-
+#include <iostream>
 #include "JoyController.h"
 
 using namespace nerikiri;
@@ -16,10 +16,18 @@ extern "C" {
           }},
         },
         [](auto& container, auto arg) {
+            std::cout << "JoyController_update called" << std::endl;
             if (container.gamepad) {
                 container.gamepad->update();
-            }
-            return Value(arg);
+                auto v = Value(container.gamepad->buttons);
+                return Value(
+                    {
+                        {"axis", Value(container.gamepad->axis)},
+                        {"buttons", std::move(v) }
+                    }
+                );
+            } 
+            return Value::error(("Gamepad is not initialized."));
         });
     }
 

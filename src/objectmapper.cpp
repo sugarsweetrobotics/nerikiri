@@ -60,6 +60,13 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
         return store->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->invoke();
     }
+        if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/"))) {
+        return store->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->getConnectionInfos();
+    }
+
+    if (path == "/process/connections/") {
+      return store->getConnectionInfos();
+    }
 
     if (path == "/process/ecfactories/") {
         return store->getExecutionContextFactoryInfos();
@@ -76,6 +83,12 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
     if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/"))) {
         return store->getExecutionContext({{"instanceName", Value(match[1])}})->getBoundOperationInfos();
     }
+
+
+    if (path == "/process/brokers/") {
+      return store->getBrokerInfos();
+    }
+
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
@@ -155,7 +168,10 @@ Value ObjectMapper::updateResource(ProcessStore* store, const std::string& path,
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
     return store->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
   }
-  return Value::error(logger::error("ObjectMapper::writeResource({}) failed.", path));
+
+
+
+  return Value::error(logger::error("ObjectMapper::updateResource({}) failed.", path));
 }
 
 Value ObjectMapper::deleteResource(ProcessStore* store, const std::string& path, BrokerAPI* receiverBroker) {
@@ -183,5 +199,8 @@ Value ObjectMapper::deleteResource(ProcessStore* store, const std::string& path,
         }}
     });
   }
+
+
+
   return Value::error(logger::error("ObjectMapper::deleteResource({}) failed.", path));
 }
