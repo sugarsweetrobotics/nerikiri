@@ -13,6 +13,9 @@
 #include <optional>
 #include <functional>
 #include <algorithm>
+#include <cstdlib>
+#include <stdlib.h>
+
 #include "nerikiri/nerikiri.h"
 
 namespace nerikiri {
@@ -52,6 +55,7 @@ namespace nerikiri {
 			  VALUE_TYPE_STRING,
 			  VALUE_TYPE_OBJECT,
         VALUE_TYPE_LIST,
+        VALUE_TYPE_BYTEARRAY,
         VALUE_TYPE_ERROR,
     };
     
@@ -65,7 +69,8 @@ namespace nerikiri {
     std::string stringvalue_;
     std::map<std::string, Value> objectvalue_;
     std::vector<Value> listvalue_;
-    
+    std::shared_ptr<uint8_t> bytevalue_;
+    uint32_t bytevaluesize_;
     std::string errormessage_;
   public:
     Value();
@@ -89,6 +94,8 @@ namespace nerikiri {
     explicit Value(const std::vector<double>& dbls);
 
     explicit Value(const std::vector<bool>& bls);
+
+    explicit Value(const uint8_t* byte, const uint32_t size);
 
     static Value error(const std::string& msg) {
       Value v;
@@ -230,20 +237,23 @@ namespace nerikiri {
 
     Value operator[](const int key) {
       if (!isListValue()) {
-        return Value::error("Program tried to access as list (" + std::to_string(key) + ") access. But value was " + getTypeString());
+        return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But value is " + getTypeString() + " type.");
       }
       if (listvalue_.size() <= key) {
-        return Value::error("Program tried to access as list (" + std::to_string(key) + ") access. But list out of bounds.");
+        return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But list out of bounds.");
       } 
       return listvalue_[key];
     }
 
     Value at(const std::string& key) const {
+      if (isError()) {
+        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type.");
+      }
       if (!isObjectValue()) {
-        return Value::error("Program tried to access with key value access. But value was " + getTypeString());
+        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But value is " + getTypeString() + "type.");
       }
       if (objectvalue_.count(key) == 0) {
-        return Value::error("Program tried to access with key value (" + key + ")access. But key was not found.");
+        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But key was not found.");
       }
       return objectvalue_.at(key);
     }
@@ -422,6 +432,13 @@ inline Value::Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
   }
 }
 
+inline Value::Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY) {
+  bytevalue_ = std::shared_ptr<uint8_t>(new uint8_t[size]);
+  bytevaluesize_ = size;
+  memcpy(bytevalue_.get(), bytes, size);
+}
+
+
 inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
   for(auto &p : ps) {
     objectvalue_[p.first] = p.second;
@@ -468,8 +485,7 @@ inline const std::vector<Value>& Value::listValue() const {
   throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
 
-
-  inline nerikiri::Value lift(const nerikiri::Value& v) {
+ inline nerikiri::Value lift(const nerikiri::Value& v) {
     if (v.isError()) return v;
     if (!v.isListValue()) return v;
     if (v.listValue().size() == 0) return v;
@@ -478,29 +494,13 @@ inline const std::vector<Value>& Value::listValue() const {
     std::vector<Value> vlist;
     v.list_for_each([&vlist](auto& iv) {
       iv.list_for_each([&vlist](auto& iiv) {
-        vlist.push_back(iiv);
+        vlist.push_back(iiv);      
       });
     });
     return vlist;
   }
 
-/*
-  inline nerikiri::Value merge(const nerikiri::Value& v0, const nerikiri::Value& v1) {
-    if (v0.isError()) return v0;
-    if (!v0.isListValue()) return v0;
-    if (v1.isError()) return v0;
-    if (!v1.isListValue()) return v0;
 
-    std::vector<Value> vlist;
-    v0.list_for_each([&vlist](auto& iv) {
-      vlist.push_back(iv);
-    });
-    v1.list_for_each([&vlist](auto& iv) {
-      vlist.push_back(iv);
-    });
-    return vlist;
-  }
-*/
 }
 
 

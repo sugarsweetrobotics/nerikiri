@@ -34,16 +34,12 @@ Value ProcessStore::info() const { return process_->info(); }
 Value ProcessStore::getContainerInfos() {
   return {nerikiri::map<Value, std::shared_ptr<ContainerBase>>(containers_, [](auto& ctn) { return ctn->info(); })};
 }
-Value ProcessStore::getOperationFactoryInfos() {
-  return nerikiri::map<Value, std::shared_ptr<OperationFactory>>(operationFactories_, [](auto& opf) { return Value(opf->typeName()); });
-}
 
 Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
   trace("Process::addContainer({})", container->info());
   if (container->isNull()) {
     return Value::error(logger::error("Process::addContainer failed. Container is null."));
   }
-  
   if (container->getInstanceName() == "") {
     auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerBase>>(containers_, container->info().at("name").stringValue(), ".ctn");
     container->setInstanceName(name);
@@ -55,11 +51,14 @@ Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
 }
 
 std::shared_ptr<ContainerBase> ProcessStore::getContainer(const Value& info) {
-  return nerikiri::find_first<std::shared_ptr<ContainerBase>, std::shared_ptr<ContainerBase>>(containers_,
-    [&info](auto& c){return c->info().at("instanceName") == info.at("instanceName");},
-    [] (auto c) { return c; },
-    ContainerBase::null
-    );
+  for(auto& c : containers_) {
+    if (c->info().at("instanceName") == info.at("instanceName")) return c;
+  }
+  return ContainerBase::null;
+}
+
+Value ProcessStore::getOperationFactoryInfos() {
+  return nerikiri::map<Value, std::shared_ptr<OperationFactory>>(operationFactories_, [](auto& opf) { return Value(opf->typeName()); });
 }
 
 Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {

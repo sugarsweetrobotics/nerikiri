@@ -5,7 +5,7 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/util/logger.h"
 #include "nerikiri/datatype/json.h"
-#include "./HTTPBroker.h"
+#include "./httpbroker.h"
 #include "nerikiri/process.h"
 #include "nerikiri/objectmapper.h"
 
