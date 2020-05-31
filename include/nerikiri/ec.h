@@ -114,6 +114,12 @@ namespace nerikiri {
                 if ((*it)->info().at("instanceName") == info.at("instanceName")) {
                     it = operations_.erase(it);
                     return info;
+                } else if ( ((*it)->info().hasKey("ownerContainerInstanceName"))) {
+                    auto instanceName = (*it)->info().at("ownerContainerInstanceName").stringValue() + ":" + (*it)->info().at("instanceName").stringValue();
+                    if (instanceName == info.at("instanceName").stringValue()) {
+                        it = operations_.erase(it);
+                        return info;
+                    }
                 }
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {

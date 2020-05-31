@@ -89,6 +89,10 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
       return store->getBrokerInfos();
     }
 
+    if (path == "/process/callbacks/") {
+      return store->getCallbacks();
+    }
+
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
@@ -200,7 +204,11 @@ Value ObjectMapper::deleteResource(ProcessStore* store, const std::string& path,
     });
   }
 
-
+  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/([^/]*)/"))) {
+    
+    return store->getExecutionContext({{"instanceName", {match[1]}}})->unbind({{"instanceName", {match[2]} }});
+    
+  }
 
   return Value::error(logger::error("ObjectMapper::deleteResource({}) failed.", path));
 }

@@ -24,7 +24,9 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
       if (f) {
           store.addOperationFactory(std::shared_ptr<OperationFactory>(  static_cast<OperationFactory*>(f())  ) );
           return info;
-      } 
+      } else {
+        logger::error("Process::loadOperationFactory failed. Can load DLL but can not find Symbol({})", name);
+      }
     }
   }
   return Value::error(logger::error("Process::loadOperationFactory failed. Can not load DLL ({})", str(info)));
@@ -46,7 +48,9 @@ Value ModuleLoader::loadContainerOperationFactory(ProcessStore& store, std::vect
       if (f) {
           store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase>(  static_cast<ContainerOperationFactoryBase*>(f())  ) );
           return info;
-      } 
+      } else {
+        logger::error("Process::loadContainerOperationFactory failed. Can load DLL but can not find Symbol({})", name);
+      }
     }
   }
   return Value::error(logger::error("Process::loadContainerOperationFactory failed. Can not load DLL ({})", str(info)));
@@ -69,6 +73,8 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
           store.addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );
           return info;
       } 
+    } else {
+      logger::error("Process::loadContainerFactory failed. Can load DLL but can not find Symbol({})", "create" + name);
     }
   }
   return Value::error(logger::error("Process::loadContainerFactory failed. Can not load DLL ({})", str(info)));
@@ -91,7 +97,9 @@ Value ModuleLoader::loadExecutionContextFactory(ProcessStore& store, std::vector
       if (f) {
           store.addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory>(  static_cast<ExecutionContextFactory*>(f())  ) );
           return info;
-      } 
+      } else {
+          logger::error("Process::loadExecutionContextFactory failed. Can load DLL but can not find Symbol({})", "create" + name);
+      }
     }
   }
   return Value::error(logger::error("Process::loadExecutionContextFactory failed. Can not load DLL ({})", str(info)));
@@ -113,7 +121,9 @@ Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::stri
       if (f) {
           store.addBrokerFactory(std::shared_ptr<BrokerFactory>(  static_cast<BrokerFactory*>(f())  ) );
           return info;
-      } 
+      } else {
+        logger::error("Process::loadBrokerFactory failed. Can load DLL but can not find Symbol({})", "create" + name);
+      }
     }
   }
   return Value::error(logger::error("Process::loadBrokerFactory failed. Can not load DLL ({})", str(info)));

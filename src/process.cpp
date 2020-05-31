@@ -88,8 +88,15 @@ Value defaultProcessConfig({
   }},
   {"brokers", {
     {"preload", Value::list()}
-  }}
+  }},
 
+  {"callbacks", Value::list()}
+  /*
+    { {"name", Value("on_started")},
+      {"target", Value::list()} },
+    { {"name", Value("on_stopped")}, 
+      {"target", Value::list()} }
+  }}*/
 });
 
 Process Process::null("");
@@ -463,4 +470,12 @@ int32_t Process::start() {
   if (wait() < 0) return -1;
   stop();
   return 0;
+}
+
+
+Value Process::getCallbacks() const {
+  logger::trace("Process::getCallbacks()");
+  auto v = this->config_.at("callbacks");
+  if (v.isError()) return Value({});
+  return v;
 }

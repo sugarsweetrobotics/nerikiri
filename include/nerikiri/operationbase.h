@@ -151,7 +151,11 @@ namespace nerikiri {
 
     Value invoke() {
         if (isNull()) { return Value::error("OperationBase::invoke() failed. Caller Operation is null."); }
-        return call(collectValues());
+        try {
+          return call(collectValues());
+        } catch (const std::exception& ex) {
+          return Value::error(std::string("OperationBase::invoke() failed. Exception occurred: ") + ex.what());
+        }
     }
 
     Value push(const Value& ci, Value&& value);

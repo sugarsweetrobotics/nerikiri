@@ -129,6 +129,17 @@
             "program": "${workspaceFolder}/build/bin/nkd",
             "args": ["${workspaceFolder}/example/turtle_sim.nkproj"],
             "cwd": "${workspaceFolder}/build/bin"
+        },
+        {
+            "name": "Debug opencv",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/nkd",
+            "args": ["${workspaceFolder}/example/opencv.nkproj"],
+            "cwd": "${workspaceFolder}/build/bin",
+            "env": {
+                "OPENCV_AVFOUNDATION_SKIP_AUTH": "1"
+            }
         }
     ]
 }

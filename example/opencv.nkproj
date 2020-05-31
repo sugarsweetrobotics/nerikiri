@@ -1,0 +1,71 @@
+{
+    "logger": { "logLevel": "DEBUG" },
+
+    "load_paths": ["./"],
+
+    "operations": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug",  "../../../build/lib", "../../build/lib", "../build/lib"],
+        "preload": [],
+        "precreate": []
+    },
+
+    "containers": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib", "../build/lib"],
+        "preload": {
+            "OpenCVCamera": ["initialize", "capture"]
+        },
+        "precreate": [
+            { 
+                "name": "OpenCVCamera",
+                "instanceName": "OpenCVCamera0.ctn",
+                "operations": [
+                    {
+                        "name": "initialize",
+                        "instanceName": "initialize0.ope"
+                    },
+                    {
+                        "name": "capture",
+                        "instanceName": "capture0.ope"
+                    }
+                ]
+            }
+        ]
+    },
+
+    "brokers": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib"],
+        "preload": ["HTTPBroker"],
+        "precreate": [ 
+          {
+            "name": "HTTPBroker",
+            "instanceName": "HTTPBroker0.brk",
+            "host": "0.0.0.0",
+            "port": 8080,
+            "baseDir": "${ProjectDirectory}"
+          }
+        ]
+    },
+
+    "ecs": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib"],
+        "preload": ["TimerEC"],
+        "precreate": [
+          {
+            "name": "TimerEC",
+            "instanceName": "TimerEC0.ec",
+            "rate": 10.0
+          }
+        ],
+        "bind": {
+            "TimerEC0.ec": []
+        },
+        "start": ["TimerEC0.ec"]
+    },
+
+
+    "connections": [
+    ],
+
+    "callbacks": [
+    ]
+}  

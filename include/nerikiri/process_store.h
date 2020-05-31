@@ -78,5 +78,7 @@ namespace nerikiri {
     std::shared_ptr<BrokerFactory> getBrokerFactory(const Value& info);
 
     Value addDLLProxy(std::shared_ptr<DLLProxy> dllproxy);
+
+    Value getCallbacks() const;
   };
 }

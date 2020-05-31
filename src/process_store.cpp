@@ -103,6 +103,10 @@ std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
     auto containerName = name.stringValue().substr(0, pos);
     auto operationName = name.stringValue().substr(pos+1);
     return getContainer({{"instanceName", containerName}})->getOperation({{"instanceName", operationName}});
+  } else if (oi.hasKey("ownerContainerInstanceName")) {
+    auto containerName = oi.at("ownerContainerInstanceName").stringValue();
+    auto operationName = name.stringValue();
+     return getContainer({{"instanceName", containerName}})->getOperation({{"instanceName", operationName}});
   } else {
     for(auto& op : operations_) {
       if (op->info().at("instanceName") == name) return op;
@@ -257,4 +261,8 @@ std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info)
 Value ProcessStore::addDLLProxy(std::shared_ptr<DLLProxy> dllproxy) {
   dllproxies_.push_back(dllproxy);
   return Value{{"STATUS", "OK"}};
+}
+
+Value ProcessStore::getCallbacks() const {
+  return process_->getCallbacks();
 }

@@ -53,6 +53,7 @@ function(add_container DIRNAME NAME)
   set_target_properties(${NAME} PROPERTIES PREFIX "")
   set(CONTAINERS ${NAME} ${CONTAINERS})
   set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
+
 endfunction(add_container)
 
 
@@ -99,6 +100,21 @@ add_container(JoyController JoyController)
 add_container(JoyController JoyController_initialize)
 add_container(JoyController JoyController_update)
 add_container(JoyController JoyController_get)
+
+find_package(OpenCV REQUIRED)
+
+message(${OpenCV_INCLUDE_DIRS})
+
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+add_container(OpenCVCamera  OpenCVCamera)
+add_container(OpenCVCamera  OpenCVCamera_initialize)
+add_container(OpenCVCamera  OpenCVCamera_capture)
+
+
+target_link_libraries(OpenCVCamera ${OpenCV_LIBS})
+target_link_libraries(OpenCVCamera_initialize ${OpenCV_LIBS})
+target_link_libraries(OpenCVCamera_capture ${OpenCV_LIBS})
 
 
 if (APPLE)

@@ -440,32 +440,32 @@ inline Value::~Value() {}
 
 inline bool Value::boolValue() const {
   if (isBoolValue()) return boolvalue_;
-  throw new ValueTypeError(std::string("trying bool value acecss. actual ") + getTypeString());
+  throw ValueTypeError(std::string("trying bool value acecss. actual ") + getTypeString());
 }
 
 inline int64_t Value::intValue() const {
   if (isIntValue()) return intvalue_;
-  throw new ValueTypeError(std::string("trying int value acecss. actual ") + getTypeString());
+  throw ValueTypeError(std::string("trying int value acecss. actual ") + getTypeString());
 }
 
 inline double Value::doubleValue() const {
   if (isDoubleValue()) return doublevalue_;
-  throw new ValueTypeError(std::string("trying double value acecss. actual ") + getTypeString());
+  throw ValueTypeError(std::string("trying double value acecss. actual ") + getTypeString());
 }
 
 inline const std::string& Value::stringValue() const {
   if (isStringValue()) return stringvalue_;
-  throw new ValueTypeError(std::string("trying string value acecss. actual ") + getTypeString());
+  throw ValueTypeError(std::string("trying string value acecss. actual ") + getTypeString());
 }
 
 inline const std::map<std::string, Value>& Value::objectValue() const {
   if (isObjectValue()) return objectvalue_;
-  throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
+  throw ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
 }
 
 inline const std::vector<Value>& Value::listValue() const {
   if (isListValue()) return listvalue_;
-  throw new ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
+  throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
 
 

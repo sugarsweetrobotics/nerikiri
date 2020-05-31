@@ -80,6 +80,8 @@ namespace nerikiri {
     void setExecutablePath(const std::string& path) { path_ = path; }
 
     std::shared_ptr<CoreBroker> coreBroker() { return coreBroker_; }
+    
+    Value getCallbacks() const;
 
   public:
 
