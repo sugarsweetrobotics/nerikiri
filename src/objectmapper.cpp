@@ -60,7 +60,7 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
         return store->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->invoke();
     }
-        if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/"))) {
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/"))) {
         return store->getContainer({{"instanceName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->getConnectionInfos();
     }
 

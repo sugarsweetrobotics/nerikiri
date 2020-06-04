@@ -186,7 +186,7 @@ void Process::parseConfigFile(const std::string& filepath) {
   }
 
   if (fp) {
-    config_ = merge(config_, ProcessConfigParser::parseConfig(fp));
+    config_ = merge(config_, ProcessConfigParser::parseConfig(fp, filepath));
   } else {
     logger::info("Process::parseConfigFile. Can not open file ({})", filepath);
   }

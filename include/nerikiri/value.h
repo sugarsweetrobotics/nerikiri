@@ -16,6 +16,8 @@
 #include <cstdlib>
 #include <stdlib.h>
 
+#include <iostream>
+
 #include "nerikiri/nerikiri.h"
 
 namespace nerikiri {
@@ -69,7 +71,7 @@ namespace nerikiri {
     std::string stringvalue_;
     std::map<std::string, Value> objectvalue_;
     std::vector<Value> listvalue_;
-    std::shared_ptr<uint8_t> bytevalue_;
+    std::vector<uint8_t> bytevalue_;
     uint32_t bytevaluesize_;
     std::string errormessage_;
   public:
@@ -146,6 +148,10 @@ namespace nerikiri {
     bool isObjectValue() const { return typecode_ == VALUE_TYPE_OBJECT; }
 
     bool isListValue() const { return typecode_ == VALUE_TYPE_LIST; }
+
+    bool isByteArrayValue() const {
+      return typecode_ == VALUE_TYPE_BYTEARRAY;
+    }
     
     bool isNull() const { return typecode_ == VALUE_TYPE_NULL; }
 
@@ -223,6 +229,14 @@ namespace nerikiri {
 
     const std::vector<Value>& listValue() const;
 
+    const std::vector<uint8_t>& byteArrayValue() const { 
+      return bytevalue_;
+    }
+
+    const size_t byteArraySize() const {
+      return bytevalue_.size();
+    }
+
     Value& emplace(std::pair<std::string, Value>&& v) {
       typecode_ = VALUE_TYPE_OBJECT;
       //if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
@@ -267,6 +281,7 @@ namespace nerikiri {
       objectvalue_ = value.objectvalue_;
       listvalue_ = value.listvalue_;
       stringvalue_ = value.stringvalue_;
+      bytevalue_ = value.bytevalue_;
       return *this;
     }
   
@@ -279,6 +294,7 @@ namespace nerikiri {
       objectvalue_ = value.objectvalue_;
       listvalue_ = value.listvalue_;
       stringvalue_ = value.stringvalue_;
+      bytevalue_ = std::move(value.bytevalue_);
       return *this;
     }
   
@@ -393,6 +409,9 @@ namespace nerikiri {
         ss << "]";
         return ss.str().replace(0, 1, "[");
     }
+    if (value.isByteArrayValue()) {
+      return "[\"bytes\"]";
+    }
     if (value.isNull()) {
         return "{}";
     }
@@ -411,7 +430,7 @@ inline Value::Value(const double value) : typecode_(VALUE_TYPE_DOUBLE), doubleva
 inline Value::Value(const std::string& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(value) {}
 inline Value::Value(std::string&& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(std::move(value)) {}
 inline Value::Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(value) {}
-inline Value::Value(const Value& value): typecode_(value.typecode_), boolvalue_(value.boolvalue_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_) {}
+inline Value::Value(const Value& value): typecode_(value.typecode_), boolvalue_(value.boolvalue_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_), bytevalue_(value.bytevalue_) {}
 
 inline Value::Value(const std::vector<float>& dbls) : typecode_(VALUE_TYPE_LIST) {
   for(auto v : dbls) {
@@ -433,9 +452,14 @@ inline Value::Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
 }
 
 inline Value::Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY) {
-  bytevalue_ = std::shared_ptr<uint8_t>(new uint8_t[size]);
+  std::cout << "value::byte(" << size << ")" << std::endl;
+  bytevalue_.resize(size);
   bytevaluesize_ = size;
-  memcpy(bytevalue_.get(), bytes, size);
+  //memcpy(&bytevalue_[0], bytes, size);
+  for(int i = 0;i < size;i++) {
+    bytevalue_[i] = bytes[i];
+  }
+  std::cout << "value::byte OK" << std::endl;
 }
 
 

@@ -3,17 +3,24 @@
 
     "load_paths": ["./"],
 
+    "shelves": [
+        {"path": "opencv/opencv.nkshelf"}
+    ],
+
     "operations": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug",  "../../../build/lib", "../../build/lib", "../build/lib"],
-        "preload": [],
-        "precreate": []
+        "precreate": [
+            {
+                "name": "cv_flip",
+                "instanceName": "cv_flip0.ope"
+            },
+            {
+                "name": "cv_drawRects",
+                "instanceName": "cv_drawRects0.ope"
+            }
+        ]
     },
 
     "containers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib", "../build/lib"],
-        "preload": {
-            "OpenCVCamera": ["initialize", "capture"]
-        },
         "precreate": [
             { 
                 "name": "OpenCVCamera",
@@ -26,6 +33,24 @@
                     {
                         "name": "capture",
                         "instanceName": "capture0.ope"
+                    }
+                ]
+            },
+            { 
+                "name": "OpenCVCascadeClassifier",
+                "instanceName": "OpenCVCascadeClassifier0.ctn",
+                "operations": [
+                    {
+                        "name": "initialize",
+                        "instanceName": "initialize0.ope"
+                    },
+                    {
+                        "name": "detectMultiScale",
+                        "instanceName": "detectMultiScale0.ope"
+                    },
+                    {
+                        "name": "drawRects",
+                        "instanceName": "drawRects0.ope"
                     }
                 ]
             }
@@ -67,5 +92,16 @@
     ],
 
     "callbacks": [
+        {
+            "name": "on_start",
+            "target": [
+                {
+                    "name": "OpenCVCamera0.con:initialize0.ope",
+                    "arg":  {
+                        "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
+                    }
+                }
+            ]
+        }
     ]
 }  

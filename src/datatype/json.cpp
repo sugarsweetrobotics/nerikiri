@@ -6,6 +6,7 @@
 #include "rapidjson/filereadstream.h"
 
 #include "nerikiri/datatype/json.h"
+#include "nerikiri/datatype/base64.h"
 #include "nerikiri/util/logger.h"
 
 using namespace nerikiri::json;
@@ -47,6 +48,14 @@ namespace {
         for(auto& e : a) {
             if (strcmp(e.name.GetString(), "__ERROR__") == 0) {
                 return nerikiri::Value::error(e.value.GetString());
+            }
+            if (strcmp(e.name.GetString(), "__byte64__") == 0) {
+                std::cout << "Found Base64 encoded string value." << std::endl;
+                size_t sz = 0;
+                uint8_t* bytes = (uint8_t*)base64Decode(e.value.GetString(), &sz, BASE64_TYPE_STANDARD);
+                nerikiri::Value v(bytes, sz);
+                free(bytes);
+                return v;
             }
             ps.push_back(std::pair<std::string, nerikiri::Value>(e.name.GetString(), construct(e.value)));
         }
@@ -103,6 +112,16 @@ std::string nerikiri::json::toJSONString(const nerikiri::Value& value) {
         }
         ss << "]";
         return ss.str().replace(0, 1, "[");
+    }
+    if (value.isByteArrayValue()) {
+//        return "\"hogehoge\""; 
+        //auto ss = "hogehoge";
+        std::cout << "bytetojson:" << value.byteArraySize() << std::endl;
+        auto v = ::base64Encode((const char*)(&(value.byteArrayValue()[0])), value.byteArraySize(), ::BASE64_TYPE::BASE64_TYPE_STANDARD);
+        auto s = std::string("{\"__byte64__\":\"") + v + "\"}";
+        free(v);
+        return s;
+        //return std::string("\"") + ::base64Encode(ss, 8, ::BASE64_TYPE::BASE64_TYPE_STANDARD) + "\"";
     }
     if (value.isNull()) {
         return "{}";

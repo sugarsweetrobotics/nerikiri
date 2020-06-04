@@ -2,6 +2,8 @@
 
 #include <map>
 #include <functional>
+#include <thread>
+#include <mutex>
 
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/object.h"
@@ -60,10 +62,13 @@ namespace nerikiri {
       ConnectionListDictionary inputConnectionListDictionary_;
       std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
       NewestValueBuffer outputBuffer_;
+
+      std::mutex argument_mutex_;
+      bool argument_updated_;
   public:
 
   public:
-      OperationBase() : process_(nullptr), Object() {}
+      OperationBase() :  Object(), process_(nullptr), argument_updated_(false) {}
 
       OperationBase(const OperationBase& op);
 

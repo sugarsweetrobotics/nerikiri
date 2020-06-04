@@ -3,9 +3,11 @@ cmake_minimum_required(VERSION 3.5)
 # add_compile_options(-std=gnu++17)
 
 
-project(nerikiri LANGUAGES CXX VERSION 0.0.1)
+project(nerikiri LANGUAGES CXX C VERSION 0.0.1)
 
 enable_testing()
+option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" ON)
+
 
 set(CMAKE_CXX_STANDARD 17)
 

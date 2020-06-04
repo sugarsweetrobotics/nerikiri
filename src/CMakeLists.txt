@@ -16,7 +16,7 @@ moduleloader.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 connectionbuilder.cpp
 signal.cpp connection.cpp connectiondictionary.cpp container.cpp)
-set(nk_http_srcs brokers/http/httpbroker.cpp datatype/json.cpp) 
+set(nk_http_srcs brokers/http/httpbroker.cpp datatype/json.cpp datatype/base64.c) 
 set(nk_se_srcs systemeditor/systemeditor.cpp)
 set(nk_srcs ${nk_base_srcs} ${nk_http_srcs} ${nk_se_srcs})
 

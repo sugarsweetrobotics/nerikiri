@@ -10,7 +10,7 @@ std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationB
 
 OperationBase::OperationBase(const OperationBase& op): process_(op.process_), Object(op.info_),
   outputConnectionList_(op.outputConnectionList_), 
-  inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_) {
+  inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_), argument_updated_(false) {
     logger::trace("OperationBase copy construction."); 
     if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
@@ -210,7 +210,11 @@ Value OperationBase::push(const Value& ci, Value&& value) {
 Value OperationBase::putToArgument(const std::string& argName, const Value& value) {
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     if (bufferMap_.count(argName) > 0) {
-        bufferMap_[argName]->push(value);
+        {
+            std::lock_guard<std::mutex> lock(argument_mutex_);
+            bufferMap_[argName]->push(value);
+            argument_updated_ = true;
+        }
         return value;
     }
     return Value::error(logger::error("OperationBaseBase::putToArgument({}) failed.", argName));
@@ -227,7 +231,11 @@ Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Valu
     const std::string& conName = conInfo.at("name").stringValue();
     auto connection = this->getInputConnection(conInfo);
     if (bufferMap_.count(argName) > 0) {
-        bufferMap_[argName]->push(value);
+        {
+            std::lock_guard<std::mutex> lock(argument_mutex_);
+            bufferMap_[argName]->push(value);
+            argument_updated_ = true;
+        }
         if (connection.isEvent()) {
             execute();
         }

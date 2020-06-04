@@ -9,6 +9,8 @@ set(example08_src example08.cpp)
 set(example09_src example09.cpp)
 set(example10_src example10.cpp)
 
+
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/libaqua2/include)
 
@@ -73,49 +75,32 @@ function(add_example NAME)
   add_dependencies(${NAME} ${OPERATIONS})
 endfunction(add_example)
 
-
+if (BUILD_SIMPLE_EXAMPLE)
 add_operation(one)
 add_operation(increment)
 add_operation(decrement)
 add_operation(add)
 add_operation(zero)
-add_operation(joy2turtlevel)
-
 add_container(MyStruct MyStruct)
-
-
 add_container(MyStruct MyStruct_addInt)
-
 add_container(MyStruct MyStruct_intGetter)
+endif (BUILD_SIMPLE_EXAMPLE)
 
+if (BUILD_TURTLESIM_EXAMPLE)
+add_operation(joy2turtlevel)
 add_container(TurtleSim TurtleSim)
 add_container(TurtleSim TurtleSim_spawn)
 add_container(TurtleSim TurtleSim_kill)
 add_container(TurtleSim TurtleSim_update)
 add_container(TurtleSim TurtleSim_getPose)
 add_container(TurtleSim TurtleSim_setVelocity)
+endif (BUILD_TURTLESIM_EXAMPLE)
 
-
+if (BUILD_JOYCONTROLLER_EXAMPLE)
 add_container(JoyController JoyController)
 add_container(JoyController JoyController_initialize)
 add_container(JoyController JoyController_update)
 add_container(JoyController JoyController_get)
-
-find_package(OpenCV REQUIRED)
-
-message(${OpenCV_INCLUDE_DIRS})
-
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-add_container(OpenCVCamera  OpenCVCamera)
-add_container(OpenCVCamera  OpenCVCamera_initialize)
-add_container(OpenCVCamera  OpenCVCamera_capture)
-
-
-target_link_libraries(OpenCVCamera ${OpenCV_LIBS})
-target_link_libraries(OpenCVCamera_initialize ${OpenCV_LIBS})
-target_link_libraries(OpenCVCamera_capture ${OpenCV_LIBS})
-
 
 if (APPLE)
 find_library( FOUNDATION_LIBRARY Foundation )
@@ -123,7 +108,36 @@ find_library( IOKIT_LIBRARY IOKit )
 target_link_libraries(JoyController_initialize ${IOKIT_LIBRARY} ${FOUNDATION_LIBRARY})
 endif (APPLE)
 
-add_example(turtle_sim)
+endif (BUILD_JOYCONTROLLER_EXAMPLE)
+
+if (BUILD_OPENCV_EXAMPLE)
+add_subdirectory(opencv)
+endif (BUILD_OPENCV_EXAMPLE)
+#find_package(OpenCV REQUIRED)
+#include_directories(${OpenCV_INCLUDE_DIRS})
+#add_container(OpenCVCamera  OpenCVCamera)
+#add_container(OpenCVCamera  OpenCVCamera_initialize)
+#add_container(OpenCVCamera  OpenCVCamera_capture)#
+#
+#add_container(OpenCVCascadeClassifier  OpenCVCascadeClassifier)
+#add_container(OpenCVCascadeClassifier  OpenCVCascadeClassifier_initialize)
+##add_container(OpenCVCascadeClassifier  OpenCVCascadeClassifier_detectMultiScale)
+#add_operation(cv_drawRects)#
+#
+#add_operation(cv_flip)
+#target_link_libraries(OpenCVCamera ${OpenCV_LIBS})
+#target_link_libraries(OpenCVCamera_initialize ${OpenCV_LIBS})
+#target_link_libraries(OpenCVCamera_capture ${OpenCV_LIBS})
+#target_link_libraries(cv_flip ${OpenCV_LIBS})
+#target_link_libraries(cv_drawRects ${OpenCV_LIBS})
+#target_link_libraries(OpenCVCascadeClassifier ${OpenCV_LIBS})
+#target_link_libraries(OpenCVCascadeClassifier_initialize ${OpenCV_LIBS})
+#target_link_libraries(OpenCVCascadeClassifier_detectMultiScale ${OpenCV_LIBS})
+#endif (BUILD_OPENCV_EXAMPLE)
+
+
+
+# add_example(turtle_sim)
 #add_example(example01)
 #add_example(example02)
 #add_example(example03)

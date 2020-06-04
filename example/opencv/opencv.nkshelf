@@ -1,0 +1,19 @@
+{
+
+    "logger": { "logLevel": "DEBUG" },
+
+    "load_paths": ["./"],
+
+    "operations": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug",  "../../../build/lib", "../../build/lib", "../build/lib"],
+        "preload": ["cv_flip", "cv_drawRects"]
+    },
+
+    "containers": {
+        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib", "../build/lib"],
+        "preload": {
+            "OpenCVCamera": ["initialize", "capture"],
+            "OpenCVCascadeClassifier": ["initialize", "detectMultiScale", "drawRects"]
+        }
+    }
+}
