@@ -43,7 +43,6 @@ namespace nerikiri {
             retval.operator=(merge(retval, parseConfig(fopen(shellpath.c_str(), "r"), shellpath)));
           });
           return merge(retval, value);
-          //return value;
         }
         return value;
       }

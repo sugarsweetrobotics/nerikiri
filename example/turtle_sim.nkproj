@@ -93,7 +93,20 @@
           }
         ],
         "bind": {
-            "TimerEC0.ec": ["TurtleSim0.ctn:update0.ope", "JoyController0.ctn:update0.ope", "JoyController0.ctn:get0.ope"]
+            "TimerEC0.ec": [
+                {
+                    "instanceName": "TurtleSim0.ctn:update0.ope",
+                    "broker": "CoreBroker"
+                },
+                {
+                    "instanceName": "JoyController0.ctn:update0.ope",
+                    "broker": "CoreBroker"
+                }, 
+                {
+                    "instanceName": "JoyController0.ctn:get0.ope",
+                    "broker": "CoreBroker"
+                }
+            ]
         },
         "start": ["TimerEC0.ec"]
     },

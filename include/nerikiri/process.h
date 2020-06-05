@@ -24,10 +24,7 @@
 
 
 namespace nerikiri {
-
- //using ProcessInfo = Value;
-
-
+  
   /**
    * プロセスクラス
    */
@@ -36,11 +33,12 @@ namespace nerikiri {
     static Process null;
    
     Value config_;
+
+    std::shared_ptr<CoreBroker> coreBroker_;
+    ProcessStore store_;
    
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::shared_ptr<std::thread>> threads_;
-    ProcessStore store_;
-    std::shared_ptr<CoreBroker> coreBroker_;
     bool started_;
     std::string path_;
     std::function<void(Process*)> on_starting_;
@@ -105,8 +103,5 @@ namespace nerikiri {
       return *this;
     }
   };
-
-
-  //  inline Process process(std::vector<std::string> args) { return std::move(Process(args.size() > 0 ? args[0] : "default_process_name")); }
 
 }

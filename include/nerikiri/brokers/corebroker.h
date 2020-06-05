@@ -2,6 +2,7 @@
 
 
 #include "nerikiri/brokers/brokerapi.h"
+#include "nerikiri/brokers/brokerfactory.h"
 
 namespace nerikiri {
 
@@ -9,7 +10,7 @@ class Process;
 
 class CoreBroker : public BrokerAPI {
 protected:
-    Process* process_;
+  Process* process_;
 
 public:
 
@@ -67,5 +68,20 @@ public:
 
 };
 
+
+class CoreBrokerFactory : public nerikiri::BrokerFactory {
+private:
+  std::shared_ptr<BrokerAPI> coreBroker_;
+
+public:
+  CoreBrokerFactory(std::shared_ptr<BrokerAPI> coreBroker): BrokerFactory({{"name", "CoreBroker"}}), coreBroker_(coreBroker) {}
+  virtual ~CoreBrokerFactory() {}
+
+public:
+  virtual std::shared_ptr<Broker> create(const Value& param) { return nullptr; }
+  virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param) {
+      return coreBroker_;
+  }
+};
 
 }

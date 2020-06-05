@@ -109,15 +109,13 @@ Process::Process(const std::string& name) : Object({{"name", "Process"}, {"insta
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
   coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
+  store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
   setExecutablePath(path);
 }
 
 Process::Process(const int argc, const char** argv) : Process(argv[0]) {
   ArgParser parser;
   //parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
-
-
-
 
   auto options = parser.parse(argc, argv);
   if (options.unknown_args.size() > 0) {
@@ -291,8 +289,8 @@ void Process::_preloadExecutionContexts() {
     auto c = config_.at("ecs").at("bind");
     c.object_for_each([this](auto& key, auto& value) {
       value.list_for_each([this, key](auto& v) {
-        // this->bindECtoOperation(key, {{"instanceName", v.stringValue()}});      
-        store()->getExecutionContext({{"instanceName", key}})->bind(store()->getOperation({{"instanceName", v.stringValue()}}));
+        auto broker = store()->getBrokerFactory({{"name", v.at("broker").stringValue()}})->createProxy(v.at("broker"));
+        store()->getExecutionContext({{"instanceName", key}})->bind(v, broker);
       });
     });
   } catch (nerikiri::ValueTypeError& e) {

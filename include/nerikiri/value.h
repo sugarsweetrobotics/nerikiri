@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <stdlib.h>
-
+#include <regex>
 #include <iostream>
 
 #include "nerikiri/nerikiri.h"
@@ -192,7 +192,7 @@ namespace nerikiri {
 
     template<typename T>
     std::vector<T> object_map(std::function<T(const std::string&, const Value&)>&& func) const {
-      if (!isObjectValue()) return;
+      if (!isObjectValue()) return {};
       std::vector<T> r;
       for(const auto& [k, v] : objectvalue_) {
         r.emplace_back(func(k, v));
@@ -217,11 +217,21 @@ namespace nerikiri {
       return r;
     }
 
+    template<typename T>
+    std::vector<T> list_map(std::function<T(const Value&)>&& func) const{
+      std::vector<T> r;
+      if (!isListValue()) return r;
+      for(auto&  v : listvalue_) {
+        r.push_back(func(v));
+      }
+      return r;
+    }
+
     bool boolValue() const;
 
     int64_t intValue() const;
     
-    double  doubleValue() const;
+    double doubleValue() const;
     
     const std::string& stringValue() const;
 
@@ -462,7 +472,6 @@ inline Value::Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE
   std::cout << "value::byte OK" << std::endl;
 }
 
-
 inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
   for(auto &p : ps) {
     objectvalue_[p.first] = p.second;
@@ -509,22 +518,41 @@ inline const std::vector<Value>& Value::listValue() const {
   throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
 
- inline nerikiri::Value lift(const nerikiri::Value& v) {
-    if (v.isError()) return v;
-    if (!v.isListValue()) return v;
-    if (v.listValue().size() == 0) return v;
-    if (!v.listValue()[0].isListValue()) return v;
+inline nerikiri::Value lift(const nerikiri::Value& v) {
+  if (v.isError()) return v;
+  if (!v.isListValue()) return v;
+  if (v.listValue().size() == 0) return v;
+  if (!v.listValue()[0].isListValue()) return v;
 
-    std::vector<Value> vlist;
-    v.list_for_each([&vlist](auto& iv) {
-      iv.list_for_each([&vlist](auto& iiv) {
-        vlist.push_back(iiv);      
-      });
+  std::vector<Value> vlist;
+  v.list_for_each([&vlist](auto& iv) {
+    iv.list_for_each([&vlist](auto& iiv) {
+      vlist.push_back(iiv);      
     });
-    return vlist;
+  });
+  return vlist;
+}
+
+inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::string& pattern, const std::string& substring) {
+  if (value.isStringValue()) {
+    return std::regex_replace(value.stringValue(), std::regex(pattern.c_str()), substring);
+  }
+  if (value.isListValue()) {
+    return value.list_map<Value>([pattern, substring](auto v) {
+      return replaceAll(v, pattern, substring);
+    });
+  }
+  if (value.isObjectValue()) {
+    return value.object_map<std::pair<std::string,Value>>([pattern, substring](auto key, auto v) {
+      return std::make_pair(key, replaceAll(v, pattern, substring));
+    });
   }
 
 
+  return value;
 }
+
+
+} // namespace nerikiri
 
 

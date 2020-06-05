@@ -114,3 +114,4 @@ Value CoreBroker::deleteResource(const std::string& path) {
     //return process_->deleteResource(path);
     return ObjectMapper::deleteResource(process_->store(), path);
 }
+

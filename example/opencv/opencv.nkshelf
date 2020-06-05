@@ -13,7 +13,7 @@
         "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib", "../build/lib"],
         "preload": {
             "OpenCVCamera": ["initialize", "capture"],
-            "OpenCVCascadeClassifier": ["initialize", "detectMultiScale", "drawRects"]
+            "OpenCVCascadeClassifier": ["initialize", "detectMultiScale"]
         }
     }
 }

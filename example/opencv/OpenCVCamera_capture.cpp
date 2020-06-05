@@ -16,6 +16,7 @@ extern "C" {
           }},
         },
         [](auto& container, auto arg) {
+            if (container.capture_) {
             cv::Mat frame;
             if (!container.capture_->read(frame)) {
                 return Value::error("VideoCapture failed.");
@@ -30,6 +31,9 @@ extern "C" {
                 {"channels", frame.channels()},
                 {"data", Value(frame.data, frame.rows * frame.cols * frame.elemSize())}
             });
+            }
+
+            return Value::error("OpenCVCamera_capture failed. Camera is not initialized.");
         });
     }
 

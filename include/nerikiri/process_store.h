@@ -11,6 +11,7 @@
 #include "nerikiri/connectiondictionary.h"
 #include "nerikiri/operationfactory.h"
 
+//#include "nerikiri/brokers/corebroker.h"
 #include "nerikiri/brokers/brokerfactory.h"
 
 namespace nerikiri {

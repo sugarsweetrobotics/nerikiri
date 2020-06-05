@@ -21,6 +21,10 @@ extern "C" {
         },
         [](auto& container, auto arg) {
             std::cout << "OpenCVCascadeClassifier_detectMultiScale" << std::endl;
+            if (!container.classifier_) {
+                return Value::error("OpenCVCascadeClassifier_detectMultiScale failed. Not initialized.");
+            }
+
             if (arg.at("image").at("rows").intValue() == 0 || arg.at("image").at("cols").intValue() == 0) {
                 return Value::error("Invalid Image Size. Row or Col is zero.");
             }

@@ -97,19 +97,21 @@ namespace nerikiri {
           return Value::error("OperationBase::call() failed. Caller Operation is null.");
       };
 
-      Value collectValues() const {
+      Value collectValues() {
         if (isNull()) { return Value::error("OperationBase::collectValues() failed. Caller Operation is null."); }
-            return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
-                [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
-                    if (!bufferMap_.at(key)->isEmpty()) {
-                        return { key, bufferMap_.at(key)->pop() };
-                    }
-                    for (auto& con : getInputConnectionsByArgName(key)) {
-                        if (con.isPull()) { return { key, con.pull() }; }
-                    }
-                    return { key, value };
-                }
-            ));
+
+        std::lock_guard<std::mutex> lock(argument_mutex_);
+        return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
+          [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
+            if (!bufferMap_.at(key)->isEmpty()) {
+              return { key, bufferMap_.at(key)->pop() };
+            }
+            for (auto& con : getInputConnectionsByArgName(key)) {
+              if (con.isPull()) { return { key, con.pull() }; }
+            }
+            return { key, value };
+          }
+        ));
     }
 
     Value execute() {

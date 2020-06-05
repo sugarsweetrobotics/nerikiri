@@ -82,25 +82,93 @@
           }
         ],
         "bind": {
-            "TimerEC0.ec": []
+            "TimerEC0.ec": [
+                {
+                    "instanceName": "OpenCVCamera0.ctn:capture0.ope",
+                    "broker": "CoreBroker"
+                }
+            ]
         },
         "start": ["TimerEC0.ec"]
     },
 
 
     "connections": [
+        { 
+            "name": "connection01",
+            "type": "event", 
+            "broker": {"name": "HTTPBroker"},
+            "output": {
+                "info": {"instanceName": "OpenCVCamera0.ctn:capture0.ope"},
+                "broker": {"name": "CoreBroker",
+                            "host": "localhost",
+                            "port": 8080}
+            },
+            "input": {
+                "info": {"instanceName": "OpenCVCascadeClassifier0.ctn:detectMultiScale0.ope"},
+                "broker": {"name": "CoreBroker",
+                    "host": "localhost",
+                    "port": 8080},
+                "target": {"name": "image"}
+            }
+        },
+        { 
+            "name": "connection01",
+            "type": "event", 
+            "broker": {"name": "HTTPBroker"},
+            "output": {
+                "info": {"instanceName": "OpenCVCamera0.ctn:capture0.ope"},
+                "broker": {"name": "CoreBroker",
+                            "host": "localhost",
+                            "port": 8080}
+            },
+            "input": {
+                "info": {"instanceName": "cv_drawRects0.ope"},
+                "broker": {"name": "CoreBroker",
+                    "host": "localhost",
+                    "port": 8080},
+                "target": {"name": "image"}
+            }
+        },
+        { 
+            "name": "connection01",
+            "type": "event", 
+            "broker": {"name": "HTTPBroker"},
+            "output": {
+                "info": {"instanceName": "OpenCVCascadeClassifier0.ctn:detectMultiScale0.ope"},
+                "broker": {"name": "CoreBroker",
+                            "host": "localhost",
+                            "port": 8080}
+            },
+            "input": {
+                "info": {"instanceName": "cv_drawRects0.ope"},
+                "broker": {"name": "CoreBroker",
+                    "host": "localhost",
+                    "port": 8080},
+                "target": {"name": "rects"}
+            }
+        }
     ],
 
     "callbacks": [
         {
-            "name": "on_start",
+            "name": "on_started",
             "target": [
                 {
-                    "name": "OpenCVCamera0.con:initialize0.ope",
-                    "arg":  {
+                    "name": "OpenCVCamera0.ctn:initialize0.ope",
+                    "argument":  {
+                        "cameraId": 0,
+                        "width": 320,
+                        "height": 240
+                    }
+                },
+                {
+                    "name": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
+                    "argument":  {
                         "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
                     }
                 }
+            
             ]
         }
     ]
