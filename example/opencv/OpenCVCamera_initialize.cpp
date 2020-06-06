@@ -18,7 +18,7 @@ extern "C" {
           }},
         },
         [](auto& container, auto arg) {
-            std::cout << "OpenCVCamera_initialize (arg:" << str(arg) << std::endl;
+            //std::cout << "OpenCVCamera_initialize (arg:" << str(arg) << std::endl;
             container.capture_ = std::make_shared<cv::VideoCapture>(arg.at("cameraId").intValue());
             container.capture_->set(cv::CAP_PROP_FRAME_WIDTH, arg.at("width").intValue());
             container.capture_->set(cv::CAP_PROP_FRAME_HEIGHT, arg.at("height").intValue());

@@ -32,21 +32,6 @@ namespace nerikiri {
       return *this;
     }
 
-    virtual Value call(const Value& value) override {
-      std::lock_guard<std::mutex> lock(mutex_);
-      bool flag = false;
-      argument_mutex_.lock();
-      flag = argument_updated_;
-      argument_mutex_.unlock();
-      if (flag) {
-        outputBuffer_.push(std::move(this->function_(value)));
-        argument_mutex_.lock();
-        argument_updated_ = false;
-        argument_mutex_.unlock();
-      } else {
-        std::cout << "memorized output" << std::endl;
-      }
-      return getOutput();
-    }
+    virtual Value call(const Value& value) override;
   };
 }

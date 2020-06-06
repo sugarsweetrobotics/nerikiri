@@ -8,7 +8,7 @@ std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationB
 
 
 
-OperationBase::OperationBase(const OperationBase& op): process_(op.process_), Object(op.info_),
+OperationBase::OperationBase(const OperationBase& op): /*process_(op.process_),*/ Object(op.info_),
   outputConnectionList_(op.outputConnectionList_), 
   inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_), argument_updated_(false) {
     logger::trace("OperationBase copy construction."); 
@@ -20,7 +20,9 @@ OperationBase::OperationBase(const OperationBase& op): process_(op.process_), Ob
 
 Value OperationBase::addProviderConnection(Connection&& c) {
     logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
-    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
+    if (isNull()) { 
+        return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); 
+    }
     if (c.isNull()) {
         return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
     }
@@ -72,17 +74,17 @@ Value OperationBase::collectValues() const {
 }
 */
 
-/*
 Value OperationBase::execute() {
-    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
-    logger::trace("OperationBase({})::execute()", str(info()));
-    auto v = this->invoke();
-    for(auto& c : outputConnectionList_) {
+    if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
+    logger::trace(("OperationBase("+this->info().at("instanceName").stringValue()+") invoking").c_str());
+    Value&& v = this->invoke();
+    logger::trace(("OperationBase("+this->info().at("instanceName").stringValue()+") invoked").c_str());
+    for (auto& c : outputConnectionList_) {
         c.putToArgumentViaConnection(v);
     }
     return v;
 }
-*/
+
 
 Value OperationBase::getConnectionInfos() const {
     return {
@@ -179,7 +181,7 @@ bool OperationBase::hasInputConnectionName(const ConnectionInfo& ci) const {
 
 bool OperationBase::hasOutputConnectionRoute(const ConnectionInfo& ci) const {
     for(const auto v : outputConnectionList_) {
-    if (v.info().at("input") == ci.at("input")) return true;
+        if (v.info().at("input") == ci.at("input")) return true;
     }
     return false;
 }
@@ -222,7 +224,9 @@ Value OperationBase::putToArgument(const std::string& argName, const Value& valu
 
 Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
     logger::trace("OperationBaseBase::putToArgumentViaConnection()");
-    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
+    if (isNull()) {
+         return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); 
+    }
     if (value.isError()) {
         logger::error("{} failed. Argument Value is Error. ({})", __func__, str(value));
         return value;
@@ -272,3 +276,21 @@ Value OperationBase::removeConsumerConnection(const ConnectionInfo& ci) {
 
 
 
+
+
+Value Operation::call(const Value& value) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    bool flag = false;
+    argument_mutex_.lock();
+    flag = argument_updated_;
+    argument_mutex_.unlock();
+    if (flag) {
+        outputBuffer_.push(std::move(this->function_(value)));
+        argument_mutex_.lock();
+        argument_updated_ = false;
+        argument_mutex_.unlock();
+    } else {
+        std::cout << "memorized output" << std::endl;
+    }
+    return getOutput();
+}

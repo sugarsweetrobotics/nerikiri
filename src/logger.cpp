@@ -1,5 +1,6 @@
 #include <iostream>
 #include <regex>
+#include <chrono>
 
 #include "nerikiri/util/logger.h"
 
@@ -7,7 +8,7 @@ using namespace nerikiri;
 using namespace nerikiri::logger; 
 
 static LOG_LEVEL g_loglevel = logger::LOG_INFO;
-
+static auto startTime = std::chrono::system_clock::now();
 
 void nerikiri::logger::setLogLevel(const LOG_LEVEL& level) {
   g_loglevel = level;
@@ -34,6 +35,6 @@ format_type nerikiri::logger::formatter(format_type&& fmt, const std::string& ar
 }
 
 std::string nerikiri::logger::log(std::string&& fmt) {
-  std::cout << fmt << std::endl;
+  std::cout << "[" << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - startTime).count() << "] " << fmt << std::endl;
   return std::move(fmt);
 }

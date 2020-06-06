@@ -52,12 +52,13 @@ namespace nerikiri {
     virtual Value push(const Value& v) { buffer_ = (v); empty_ = false; return buffer_; }
     virtual Value push(Value&& v) { buffer_ = std::move(v); empty_ = false; return buffer_; }
     virtual Value pop() { return empty_ ? defaultValue_ : buffer_; }
+    virtual Value& popRef() { return empty_ ? defaultValue_ : buffer_; }
     virtual bool isEmpty() const { return empty_; }
   };
 
   class OperationBase : public Object {
   protected:
-      Process_ptr process_;
+      //Process_ptr process_;
       ConnectionList outputConnectionList_;
       ConnectionListDictionary inputConnectionListDictionary_;
       std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
@@ -68,7 +69,7 @@ namespace nerikiri {
   public:
 
   public:
-      OperationBase() :  Object(), process_(nullptr), argument_updated_(false) {}
+      OperationBase() :  Object()/*, process_(nullptr)*/, argument_updated_(false) {}
 
       OperationBase(const OperationBase& op);
 
@@ -78,7 +79,7 @@ namespace nerikiri {
 
       OperationBase& operator=(const OperationBase& op) {
           //logger::trace("Operation copy");
-          process_ = op.process_;
+          //process_ = op.process_;
           info_ = op.info_;
           is_null_ = op.is_null_;
           outputConnectionList_ = op.outputConnectionList_;
@@ -104,7 +105,7 @@ namespace nerikiri {
         return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
           [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
             if (!bufferMap_.at(key)->isEmpty()) {
-              return { key, bufferMap_.at(key)->pop() };
+              return { key, bufferMap_.at(key)->popRef() };
             }
             for (auto& con : getInputConnectionsByArgName(key)) {
               if (con.isPull()) { return { key, con.pull() }; }
@@ -114,14 +115,7 @@ namespace nerikiri {
         ));
     }
 
-    Value execute() {
-        if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
-        auto v = this->invoke();
-        for (auto& c : outputConnectionList_) {
-            c.putToArgumentViaConnection(v);
-        }
-        return v;
-    }
+    Value execute();
 
     Value getConnectionInfos() const;
 
@@ -174,6 +168,7 @@ namespace nerikiri {
     Value removeProviderConnection(const ConnectionInfo& ci);
 
     Value removeConsumerConnection(const ConnectionInfo& ci);
+
 
     
     static std::shared_ptr<OperationBase> null;// = std::make_shared<OperationBase>();

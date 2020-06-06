@@ -33,11 +33,11 @@ namespace nerikiri {
 
     virtual Value getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const  = 0;
 
-    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const  = 0;
+    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) = 0;
 
     virtual Value invokeContainerOperation(const Value& cinfo, const Value& oinfo) const  = 0;
 
-    virtual Value callOperation(const Value& info, Value&& value) const = 0;
+    virtual Value callOperation(const Value& info, Value&& value) = 0;
 
     virtual Value invokeOperation(const Value& name) const = 0;
 
@@ -57,6 +57,10 @@ namespace nerikiri {
 
     virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) = 0;
     
+    virtual Value getOperationFactoryInfos() const = 0;
+
+    virtual Value getContainerFactoryInfos() const = 0;
+
     virtual Value createResource(const std::string& path, const Value& value) = 0;
 
     virtual Value readResource(const std::string& path) const = 0;
@@ -64,6 +68,10 @@ namespace nerikiri {
     virtual Value updateResource(const std::string& path, const Value& value) = 0;
 
     virtual Value deleteResource(const std::string& path) = 0;
+
+    virtual Value createOperation(const Value& value) = 0;
+
+    virtual Value createContainer(const Value& value) = 0;
 
     static std::shared_ptr<BrokerAPI> null;
   };
@@ -108,7 +116,7 @@ class NullBroker : public BrokerAPI {
       return Value::error("BrokerAPI::getContainerOperationInfo() failed. Broker is null.");
     }
 
-    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const {
+    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) {
       return Value::error("BrokerAPI::callContainerOperation() failed. Broker is null.");
     }
 
@@ -116,7 +124,7 @@ class NullBroker : public BrokerAPI {
       return Value::error("BrokerAPI::invokeContainerOperation() failed. Broker is null.");
     }
 
-    virtual Value callOperation(const Value& info, Value&& value) const {
+    virtual Value callOperation(const Value& info, Value&& value) {
       return Value::error("BrokerAPI::callOperation() failed. Broker is null.");
     }
 
@@ -156,6 +164,23 @@ class NullBroker : public BrokerAPI {
       return Value::error("BrokerAPI::putToArgumentViaConnection() failed. Broker is null.");
     }
     
+
+    virtual Value getOperationFactoryInfos() const {
+      return Value::error("BrokerAPI::getOperationFactoryInfos() failed. Broker is null.");
+    }
+    virtual Value getContainerFactoryInfos() const {
+      return Value::error("BrokerAPI::getContainerFactoryInfos() failed. Broker is null.");
+    }
+
+    virtual Value createOperation(const Value& value) {
+      return Value::error("BrokerAPI::createOperation({}) failed. Broker is null.");
+    }
+
+    virtual Value createContainer(const Value& value) {
+      return Value::error("BrokerAPI::createContainer({}) failed. Broker is null.");
+    }
+
+
     virtual Value createResource(const std::string& path, const Value& value) {
       return Value::error("BrokerAPI::createResource() failed. Broker is null.");
     }

@@ -16,7 +16,7 @@ extern "C" {
           }},
         },
         [](auto& container, auto arg) {
-            std::cout << "OpenCVCascadeClassfier_initialize (arg:" << str(arg) << std::endl;
+            //std::cout << "OpenCVCascadeClassfier_initialize (arg:" << str(arg) << std::endl;
             container.classifier_ = std::make_shared<cv::CascadeClassfier>();
             container.classifier_->load(arg.at("parameterFilePath").stringValue());
             return arg;

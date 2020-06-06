@@ -25,6 +25,7 @@ namespace nerikiri {
 
         static Value createExecutionContext(ProcessStore& store, const Value& value);
 
+        static Value createTopic(ProcessStore& store, const Value& topicInfo);
     };
     
 }

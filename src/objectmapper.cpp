@@ -93,6 +93,14 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
       return store->getCallbacks();
     }
 
+    if (path == "/process/operationFactories/") {
+      return store->getOperationFactoryInfos();
+    }
+
+    if (path == "/process/containerFactories/") {
+      return store->getContainerFactoryInfos();
+    }
+
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 

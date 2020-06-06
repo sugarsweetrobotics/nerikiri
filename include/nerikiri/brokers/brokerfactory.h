@@ -13,6 +13,7 @@ namespace nerikiri {
   private:
     const std::string typeName_;
   public:
+    BrokerFactory() : typeName_("NullBroker") {}
     BrokerFactory(const Value& value) : typeName_(value.at("name").stringValue()) {}
 
     virtual ~BrokerFactory() {}

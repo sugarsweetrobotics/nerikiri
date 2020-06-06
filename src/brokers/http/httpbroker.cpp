@@ -165,18 +165,6 @@ private:
   }
 public:
 
-    virtual Value callContainerOperation(const Value& ci, const Value& oi, Value&& arg) const override {
-     return toValue(client_->request("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/call", "PUT"));
-    }
-
-    virtual Value callOperation(const Value& info, Value&& value) const override {
-      return toValue(client_->request("/process/operation/" + info.at("name").stringValue() + "/call", "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
-    }
-
-    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
-      auto operation_name = opInfo.at("instanceName").stringValue();
-      return toValue(client_->request("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
-    }
 
     virtual Value createResource(const std::string& path, const Value& value) override {
       logger::debug("HTTPBrokerProxyImpl::createResource({})", path);

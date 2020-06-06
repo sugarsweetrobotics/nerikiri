@@ -4,7 +4,7 @@
 #include "nerikiri/operation.h"
 #include "nerikiri/connection.h"
 #include "nerikiri/objectmapper.h"
-
+#include "nerikiri/objectfactory.h"
 #include "nerikiri/connectionbuilder.h"
 
 using namespace nerikiri;
@@ -37,7 +37,7 @@ Value CoreBroker::getOperationInfo(const Value& info) const {
     return process_->store()->getOperation(info)->info();
 }
 
-Value CoreBroker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const {
+Value CoreBroker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) {
     return process_->store()->getContainer(cinfo)->getOperation(oinfo)->call(std::move(arg));
 }
 
@@ -45,7 +45,7 @@ Value CoreBroker::invokeContainerOperation(const Value& cinfo, const Value& oinf
     return process_->store()->getContainer(cinfo)->getOperation(oinfo)->invoke();
 }
 
-Value CoreBroker::callOperation(const Value& info, Value&& value) const {
+Value CoreBroker::callOperation(const Value& info, Value&& value) {
     return process_->store()->getOperation(info)->call(std::move(value));
 }
 
@@ -85,15 +85,37 @@ Value CoreBroker::removeProviderConnection(const ConnectionInfo& ci) {
 Value CoreBroker::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
     logger::trace("Broker::putToArgument()");
     //return this->process_->putToArgument(opInfo, argName, value);    
-    return process_->store()->getOperation(opInfo)->putToArgument(argName, value);
+    return process_->store()->getOperationOrTopic(opInfo)->putToArgument(argName, value);
 }
 
 Value CoreBroker::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
     logger::trace("Broker::putToArgumentViaConnection()");
     //return this->process_->putToArgumentViaConnection(conInfo, value);
-    return process_->store()->getOperation(conInfo.at("input").at("info"))->putToArgumentViaConnection(
+    return process_->store()->getOperationOrTopic(conInfo.at("input").at("info"))->putToArgumentViaConnection(
         conInfo, value);
 }
+
+Value CoreBroker::getOperationFactoryInfos() const {
+    logger::trace("Broker::getOperationFactoryInfos()");
+    return process_->store()->getOperationFactoryInfos();
+}
+
+Value CoreBroker::getContainerFactoryInfos() const {
+    logger::trace("Broker::getContainerFactoryInfos()");
+    return process_->store()->getContainerFactoryInfos();
+}
+
+
+Value CoreBroker::createOperation(const Value& value) {
+    logger::trace("Broker::createOperation({})", value);
+    return ObjectFactory::createOperation(*process_->store(), value);
+}
+
+Value CoreBroker::createContainer(const Value& value) {
+    logger::trace("Broker::createContainer({})", value);
+    return ObjectFactory::createContainer(*process_->store(), value);
+}
+
 
 Value CoreBroker::createResource(const std::string& path, const Value& value) {
     //return process_->createResource(path, value);

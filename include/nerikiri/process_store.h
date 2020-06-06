@@ -13,6 +13,7 @@
 
 //#include "nerikiri/brokers/corebroker.h"
 #include "nerikiri/brokers/brokerfactory.h"
+#include "nerikiri/topic.h"
 
 namespace nerikiri {
 
@@ -27,7 +28,6 @@ namespace nerikiri {
 
     std::vector<std::shared_ptr<Operation>> operations_;
     std::vector<std::shared_ptr<OperationFactory>> operationFactories_;
-    ConnectionDictionary connectionDictionary_;
 
     std::vector<std::shared_ptr<ContainerBase>> containers_;
     std::vector<std::shared_ptr<ContainerFactoryBase>> containerFactories_;
@@ -35,11 +35,11 @@ namespace nerikiri {
     std::vector<std::shared_ptr<ExecutionContext>> executionContexts_;
     std::vector<std::shared_ptr<ExecutionContextFactory>> executionContextFactories_;
     
-
     std::vector<std::shared_ptr<Broker>> brokers_;
     std::vector<std::shared_ptr<BrokerFactory>> brokerFactories_;
 
-
+    std::vector<std::shared_ptr<Topic>> topics_;
+    std::vector<std::shared_ptr<TopicFactory>> topicFactories_;
     friend class Process;
   public:
     ProcessStore(Process* process);
@@ -47,7 +47,9 @@ namespace nerikiri {
   public:
     Value info() const;
     Value getContainerInfos();
+    Value getContainerFactoryInfos();
     std::shared_ptr<ContainerBase> getContainer(const Value& info);
+    std::vector<std::shared_ptr<ContainerBase>> getContainers() { return containers_; }
     Value addContainer(std::shared_ptr<ContainerBase> container);
     ProcessStore& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf);
     std::shared_ptr<ContainerFactoryBase> getContainerFactory(const Value& info);
@@ -81,5 +83,13 @@ namespace nerikiri {
     Value addDLLProxy(std::shared_ptr<DLLProxy> dllproxy);
 
     Value getCallbacks() const;
+
+    std::shared_ptr<TopicFactory> getTopicFactory(const Value& topicInfo);
+    Value addTopicFactory(std::shared_ptr<TopicFactory> tf);
+    std::shared_ptr<Topic> getTopic(const Value& topicInfo);
+    Value getTopicInfos() const;
+    Value addTopic(std::shared_ptr<Topic> topic);
+
+    std::shared_ptr<OperationBase> getOperationOrTopic(const Value& info);
   };
 }

@@ -13,4 +13,3 @@ using namespace nerikiri;
 
 std::shared_ptr<ContainerBase> ContainerBase::null = std::make_shared<ContainerBase>();
 
-

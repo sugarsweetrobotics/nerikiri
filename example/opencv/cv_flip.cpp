@@ -20,7 +20,7 @@ extern "C" {
           }},
         },
         [](auto arg) {
-            std::cout << "cv_flip called" << std::endl;
+            //std::cout << "cv_flip called" << std::endl;
             if (arg.at("image").at("rows").intValue() == 0 || arg.at("image").at("cols").intValue() == 0) {
                 return Value::error("Invalid Image Size. Row or Col is zero.");
             }

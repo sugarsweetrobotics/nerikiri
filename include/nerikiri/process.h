@@ -71,6 +71,7 @@ namespace nerikiri {
     void _preloadBrokers();
     void _preloadConnections();
     void _preloadCallbacksOnStarted();
+    void _preloadTopics();
 
     void _setupLogger();
   public:

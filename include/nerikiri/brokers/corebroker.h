@@ -32,13 +32,13 @@ public:
 
     virtual Value getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const override;
 
-    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) const override;
+    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) override;
 
     virtual Value invokeContainerOperation(const Value& cinfo, const Value& oinfo) const override;
 
     virtual Value getOperationInfo(const Value& info) const override;
 
-    virtual Value callOperation(const Value& info, Value&& value) const override;
+    virtual Value callOperation(const Value& info, Value&& value) override;
 
     virtual Value invokeOperation(const Value& v) const override;
 
@@ -57,6 +57,14 @@ public:
     virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override;
 
     virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override;
+    
+    virtual Value getOperationFactoryInfos() const override;
+
+    virtual Value getContainerFactoryInfos() const override;
+
+    virtual Value createOperation(const Value& value) override;
+
+    virtual Value createContainer(const Value& value) override;
 
     virtual Value createResource(const std::string& path, const Value& value) override;
 

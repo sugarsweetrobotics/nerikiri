@@ -20,7 +20,7 @@ extern "C" {
           }},
         },
         [](auto& container, auto arg) {
-            std::cout << "OpenCVCascadeClassifier_detectMultiScale" << std::endl;
+            //std::cout << "OpenCVCascadeClassifier_detectMultiScale" << std::endl;
             if (!container.classifier_) {
                 return Value::error("OpenCVCascadeClassifier_detectMultiScale failed. Not initialized.");
             }
@@ -41,7 +41,7 @@ extern "C" {
 
             auto vs = Value::list();;
             for(auto rect : faces) {
-                std::cout << " - rect(x:" << rect.x << ",y:" << rect.y << ",width:" << rect.width << ",height:" << rect.height << ")" << std::endl;
+                //std::cout << " - rect(x:" << rect.x << ",y:" << rect.y << ",width:" << rect.width << ",height:" << rect.height << ")" << std::endl;
                 vs.push_back(Value({
                     {"x", (int64_t)rect.x}, {"y", (int64_t)rect.y},
                     {"width", (int64_t)rect.width}, {"height", (int64_t)rect.height}

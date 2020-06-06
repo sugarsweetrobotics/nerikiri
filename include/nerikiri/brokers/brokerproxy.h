@@ -103,6 +103,20 @@ namespace nerikiri {
       return deleteResource("/process/operations/" + operation_name + "/output/connections/" + connection_name + "/");
     }
 
+    virtual Value callContainerOperation(const Value& ci, const Value& oi, Value&& arg) override {
+     return updateResource("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/", arg);
+    }
+
+    virtual Value callOperation(const Value& info, Value&& value) override {
+      return updateResource("/process/operation/" + info.at("name").stringValue() + "/", value);
+    }
+
+    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
+      auto operation_name = opInfo.at("instanceName").stringValue();
+      return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", value);
+    }
+
+
     virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override {
       if (conInfo.isNull()) {
         return Value::error(logger::error("HTTPBrokerProxyImpl::putToArgumentViaConnection failed. Connection is null."));
@@ -112,6 +126,49 @@ namespace nerikiri {
       const auto argument_name = conInfo.at("input").at("target").at("name").stringValue();
       return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/", value);
     }
+
+    virtual Value getOperationFactoryInfos() const override {
+      return readResource("/process/operationFactories/");
+      
+    }
+
+    virtual Value getContainerFactoryInfos() const override {
+      return readResource("/process/containerFactories/");
+    }
+
+    virtual Value createOperation(const Value& value) override {
+      return createResource("/process/operations/", value);
+    }
+
+    virtual Value createContainer(const Value& value) override {
+      return createResource("/process/containers/", value);
+    }
+
   };
 
+
+  class NullBrokerProxy : public AbstractBrokerProxy {
+  public:
+
+    NullBrokerProxy() : AbstractBrokerProxy({{"name", "NullBrokerProxy"}}) {}
+    virtual ~NullBrokerProxy() {}
+
+  public:
+    virtual Value readResource(const std::string& path) const override {
+      return Value::error("BrokerProxy::readResource failed. BrokerProxy is NullBrokerProxy.");
+    }
+
+    virtual Value createResource(const std::string& path, const Value& value) override {
+      return Value::error("BrokerProxy::createResource failed. BrokerProxy is NullBrokerProxy.");
+    }
+
+    virtual Value updateResource(const std::string& path, const Value& value) override {
+      return Value::error("BrokerProxy::updateResource failed. BrokerProxy is NullBrokerProxy.");
+    }
+
+    virtual Value deleteResource(const std::string& path) override {
+      return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+    }
+
+  };
 }

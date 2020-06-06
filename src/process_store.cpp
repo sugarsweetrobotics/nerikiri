@@ -61,6 +61,11 @@ Value ProcessStore::getOperationFactoryInfos() {
   return nerikiri::map<Value, std::shared_ptr<OperationFactory>>(operationFactories_, [](auto& opf) { return Value(opf->typeName()); });
 }
 
+Value ProcessStore::getContainerFactoryInfos() {
+  return nerikiri::map<Value, std::shared_ptr<ContainerFactoryBase>>(containerFactories_, [](auto& opf) { return Value(opf->typeName()); });
+}
+
+
 Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
   logger::trace("Process::addOperation({})", op->info());
   if (op->isNull()) {
@@ -91,6 +96,15 @@ Value ProcessStore::addExecutionContext(std::shared_ptr<ExecutionContext> ec) {
   }
   executionContexts_.push_back(ec);
   return ec->info();
+}
+
+
+
+std::shared_ptr<OperationBase> ProcessStore::getOperationOrTopic(const Value& info) {
+  if (info.at("topicType").isError()) {
+    return getOperation(info);
+  }
+  return getTopic(info);
 }
 
 
@@ -225,7 +239,7 @@ Value ProcessStore::addBrokerFactory(std::shared_ptr<BrokerFactory> factory) {
 
 Value ProcessStore::addBroker(const std::shared_ptr<Broker> brk) {
   logger::trace("ProcessStore::addBroker()");
-  if (brk) {
+  if (brk && !brk->isNull()) {
     auto name = nerikiri::numbering_policy<std::shared_ptr<Broker>>(brokers_, brk->info().at("name").stringValue(), ".brk");
     brk->setInstanceName(name);
     brokers_.push_back(brk);
@@ -254,7 +268,7 @@ std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info)
       return f;
     }
   }
-  return BrokerFactory::null;
+  return std::make_shared<BrokerFactory>(); // Null Broker Factory
 }
 
 Value ProcessStore::addDLLProxy(std::shared_ptr<DLLProxy> dllproxy) {
@@ -264,4 +278,48 @@ Value ProcessStore::addDLLProxy(std::shared_ptr<DLLProxy> dllproxy) {
 
 Value ProcessStore::getCallbacks() const {
   return process_->getCallbacks();
+}
+
+std::shared_ptr<TopicFactory> ProcessStore::getTopicFactory(const Value& topicInfo) {
+  for(auto& tf : topicFactories_) {
+    if (tf->info().at("name") == topicInfo.at("name")) {
+      return tf;
+    }
+  }
+  return std::make_shared<NullTopicFactory>();
+}
+
+Value ProcessStore::addTopicFactory(std::shared_ptr<TopicFactory> tf) {
+  if (tf == nullptr) {
+    return Value::error(logger::error("ProcessStore::addTopicFactory() failed. TopicFactory is null"));
+  }
+  if (getTopicFactory(tf->info()) == nullptr) {
+    topicFactories_.push_back(tf);
+  }
+  return tf->info();
+}
+
+std::shared_ptr<Topic> ProcessStore::getTopic(const Value& topicInfo) {
+  for(auto& t : topics_) {
+    if (t->info().at("instanceName") == topicInfo.at("instanceName")) {
+      return t;
+    }
+  }
+  return nullptr;
+}
+
+Value ProcessStore::getTopicInfos() const {
+  return nerikiri::map<Value, std::shared_ptr<Topic>>(topics_, [](auto t) {
+    return t->info();
+  });
+}
+
+Value ProcessStore::addTopic(std::shared_ptr<Topic> topic) {
+  if (topic == nullptr) {
+    return Value::error(logger::error("ProcessStore::addTopic() failed. Topic is null"));
+  }
+  if (getTopic(topic->info()) == nullptr) {
+    topics_.push_back(topic);
+  }
+  return topic->info();
 }

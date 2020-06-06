@@ -21,7 +21,7 @@ extern "C" {
           }},
         },
         [](auto arg) {
-            std::cout << "cv_drawRects" << std::endl;
+            //std::cout << "cv_drawRects" << std::endl;
             if (arg.at("image").at("rows").intValue() == 0 || arg.at("image").at("cols").intValue() == 0) {
                 return Value::error("Invalid Image Size. Row or Col is zero.");
             }

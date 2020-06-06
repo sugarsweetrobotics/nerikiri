@@ -1,6 +1,6 @@
 
 #include "nerikiri/util/logger.h"
-
+#include "nerikiri/brokers/brokerproxy.h"
 #include "nerikiri/objectfactory.h"
 
 
@@ -19,7 +19,6 @@ Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   return store.addOperation(f->create(info));
 }
 
-
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("Process::createContainer({})", (info));
   auto f = store.getContainerFactory(info);
@@ -33,23 +32,12 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& ci) {
   logger::trace("Process::createBroker({})", (ci));
 
-  auto f = store.getBrokerFactory(ci);
-  if (!f) {
-    return Value::error(logger::error("createBroker failed. Can not found appropreate broker factory."));
-  }
-  logger::info("Creating Broker({})", (ci));
-  return store.addBroker(f->create(ci));
+  return store.addBroker(store.getBrokerFactory(ci)->create(ci));
 }
 
 std::shared_ptr<BrokerAPI>  ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
   logger::trace("Process::createBrokerProxy({})", (bi));
-  auto f = store.getBrokerFactory(bi);
-  if (!f) {
-    logger::error("createBrokerProxy failed. Can not found appropreate broker factory.");
-    return nullptr;
-  }
-  logger::info("Creating BrokerProxy({})", (bi));
-  return f->createProxy(bi);
+  return store.getBrokerFactory(bi)->createProxy(bi);
 }
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {
@@ -59,4 +47,10 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
   }
   logger::info("Creating Execution Context({})", (value));
   return store.addExecutionContext(f->create(value));
+}
+
+
+Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
+  return store.addTopic(store.getTopicFactory(topicInfo)->create(topicInfo));
+  return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
 }

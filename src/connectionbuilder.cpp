@@ -8,32 +8,6 @@
 
 using namespace nerikiri;
 
-
-Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const Value& ci) {
-
-  logger::trace("Process::registerConsumerConnection({}", (ci));
-  if (ci.isError()) return ci;
-
-  auto ret = ci;
-  /// Consumer側でなければ失敗出力
-  auto consumer = store->getOperation(ci.at("input").at("info"));
-  if (consumer->isNull()) {
-      return Value::error(logger::error("registerConsumerConnection failed. The broker does not have the consumer ", str(ci.at("input"))));
-  }
-  if (consumer->hasInputConnectionRoute(ret)) {
-      return Value::error(logger::error("registerConsumerConnection failed. Consumer already have the same connection.", str(ci.at("input"))));
-  }
-  while (consumer->hasInputConnectionName(ret)) {
-      logger::warn("registerConsumerConnection failed. Consumer already have the same connection.", (ret.at("input")));
-      ret["name"] = ret["name"].stringValue() + "_2";
-  }
-
-  return consumer->addConsumerConnection(consumerConnection(ret,
-             //createBrokerProxy(ci.at("input").at("broker"))));
-            ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
-}
-
-
 /**
  * もしConnectionInfoで指定されたBrokerが引数のbrokerでなければ，親プロセスに対して別のブローカーをリクエストする
  */
@@ -46,42 +20,52 @@ Value checkProcessHasProviderOperation(ProcessStore* store, const ConnectionInfo
 }
 
 
+static std::shared_ptr<OperationBase> _getOperationOrTopic(ProcessStore* store, const Value& info) {
+  return store->getOperationOrTopic(info);
+}
+
+Value ConnectionBuilder::_validateConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
+  auto ret = conInfo;
+  if (op->hasOutputConnectionRoute(ret)) {
+    return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output"))));
+  }
+  int i = 2;
+  while (op->hasOutputConnectionName(ret)) {
+      logger::warn("makeConnection failed. Provider already have the same connection name {}", str(ret.at("output")));
+      ret["name"] = conInfo.at("name").stringValue() + "_" + std::to_string(i);
+      ++i;
+  }
+  return ret;
+}
+
+
+Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const Value& ci) {
+  logger::trace("Process::registerConsumerConnection({}", (ci));
+  auto ret = ConnectionBuilder::_validateConnectionInfo(_getOperationOrTopic(store, ci.at("input").at("info")), ci);
+  return _getOperationOrTopic(store, ci.at("input").at("info"))->addConsumerConnection(consumerConnection(ret,
+            ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
+}
+
+
+
 Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
   logger::trace("Process::registerProviderConnection({})", (ci));
   try {
-    auto ret = checkProcessHasProviderOperation(store, ci);
-    if (ret.isError()) return ret;
-    auto provider = store->getOperation(ret.at("output").at("info"));
-    if (provider->hasOutputConnectionRoute(ci)) {
-        return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ci.at("output"))));
-    }
-    while (provider->hasOutputConnectionName(ret)) {
-        logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output")));
-        ret["name"] = ci.at("name").stringValue() + "_2";
-    }
-
-    auto consumerBroker = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"));
-    if (!consumerBroker) {
-      return Value::error(logger::error("makeConnection failed. Consumer side broker can not be created. {}", str(ci.at("output"))));
-    }
-
-    auto ret2 = consumerBroker->registerConsumerConnection(ret);
-    if(ret2.isError()) return ret;
-
+    auto ret = ConnectionBuilder::_validateConnectionInfo(_getOperationOrTopic(store, ci.at("output").at("info")), ci);
+    auto ret2 = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"))->registerConsumerConnection(ret);
     // リクエストが成功なら、こちらもConnectionを登録。
-    //auto ret3 = provider->addProviderConnection(providerConnection(ret2, createBrokerProxy(ret2.at("input").at("broker"))));
-    auto ret3 = provider->addProviderConnection(providerConnection(ret2, ObjectFactory::createBrokerProxy(*store, ret2.at("input").at("broker"))));
+    auto ret3 = _getOperationOrTopic(store, ci.at("output").at("info"))->addProviderConnection(providerConnection(ret2, ObjectFactory::createBrokerProxy(*store, ret2.at("input").at("broker"))));
     if (ret3.isError()) {
         // 登録が失敗ならConsumer側のConnectionを破棄。
         auto ret3 = deleteConsumerConnection(store, ret2);
         return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
     }// 登録成功ならciを返す
-    return ret2;
+    return ret3;
   } catch (ValueTypeError& ex) {
-    return Value::error(logger::error("Process::registerProviderConnection() failed. Exception: {}", ex.what()));
+    return Value::error(logger::error("Process::registerProviderConnection() failed. Exception: " + std::string(ex.what())));
   }
-
 }
+
   
 Value ConnectionBuilder::deleteConsumerConnection(ProcessStore* store, const Value& ci) {
   logger::trace("Process::deleteConsumerConnection({}", (ci));
@@ -108,3 +92,71 @@ Value ConnectionBuilder::deleteProviderConnection(ProcessStore* store, const Val
     return provider->removeProviderConnection(ret);
 }
     
+Value ConnectionBuilder::registerTopicPublisher(ProcessStore* store, const Value& opInfo, const Value& topicInfo) {
+  if (!topicInfo.isError() && !opInfo.isError()) {
+    auto instanceName = opInfo.at("instanceName").stringValue();
+    if (opInfo.hasKey("ownerContainerInstanceName")) {
+      instanceName = opInfo.at("ownerContainerInstanceName").stringValue() + ":" + instanceName;
+    }
+    return registerProviderConnection(store, {
+      {
+        {"name", "topic_connection01"},
+        {"type", "event"},
+        {"input", {
+          {"info", {
+            {"topicType", "BasicTopic"},
+            {"instanceName", topicInfo.at("instanceName")},
+            
+          }},
+          {"broker", {
+              {"name", "CoreBroker"}
+          }},
+          {"target", {{"name", "data"}}}
+        }},
+        {"output", {
+          {"info", { 
+            {"instanceName", instanceName},
+            {"broker", {
+              {"name", "CoreBroker"}
+            }}
+          }}
+        }}
+      }
+    });
+  }
+  return Value::error(logger::error("Register Topic Publisher failed: {}", topicInfo));
+}
+
+Value ConnectionBuilder::registerTopicSubscriber(ProcessStore* store, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
+  if (!topicInfo.isError() && !opInfo.isError()) {
+    auto instanceName = opInfo.at("instanceName").stringValue();
+    if (opInfo.hasKey("ownerContainerInstanceName")) {
+      instanceName = opInfo.at("ownerContainerInstanceName").stringValue() + ":" + instanceName;
+    }
+    return registerProviderConnection(store, {
+      {
+        {"name", "topic_connection01"},
+        {"type", "event"},
+        {"input", {
+          {"info", { 
+            {"instanceName", instanceName}
+          }},
+          {"broker", {
+            {"name", "CoreBroker"}
+          }},
+          {"target", {{"name", argName}}}
+        }},
+        {"output", {
+          {"info", {
+            {"instanceName", topicInfo.at("instanceName")},
+            {"topicType", "BasicTopic"},
+            {"broker", {
+              {"name", "CoreBroker"}
+            }}
+          }}
+        }}
+      }
+    });
+  }
+  return Value::error(logger::error("Register Topic Subscriber failed: {}", topicInfo));
+}

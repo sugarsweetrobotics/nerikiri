@@ -31,7 +31,7 @@ namespace nerikiri {
     ValueTypeError(const std::string& msg) : msg_(msg) {}
     
     const char* what() const noexcept {
-      return ("Invalid Value Data Access (" + msg_ + ")").c_str();
+      return (std::string("Invalid Value Data Access (") + msg_ + ")").c_str();
     }
   };
 
@@ -39,6 +39,7 @@ namespace nerikiri {
   class Value;
 
 
+  
   std::string str(const Value& value);
   Value merge(const Value& v1, const Value& v2);
 
@@ -48,7 +49,7 @@ namespace nerikiri {
    */
   class Value {
 
-  private:
+  public:
     enum VALUE_TYPE_CODE {
 			  VALUE_TYPE_NULL,
 			  VALUE_TYPE_INT,
@@ -90,6 +91,17 @@ namespace nerikiri {
     Value(std::vector<std::pair<std::string, Value>>&& value);
     Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
 
+    Value(const VALUE_TYPE_CODE typeCode, const std::string& message);
+
+    Value(Value&& value) : typecode_(std::move(value.typecode_)), 
+      boolvalue_(std::move(value.boolvalue_)),
+      intvalue_(std::move(value.intvalue_)),
+      doublevalue_(std::move(value.doublevalue_)),
+      objectvalue_(std::move(value.objectvalue_)),
+      listvalue_(std::move(value.listvalue_)),
+      stringvalue_(std::move(value.stringvalue_)),
+      bytevalue_(std::move(value.bytevalue_)) {
+    }
 
     explicit Value(const std::vector<float>& dbls);
 
@@ -269,18 +281,8 @@ namespace nerikiri {
       return listvalue_[key];
     }
 
-    Value at(const std::string& key) const {
-      if (isError()) {
-        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type.");
-      }
-      if (!isObjectValue()) {
-        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But value is " + getTypeString() + "type.");
-      }
-      if (objectvalue_.count(key) == 0) {
-        return Value::error("Value::at(" + key + ") failed. Program tried to access with key value access. But key was not found.");
-      }
-      return objectvalue_.at(key);
-    }
+
+    const Value& at(const std::string& key) const ;
 
     Value& operator=(const Value& value) {
       typecode_ = value.typecode_;
@@ -301,9 +303,9 @@ namespace nerikiri {
       boolvalue_ = value.boolvalue_;
       intvalue_ = value.intvalue_;
       doublevalue_ = value.doublevalue_;
-      objectvalue_ = value.objectvalue_;
-      listvalue_ = value.listvalue_;
-      stringvalue_ = value.stringvalue_;
+      objectvalue_ = std::move(value.objectvalue_);
+      listvalue_ = std::move(value.listvalue_);
+      stringvalue_ = std::move(value.stringvalue_);
       bytevalue_ = std::move(value.bytevalue_);
       return *this;
     }
@@ -349,7 +351,9 @@ namespace nerikiri {
     bool operator!=(const Value& v2) const { return !this->operator==(v2); }
 
     friend Value merge(const Value& v1, const Value& v2);
+
   };
+
 
   class value_pair : public std::pair<std::string, Value> {
   public:
@@ -357,6 +361,7 @@ namespace nerikiri {
     value_pair(const char* c, const int64_t v): value_pair(c, Value(v)) {}
 
   };
+
 
   inline Value errorValue(const std::string& msg) {
    return Value::error(msg);
@@ -448,6 +453,11 @@ inline Value::Value(const std::vector<float>& dbls) : typecode_(VALUE_TYPE_LIST)
   }
 }
 
+inline Value::Value(const VALUE_TYPE_CODE typeCode, const std::string& message) {
+  typecode_ = typeCode;
+  errormessage_ = message;
+}
+
 inline Value::Value(const std::vector<double>& dbls) : typecode_(VALUE_TYPE_LIST) {
   for(auto v : dbls) {
     listvalue_.emplace_back(Value(v));
@@ -462,14 +472,14 @@ inline Value::Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
 }
 
 inline Value::Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY) {
-  std::cout << "value::byte(" << size << ")" << std::endl;
+  //std::cout << "value::byte(" << size << ")" << std::endl;
   bytevalue_.resize(size);
   bytevaluesize_ = size;
   //memcpy(&bytevalue_[0], bytes, size);
   for(int i = 0;i < size;i++) {
     bytevalue_[i] = bytes[i];
   }
-  std::cout << "value::byte OK" << std::endl;
+  //std::cout << "value::byte OK" << std::endl;
 }
 
 inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
@@ -552,6 +562,26 @@ inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::strin
   return value;
 }
 
+
+
+    static const Value errorTypeError  { Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value type is wrong."}; 
+
+    static const Value errorError { Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value is ERROR type." }; 
+
+    static const Value errorKeyError {Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But key is not included." }; 
+
+    inline const Value& Value::at(const std::string& key) const {
+      if (isError()) {
+        return errorError;
+      }
+      if (!isObjectValue()) {
+        return errorTypeError;
+      }
+      if (objectvalue_.count(key) == 0) {
+        return errorKeyError;
+      }
+      return objectvalue_.at(key);
+    }
 
 } // namespace nerikiri
 
