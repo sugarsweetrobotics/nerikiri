@@ -101,6 +101,16 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
       return store->getContainerFactoryInfos();
     }
 
+    if (path == "/process/topics/") {
+      return store->getTopicInfos();
+    }
+    if (std::regex_match(path, match, std::regex("/process/topics/([^/]*)/"))) {
+      return store->getTopic({{"instanceName", Value(match[1])}})->invoke();
+    }
+    if (std::regex_match(path, match, std::regex("/process/topics/([^/]*)/connections/"))) {
+        return store->getTopic({{"instanceName", Value(match[1])}})->getConnectionInfos();
+    }
+
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
