@@ -1,21 +1,21 @@
 #pragma once
 
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/util/dllproxy.h"
+#include "nerikiri/dllproxy.h"
 
 #include "nerikiri/object.h"
 #include "nerikiri/value.h"
 
 #include "nerikiri/operation.h"
-#include "nerikiri/brokers/brokerapi.h"
-#include "nerikiri/brokers/broker.h"
-#include "nerikiri/brokers/corebroker.h"
+#include "nerikiri/brokerapi.h"
+#include "nerikiri/broker.h"
+#include "nerikiri/corebroker.h"
 
 #include "nerikiri/systemeditor.h"
-#include "nerikiri/containers/container.h"
-#include "nerikiri/containers/containerfactory.h"
-#include "nerikiri/containers/containeroperation.h"
-#include "nerikiri/containers/containeroperationfactory.h"
+#include "nerikiri/container.h"
+#include "nerikiri/containerfactory.h"
+#include "nerikiri/containeroperation.h"
+#include "nerikiri/containeroperationfactory.h"
 #include "nerikiri/ec.h"
 #include "nerikiri/process_store.h"
 #include "nerikiri/objectfactory.h"

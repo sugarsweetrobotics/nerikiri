@@ -5,9 +5,9 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 
-#include "nerikiri/datatype/json.h"
-#include "nerikiri/datatype/base64.h"
-#include "nerikiri/util/logger.h"
+#include "nerikiri/json.h"
+#include "nerikiri/base64.h"
+#include "nerikiri/logger.h"
 
 using namespace nerikiri::json;
 

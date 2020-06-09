@@ -22,6 +22,9 @@ find_package(Threads REQUIRED)
 set(EXAMPLE_LIBS nerikiri)
 set(EXTRA_MODULES one)
 
+set(EXAMPLES)
+
+
 set(OPERATIONS)
 function(add_operation NAME)
   add_library(${NAME} SHARED operations/${NAME}.cpp)
@@ -112,6 +115,7 @@ endif (BUILD_JOYCONTROLLER_EXAMPLE)
 
 if (BUILD_OPENCV_EXAMPLE)
 add_subdirectory(opencv)
+list(APPEND EXAMPLES opencv.nkproj)
 endif (BUILD_OPENCV_EXAMPLE)
 #find_package(OpenCV REQUIRED)
 #include_directories(${OpenCV_INCLUDE_DIRS})
@@ -153,3 +157,6 @@ if (FALSE)
 endif()
 
 set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
+
+
+INSTALL(FILES ${EXAMPLES} DESTINATION share/nerikiri/example/)

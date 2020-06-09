@@ -4,7 +4,7 @@
 #include <map>
 #include <thread>
 #include <future>
-#include "nerikiri/util/functional.h"
+#include "nerikiri/functional.h"
 #include "nerikiri/connection.h"
 
 namespace nerikiri {

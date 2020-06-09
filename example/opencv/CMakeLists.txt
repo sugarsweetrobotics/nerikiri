@@ -51,6 +51,8 @@ add_container(OpenCVCascadeClassifier_detectMultiScale)
 add_operation(cv_drawRects)
 add_operation(cv_flip)
 
-
-
 set(OPENCV_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
+
+INSTALL(TARGETS ${CONTAINERS} ${OPERATIONS} DESTINATION share/nerikiri/example/opencv)
+INSTALL(FILES opencv.nkshelf DESTINATION share/nerikiri/example/opencv)
+

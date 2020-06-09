@@ -1,6 +1,6 @@
 
-#include "nerikiri/util/logger.h"
-#include "nerikiri/brokers/brokerproxy.h"
+#include "nerikiri/logger.h"
+#include "nerikiri/brokerproxy.h"
 #include "nerikiri/objectfactory.h"
 
 

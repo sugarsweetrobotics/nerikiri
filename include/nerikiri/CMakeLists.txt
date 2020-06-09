@@ -1,45 +1,52 @@
-set(nk_headers 
+set(nk_public_headers
   nerikiri.h
-  util/argparse.h
-  util/dllproxy.h
-  util/os.h
-  util/functional.h
-  util/logger.h
-  util/naming.h
-  util/signal.h
+  functional.h
+  naming.h
+  object.h
+  value.h
+  brokerapi.h
+  connection.h
+  operationbase.h
+  operation.h
   operationfactory.h
-#  brokers/
+  container.h
+  containerfactory.h
+  containeroperation.h
+  containeroperationfactorybase.h
+  containeroperationfactory.h
+  argparse.h
+  dllproxy.h
+  os.h
+  logger.h
+  signal.h
   ec.h
   process.h
-  connection.h
   process_store.h
   connectiondictionary.h
   processconfigparser.h
-  containers/container.h
-  containers/containerfactory.h
-  object.h
   systemeditor.h
-  containers/containeroperation.h
   objectfactory.h
   timerec.h
-  containers/containeroperationfactory.h
   objectmapper.h
-  value.h
-  containers/containeroperationfactorybase.h
-  operation.h
-#  datatype/
-  operationbase.h
+  topic.h
+)
 
+
+set(nk_headers 
+  ${nk_publish_headers}
 )
 
 
 set(nk_hdrs)
+set(nk_public_hdrs)
 
 foreach(a IN ITEMS ${nk_headers})
   set(nk_hdrs ${nk_hdrs} ${PROJECT_SOURCE_DIR}/include/nerikiri/${a})
 endforeach()
 
+foreach(a IN ITEMS ${nk_public_headers})
+  set(nk_public_hdrs ${nk_public_hdrs} ${PROJECT_SOURCE_DIR}/include/nerikiri/${a})
+endforeach()
 
-message(${nk_hdrs})
-
+set(nk_public_hdrs_ ${nk_public_hdrs} PARENT_SCOPE)
 set(nk_hdrs_ ${nk_hdrs} PARENT_SCOPE)

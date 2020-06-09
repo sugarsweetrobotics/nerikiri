@@ -1,6 +1,6 @@
 
 #include "webi/webi.h"
-#include "nerikiri/util/logger.h"
+#include "nerikiri/logger.h"
 
 #include "nerikiri/systemeditor.h"
 

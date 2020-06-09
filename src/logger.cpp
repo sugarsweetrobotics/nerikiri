@@ -2,7 +2,7 @@
 #include <regex>
 #include <chrono>
 
-#include "nerikiri/util/logger.h"
+#include "nerikiri/logger.h"
 
 using namespace nerikiri;
 using namespace nerikiri::logger; 

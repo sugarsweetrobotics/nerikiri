@@ -2,7 +2,7 @@
 #include <csignal>
 #include <condition_variable>
 
-#include "nerikiri/util/signal.h"
+#include "nerikiri/signal.h"
 
 
 

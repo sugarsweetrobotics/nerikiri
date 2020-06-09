@@ -18,3 +18,9 @@ endfunction(add_app)
 
 
 add_app(nkd)
+
+
+set(APPS nkd)
+
+install(TARGETS ${APPS}
+)

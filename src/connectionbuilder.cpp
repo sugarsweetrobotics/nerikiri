@@ -1,5 +1,5 @@
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/util/logger.h"
+#include "nerikiri/logger.h"
 #include "nerikiri/connectionbuilder.h"
 #include "nerikiri/objectfactory.h"
 

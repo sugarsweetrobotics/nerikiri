@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "nerikiri/brokers/brokerapi.h"
+#include "nerikiri/brokerapi.h"
 #include "nerikiri/value.h"
 #include "nerikiri/process_store.h"
 

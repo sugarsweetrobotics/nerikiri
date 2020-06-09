@@ -1,5 +1,5 @@
-#include "nerikiri/util/logger.h"
-#include "nerikiri/util/dllproxy.h"
+#include "nerikiri/logger.h"
+#include "nerikiri/dllproxy.h"
 
 #include "nerikiri/moduleloader.h"
 

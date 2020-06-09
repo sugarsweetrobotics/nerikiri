@@ -1,13 +1,13 @@
 #include <sstream>
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/util/functional.h"
-#include "nerikiri/util/logger.h"
-#include "nerikiri/util/signal.h"
-#include "nerikiri/util/naming.h"
-#include "nerikiri/util/argparse.h"
-#include "nerikiri/util/os.h"
+#include "nerikiri/functional.h"
+#include "nerikiri/logger.h"
+#include "nerikiri/signal.h"
+#include "nerikiri/naming.h"
+#include "nerikiri/argparse.h"
+#include "nerikiri/os.h"
 
-#include "nerikiri/brokers/broker.h"
+#include "nerikiri/broker.h"
 #include "nerikiri/moduleloader.h"
 #include "nerikiri/objectfactory.h"
 #include "nerikiri/connectionbuilder.h"
@@ -22,49 +22,7 @@ using namespace nerikiri::logger;
 
 //std::shared_ptr<Broker> Broker::null = std::make_shared<Broker>();;
 
-std::string replaceAll(std::string s, const std::string& p, const std::string& m) {
-    auto pos = s.find(p);
-    int toLen = m.length();
  
-    if (p.empty()) {
-        return s;
-    }
- 
-    while ((pos = s.find(p, pos)) != std::string::npos) {
-        s.replace(pos, p.length(), m);
-        pos += toLen;
-    }
-    return s;
-}
-
-static std::string stringReplace(std::string s, const std::map<std::string, std::string>& dictionary) {
-  nerikiri::foreach<std::string, std::string>(dictionary, [&s](const std::string& k, const std::string& v) {
-    s = replaceAll(s, k, v);
-  });
-  return s;
-}
-
-static Value replaceAndCopy(const Value& value, const std::map<std::string, std::string>& dictionary) {
-  if (value.isObjectValue()) {
-    Value v({});
-    value.object_for_each([&v, &dictionary](auto& key, auto& cvalue) {
-      v[key] = replaceAndCopy(cvalue, dictionary);
-    });
-    return v;
-  }
-  if (value.isListValue()) {
-    Value v = Value::list();
-    value.list_for_each([&v, &dictionary](auto& cvalue) {
-      v.push_back(replaceAndCopy(cvalue, dictionary));
-    });
-    return v;
-  }
-  if (value.isStringValue()) {
-    return stringReplace(value.stringValue(), dictionary);
-  }
-
-  return value;
-}
 
 std::map<std::string, std::string> env_dictionary_default{
 
@@ -91,12 +49,6 @@ Value defaultProcessConfig({
   }},
 
   {"callbacks", Value::list()}
-  /*
-    { {"name", Value("on_started")},
-      {"target", Value::list()} },
-    { {"name", Value("on_stopped")}, 
-      {"target", Value::list()} }
-  }}*/
 });
 
 Process Process::null("");
@@ -104,7 +56,7 @@ Process Process::null("");
 Process::Process(const std::string& name) : Object({{"name", "Process"}, {"instanceName", name}}), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
-    fullpath = nerikiri::getCwd() + fullpath;
+    fullpath = nerikiri::getCwd() + "/" + fullpath;
   }
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
@@ -116,20 +68,28 @@ Process::Process(const std::string& name) : Object({{"name", "Process"}, {"insta
 
 Process::Process(const int argc, const char** argv) : Process(argv[0]) {
   ArgParser parser;
-  //parser.option<std::string>("-f", "--file", "Setting file path", false, "nk.json");
-
+  parser.option<std::string>("-ll", "--loglevel", "Log Level", false, "INFO");
   auto options = parser.parse(argc, argv);
+  auto loglevel_str = options.get<std::string>("loglevel");
+  logger::setLogLevel(loglevel_str);
+
   if (options.unknown_args.size() > 0) {
     parseConfigFile(options.unknown_args[0]);
   }
   _setupLogger();
-  logger::info("Process::Process(\"{}\")", argv[0]);
+  if (loglevel_str != "INFO") {
+    logger::setLogLevel(loglevel_str);
+  }
+
+  logger::info("Process::Process(argv[0]=\"{}\")", argv[0]);
+  logger::info("Process::Process() - ExecutablePath = {}", this->path_);
 }
 
 Process::Process(const std::string& name, const Value& config) : Process(name) {
   config_ = nerikiri::merge(config_, config);  
   _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
+  logger::info("Process::Process() - ExecutablePath = {}", path_);
 }
 
 
@@ -157,42 +117,18 @@ void Process::_setupLogger() {
 }
 
 void Process::parseConfigFile(const std::string& filepath) {
+  logger::trace("Process::parseConfigFile({})", filepath);
+  /// ここでプロジェクトを読み込む
+  config_ = merge(config_, ProcessConfigParser::parseProjectFile(filepath));
+
   /// ここで環境変数の辞書の設定
-  std::string fullpath = filepath;
-  if (fullpath.find("/") != 0) {
-    fullpath = nerikiri::getCwd();
+  if (filepath.find("/") != 0) {
+    env_dictionary_["${ProjectDirectory}"] = nerikiri::getCwd() + "/";
   } else {
-    fullpath = fullpath.substr(0, fullpath.rfind("/")+1);
+    env_dictionary_["${ProjectDirectory}"] = filepath.substr(0, filepath.rfind("/")+2);
   }
-  env_dictionary_["${ProjectDirectory}"] = fullpath;
-
-
-  std::FILE* fp = nullptr;
-
-  /// if path is starts with "/", fullpath.
-  if (filepath.at(1) == '/') {
-    fp = std::fopen(filepath.c_str(), "r");
-  }
-  /// else (relative path) 
-  else {
-    /// Current Directory
-    fp = std::fopen(filepath.c_str(), "r");
-    if (!fp) {
-      /// Directory same as executable
-      std::string fullPath = this->path_ + filepath;
-      fp = std::fopen(fullPath.c_str(), "r");
-    }
-  }
-
-  if (fp) {
-    config_ = merge(config_, ProcessConfigParser::parseConfig(fp, filepath));
-  } else {
-    logger::info("Process::parseConfigFile. Can not open file ({})", filepath);
-  }
-
   /// ここで環境変数の辞書の適用
   config_ = replaceAndCopy(config_, env_dictionary_);
-
   logger::info("Process::parseConfigFile -> {}", config_);
 }
 

@@ -6,7 +6,7 @@
 #include <functional>
 
 #include "nerikiri/value.h"
-#include "nerikiri/brokers/brokerapi.h"
+#include "nerikiri/brokerapi.h"
 
 
 namespace nerikiri {

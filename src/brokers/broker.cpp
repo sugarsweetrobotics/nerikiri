@@ -1,6 +1,6 @@
-#include "nerikiri/brokers/broker.h"
 
 #include "nerikiri/process.h"
+#include "nerikiri/broker.h"
 #include "nerikiri/operation.h"
 #include "nerikiri/connection.h"
 #include "nerikiri/objectmapper.h"

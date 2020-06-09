@@ -1,4 +1,4 @@
-#include "nerikiri/util/logger.h"
+#include "nerikiri/logger.h"
 #include "nerikiri/connectiondictionary.h"
 
 using namespace nerikiri;

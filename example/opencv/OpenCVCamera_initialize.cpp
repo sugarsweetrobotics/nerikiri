@@ -1,5 +1,5 @@
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/containers/containeroperationfactory.h"
+#include "nerikiri/containeroperationfactory.h"
 
 #include "OpenCVCamera.h"
 

@@ -3,8 +3,8 @@
 #include "webi/http_server.h"
 
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/util/logger.h"
-#include "nerikiri/datatype/json.h"
+#include "nerikiri/logger.h"
+#include "nerikiri/json.h"
 #include "./HTTPBroker.h"
 #include "nerikiri/process.h"
 #include "nerikiri/objectmapper.h"

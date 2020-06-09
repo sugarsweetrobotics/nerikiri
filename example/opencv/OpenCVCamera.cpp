@@ -1,5 +1,5 @@
 //#include "nerikiri/nerikiri.h"
-#include "nerikiri/containers/containerfactory.h"
+#include "nerikiri/containerfactory.h"
 #include "OpenCVCamera.h"
 
 using namespace nerikiri;

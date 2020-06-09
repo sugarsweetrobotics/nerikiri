@@ -3,10 +3,10 @@
 #include <string>
 #include <condition_variable>
 
-#include "nerikiri/brokers/broker.h"
-#include "nerikiri/brokers/brokerproxy.h"
+#include "nerikiri/broker.h"
+#include "nerikiri/brokerproxy.h"
 
-#include "nerikiri/brokers/brokerfactory.h"
+#include "nerikiri/brokerfactory.h"
 
 namespace nerikiri::http {
 

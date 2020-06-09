@@ -1,5 +1,5 @@
-#include "nerikiri/util/logger.h"
-#include "nerikiri/util/functional.h"
+#include "nerikiri/logger.h"
+#include "nerikiri/functional.h"
 #include "nerikiri/operation.h"
 
 using namespace nerikiri;
