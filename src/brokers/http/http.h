@@ -1,8 +1,6 @@
 
 #pragma once
 
-
-
 #include <string>
 #include <vector>
 #include <regex>
@@ -10,7 +8,6 @@
 
 namespace nerikiri {
   using Header = std::pair<std::string, std::string>;
-
 
   struct Request {
   public:

@@ -1,5 +1,5 @@
 {
-    "logger": { "logLevel": "TRACE" },
+    "logger": { "logLevel": "INFO" },
 
     "load_paths": ["./"],
 
@@ -63,7 +63,7 @@
     },
 
     "brokers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib"],
+        "load_paths": ["../brokers", "../build/lib"],
         "preload": ["HTTPBroker"],
         "precreate": [ 
           {
@@ -77,7 +77,7 @@
     },
 
     "ecs": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin", "../../build/lib"],
+        "load_paths": ["../ecs", "../build/lib"],
         "preload": ["TimerEC"],
         "precreate": [
           {

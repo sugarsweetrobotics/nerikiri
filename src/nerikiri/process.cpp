@@ -251,7 +251,11 @@ void Process::_preloadBrokers() {
   try {
     auto c = config_.at("brokers").at("preload");
     c.list_for_each([this](auto& value) {
-      ModuleLoader::loadBrokerFactory(store_, {"./", path_}, {{"name", value}});
+      Value v = {{"name", value}};
+      if (config_.at("operations").hasKey("load_paths")) {
+        v["load_paths"] = config_.at("brokers").at("load_paths");
+      }
+      ModuleLoader::loadBrokerFactory(store_, {"./", path_}, v);
     });
   } catch (ValueTypeError& ex) {
     logger::error("Process::_preloadBrokers in preload stage failed. ValueTypeError: {}", ex.what());

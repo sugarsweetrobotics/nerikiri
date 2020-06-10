@@ -6,7 +6,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/webi/include)
 message(${CMAKE_CURRENT_SOURCE_DIR})
 set(BROKERS)
 
-function(add_broker ARGS)
+function(add_broker NAME)
   cmake_parse_arguments(ADD_BROKER "" "" "SRCS;LIBS" ${ARGN})
   add_library(${NAME} SHARED ${ADD_BROKER_SRCS})
   message(${ADD_BROKER_SRCS})
@@ -27,3 +27,5 @@ endfunction(add_broker)
 add_broker(HTTPBroker
   SRCS httpbroker.cpp http_client_cpphttplib.cpp http_server_cpphttplib.cpp
 )
+
+install(TARGETS HTTPBroker DESTINATION share/nerikiri/brokers)

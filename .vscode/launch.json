@@ -136,7 +136,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/nkd",
             "args": ["${workspaceFolder}/example/opencv.nkproj"],
-            "cwd": "${workspaceFolder}/build/bin",
+            "cwd": "${workspaceFolder}/example/",
             "env": {
                 "OPENCV_AVFOUNDATION_SKIP_AUTH": "1"
             }

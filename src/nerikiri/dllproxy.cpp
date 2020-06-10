@@ -30,7 +30,7 @@ DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"name", n
     dll_name_ = path + name + ".dylib";
     if (!(handle_ = ::dlopen(dll_name_.c_str(), RTLD_LAZY))) {
 #endif
-    logger::debug("DLLProxy::DLLProxy failed. Con not open file({})", dll_name_);
+     logger::debug("DLLProxy::DLLProxy failed. Con not open file({})", dll_name_);
     }
 }
 

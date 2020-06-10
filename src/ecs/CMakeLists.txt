@@ -20,3 +20,5 @@ endfunction(add_ec)
 
 add_ec(TimerEC)
 add_ec(OneShotEC)
+
+INSTALL(TARGETS TimerEC OneShotEC DESTINATION share/nerikiri/ecs)
