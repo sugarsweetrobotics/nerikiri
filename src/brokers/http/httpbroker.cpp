@@ -1,69 +1,76 @@
 #include <cstdlib>
-#include "webi/http_client.h"
-#include "webi/http_server.h"
+#include <string>
+#include <condition_variable>
 
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/json.h"
-#include "./HTTPBroker.h"
+
 #include "nerikiri/process.h"
 #include "nerikiri/objectmapper.h"
 
-using namespace nerikiri;
-using namespace nerikiri::http;
-using namespace nerikiri::logger;
 
+
+#include "nerikiri/broker.h"
+#include "nerikiri/brokerproxy.h"
+#include "nerikiri/brokerfactory.h"
+
+#include "nerikiri/json.h"
+#include "http_client.h"
+#include "http_client.h"
+#include "http_server.h"
+
+using namespace nerikiri;
 
 extern "C" {
     NK_OPERATION  void* createHTTPBroker();
 };
 
-
-
-class HTTPBrokerImpl : public HTTPBroker {
+/**
+ * 
+ * 
+ */
+class HTTPBroker : public Broker {
 private:
-  webi::HttpServer_ptr server_;
+  nerikiri::HttpServer_ptr server_;
   std::condition_variable cond_;
   std::mutex mutex_;
   std::string address_;
   int32_t port_;
 public:
 
-  HTTPBrokerImpl(const std::string& address, const int32_t port, const std::string& base_dir="."): HTTPBroker(), server_(webi::server()), address_(address), port_(port) {
+  HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir="."): Broker({{"name", Value{"HTTPBroker"}}}), server_(nerikiri::server()), address_(address), port_(port) {
     logger::trace("HTTPBroker::HTTPBroker()");
     server_->baseDirectory(base_dir);
   }
 
-  virtual ~HTTPBrokerImpl() {
+  virtual ~HTTPBroker() {
     logger::trace("HTTPBroker::~HTTPBroker()");
   }
 
-  webi::Response response(std::function<Value(void)> func) {
+  nerikiri::Response response(std::function<Value(void)> func) {
     try {
-      return webi::Response(200, nerikiri::json::toJSONString(func()), "application/json");
+      return nerikiri::Response(200, nerikiri::json::toJSONString(func()), "application/json");
     } catch (nerikiri::json::JSONParseError& e) {
       logger::error("JSON Parse Error in HTTPBroker::response(): \"{}\"", e.what());
-      return webi::Response(400, "Bad Request", "text/html");
+      return nerikiri::Response(400, "Bad Request", "text/html");
     } catch (nerikiri::json::JSONConstructError& e) {
       logger::error("JSON Construct Error in HTTPBroker::response(): \"{}\"", e.what());
-      return webi::Response(400, e.what(), "text/html");
+      return nerikiri::Response(400, e.what(), "text/html");
     } catch (nerikiri::ValueTypeError &e) {
       logger::error("ValueTypeError in HTTPBroker::response(): \"{}\"", e.what());
-      return webi::Response(400, e.what(), "text/html");
+      return nerikiri::Response(400, e.what(), "text/html");
     } catch (std::exception &e) {
       logger::error("Exception in HTTPBroker::response(): \"{}\"", e.what());
-      return webi::Response(400, e.what(), "text/html");
+      return nerikiri::Response(400, e.what(), "text/html");
     }
   }
 
   bool run(Process* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
-
-    //server_->baseDirectory(".");
-    
     logger::trace("HTTPBroker::run()");
 
-    server_->response("/broker/info/", "GET", "text/html", [this](const webi::Request& req) -> webi::Response {
+    server_->response("/broker/info/", "GET", "text/html", [this](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, &req](){
         auto _info = info();
         for(auto h : req.headers) {
@@ -86,32 +93,28 @@ public:
         });
     });
 
-    server_->response("/process/.*", "GET", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+    server_->response("/process/.*", "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
       return response([process, &req](){
-        //return process->readResource(req.matches[0]);
         return process->coreBroker()->readResource(req.matches[0]);
       });
     });
 
-    server_->response("/.*", "POST", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+    server_->response("/.*", "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
       return response([this, process, &req](){
-        //return process->createResource(req.matches[0], nerikiri::json::toValue(req.body));
         return process->coreBroker()->createResource(req.matches[0], nerikiri::json::toValue(req.body));
       });
     });
 
-    server_->response("/.*", "DELETE", "text/html", [this, process](const webi::Request& req) -> webi::Response {
+    server_->response("/.*", "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, process, &req](){
-        //return process->deleteResource(req.matches[0]);
         return process->coreBroker()->deleteResource(req.matches[0]);
       });
     });
 
-    server_->response("/.*", "PUT", "text/html", [this, &process](const webi::Request& req) -> webi::Response {
+    server_->response("/.*", "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, &process, &req](){
-        //return process->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); 
         return process->coreBroker()->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); 
       });
     });
@@ -131,26 +134,91 @@ public:
 
 };
 
-std::shared_ptr<nerikiri::Broker> nerikiri::http::broker(const std::string& address, const int32_t port) {
-  return std::shared_ptr<nerikiri::Broker>(new HTTPBrokerImpl(address, port));
-}
-
-
-std::shared_ptr<nerikiri::Broker> nerikiri::http::HTTPBrokerFactory::create(const Value& value) {
-  auto address = value.at("host").stringValue();
-  auto port = value.at("port").intValue();
-  std::string base_dir = ".";
-  if (value.hasKey("baseDir")) {
-    base_dir = value.at("baseDir").stringValue();
+/**
+ * 
+ * 
+ */
+class HTTPBrokerProxyImpl : public AbstractBrokerProxy {
+private:
+  nerikiri::HttpClient_ptr client_;
+public:
+  HTTPBrokerProxyImpl(const std::string& addr, const int64_t port) : AbstractBrokerProxy({ {"host", addr}, {"port", Value(port)} }), client_(nerikiri::client(addr, port)) {
+    client_->setTimeout(0.5);
   }
-  return std::shared_ptr<nerikiri::Broker> (new HTTPBrokerImpl(address, port, base_dir));
-}
 
-std::shared_ptr<nerikiri::BrokerAPI> nerikiri::http::HTTPBrokerFactory::createProxy(const Value& value) {
-  auto address = value.at("host").stringValue();
-  auto port = value.at("port").intValue();
-  return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
-}
+  virtual ~HTTPBrokerProxyImpl() {}
+
+private:
+  Value toValue(nerikiri::Response&& res) const {  
+    if (res.status != 200) {
+      logger::error("HTTBrokerProxyImpl: request failed. status = {}", res.status);
+      logger::error("body - {}", res.body);
+      return nerikiri::Value::error(res.body);
+    }
+    try {
+      return nerikiri::json::toValue(res.body);
+    } catch (nerikiri::json::JSONParseError& e) {
+      logger::error("JSON Parse Error: \"{}\"", e.what());
+      return nerikiri::Value::error(e.what());
+    } catch (nerikiri::json::JSONConstructError& e) {
+      logger::error("JSON Construct Error: \"{}\"", e.what());
+      return nerikiri::Value::error(e.what());
+    }
+  }
+public:
+
+
+    virtual Value createResource(const std::string& path, const Value& value) override {
+      logger::debug("HTTPBrokerProxyImpl::createResource({})", path);
+      return toValue(client_->request(path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
+    }
+
+    virtual Value readResource(const std::string& path) const override {
+      logger::debug("HTTPBrokerProxyImpl::readResource({})", path);
+      return toValue(client_->request(path, "GET"));
+    }
+
+    virtual Value updateResource(const std::string& path, const Value& value) override {
+      logger::debug("HTTPBrokerProxyImpl::updateResource({})", path);
+      return toValue(client_->request(path, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+    }
+
+    virtual Value deleteResource(const std::string& path) override {
+      logger::debug("HTTPBrokerProxyImpl::deleteResource({})", path);
+      return toValue(client_->request(path, "DELETE"));
+    }
+};
+
+
+/**
+ * 
+ * 
+ */
+class HTTPBrokerFactory : public nerikiri::BrokerFactory {
+public:
+
+  HTTPBrokerFactory(): BrokerFactory({{"name", "HTTPBroker"}}) {}
+  virtual ~HTTPBrokerFactory() {}
+
+public:
+  virtual std::shared_ptr<Broker> create(const Value& value)  {
+    auto address = value.at("host").stringValue();
+    auto port = value.at("port").intValue();
+    std::string base_dir = ".";
+    if (value.hasKey("baseDir")) {
+      base_dir = value.at("baseDir").stringValue();
+    }
+    return std::shared_ptr<nerikiri::Broker> (new HTTPBroker(address, port, base_dir));
+  }
+  
+  virtual std::shared_ptr<BrokerAPI> createProxy(const Value& value) {
+    auto address = value.at("host").stringValue();
+    auto port = value.at("port").intValue();
+    return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
+  }
+
+};
+
 
 void* createHTTPBroker() {
     return new HTTPBrokerFactory();

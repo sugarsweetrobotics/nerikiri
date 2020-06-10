@@ -1,16 +1,16 @@
 
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/cpp-httplib)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/rapidjson/include)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/spdlog/include)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/webi/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/webi/include)
 
-
+message(${CMAKE_CURRENT_SOURCE_DIR})
 set(BROKERS)
-function(add_broker DIR NAME)
-  add_library(${NAME} SHARED ${DIR}/${NAME}.cpp)
-  target_link_libraries(${NAME} nerikiri ${EXAMPLE_LIBS})
+
+function(add_broker ARGS)
+  cmake_parse_arguments(ADD_BROKER "" "" "SRCS;LIBS" ${ARGN})
+  add_library(${NAME} SHARED ${ADD_BROKER_SRCS})
+  message(${ADD_BROKER_SRCS})
+  target_link_libraries(${NAME} nerikiri ${ADD_BROKER_LIBS})
   set_target_properties(${NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -24,4 +24,6 @@ function(add_broker DIR NAME)
 endfunction(add_broker)
 
 
-add_broker(http HTTPBroker)
+add_broker(HTTPBroker
+  SRCS httpbroker.cpp http_client_cpphttplib.cpp http_server_cpphttplib.cpp
+)

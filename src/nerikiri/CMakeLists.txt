@@ -25,7 +25,7 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/cpp-httplib)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/rapidjson/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/spdlog/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/webi/include)
-set(NK_BASE_LIBS webi)
+set(NK_BASE_LIBS )
 
 add_library(nerikiri SHARED ${nk_srcs} ${nk_headers})
 target_link_libraries(nerikiri ${NK_BASE_LIBS})
