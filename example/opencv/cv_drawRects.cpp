@@ -6,6 +6,10 @@ using namespace nerikiri;
 
 extern "C" {
 
+	NK_OPERATION void* cv_drawRects();
+
+}
+
 
     NK_OPERATION void* cv_drawRects() {
         return operationFactory(
@@ -45,4 +49,3 @@ extern "C" {
         });
     }
 
-}

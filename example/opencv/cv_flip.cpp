@@ -5,6 +5,9 @@
 using namespace nerikiri;
 
 extern "C" {
+	NK_OPERATION  void* cv_flip();
+}
+
 
     NK_OPERATION  void* cv_flip() {
         return operationFactory(
@@ -42,4 +45,3 @@ extern "C" {
         });
     }
 
-}

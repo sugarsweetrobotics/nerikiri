@@ -7,6 +7,11 @@ using namespace nerikiri;
 
 extern "C" {
 
+	NK_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale();
+
+}
+
+
     NK_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
@@ -51,4 +56,3 @@ extern "C" {
         });
     }
 
-}

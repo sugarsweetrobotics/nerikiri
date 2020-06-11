@@ -3,12 +3,12 @@
     "load_paths": ["./"],
 
     "operations": {
-        "load_paths": ["${ShelfDirectory}"],
+        "load_paths": ["${ShelfDirectory}", "../build/lib/Debug"],
         "preload": ["cv_flip", "cv_drawRects"]
     },
 
     "containers": {
-        "load_paths": ["${ShelfDirectory}"],
+      "load_paths": [ "${ShelfDirectory}", "../build/lib/Debug}" ],
         "preload": {
             "OpenCVCamera": ["initialize", "capture"],
             "OpenCVCascadeClassifier": ["initialize", "detectMultiScale"]

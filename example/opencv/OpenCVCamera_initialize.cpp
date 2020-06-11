@@ -6,7 +6,9 @@
 using namespace nerikiri;
 
 extern "C" {
+	NK_OPERATION  void* OpenCVCamera_initialize();
 
+}
     NK_OPERATION  void* OpenCVCamera_initialize() {
         return containerOperationFactory<OpenCVCamera>(
         {
@@ -27,4 +29,3 @@ extern "C" {
         });
     }
 
-}

@@ -7,6 +7,10 @@ using namespace nerikiri;
 
 extern "C" {
 
+	NK_OPERATION  void* OpenCVCascadeClassifier_initialize();
+}
+
+
     NK_OPERATION  void* OpenCVCascadeClassifier_initialize() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
@@ -23,4 +27,3 @@ extern "C" {
         });
     }
 
-}
