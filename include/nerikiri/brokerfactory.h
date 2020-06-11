@@ -23,7 +23,7 @@ namespace nerikiri {
     
   public:
     virtual std::shared_ptr<Broker> create(const Value& param) {
-        return Broker::null;
+        return std::shared_ptr<Broker>(new Broker());
     }
 
     virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param) {

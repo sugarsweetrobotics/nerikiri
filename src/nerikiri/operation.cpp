@@ -74,6 +74,7 @@ Value OperationBase::collectValues() const {
 }
 */
 
+#if (0)
 Value OperationBase::execute() {
     if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
     logger::trace(("OperationBase("+this->info().at("instanceName").stringValue()+") invoking").c_str());
@@ -84,7 +85,7 @@ Value OperationBase::execute() {
     }
     return v;
 }
-
+#endif
 
 Value OperationBase::getConnectionInfos() const {
     return {

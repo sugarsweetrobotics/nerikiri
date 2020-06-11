@@ -7,9 +7,6 @@
 [submodule "thirdparty/Catch2"]
 	path = thirdparty/Catch2
 	url = https://github.com/catchorg/Catch2
-[submodule "thirdparty/libaqua2"]
-	path = thirdparty/libaqua2
-	url = https://github.com/sugarsweetrobotics/libaqua2
 [submodule "thirdpary/webi"]
 	path = thirdparty/webi
 	url = https://github.com/sugarsweetrobotics/webi.git
@@ -19,3 +16,6 @@
 [submodule "src/brokers/http/cpp-httplib"]
 	path = src/brokers/http/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "thirdparty/libaqua2"]
+	path = thirdparty/libaqua2
+	url = https://github.com/sugarsweetrobotics/libaqua2
