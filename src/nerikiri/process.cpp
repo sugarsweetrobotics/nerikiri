@@ -125,7 +125,7 @@ void Process::parseConfigFile(const std::string& filepath) {
   if (filepath.find("/") != 0) {
     env_dictionary_["${ProjectDirectory}"] = nerikiri::getCwd() + "/";
   } else {
-    env_dictionary_["${ProjectDirectory}"] = filepath.substr(0, filepath.rfind("/")+2);
+    env_dictionary_["${ProjectDirectory}"] = filepath.substr(0, filepath.rfind("/")+1);
   }
   /// ここで環境変数の辞書の適用
   config_ = replaceAndCopy(config_, env_dictionary_);
@@ -161,38 +161,38 @@ void Process::_preloadOperations() {
 
 void Process::_preloadContainers() {
   try {
-  auto c = config_.at("containers").at("preload");
-  c.object_for_each([this](auto& key, auto& value) {
-    Value v = {{"name", key}};
-    if (config_.at("containers").hasKey("load_paths")) {
-      v["load_paths"] = config_.at("containers").at("load_paths");
-    }
-    ModuleLoader::loadContainerFactory(store_, {"./", path_}, v);
-    if (v.isError()) {
-      logger::error("Process::_preloadContainers({}) failed. {}", key, v.getErrorMessage());
-    }
-    value.list_for_each([this, &key](auto& v) {
-      Value vv = {{"name", v}};
+    auto c = config_.at("containers").at("preload");
+    c.object_for_each([this](auto& key, auto& value) {
+      Value v = {{"name", key}};
       if (config_.at("containers").hasKey("load_paths")) {
-        vv["load_paths"] = config_.at("containers").at("load_paths");
+        v["load_paths"] = config_.at("containers").at("load_paths");
       }
-      vv["container_name"] = key;
-      ModuleLoader::loadContainerOperationFactory(store_, {"./", path_}, vv);
+      ModuleLoader::loadContainerFactory(store_, {"./", path_}, v);
+      if (v.isError()) {
+        logger::error("Process::_preloadContainers({}) failed. {}", key, v.getErrorMessage());
+      }
+      value.list_for_each([this, &key](auto& v) {
+        Value vv = {{"name", v}};
+        if (config_.at("containers").hasKey("load_paths")) {
+          vv["load_paths"] = config_.at("containers").at("load_paths");
+        }
+        vv["container_name"] = key;
+        ModuleLoader::loadContainerOperationFactory(store_, {"./", path_}, vv);
+      });
     });
-  });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadContainers(). ValueTypeException:{}", e.what());
   }
 
   try {
-  auto c = config_.at("containers").at("precreate");
-  c.list_for_each([this](auto& value) {
-    //auto cinfo = createContainer(value);
-    auto cinfo = ObjectFactory::createContainer(store_, value);
-    if (cinfo.isError()) {
-      logger::error("Porcess::_preloadContainers({}) failed. createContainer error: ({})", value, str(cinfo));
-    }
-  });
+    auto c = config_.at("containers").at("precreate");
+    c.list_for_each([this](auto& value) {
+      //auto cinfo = createContainer(value);
+      auto cinfo = ObjectFactory::createContainer(store_, value);
+      if (cinfo.isError()) {
+        logger::error("Porcess::_preloadContainers({}) failed. createContainer error: ({})", value, str(cinfo));
+      }
+    });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadContainers(). ValueTypeException:{}", e.what());
   }
@@ -238,10 +238,10 @@ void Process::_preloadExecutionContexts() {
 
 void Process::_preStartExecutionContexts() {
   try {
-  auto c = config_.at("ecs").at("start");
-  c.list_for_each([this](auto& value) {
-    this->store()->getExecutionContext({{"instanceName", value}})->start();
-  });
+    auto c = config_.at("ecs").at("start");
+    c.list_for_each([this](auto& value) {
+      this->store()->getExecutionContext({{"instanceName", value}})->start();
+    });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
   }
@@ -252,7 +252,7 @@ void Process::_preloadBrokers() {
     auto c = config_.at("brokers").at("preload");
     c.list_for_each([this](auto& value) {
       Value v = {{"name", value}};
-      if (config_.at("operations").hasKey("load_paths")) {
+      if (config_.at("brokers").hasKey("load_paths")) {
         v["load_paths"] = config_.at("brokers").at("load_paths");
       }
       ModuleLoader::loadBrokerFactory(store_, {"./", path_}, v);

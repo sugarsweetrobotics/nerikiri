@@ -71,7 +71,7 @@
             "instanceName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080,
-            "baseDir": "${ProjectDirectory}"
+            "baseDir": "${ProjectDirectory}/../systemeditor"
           }
         ]
     },
