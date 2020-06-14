@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <string>
 #include <condition_variable>
+#include <fstream>
+#include <map>
 
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
@@ -33,15 +35,24 @@ extern "C" {
 class HTTPBroker : public Broker {
 private:
   nerikiri::HttpServer_ptr server_;
-  std::condition_variable cond_;
-  std::mutex mutex_;
   std::string address_;
   int32_t port_;
+  std::string baseDirectory_;
+  std::condition_variable cond_;
+  std::mutex mutex_;
+  std::map<std::string, std::string> route_;
 public:
 
-  HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir="."): Broker({{"name", Value{"HTTPBroker"}}}), server_(nerikiri::server()), address_(address), port_(port) {
+  HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")): Broker({{"name", Value{"HTTPBroker"}}}),
+    server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir)
+  {
     logger::trace("HTTPBroker::HTTPBroker()");
-    server_->baseDirectory(base_dir);
+
+    if (!value.isError()) {
+      value.object_for_each([this](auto k, auto v) {
+        route_[k] = v.stringValue();
+      });
+    }
   }
 
   virtual ~HTTPBroker() {
@@ -69,6 +80,8 @@ public:
   bool run(Process* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
     logger::trace("HTTPBroker::run()");
+
+    server_->baseDirectory(baseDirectory_);
 
     server_->response("/broker/info/", "GET", "text/html", [this](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, &req](){
@@ -100,24 +113,33 @@ public:
       });
     });
 
-    server_->response("/.*", "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response("/process/.*", "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
       return response([this, process, &req](){
         return process->coreBroker()->createResource(req.matches[0], nerikiri::json::toValue(req.body));
       });
     });
 
-    server_->response("/.*", "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response("/process/.*", "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, process, &req](){
         return process->coreBroker()->deleteResource(req.matches[0]);
       });
     });
 
-    server_->response("/.*", "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response("/process/.*", "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, &process, &req](){
         return process->coreBroker()->updateResource(req.matches[0], nerikiri::json::toValue(req.body)); 
       });
     });
+
+
+      for(auto [k, v] : route_) {
+        const std::string path = v;
+        server_->response(k, "GET", "text/html", [this, path, &process](const nerikiri::Request& req) -> nerikiri::Response {
+          const std::string relpath = req.matches[1];
+          return nerikiri::Response(path + relpath);
+        });
+      }
 
     Broker::run(process);
     server_->runBackground(port_);
@@ -208,7 +230,7 @@ public:
     if (value.hasKey("baseDir")) {
       base_dir = value.at("baseDir").stringValue();
     }
-    return std::shared_ptr<nerikiri::Broker> (new HTTPBroker(address, port, base_dir));
+    return std::shared_ptr<nerikiri::Broker> (new HTTPBroker(address, port, base_dir, value.at("route")));
   }
   
   virtual std::shared_ptr<BrokerAPI> createProxy(const Value& value) {

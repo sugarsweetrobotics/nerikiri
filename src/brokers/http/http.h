@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 #include <regex>
 
 
@@ -58,9 +59,27 @@ namespace nerikiri {
     std::vector<Header> headers;
     std::string body;
     std::string contentType;
+    std::ifstream file_;
+    bool is_file_;
     Response() : version("1.0"), status(0) {}
     Response(int32_t s) : version("1.0"), status(s), body("") {}
     Response(int32_t s, std::string &&body, std::string&&  contentType) : version("1.0"), status(s), body(body), contentType(contentType) {}
+    Response(const std::string& filepath) : version("1.0"), file_(filepath, std::ios_base::binary) {
+      if (file_.is_open()) {
+        status = 200;
+        contentType = "text/html";
+        is_file_ = false;
+        file_.seekg(0, std::ios_base::end);
+        auto size = file_.tellg();
+        file_.seekg(0);
+        body.resize(size);
+        file_.read(&body[0], size);
+      } else {
+        status = 404;
+        contentType = "text/html";
+        is_file_ = false;
+      }      
+    }
     Response(int32_t s, const std::string &body, const std::string& contentType) : version("1.0"), status(s), body(body), contentType(contentType) {}
     Response(Response &&r) : version(r.version), status(r.status), body(r.body) {}
     Response& operator=(const Response&& r) {

@@ -105,6 +105,17 @@ namespace nerikiri {
         }
 
         Value bind(const Value& opInfo, std::shared_ptr<BrokerAPI> br) {
+            /// 存在確認
+            if (opInfo.at("instanceName").stringValue().find(":") >= 0) {
+                auto instanceName = opInfo.at("instanceName").stringValue();
+                auto containerName = instanceName.substr(0, instanceName.find(":"));
+                auto operationName = instanceName.substr(instanceName.find(":")+1);
+                auto i = br->getContainerOperationInfo({{"instanceName", containerName}}, {{"instanceName", operationName}});
+                if (i.at("instanceName").stringValue() == "null") return i;
+            } else {
+                auto i = br->getOperationInfo(opInfo);
+                if (i.at("instanceName").stringValue() == "null") return i;
+            }
             operationBrokers_.push_back({opInfo, br});
             return br->info();
         }

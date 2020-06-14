@@ -127,8 +127,8 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/nkd",
-            "args": ["${workspaceFolder}/example/turtle_sim.nkproj"],
-            "cwd": "${workspaceFolder}/build/bin"
+            "args": ["${workspaceFolder}/example/turtlesim.nkproj"],
+            "cwd": "${workspaceFolder}/example"
         },
         {
             "name": "Debug opencv",

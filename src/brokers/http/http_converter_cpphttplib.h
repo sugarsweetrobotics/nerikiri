@@ -24,7 +24,14 @@ namespace nerikiri {
   inline void apply(httplib::Response &response, nerikiri::Response &&r) {
     response.status = r.status;
     response.version = r.version;
-    response.set_content(r.body, r.contentType.c_str());
+    if(r.is_file_) {
+      auto size = r.file_.tellg();
+
+      response.body.resize(static_cast<size_t>(size));
+      r.file_.read(&response.body[0], size);
+    } else {
+      response.set_content(r.body, r.contentType.c_str());
+    }
   }
 
   inline nerikiri::Response convert(std::shared_ptr<httplib::Response> response) {

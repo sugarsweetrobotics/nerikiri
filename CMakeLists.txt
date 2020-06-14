@@ -7,6 +7,8 @@ project(nerikiri LANGUAGES CXX C VERSION 0.0.1)
 
 enable_testing()
 option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" ON)
+option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" ON)
+option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" ON)
 
 set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)
@@ -25,7 +27,6 @@ INSTALL(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib 
         PUBLIC_HEADER DESTINATION include/nerikiri/)
-
 
 
 set(CPACK_GENERATOR WIX)

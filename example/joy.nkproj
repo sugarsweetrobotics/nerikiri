@@ -3,42 +3,18 @@
 
     "load_paths": ["./"],
 
+    "shelves": [
+        {"path": "turtlesim/turtlesim.nkshelf"}
+    ],
+
     "operations": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug",  "../../../build/lib", "../../build/lib", "../build/lib"],
-        "preload": ["joy2turtlevel"],
         "precreate": [
-            {
-                "name": "joy2turtlevel",
-                "instanceName": "joy2turtlevel0.ope"
-            }
+            
         ]
     },
 
     "containers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin"],
-        "preload": {
-            "TurtleSim": ["getPose", "kill", "setVelocity", "spawn", "update"],
-            "JoyController": ["initialize", "update", "get"]
-        },
         "precreate": [
-            { 
-                "name": "JoyController",
-                "instanceName": "JoyController0.ctn",
-                "operations": [
-                    {
-                        "name": "initialize",
-                        "instanceName": "initialize0.ope"
-                    },
-                    {
-                        "name": "update",
-                        "instanceName": "update0.ope"
-                    },
-                    {
-                        "name": "get",
-                        "instanceName": "get0.ope"
-                    }
-                ]
-            },
             {
                 "name": "TurtleSim",
                 "instanceName": "TurtleSim0.ctn",

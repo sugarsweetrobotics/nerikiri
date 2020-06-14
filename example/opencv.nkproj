@@ -63,8 +63,6 @@
     },
 
     "brokers": {
-        "load_paths": ["../brokers", "../build/lib"],
-        "preload": ["HTTPBroker"],
         "precreate": [ 
           {
             "name": "HTTPBroker",
