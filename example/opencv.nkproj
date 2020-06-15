@@ -4,7 +4,8 @@
     "load_paths": ["./"],
 
     "shelves": [
-        {"path": "opencv/opencv.nkshelf"}
+        {"path": "opencv/opencv.nkshelf"},
+        {"path": "brokers.nkshelf"}
     ],
 
     "operations": {
