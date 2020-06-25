@@ -118,6 +118,35 @@ Value CoreBroker::createContainer(const Value& value) {
 }
 
 
+Value CoreBroker::createContainerOperation(const Value& containerInfo, const Value& value) {
+    logger::trace("Broker::createContainerOperation({})", value);
+    return process_->store()->getContainer(containerInfo)->createContainerOperation(value);
+}
+
+Value CoreBroker::deleteOperation(const Value& value) {
+    logger::trace("Broker::deleteOperation({})", value);
+    return ObjectFactory::deleteOperation(*process_->store(), value);
+}
+
+Value CoreBroker::deleteContainer(const Value& value) {
+    logger::trace("Broker::deleteContainer({})", value);
+    return ObjectFactory::deleteContainer(*process_->store(), value);
+    
+}
+
+Value CoreBroker::deleteContainerOperation(const Value& value) { 
+    logger::trace("Broker::deleteContainerOperation({})", value);
+    
+}
+Value CoreBroker::createExecutionContext(const Value& value) {
+    logger::trace("Broker::createExecutionContext({})", value);
+    
+}
+Value CoreBroker::deleteExecutionContext(const Value& value) {
+    logger::trace("Broker::deleteExecutionContext({})", value);
+    
+}
+
 Value CoreBroker::createResource(const std::string& path, const Value& value) {
     //return process_->createResource(path, value);
     return ObjectMapper::createResource(process_->store(), path, value);

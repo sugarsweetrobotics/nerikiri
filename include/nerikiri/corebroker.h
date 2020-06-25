@@ -74,6 +74,18 @@ public:
 
     virtual Value deleteResource(const std::string& path) override;
 
+    virtual Value createContainerOperation(const Value& containerInfo, const Value& value) override;
+
+    virtual Value deleteOperation(const Value& value) override;
+
+    virtual Value deleteContainer(const Value& value) override;
+
+    virtual Value deleteContainerOperation(const Value& value) override;
+
+    virtual Value createExecutionContext(const Value& value) override;
+
+    virtual Value deleteExecutionContext(const Value& value) override;
+
 };
 
 
