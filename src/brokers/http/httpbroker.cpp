@@ -219,7 +219,7 @@ public:
 class HTTPBrokerFactory : public nerikiri::BrokerFactory {
 public:
 
-  HTTPBrokerFactory(): BrokerFactory({{"name", "HTTPBroker"}}) {}
+  HTTPBrokerFactory(): BrokerFactory({{"typeName", "HTTPBroker"}}) {}
   virtual ~HTTPBrokerFactory() {}
 
 public:
