@@ -80,7 +80,7 @@ public:
 
     virtual Value deleteContainer(const Value& value) override;
 
-    virtual Value deleteContainerOperation(const Value& value) override;
+    virtual Value deleteContainerOperation(const Value& containerInfo, const Value& value) override;
 
     virtual Value createExecutionContext(const Value& value) override;
 

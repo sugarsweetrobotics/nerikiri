@@ -91,5 +91,10 @@ namespace nerikiri {
     Value addTopic(std::shared_ptr<Topic> topic);
 
     std::shared_ptr<OperationBase> getOperationOrTopic(const Value& info);
+
+
+    Value deleteOperation(const Value& info);
+    Value deleteContainer(const Value& info);
+    Value deleteExecutionContext(const Value& info);
   };
 }

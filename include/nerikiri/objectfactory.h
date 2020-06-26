@@ -26,6 +26,16 @@ namespace nerikiri {
         static Value createExecutionContext(ProcessStore& store, const Value& value);
 
         static Value createTopic(ProcessStore& store, const Value& topicInfo);
+
+    public:
+
+
+        static Value deleteOperation(ProcessStore& store, const Value& info);
+
+        static Value deleteContainer(ProcessStore& store, const Value& ci);
+        
+        static Value deleteExecutionContext(ProcessStore& store, const Value& value);
+
     };
     
 }

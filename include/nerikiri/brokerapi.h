@@ -80,7 +80,7 @@ namespace nerikiri {
 
     virtual Value deleteContainer(const Value& value) = 0;
 
-    virtual Value deleteContainerOperation(const Value& value) = 0;
+    virtual Value deleteContainerOperation(const Value& containerInfo, const Value& value) = 0;
 
     virtual Value createExecutionContext(const Value& value) = 0;
 
@@ -197,7 +197,7 @@ class NullBroker : public BrokerAPI {
       return Value::error("BrokerAPI::createContainer({}) failed. Broker is null.");
     }
 
-    virtual Value createContainerOperation(const Value& value) override {
+    virtual Value createContainerOperation(const Value& containerInfo, const Value& value) override {
       return Value::error("BrokerAPI::createContainerOperation({}) failed. Broker is null.");
     }
 

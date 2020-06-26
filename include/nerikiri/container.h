@@ -44,6 +44,7 @@ namespace nerikiri {
         virtual ~ContainerBase() {}
 
         Value addOperation(std::shared_ptr<ContainerOperationBase> operation);
+        Value deleteOperation(const Value& opInfo);
 
         std::vector<Value> getOperationInfos() const;
 
@@ -57,6 +58,7 @@ namespace nerikiri {
         std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info);
 
         Value createContainerOperation(const Value& info);
+        Value deleteContainerOperation(const Value& info);
 
     };
 
@@ -144,6 +146,15 @@ namespace nerikiri {
         return addOperation(f->create(info));
     }
 
+     inline Value ContainerBase::deleteContainerOperation(const Value& info) {
+        auto f = getOperation(info);
+        if (!f) {
+            return Value::error("ContainerBase::deleteContainerOperation failed. Can not find appropreate operation factory.");
+        }
+        return deleteOperation(info);
+    }
+
+
     inline Value ContainerBase::addOperation(std::shared_ptr<ContainerOperationBase> operation) { 
         auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("name").stringValue(), ".ope");
         operation->setInstanceName(name);
@@ -153,6 +164,24 @@ namespace nerikiri {
         operation->setContainer(this);
         operations_.push_back(operation); 
         return operation->info();;
+    }
+
+    inline Value ContainerBase::deleteOperation(const Value& opInfo) { 
+        auto it = operations_.begin();
+        for(;it != operations_.end();++it) {
+            auto op = *it;
+            auto instanceName = opInfo.at("instanceName").stringValue();
+            auto pos = instanceName.find(":");
+            if (pos >= 0) {
+                instanceName = instanceName.substr(pos+1);
+            }
+            if (op->info().at("instanceName").stringValue() == instanceName) {
+                // match operation
+                it = operations_.erase(it);
+                return opInfo;
+            }
+        }
+        return Value::error("ContainerBase::deleteOperation() failed. Operation not found.");        
     }
 
     inline std::shared_ptr<ContainerOperationFactoryBase> ContainerBase::getContainerOperationFactory(const Value& info) {

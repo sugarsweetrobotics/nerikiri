@@ -323,3 +323,19 @@ Value ProcessStore::addTopic(std::shared_ptr<Topic> topic) {
   }
   return topic->info();
 }
+
+
+
+Value ProcessStore::deleteOperation(const Value& info) {
+  
+}
+
+Value ProcessStore::deleteContainer(const Value& info) {
+
+}
+
+Value ProcessStore::deleteExecutionContext(const Value& info) {
+
+}
+
+

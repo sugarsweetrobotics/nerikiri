@@ -54,3 +54,17 @@ Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   return store.addTopic(store.getTopicFactory(topicInfo)->create(topicInfo));
   return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
 }
+
+
+
+Value ObjectFactory::deleteOperation(ProcessStore& store, const Value& info) {
+  return store.deleteOperation(info);
+}
+
+Value ObjectFactory::deleteContainer(ProcessStore& store, const Value& ci) {
+  return store.deleteContainer(ci);
+}
+        
+Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const Value& value) {
+  return store.deleteExecutionContext(value);
+}

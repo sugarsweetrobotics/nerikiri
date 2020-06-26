@@ -13,7 +13,7 @@ namespace nerikiri {
   class Process;
 
 
-  class Broker : public Object{
+  class Broker : public Object {
   private:
   public:
 

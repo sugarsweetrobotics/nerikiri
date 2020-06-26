@@ -144,6 +144,31 @@ namespace nerikiri {
       return createResource("/process/containers/", value);
     }
 
+
+
+    virtual Value createContainerOperation(const Value& containerInfo, const Value& value) override {
+      return createResource("/process/containers/" + containerInfo.at("instanceName").stringValue() + "/operations/", value);
+    }
+
+    virtual Value deleteOperation(const Value& value) override {
+      return deleteResource("/process/operations/" + value.at("instanceName").stringValue() + "/");
+    }
+
+    virtual Value deleteContainer(const Value& value) override {
+      return deleteResource("/process/containers/" + value.at("instanceName").stringValue() + "/");
+    }
+
+    virtual Value deleteContainerOperation(const Value& containerInfo, const Value& value) override {
+      return deleteResource("/process/containers/" + containerInfo.at("instanceName").stringValue() + "/operations/" + value.at("instanceName").stringValue()+ "/");
+    }
+
+    virtual Value createExecutionContext(const Value& value) override {
+      return createResource("/process/ecs/", value);
+    }
+
+    virtual Value deleteExecutionContext(const Value& value) override {
+      return deleteResource("/process/ecs/" + value.at("instanceName").stringValue() + "/");
+    }
   };
 
 

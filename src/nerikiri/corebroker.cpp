@@ -134,16 +134,19 @@ Value CoreBroker::deleteContainer(const Value& value) {
     
 }
 
-Value CoreBroker::deleteContainerOperation(const Value& value) { 
+Value CoreBroker::deleteContainerOperation(const Value& containerInfo, const Value& value) { 
     logger::trace("Broker::deleteContainerOperation({})", value);
+    return process_->store()->getContainer(containerInfo)->deleteContainerOperation(value);
     
 }
 Value CoreBroker::createExecutionContext(const Value& value) {
     logger::trace("Broker::createExecutionContext({})", value);
+    return ObjectFactory::createExecutionContext(*process_->store(), value);
     
 }
 Value CoreBroker::deleteExecutionContext(const Value& value) {
     logger::trace("Broker::deleteExecutionContext({})", value);
+    return ObjectFactory::deleteExecutionContext(*process_->store(), value);
     
 }
 
