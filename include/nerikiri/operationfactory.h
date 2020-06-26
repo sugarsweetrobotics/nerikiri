@@ -11,7 +11,7 @@ namespace nerikiri {
     Value info_;
     std::function<Value(const Value&)> function_;
   public:
-    std::string typeName() { return info_.at("name").stringValue(); }
+    std::string typeName() { return info_.at("typeName").stringValue(); }
   public:
     OperationFactory(const Value& info, std::function<Value(const Value&)>&& func): info_(info), function_(func) {}
     virtual ~OperationFactory() {}

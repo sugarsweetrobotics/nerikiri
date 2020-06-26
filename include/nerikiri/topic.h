@@ -38,7 +38,7 @@ namespace nerikiri {
         Value info_;
 
     public:
-        TopicFactory() : TopicFactory({{"name", "TopicFactory"}}) {}
+        TopicFactory() : TopicFactory({{"typeName", "TopicFactory"}}) {}
         TopicFactory(const Value& info) : info_(info) {}
 
         ~TopicFactory() {}
@@ -56,7 +56,7 @@ namespace nerikiri {
     private:
 
     public:
-        NullTopicFactory() : TopicFactory(Value({{"name", "NullTopicFactory"}})) {}
+        NullTopicFactory() : TopicFactory(Value({{"typeName", "NullTopicFactory"}})) {}
 
         ~NullTopicFactory() {}
 
