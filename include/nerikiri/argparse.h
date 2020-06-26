@@ -1,3 +1,9 @@
+/***
+ * argparse.h
+ * @author Yuki Suga
+ * @copyright SUGAR SWEET ROBOTICS, 2020
+ * @brief コマンドライン引数の処理用ライブラリ
+ */
 #pragma once
 
 #include <string>
@@ -8,13 +14,18 @@
 
 namespace nerikiri {
 
-
+  /**
+   * 処理結果のベースクラス
+   */
   class ResultBase {
   public:
     ResultBase() {}  
     virtual ~ResultBase() {}
   };
 
+  /**
+   * 処理結果クラス
+   */
   template<typename R>
   class Result : public ResultBase {
   private:
@@ -29,6 +40,9 @@ namespace nerikiri {
       }
   };
 
+  /**
+   * 処理内容および処理実行関数matchを格納するクラス
+   */
   class OptionBase {
   protected:
     std::string short_;
@@ -62,6 +76,9 @@ namespace nerikiri {
      virtual std::shared_ptr<ResultBase> makeDefaultResult() = 0;
   };
 
+  /**
+   * 処理クラスの実現．値を受け取る場合のオプションを格納
+   */
   template<typename T>
   class ValueOption : public OptionBase {
   private:
@@ -95,6 +112,9 @@ namespace nerikiri {
       return std::make_shared<ValueOption<std::string>>(shorts, longs, help, key, required, defaultValue);
   }
 
+  /**
+   * 処理クラスの実現．真偽値でコマンドを受け取る場合の実現
+   */
   class FlagOption : public OptionBase {
   private:
   public:
@@ -111,10 +131,16 @@ namespace nerikiri {
     }
   };
 
+  /**
+   * オプション見つからない例外
+   */
   class OptionNotFoundException : public std::exception {
 
   };
 
+  /**
+   * オプション処理を複数格納するコンテナ
+   */
   class Options {
   public:
     std::map<std::string, std::shared_ptr<ResultBase>> results;
@@ -137,6 +163,9 @@ namespace nerikiri {
     }
   };
 
+  /**
+   * 処理を管理するパーサークラス
+   */
   class ArgParser {
   private:
     std::vector<std::shared_ptr<OptionBase>> options_;
@@ -157,17 +186,27 @@ namespace nerikiri {
         return false;
     }
   public:
+    /**
+     * 処理を定義する関数．値を受け取る場合
+     */
     template<typename T>
     void option(const std::string& shorts, const std::string& longs, const std::string& help, const bool required, const T& defaultValue) {
         std::string key = longs.substr(2);
         options_.push_back(std::shared_ptr<OptionBase>(valueOption<T>(shorts, longs, help, key, required, defaultValue)));
     }
 
+    /**
+     * 処理を定義する関数．真偽値の場合
+     */
     void option(const std::string& shorts, const std::string& longs, const std::string& help, const bool required) {
         std::string key = longs.substr(2);
         options_.push_back(std::shared_ptr<OptionBase>(new FlagOption(shorts, longs, help, key, required)));
     }
   public:
+
+    /**
+     * 実際にコマンドライン引数を処理する関数
+     */
     Options parse(const int argc, const char** argv) {
         std::vector<std::string> args;
         for(int i = 0;i < argc;i++) {
@@ -176,6 +215,9 @@ namespace nerikiri {
         return parse(std::move(args));
     }
 
+    /**
+     * 実際にコマンドライン引数を処理する関数
+     */
     Options parse(std::vector<std::string>&& args) {
         Options options;
         auto it = args.begin();
