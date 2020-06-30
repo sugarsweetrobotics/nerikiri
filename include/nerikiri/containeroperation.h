@@ -32,9 +32,10 @@ namespace nerikiri {
 
         virtual void setContainer(ContainerBase* container) override { 
             nerikiri::ContainerOperationBase::setContainer(container);
-            this->info_["operationName"] = this->info_["name"];
+            this->info_["operationName"] = this->info_["typeName"];
             this->info_["ownerContainerInstanceName"] = container->info().at("instanceName");
-            this->info_["name"] = container->info().at("name").stringValue() + ":" + this->info_["name"].stringValue();
+            this->info_["ownerContainerTypeName"] = container->info().at("typeName");
+            //this->info_["name"] = container->info().at("typeName").stringValue() + ":" + this->info_["typeName"].stringValue();
          }
     };
 

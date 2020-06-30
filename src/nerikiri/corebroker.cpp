@@ -18,6 +18,10 @@ Value CoreBroker::getOperationInfos() const {
     return process_->store()->getOperationInfos();
 }
 
+Value CoreBroker::getAllOperationInfos() const {
+    return process_->store()->getAllOperationInfos();
+}
+
 Value CoreBroker::getContainerInfos() const {
     return process_->store()->getContainerInfos();
 }
@@ -35,7 +39,7 @@ Value CoreBroker::getContainerOperationInfo(const Value& cinfo, const Value& oin
 }
 
 Value CoreBroker::getOperationInfo(const Value& info) const {
-    return process_->store()->getOperation(info)->info();
+    return process_->store()->getAllOperation(info)->info();
 }
 
 Value CoreBroker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) {
@@ -47,15 +51,16 @@ Value CoreBroker::invokeContainerOperation(const Value& cinfo, const Value& oinf
 }
 
 Value CoreBroker::callOperation(const Value& info, Value&& value) {
-    return process_->store()->getOperation(info)->call(std::move(value));
+    return process_->store()->getAllOperation(info)->call(std::move(value));
 }
 
 Value CoreBroker::invokeOperation(const Value& v) const {
-    return process_->store()->getOperation(v)->invoke();
+    return process_->store()->getAllOperation(v)->invoke();
 }
 
 Value CoreBroker::executeOperation(const Value& v) {
-    return process_->store()->getOperation(v)->execute();
+    logger::trace("CoreBroker::executeOperation({})", v);
+    return process_->store()->getAllOperation(v)->execute();
 }
 
 
@@ -64,56 +69,55 @@ Value CoreBroker::getConnectionInfos() const {
 }
 
 Value CoreBroker::registerConsumerConnection(const ConnectionInfo& ci) {
-    logger::trace("Broker::registerConsumerConnection({}", str(ci));
+    logger::trace("CoreBroker::registerConsumerConnection({}", str(ci));
     return ConnectionBuilder::registerConsumerConnection(process_->store(), ci);
 }
 
 Value CoreBroker::registerProviderConnection(const Value& ci) {
-    logger::trace("Broker::registerProviderConnection({}", str(ci));
+    logger::trace("CoreBroker::registerProviderConnection({}", str(ci));
     return ConnectionBuilder::registerProviderConnection(process_->store(), ci);
 }
 
 Value CoreBroker::removeConsumerConnection(const ConnectionInfo& ci) {
-    logger::trace("Broker::removeConsumerConnection({}", str(ci));
+    logger::trace("CoreBroker::removeConsumerConnection({}", str(ci));
     return ConnectionBuilder::deleteConsumerConnection(process_->store(), ci);
 }
 
 Value CoreBroker::removeProviderConnection(const ConnectionInfo& ci) {
-    logger::trace("Broker::removeProviderConnection({}", str(ci));
+    logger::trace("CoreBroker::removeProviderConnection({}", str(ci));
     return ConnectionBuilder::deleteProviderConnection(process_->store(), ci);
 }
 
 Value CoreBroker::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
-    logger::trace("Broker::putToArgument()");
+    logger::trace("CoreBroker::putToArgument()");
     //return this->process_->putToArgument(opInfo, argName, value);    
     return process_->store()->getOperationOrTopic(opInfo)->putToArgument(argName, value);
 }
 
 Value CoreBroker::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
-    logger::trace("Broker::putToArgumentViaConnection()");
-    //return this->process_->putToArgumentViaConnection(conInfo, value);
+    logger::trace("CoreBroker::putToArgumentViaConnection({})", conInfo.at("name"));
     return process_->store()->getOperationOrTopic(conInfo.at("input").at("info"))->putToArgumentViaConnection(
         conInfo, value);
 }
 
 Value CoreBroker::getOperationFactoryInfos() const {
-    logger::trace("Broker::getOperationFactoryInfos()");
+    logger::trace("CoreBroker::getOperationFactoryInfos()");
     return process_->store()->getOperationFactoryInfos();
 }
 
 Value CoreBroker::getContainerFactoryInfos() const {
-    logger::trace("Broker::getContainerFactoryInfos()");
+    logger::trace("CoreBroker::getContainerFactoryInfos()");
     return process_->store()->getContainerFactoryInfos();
 }
 
 
 Value CoreBroker::createOperation(const Value& value) {
-    logger::trace("Broker::createOperation({})", value);
+    logger::trace("CoreBroker::createOperation({})", value);
     return ObjectFactory::createOperation(*process_->store(), value);
 }
 
 Value CoreBroker::createContainer(const Value& value) {
-    logger::trace("Broker::createContainer({})", value);
+    logger::trace("CoreBroker::createContainer({})", value);
     return ObjectFactory::createContainer(*process_->store(), value);
 }
 
@@ -129,23 +133,23 @@ Value CoreBroker::deleteOperation(const Value& value) {
 }
 
 Value CoreBroker::deleteContainer(const Value& value) {
-    logger::trace("Broker::deleteContainer({})", value);
+    logger::trace("CoreBroker::deleteContainer({})", value);
     return ObjectFactory::deleteContainer(*process_->store(), value);
     
 }
 
 Value CoreBroker::deleteContainerOperation(const Value& containerInfo, const Value& value) { 
-    logger::trace("Broker::deleteContainerOperation({})", value);
+    logger::trace("CoreBroker::deleteContainerOperation({})", value);
     return process_->store()->getContainer(containerInfo)->deleteContainerOperation(value);
     
 }
 Value CoreBroker::createExecutionContext(const Value& value) {
-    logger::trace("Broker::createExecutionContext({})", value);
+    logger::trace("CoreBroker::createExecutionContext({})", value);
     return ObjectFactory::createExecutionContext(*process_->store(), value);
     
 }
 Value CoreBroker::deleteExecutionContext(const Value& value) {
-    logger::trace("Broker::deleteExecutionContext({})", value);
+    logger::trace("CoreBroker::deleteExecutionContext({})", value);
     return ObjectFactory::deleteExecutionContext(*process_->store(), value);
     
 }

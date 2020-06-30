@@ -10,7 +10,7 @@ extern "C" {
     NK_OPERATION  void* increment() {
         return operationFactory(
             {
-                {"name", "increment"},
+                {"typeName", "increment"},
                 {"defaultArg", {
                     {"data", 0}
                 }}

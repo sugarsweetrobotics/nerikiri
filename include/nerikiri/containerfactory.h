@@ -21,8 +21,9 @@ namespace nerikiri {
     public:
         virtual std::shared_ptr<ContainerBase> create(const Value& info) override { 
           auto i = info;
-          i["name"] = demangle(typeid(T).name());
-          auto c = std::shared_ptr<ContainerBase>(new Container<T>(this, i)); 
+          i["typeName"] = demangle(typeid(T).name());
+          //auto c = std::shared_ptr<ContainerBase>(new Container<T>(this, i)); 
+          auto c = std::dynamic_pointer_cast<ContainerBase>(std::make_shared<Container<T>>(this, i));
           if (i.objectValue().count("operations") > 0) {
 
             i.at("operations").list_for_each([&c, this](auto& value) {

@@ -27,11 +27,11 @@ static std::shared_ptr<OperationBase> _getOperationOrTopic(ProcessStore* store, 
 Value ConnectionBuilder::_validateConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
   auto ret = conInfo;
   if (op->hasOutputConnectionRoute(ret)) {
-    return Value::error(logger::warn("makeConnection failed. Provider already have the same connection route {}", str(ret.at("output"))));
+    return Value::error(logger::warn("ConnectionBuilder::_validateConnectionInfo failed. Provider already have the same connection route {}", str(ret.at("output"))));
   }
   int i = 2;
   while (op->hasOutputConnectionName(ret)) {
-      logger::warn("makeConnection failed. Provider already have the same connection name {}", str(ret.at("output")));
+      logger::warn("In ConnectionBuilder::_validateConnectionInfo, Provider already have the same connection name {}", str(ret.at("output")));
       ret["name"] = conInfo.at("name").stringValue() + "_" + std::to_string(i);
       ++i;
   }
@@ -49,7 +49,7 @@ Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const V
 
 
 Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
-  logger::trace("Process::registerProviderConnection({})", (ci));
+  logger::trace("ConnectionBuilder::registerProviderConnection({})", (ci));
   try {
     auto ret = ConnectionBuilder::_validateConnectionInfo(_getOperationOrTopic(store, ci.at("output").at("info")), ci);
     auto ret2 = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"))->registerConsumerConnection(ret);
@@ -62,7 +62,7 @@ Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const V
     }// 登録成功ならciを返す
     return ret3;
   } catch (ValueTypeError& ex) {
-    return Value::error(logger::error("Process::registerProviderConnection() failed. Exception: " + std::string(ex.what())));
+    return Value::error(logger::error("ConnectionBuilder::registerProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
   }
 }
 
@@ -94,10 +94,10 @@ Value ConnectionBuilder::deleteProviderConnection(ProcessStore* store, const Val
     
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore* store, const Value& opInfo, const Value& topicInfo) {
   if (!topicInfo.isError() && !opInfo.isError()) {
-    auto instanceName = opInfo.at("instanceName").stringValue();
-    if (opInfo.hasKey("ownerContainerInstanceName")) {
-      instanceName = opInfo.at("ownerContainerInstanceName").stringValue() + ":" + instanceName;
-    }
+    auto fullName = opInfo.at("fullName").stringValue();
+    //if (opInfo.hasKey("ownerContainerInstanceName")) {
+    //  instanceName = opInfo.at("ownerContainerInstanceName").stringValue() + ":" + instanceName;
+    //}
     return registerProviderConnection(store, {
       {
         {"name", "topic_connection01"},
@@ -105,19 +105,19 @@ Value ConnectionBuilder::registerTopicPublisher(ProcessStore* store, const Value
         {"input", {
           {"info", {
             {"topicType", "BasicTopic"},
-            {"instanceName", topicInfo.at("instanceName")},
+            {"fullName", topicInfo.at("fullName")},
             
           }},
           {"broker", {
-              {"name", "CoreBroker"}
+              {"typeName", "CoreBroker"}
           }},
           {"target", {{"name", "data"}}}
         }},
         {"output", {
           {"info", { 
-            {"instanceName", instanceName},
+            {"fullName", fullName},
             {"broker", {
-              {"name", "CoreBroker"}
+              {"typeName", "CoreBroker"}
             }}
           }}
         }}
@@ -129,29 +129,29 @@ Value ConnectionBuilder::registerTopicPublisher(ProcessStore* store, const Value
 
 Value ConnectionBuilder::registerTopicSubscriber(ProcessStore* store, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
   if (!topicInfo.isError() && !opInfo.isError()) {
-    auto instanceName = opInfo.at("instanceName").stringValue();
-    if (opInfo.hasKey("ownerContainerInstanceName")) {
-      instanceName = opInfo.at("ownerContainerInstanceName").stringValue() + ":" + instanceName;
-    }
+    auto fullName = opInfo.at("fullName").stringValue();
+    // if (opInfo.hasKey("ownerContainerInstanceName")) {
+    //   instanceName = opInfo.at("ownerContainerInstanceName").stringValue() + ":" + instanceName;
+    // }
     return registerProviderConnection(store, {
       {
         {"name", "topic_connection01"},
         {"type", "event"},
         {"input", {
           {"info", { 
-            {"instanceName", instanceName}
+            {"fullName", fullName}
           }},
           {"broker", {
-            {"name", "CoreBroker"}
+            {"typeName", "CoreBroker"}
           }},
           {"target", {{"name", argName}}}
         }},
         {"output", {
           {"info", {
-            {"instanceName", topicInfo.at("instanceName")},
+            {"fullName", topicInfo.at("fullName")},
             {"topicType", "BasicTopic"},
             {"broker", {
-              {"name", "CoreBroker"}
+              {"typeName", "CoreBroker"}
             }}
           }}
         }}

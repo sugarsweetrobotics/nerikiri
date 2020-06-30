@@ -10,7 +10,7 @@ extern "C" {
     NK_OPERATION  void* TurtleSim_kill() {
         return containerOperationFactory<TurtleSim>(
             {
-              {"name", "kill"},
+              {"typeName", "kill"},
               {"defaultArg", {
                   {"name", "turtle0"}
               }},

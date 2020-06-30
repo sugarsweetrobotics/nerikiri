@@ -1,5 +1,5 @@
 {
-    "logger": { "logLevel": "INFO" },
+    "logger": { "logLevel": "TRACE" },
 
     "load_paths": ["./"],
 
@@ -11,11 +11,11 @@
     "operations": {
         "precreate": [
             {
-                "name": "cv_flip",
+                "typeName": "cv_flip",
                 "instanceName": "cv_flip0.ope"
             },
             {
-                "name": "cv_drawRects",
+                "typeName": "cv_drawRects",
                 "instanceName": "cv_drawRects0.ope",
                 "subscribe": {
                     "image": ["::image"],
@@ -28,30 +28,30 @@
     "containers": {
         "precreate": [
             { 
-                "name": "OpenCVCamera",
+                "typeName": "OpenCVCamera",
                 "instanceName": "OpenCVCamera0.ctn",
                 "operations": [
                     {
-                        "name": "initialize",
+                        "typeName": "initialize",
                         "instanceName": "initialize0.ope"
                     },
                     {
-                        "name": "capture",
+                        "typeName": "capture",
                         "instanceName": "capture0.ope",
                         "publish": ["::image"]
                     }
                 ]
             },
             { 
-                "name": "OpenCVCascadeClassifier",
+                "typeName": "OpenCVCascadeClassifier",
                 "instanceName": "OpenCVCascadeClassifier0.ctn",
                 "operations": [
                     {
-                        "name": "initialize",
+                        "typeName": "initialize",
                         "instanceName": "initialize0.ope"
                     },
                     {
-                        "name": "detectMultiScale",
+                        "typeName": "detectMultiScale",
                         "instanceName": "detectMultiScale0.ope",
                         "subscribe": {
                             "image": ["::image"]
@@ -66,7 +66,7 @@
     "brokers": {
         "precreate": [ 
           {
-            "name": "HTTPBroker",
+            "typeName": "HTTPBroker",
             "instanceName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080,
@@ -80,7 +80,7 @@
         "preload": ["TimerEC"],
         "precreate": [
           {
-            "name": "TimerEC",
+            "typeName": "TimerEC",
             "instanceName": "TimerEC0.ec",
             "rate": 1000.0
           }
@@ -88,7 +88,7 @@
         "bind": {
             "TimerEC0.ec": [
                 {
-                    "instanceName": "OpenCVCamera0.ctn:capture0.ope",
+                    "fullName": "OpenCVCamera0.ctn:capture0.ope",
                     "broker": "CoreBroker"
                 }
             ]
@@ -105,7 +105,7 @@
             "name": "on_started",
             "target": [
                 {
-                    "name": "OpenCVCamera0.ctn:initialize0.ope",
+                    "fullName": "OpenCVCamera0.ctn:initialize0.ope",
                     "argument":  {
                         "cameraId": 0,
                         "width": 320,
@@ -113,7 +113,7 @@
                     }
                 },
                 {
-                    "name": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
+                    "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
                     "argument":  {
                         "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
                     }

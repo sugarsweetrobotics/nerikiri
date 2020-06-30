@@ -53,17 +53,21 @@ Value defaultProcessConfig({
 
 Process Process::null("");
 
-Process::Process(const std::string& name) : Object({{"name", "Process"}, {"instanceName", name}}), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
+Process::Process(const std::string& name) : Object({{"typeName", "Process"}, {"instanceName", name}, {"fullName", name}}), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
     fullpath = nerikiri::getCwd() + "/" + fullpath;
   }
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
-  coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"name", "CoreBroker"}, {"instanceName", "coreBroker0"}}));
-  store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
-  store_.addTopicFactory(std::make_shared<TopicFactory>());
-  setExecutablePath(path);
+  coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"typeName", "CoreBroker"}, {"instanceName", "coreBroker0"}, {"fullName", "coreBroker0"}}));
+  try {
+    store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
+    store_.addTopicFactory(std::make_shared<TopicFactory>());
+    setExecutablePath(path);
+  } catch (std::exception & ex) {
+    logger::error("Process::Process failed. Exception: {}", ex.what());
+  }
 }
 
 Process::Process(const int argc, const char** argv) : Process(argv[0]) {
@@ -136,7 +140,7 @@ void Process::_preloadOperations() {
   try {
     auto c = config_.at("operations").at("preload");
     c.list_for_each([this](auto& value) {
-      Value v = {{"name", value}};
+      Value v = {{"typeName", value}};
       if (config_.at("operations").hasKey("load_paths")) {
         v["load_paths"] = config_.at("operations").at("load_paths");
       }
@@ -163,7 +167,7 @@ void Process::_preloadContainers() {
   try {
     auto c = config_.at("containers").at("preload");
     c.object_for_each([this](auto& key, auto& value) {
-      Value v = {{"name", key}};
+      Value v = {{"typeName", key}};
       if (config_.at("containers").hasKey("load_paths")) {
         v["load_paths"] = config_.at("containers").at("load_paths");
       }
@@ -172,7 +176,7 @@ void Process::_preloadContainers() {
         logger::error("Process::_preloadContainers({}) failed. {}", key, v.getErrorMessage());
       }
       value.list_for_each([this, &key](auto& v) {
-        Value vv = {{"name", v}};
+        Value vv = {{"typeName", v}};
         if (config_.at("containers").hasKey("load_paths")) {
           vv["load_paths"] = config_.at("containers").at("load_paths");
         }
@@ -202,7 +206,7 @@ void Process::_preloadExecutionContexts() {
   try {
     auto c = config_.at("ecs").at("preload");
     c.list_for_each([this](auto& value) {
-      Value v = {{"name", value}};
+      Value v = {{"typeName", value}};
       if (config_.at("ecs").hasKey("load_paths")) {
         v["load_paths"] = config_.at("ecs").at("load_paths");
       }
@@ -226,8 +230,8 @@ void Process::_preloadExecutionContexts() {
     auto c = config_.at("ecs").at("bind");
     c.object_for_each([this](auto& key, auto& value) {
       value.list_for_each([this, key](auto& v) {
-        auto broker = store()->getBrokerFactory({{"name", v.at("broker").stringValue()}})->createProxy(v.at("broker"));
-        store()->getExecutionContext({{"instanceName", key}})->bind(v, broker);
+        auto broker = store()->getBrokerFactory({{"typeName", v.at("broker").stringValue()}})->createProxy(v.at("broker"));
+        store()->getExecutionContext({{"fullName", key}})->bind(v, broker);
       });
     });
   } catch (nerikiri::ValueTypeError& e) {
@@ -240,7 +244,7 @@ void Process::_preStartExecutionContexts() {
   try {
     auto c = config_.at("ecs").at("start");
     c.list_for_each([this](auto& value) {
-      this->store()->getExecutionContext({{"instanceName", value}})->start();
+      this->store()->getExecutionContext({{"fullName", value}})->start();
     });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
@@ -251,7 +255,7 @@ void Process::_preloadBrokers() {
   try {
     auto c = config_.at("brokers").at("preload");
     c.list_for_each([this](auto& value) {
-      Value v = {{"name", value}};
+      Value v = {{"typeName", value}};
       if (config_.at("brokers").hasKey("load_paths")) {
         v["load_paths"] = config_.at("brokers").at("load_paths");
       }
@@ -290,12 +294,12 @@ void Process::_preloadTopics() {
     auto operationCallback = [this](auto& opInfo) {
       opInfo.at("publish").list_for_each([this, &opInfo](auto v) {
         ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
-         {{"instanceName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+         {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
       });
       opInfo.at("subscribe").object_for_each([this, &opInfo](auto key, auto v) {
         v.list_for_each([this, &opInfo, key](auto sv) {
           ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
-           {{"instanceName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+           {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
         });
       });
     };
@@ -319,14 +323,14 @@ void Process::_preloadCallbacksOnStarted() {
       // TODO: コールバックね
       if (value.at("name").stringValue() == "on_started") {
         value.at("target").list_for_each([this](auto& v) {
-          auto opName = v.at("name").stringValue();
+          auto opName = v.at("fullName").stringValue();
           auto argument = v.at("argument");
-          store()->getOperation({{"instanceName", opName}})->call(argument);
+          store()->getAllOperation({{"fullName", opName}})->call(argument);
         });
       }
     });
   } catch (ValueTypeError& ex) {
-    logger::error("Process::_preloadConnections failed. Exception: {}", ex.what());
+    logger::error("Process::_preloadCallbacksOnStarted failed. Exception: {}", ex.what());
   }
 }
 

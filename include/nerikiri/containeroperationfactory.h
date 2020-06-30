@@ -23,12 +23,12 @@ namespace nerikiri {
         }
 
         virtual std::string typeName() {
-            return demangle(typeid(T).name()) + ":" + info_.at("name").stringValue();
+            return demangle(typeid(T).name()) + ":" + info_.at("typeName").stringValue();
         }
     public:
         virtual std::shared_ptr<ContainerOperationBase> create(const Value& info) { 
             auto i = nerikiri::merge(info, info_);
-            return std::shared_ptr<ContainerOperationBase>(new ContainerOperation<T>(i, function_)); 
+            return std::dynamic_pointer_cast<ContainerOperationBase>(std::make_shared<ContainerOperation<T>>(i, function_)); 
         }
     };
 

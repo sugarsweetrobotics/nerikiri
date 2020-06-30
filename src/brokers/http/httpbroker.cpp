@@ -43,7 +43,7 @@ private:
   std::map<std::string, std::string> route_;
 public:
 
-  HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")): Broker({{"name", Value{"HTTPBroker"}}}),
+  HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")): Broker({{"typeName", Value{"HTTPBroker"}}}),
     server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir)
   {
     logger::trace("HTTPBroker::HTTPBroker()");
@@ -230,13 +230,14 @@ public:
     if (value.hasKey("baseDir")) {
       base_dir = value.at("baseDir").stringValue();
     }
-    return std::shared_ptr<nerikiri::Broker> (new HTTPBroker(address, port, base_dir, value.at("route")));
+    return std::dynamic_pointer_cast<nerikiri::Broker>(std::make_shared<HTTPBroker>(address, port, base_dir, value.at("route")));
   }
   
   virtual std::shared_ptr<BrokerAPI> createProxy(const Value& value) {
     auto address = value.at("host").stringValue();
     auto port = value.at("port").intValue();
-    return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
+    return std::dynamic_pointer_cast<nerikiri::BrokerAPI>(std::make_shared<HTTPBrokerProxyImpl>(address, port));
+//    return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
   }
 
 };

@@ -11,7 +11,7 @@ extern "C" {
     NK_OPERATION  void* TurtleSim_getPose() {
         return containerOperationFactory<TurtleSim>(
             {
-              {"name", "getPose"},
+              {"typeName", "getPose"},
               {"defaultArg", {
                   {"name", "turtle0"}
               }},

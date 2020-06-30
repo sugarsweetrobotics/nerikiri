@@ -10,7 +10,7 @@ extern "C" {
     NK_OPERATION  void* TurtleSim_spawn() {
         return containerOperationFactory<TurtleSim>(
             {
-              {"name", "spawn"},
+              {"typeName", "spawn"},
               {"defaultArg", {
                   {"name", "turtle0"}
               }},

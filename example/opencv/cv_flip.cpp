@@ -12,7 +12,7 @@ extern "C" {
     NK_OPERATION  void* cv_flip() {
         return operationFactory(
         {
-          {"name", "cv_flip"},
+          {"typeName", "cv_flip"},
           {"defaultArg", {
               {"image", {
                   {"rows", 0},

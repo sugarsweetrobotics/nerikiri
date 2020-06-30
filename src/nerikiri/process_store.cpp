@@ -14,20 +14,6 @@
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
-ProcessStore::ProcessStore(Process* process): process_(process) {}
-
-ProcessStore::~ProcessStore() {
-  this->executionContexts_.clear();
-  this->executionContextFactories_.clear();
-  this->operations_.clear();
-  this->operationFactories_.clear();
-  this->containers_.clear();
-  containerFactories_.clear();
-  brokers_.clear();
-  brokerFactories_.clear();
-}
-
-
 
 Value ProcessStore::info() const { return process_->info(); }
 
@@ -35,27 +21,32 @@ Value ProcessStore::getContainerInfos() {
   return {nerikiri::map<Value, std::shared_ptr<ContainerBase>>(containers_, [](auto& ctn) { return ctn->info(); })};
 }
 
+/*
 Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
   trace("Process::addContainer({})", container->info());
   if (container->isNull()) {
     return Value::error(logger::error("Process::addContainer failed. Container is null."));
   }
   if (container->getInstanceName() == "") {
-    auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerBase>>(containers_, container->info().at("name").stringValue(), ".ctn");
-    container->setInstanceName(name);
+    auto nameSpace = "";
+    auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerBase>>(containers_, container->info().at("typeName").stringValue(), ".ctn");
+    container->setFullName(nameSpace, name);
   } else if (!getContainer(container->info())->isNull()) {
     return Value::error(logger::error("Process::addOperation({}) Error. Process already has the same name operation", container->info().at("name").stringValue()));
   }
   containers_.push_back(container);
   return container->info();
 }
+*/
 
+/*
 std::shared_ptr<ContainerBase> ProcessStore::getContainer(const Value& info) {
   for(auto& c : containers_) {
-    if (c->info().at("instanceName") == info.at("instanceName")) return c;
+    if (c->info().at("fullName") == info.at("fullName")) return c;
   }
-  return ContainerBase::null;
+  return nullContainer();
 }
+*/
 
 Value ProcessStore::getOperationFactoryInfos() {
   return nerikiri::map<Value, std::shared_ptr<OperationFactory>>(operationFactories_, [](auto& opf) { return Value(opf->typeName()); });
@@ -65,72 +56,102 @@ Value ProcessStore::getContainerFactoryInfos() {
   return nerikiri::map<Value, std::shared_ptr<ContainerFactoryBase>>(containerFactories_, [](auto& opf) { return Value(opf->typeName()); });
 }
 
-
+/*
 Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
   logger::trace("Process::addOperation({})", op->info());
   if (op->isNull()) {
     return Value::error(logger::error("Process::addOperation failed. Operation is null."));
   }
-
+  auto nameSpace = "";
   if (op->getInstanceName() == "") {
-    auto name = nerikiri::numbering_policy<std::shared_ptr<Operation>>(operations_, op->info().at("name").stringValue(), ".ope");
-    op->setInstanceName(name);
+    auto name = nerikiri::numbering_policy<std::shared_ptr<Operation>>(operations_, op->info().at("typeName").stringValue(), ".ope");
+    op->setFullName(nameSpace, name);
   } else if (!getOperation(op->info())->isNull()) {
-    return Value::error(logger::error("Process::addOperation({}) Error. Process already has the same name operation", op->info().at("name").stringValue()));
+    return Value::error(logger::error("Process::addOperation({}) Error. Process already has the same name operation", op->info().at("typeName").stringValue()));
+  } else {
+    op->setFullName(nameSpace, op->getInstanceName());
   }
   operations_.push_back(op);
   return op->info();
 }
+*/
 
 
+std::shared_ptr<OperationBase> ProcessStore::getContainerOperation(const Value& oi) {
+  if (oi.isError()) return nullOperation();
+  auto name = oi.at("fullName");
+  if (name.isError()) { // クエリがfullNameを持ってないとき．
+    return nullOperation();
+  }
+  auto pos = name.stringValue().rfind(":");
+  if (pos != std::string::npos) {
+    auto containerName = name.stringValue().substr(0, pos);
+    auto operationName = name.stringValue().substr(pos+1);
+    return getContainer({{"fullName", containerName}})->getOperation({{"instanceName", operationName}});
+  } else if (oi.hasKey("ownerContainerInstanceName")) {
+    auto containerName = oi.at("ownerContainerInstanceName").stringValue();
+    auto operationName = name.stringValue();
+    return getContainer({{"fullName", containerName}})->getOperation({{"instanceName", operationName}});
+  }
+  return nullOperation();
+}
+
+/*
+std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
+  if (oi.isError()) return nullOperation();
+  auto name = oi.at("fullName");
+  if (name.isError()) {
+    // クエリがfullNameを持ってないとき．
+    return nullOperation();
+  }
+  for(auto& op : operations_) {
+    if (op->info().at("fullName") == name) return op;
+  }
+  return this->getContainerOperation(oi);
+}
+*/
+
+/*
 Value ProcessStore::addExecutionContext(std::shared_ptr<ExecutionContext> ec) {
   if (!ec) {
     return Value::error(logger::error("Process::addExecutionContext failed. Execution Context is null"));
   }
   logger::trace("Process::addExecutionContext({})", ec->info());
   if (ec->getInstanceName() == "") {
+    auto nameSpace = "";
     auto name = nerikiri::numbering_policy<std::shared_ptr<ExecutionContext>>(executionContexts_, ec->info().at("name").stringValue(), ".ec");
-    ec->setInstanceName(name);
+    ec->setFullName(nameSpace, name);
   } else if (!getExecutionContext(ec->info())->isNull()) {
      return Value::error(logger::error("Process::addExecutionContext({}) Error. Process already has the same name ec", ec->info().at("name").stringValue()));
   }
   executionContexts_.push_back(ec);
   return ec->info();
 }
+*/
 
+/*
+std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const Value& info) {
+  for(auto& ec : executionContexts_) {
+    if (ec->info().at("instanceName") == info.at("instanceName")) {
+      return ec;
+    }
+  }
+  return ExecutionContext::null;
+}
+*/
 
 
 std::shared_ptr<OperationBase> ProcessStore::getOperationOrTopic(const Value& info) {
   if (info.at("topicType").isError()) {
-    return getOperation(info);
+    return getAllOperation(info);
   }
   return getTopic(info);
 }
 
 
-std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
-  if (oi.isError()) return Operation::null;
-  auto name = oi.at("instanceName");
-  auto pos = name.stringValue().find(":");
-  if (pos != std::string::npos) {
-    auto containerName = name.stringValue().substr(0, pos);
-    auto operationName = name.stringValue().substr(pos+1);
-    return getContainer({{"instanceName", containerName}})->getOperation({{"instanceName", operationName}});
-  } else if (oi.hasKey("ownerContainerInstanceName")) {
-    auto containerName = oi.at("ownerContainerInstanceName").stringValue();
-    auto operationName = name.stringValue();
-     return getContainer({{"instanceName", containerName}})->getOperation({{"instanceName", operationName}});
-  } else {
-    for(auto& op : operations_) {
-      if (op->info().at("instanceName") == name) return op;
-    }
-  }
-  return Operation::null;
-}
-
 std::shared_ptr<OperationFactory> ProcessStore::getOperationFactory(const Value& oi) {
   for(auto& opf : operationFactories_) {
-    if (opf->typeName() == oi.at("name").stringValue()) {
+    if (opf->typeName() == oi.at("typeName").stringValue()) {
       return opf;
     }
   }
@@ -138,7 +159,7 @@ std::shared_ptr<OperationFactory> ProcessStore::getOperationFactory(const Value&
 }
 
 Value ProcessStore::getOperationInfos() {
-  auto ops = nerikiri::map<Value, std::shared_ptr<Operation>>(operations_, [](auto& op) { return op->info();});
+  auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_, [](auto& op) { return op->info();});
   /*
   for(auto& c : this->containers_) {
     auto infos = c->getOperationInfos();
@@ -147,10 +168,19 @@ Value ProcessStore::getOperationInfos() {
   return ops;
 }
 
+Value ProcessStore::getAllOperationInfos() {
+  auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_, [](auto& op) { return op->info();});
+  for(auto& c : this->containers_) {
+    auto infos = c->getOperationInfos();
+    ops.insert(ops.end(), infos.begin(), infos.end());
+  }
+  return ops;
+}
+
 
 
 Value ProcessStore::getConnectionInfos() const {
-  auto ocons = nerikiri::map<Value, std::shared_ptr<Operation>>(operations_, [](auto& op) -> Value {
+  auto ocons = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_, [](auto& op) -> Value {
     return op->getOutputConnectionInfos();
   });
 
@@ -184,7 +214,7 @@ Value ProcessStore::addContainerOperationFactory(std::shared_ptr<ContainerOperat
   for(auto& cf : containerFactories_) {
     if(cf->typeName() == cof->containerTypeName()) {
       cf->addOperationFactory(cof);
-      return {{"name", cf->typeName()}};
+      return {{"typeName", cf->typeName()}};
     }
   }
   return Value::error(logger::error("ProcessStore::addContainerOperationFactory({}) can not find appropreate Container Factory.", cof->typeName()));
@@ -194,7 +224,7 @@ Value ProcessStore::addContainerOperationFactory(std::shared_ptr<ContainerOperat
 std::shared_ptr<ContainerFactoryBase> ProcessStore::getContainerFactory(const Value& info) {
   for(auto f : containerFactories_) {
       auto tn = f->typeName();
-    if (tn == info.at("name").stringValue()) {
+    if (tn == info.at("typeName").stringValue()) {
       return f;
     }
   }
@@ -204,7 +234,7 @@ std::shared_ptr<ContainerFactoryBase> ProcessStore::getContainerFactory(const Va
 
 std::shared_ptr<ExecutionContextFactory> ProcessStore::getExecutionContextFactory(const Value& info) {
   for(auto f : executionContextFactories_) {
-    if (f->typeName() == info.at("name").stringValue()) {
+    if (f->typeName() == info.at("typeName").stringValue()) {
       return f;
     }
   }
@@ -216,27 +246,20 @@ std::shared_ptr<ExecutionContextFactory> ProcessStore::getExecutionContextFactor
 Value ProcessStore::getExecutionContextInfos() {
   return nerikiri::map<Value, std::shared_ptr<ExecutionContext>>(executionContexts_, [](auto& ec) { return Value(ec->info()); });
 }
+
 Value ProcessStore::getExecutionContextFactoryInfos() {
   return nerikiri::map<Value, std::shared_ptr<ExecutionContextFactory>>(executionContextFactories_, [](auto& ecf) { return Value(ecf->typeName()); });
-}
-
-std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const Value& info) {
-  for(auto& ec : executionContexts_) {
-    if (ec->info().at("instanceName") == info.at("instanceName")) {
-      return ec;
-    }
-  }
-  return ExecutionContext::null;
 }
 
 
 Value ProcessStore::addBrokerFactory(std::shared_ptr<BrokerFactory> factory) {
   auto name = factory->typeName();
   brokerFactories_.push_back(factory);
-  return {{"name", factory->typeName()}};
+  return {{"typeName", factory->typeName()}};
 }
 
 
+/*
 Value ProcessStore::addBroker(const std::shared_ptr<Broker> brk) {
   logger::trace("ProcessStore::addBroker()");
   if (brk && !brk->isNull()) {
@@ -247,7 +270,9 @@ Value ProcessStore::addBroker(const std::shared_ptr<Broker> brk) {
   } 
   return Value::error(logger::error("addBroker failed. Added broker is null."));
 }
+*/
 
+/*
 std::shared_ptr<Broker> ProcessStore::getBroker(const Value& info) {
   for(auto& brk : brokers_) {
     if (brk->info().at("instanceName") == info.at("instanceName")) {
@@ -256,6 +281,7 @@ std::shared_ptr<Broker> ProcessStore::getBroker(const Value& info) {
   }
   return Broker::null;
 }
+*/
 
 Value ProcessStore::getBrokerInfos() const {
   return nerikiri::map<Value, std::shared_ptr<Broker>>(brokers_, [](auto& brk) { return brk->info();});
@@ -264,7 +290,7 @@ Value ProcessStore::getBrokerInfos() const {
 
 std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info) {
   for(auto f : brokerFactories_) {
-    if(f->typeName() == info.at("name").stringValue()) {
+    if(f->typeName() == info.at("typeName").stringValue()) {
       return f;
     }
   }
@@ -301,11 +327,11 @@ Value ProcessStore::addTopicFactory(std::shared_ptr<TopicFactory> tf) {
 
 std::shared_ptr<Topic> ProcessStore::getTopic(const Value& topicInfo) {
   for(auto& t : topics_) {
-    if (t->info().at("instanceName") == topicInfo.at("instanceName")) {
+    if (t->info().at("fullName") == topicInfo.at("fullName")) {
       return t;
     }
   }
-  return nullptr;
+  return nullTopic();
 }
 
 Value ProcessStore::getTopicInfos() const {
@@ -318,7 +344,7 @@ Value ProcessStore::addTopic(std::shared_ptr<Topic> topic) {
   if (topic == nullptr) {
     return Value::error(logger::error("ProcessStore::addTopic() failed. Topic is null"));
   }
-  if (getTopic(topic->info()) == nullptr) {
+  if (getTopic(topic->info())->isNull()) {
     topics_.push_back(topic);
   }
   return topic->info();

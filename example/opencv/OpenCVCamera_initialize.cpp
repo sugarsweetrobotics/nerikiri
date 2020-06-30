@@ -12,7 +12,7 @@ extern "C" {
     NK_OPERATION  void* OpenCVCamera_initialize() {
         return containerOperationFactory<OpenCVCamera>(
         {
-          {"name", "initialize"},
+          {"typeName", "initialize"},
           {"defaultArg", {
               {"cameraId", 0},
               {"width", 320},

@@ -10,7 +10,7 @@ extern "C" {
     NK_OPERATION  void* OpenCVCascadeClassifier_initialize() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
-          {"name", "initialize"},
+          {"typeName", "initialize"},
           {"defaultArg", {
               {"parameterFilePath", {"/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"}}}, // For OSX brew
           }},

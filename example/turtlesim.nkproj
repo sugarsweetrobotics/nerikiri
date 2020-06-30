@@ -1,5 +1,5 @@
 {
-    "logger": { "logLevel": "DEBUG" },
+    "logger": { "logLevel": "TRACE" },
 
     "load_paths": ["./"],
 
@@ -16,27 +16,27 @@
     "containers": {
         "precreate": [
             {
-                "name": "TurtleSim",
+                "typeName": "TurtleSim",
                 "instanceName": "TurtleSim0.ctn",
                 "operations": [
                     {
-                        "name": "update",
+                        "typeName": "update",
                         "instanceName": "update0.ope"
                     },
                     {
-                        "name": "spawn",
+                        "typeName": "spawn",
                         "instanceName": "spawn0.ope"
                     },
                     {
-                        "name": "kill",
+                        "typeName": "kill",
                         "instanceName": "kill0.ope"
                     },
                     {
-                        "name": "setVelocity",
+                        "typeName": "setVelocity",
                         "instanceName": "setVelocity0.ope"
                     },
                     {
-                        "name": "getPose",
+                        "typeName": "getPose",
                         "instanceName": "getPose0.ope"
                     }
                 ]
@@ -47,7 +47,7 @@
     "brokers": {
         "precreate": [ 
           {
-            "name": "HTTPBroker",
+            "typeName": "HTTPBroker",
             "instanceName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080,
@@ -65,7 +65,7 @@
         "preload": ["TimerEC"],
         "precreate": [
           {
-            "name": "TimerEC",
+            "typeName": "TimerEC",
             "instanceName": "TimerEC0.ec",
             "rate": 10.0
           }
@@ -73,15 +73,15 @@
         "bind": {
             "TimerEC0.ec": [
                 {
-                    "instanceName": "TurtleSim0.ctn:update0.ope",
+                    "fullName": "TurtleSim0.ctn:update0.ope",
                     "broker": "CoreBroker"
                 },
                 {
-                    "instanceName": "JoyController0.ctn:update0.ope",
+                    "fullName": "JoyController0.ctn:update0.ope",
                     "broker": "CoreBroker"
                 }, 
                 {
-                    "instanceName": "JoyController0.ctn:get0.ope",
+                    "fullName": "JoyController0.ctn:get0.ope",
                     "broker": "CoreBroker"
                 }
             ]
@@ -94,16 +94,16 @@
         { 
             "name": "connection01",
             "type": "event", 
-            "broker": {"name": "HTTPBroker"},
+            "broker": {"typeName": "HTTPBroker"},
             "output": {
-                "info": {"instanceName": "JoyController0.ctn:get0.ope"},
-                "broker": {"name": "HTTPBroker",
+                "info": {"fullName": "JoyController0.ctn:get0.ope"},
+                "broker": {"typeName": "HTTPBroker",
                             "host": "localhost",
                             "port": 8080}
             },
             "input": {
-                "info": {"instanceName": "joy2turtlevel0.ope"},
-                "broker": {"name": "HTTPBroker",
+                "info": {"fullName": "joy2turtlevel0.ope"},
+                "broker": {"typeName": "HTTPBroker",
                     "host": "localhost",
                     "port": 8080},
                 "target": {"name": "data"}
@@ -112,16 +112,16 @@
         { 
             "name": "connection02",
             "type": "event", 
-            "broker": {"name": "HTTPBroker"},
+            "broker": {"typeName": "HTTPBroker"},
             "output": {
-                "info": {"instanceName": "joy2turtlevel0.ope"},
-                "broker": {"name": "HTTPBroker",
+                "info": {"fullName": "joy2turtlevel0.ope"},
+                "broker": {"typeName": "HTTPBroker",
                             "host": "localhost",
                             "port": 8080}
             },
             "input": {
-                "info": {"instanceName": "TurtleSim0.ctn:setVelocity0.ope"},
-                "broker": {"name": "HTTPBroker",
+                "info": {"fullName": "TurtleSim0.ctn:setVelocity0.ope"},
+                "broker": {"typeName": "HTTPBroker",
                     "host": "localhost",
                     "port": 8080},
                 "target": {"name": "data"}

@@ -15,7 +15,7 @@ extern "C" {
     NK_OPERATION  void* OpenCVCamera_capture() {
         return containerOperationFactory<OpenCVCamera>(
         {
-          {"name", "capture"},
+          {"typeName", "capture"},
           {"defaultArg", {
               {"cameraId", "0"}
           }},

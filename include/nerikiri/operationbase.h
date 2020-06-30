@@ -29,7 +29,7 @@ namespace nerikiri {
   };
 
   inline bool operationValidator(const Value& opinfo) {
-    if (!nameValidator(opinfo.at("name").stringValue())) {
+    if (!nameValidator(opinfo.at("typeName").stringValue())) {
       return false;
     }
     return true;
@@ -181,10 +181,12 @@ namespace nerikiri {
 
 
     
-    static std::shared_ptr<OperationBase> null;// = std::make_shared<OperationBase>();
+    //static std::shared_ptr<OperationBase> null;// = std::make_shared<OperationBase>();
   };
 
-
+inline std::shared_ptr<OperationBase> nullOperation() {
+  return std::make_shared<OperationBase>();
+}
 
 inline OperationBase::OperationBase(const Value& info):
     Object(info) {

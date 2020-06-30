@@ -9,7 +9,7 @@ extern "C" {
 
     NK_OPERATION  void* one() {
         return operationFactory({
-            {"name", "one"},
+            {"typeName", "one"},
             {"defaultArg", {}}
             }, [](auto arg) {
                 static int i;

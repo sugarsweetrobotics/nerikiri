@@ -14,7 +14,7 @@ extern "C" {
     NK_OPERATION void* cv_drawRects() {
         return operationFactory(
         {
-          {"name", "cv_drawRects"},
+          {"typeName", "cv_drawRects"},
           {"defaultArg", {
                 {"image", {
                     {"rows", 0},

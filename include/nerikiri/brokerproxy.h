@@ -23,6 +23,10 @@ namespace nerikiri {
       return readResource("/process/operations/");
     }
 
+    virtual Value getAllOperationInfos() const override {
+      return readResource("/process/all_operations/");
+    }
+
     virtual Value getContainerInfos() const override {
       return readResource("/process/containers/");
     }
@@ -33,48 +37,48 @@ namespace nerikiri {
 
     virtual Value getContainerInfo(const Value& v) const override {
       if (v.isError()) return v;    
-      return readResource("/process/containers/" + v.at("instanceName").stringValue() + "/");
+      return readResource("/process/containers/" + v.at("fullName").stringValue() + "/");
     }
 
     virtual Value getContainerOperationInfos(const Value& v) const override {
       if (v.isError()) return v;    
-      return readResource("/process/containers/" + v.at("instanceName").stringValue() + "/operations/");
+      return readResource("/process/containers/" + v.at("fullName").stringValue() + "/operations/");
     }
 
     virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return readResource("/process/containers/" + ci.at("instanceName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/info/");
+      return readResource("/process/containers/" + ci.at("fullName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/info/");
     }
 
     virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
       if (ci.isError()) return ci;    
-      return readResource("/process/containers/" + ci.at("instanceName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/");
+      return readResource("/process/containers/" + ci.at("fullName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/");
     }
 
     virtual Value executeOperation(const Value& info) override {
       if (info.isError()) return info;    
-      return updateResource("/process/operations/" + info.at("instanceName").stringValue() + "/execution/", {});
+      return updateResource("/process/operations/" + info.at("fullName").stringValue() + "/execution/", {});
     }
 
     virtual Value getOperationInfo(const Value& v) const override {
       if (v.isError()) return v;    
-      return readResource("/process/operations/" + v.at("instanceName").stringValue() + "/info/");
+      return readResource("/process/operations/" + v.at("fullName").stringValue() + "/info/");
     }
 
     virtual Value invokeOperation(const Value& v) const override {
-      return readResource("/process/operations/" + v.at("instanceName").stringValue() + "/");
+      return readResource("/process/operations/" + v.at("fullName").stringValue() + "/");
     }
 
     virtual Value registerConsumerConnection(const Value& ci) override {
       if (ci.isError()) return ci;    
-      auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
+      auto operation_name = ci.at("input").at("info").at("fullName").stringValue();
       auto argument_name  = ci.at("input").at("target").at("name").stringValue();
       return createResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/", ci);
     }
 
     virtual Value removeConsumerConnection(const Value& ci) override {
       if (ci.isError()) return ci;    
-      auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
+      auto operation_name = ci.at("input").at("info").at("fullName").stringValue();
       auto argument_name  = ci.at("input").at("target").at("name").stringValue();
       auto connection_name = ci.at("name").stringValue();
       return deleteResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/");
@@ -93,26 +97,26 @@ namespace nerikiri {
         logger::error("BrokerProxy::registerProviderConnection failed. ({})", str(ci));
         return ci.at("input").at("info");
       }
-      auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
+      auto operation_name = ci.at("input").at("info").at("fullName").stringValue();
       return createResource("/process/operations/" + operation_name + "/output/connections/", ci);
     }
 
     virtual Value removeProviderConnection(const Value& ci) override {
-      auto operation_name = ci.at("input").at("info").at("instanceName").stringValue();
+      auto operation_name = ci.at("input").at("info").at("fullName").stringValue();
       auto connection_name = ci.at("name").stringValue();
       return deleteResource("/process/operations/" + operation_name + "/output/connections/" + connection_name + "/");
     }
 
     virtual Value callContainerOperation(const Value& ci, const Value& oi, Value&& arg) override {
-     return updateResource("/process/container/" + ci.at("name").stringValue() + "/operation/" + oi.at("name").stringValue() + "/", arg);
+     return updateResource("/process/container/" + ci.at("fullName").stringValue() + "/operation/" + oi.at("instanceName").stringValue() + "/", arg);
     }
 
     virtual Value callOperation(const Value& info, Value&& value) override {
-      return updateResource("/process/operation/" + info.at("name").stringValue() + "/", value);
+      return updateResource("/process/operation/" + info.at("fullName").stringValue() + "/", value);
     }
 
     virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
-      auto operation_name = opInfo.at("instanceName").stringValue();
+      auto operation_name = opInfo.at("fullName").stringValue();
       return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", value);
     }
 
@@ -121,7 +125,7 @@ namespace nerikiri {
       if (conInfo.isNull()) {
         return Value::error(logger::error("HTTPBrokerProxyImpl::putToArgumentViaConnection failed. Connection is null."));
       }
-      const auto operation_name = conInfo.at("input").at("info").at("instanceName").stringValue();
+      const auto operation_name = conInfo.at("input").at("info").at("fullName").stringValue();
       const auto connection_name = conInfo.at("name").stringValue();
       const auto argument_name = conInfo.at("input").at("target").at("name").stringValue();
       return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/", value);
@@ -147,19 +151,19 @@ namespace nerikiri {
 
 
     virtual Value createContainerOperation(const Value& containerInfo, const Value& value) override {
-      return createResource("/process/containers/" + containerInfo.at("instanceName").stringValue() + "/operations/", value);
+      return createResource("/process/containers/" + containerInfo.at("fullName").stringValue() + "/operations/", value);
     }
 
     virtual Value deleteOperation(const Value& value) override {
-      return deleteResource("/process/operations/" + value.at("instanceName").stringValue() + "/");
+      return deleteResource("/process/operations/" + value.at("fullName").stringValue() + "/");
     }
 
     virtual Value deleteContainer(const Value& value) override {
-      return deleteResource("/process/containers/" + value.at("instanceName").stringValue() + "/");
+      return deleteResource("/process/containers/" + value.at("fullName").stringValue() + "/");
     }
 
     virtual Value deleteContainerOperation(const Value& containerInfo, const Value& value) override {
-      return deleteResource("/process/containers/" + containerInfo.at("instanceName").stringValue() + "/operations/" + value.at("instanceName").stringValue()+ "/");
+      return deleteResource("/process/containers/" + containerInfo.at("fullName").stringValue() + "/operations/" + value.at("instanceName").stringValue()+ "/");
     }
 
     virtual Value createExecutionContext(const Value& value) override {
@@ -167,7 +171,7 @@ namespace nerikiri {
     }
 
     virtual Value deleteExecutionContext(const Value& value) override {
-      return deleteResource("/process/ecs/" + value.at("instanceName").stringValue() + "/");
+      return deleteResource("/process/ecs/" + value.at("fullName").stringValue() + "/");
     }
   };
 
@@ -175,7 +179,7 @@ namespace nerikiri {
   class NullBrokerProxy : public AbstractBrokerProxy {
   public:
 
-    NullBrokerProxy() : AbstractBrokerProxy({{"name", "NullBrokerProxy"}}) {}
+    NullBrokerProxy() : AbstractBrokerProxy({{"typeName", "NullBrokerProxy"}, {"instanceName", "null"}, {"fullName", "null"}}) {}
     virtual ~NullBrokerProxy() {}
 
   public:

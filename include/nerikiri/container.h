@@ -34,16 +34,19 @@ namespace nerikiri {
     public:
         std::string type() const { return type_; }
 
-        static std::shared_ptr<ContainerBase> null;
+        
     public:
-
-        ContainerBase();
+        /**
+         * コンストラクタ．Nullコンテナができます
+         */
+        ContainerBase() : Object(), parentFactory_(nullptr), type_("NullContainer") {}
 
         ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const Value& info);
 
         virtual ~ContainerBase() {}
 
         Value addOperation(std::shared_ptr<ContainerOperationBase> operation);
+
         Value deleteOperation(const Value& opInfo);
 
         std::vector<Value> getOperationInfos() const;
@@ -60,7 +63,14 @@ namespace nerikiri {
         Value createContainerOperation(const Value& info);
         Value deleteContainerOperation(const Value& info);
 
+
+        virtual Value setFullName(const std::string& nameSpace, const std::string& name) override;
     };
+
+    inline static std::shared_ptr<ContainerBase> nullContainer() {
+      return std::make_shared<ContainerBase>();
+    }
+
 
     class ContainerOperationBase : public nerikiri::OperationBase {
     private:
@@ -120,8 +130,7 @@ namespace nerikiri {
 
     public:
         Container(ContainerFactoryBase* parentFactory, const Value& info): ContainerBase(parentFactory, demangle(typeid(T).name()), info), _ptr(std::make_shared<T>()) {
-            if (!containerNameValidator(info.at("name").stringValue())) {
-                //logger::error("Container ({}) can not be created. Invalid name format.", str(info_));
+            if (!containerNameValidator(info.at("typeName").stringValue())) {
                 is_null_ = true;
             }
         }
@@ -132,7 +141,6 @@ namespace nerikiri {
         std::shared_ptr<T>& operator->() { return ptr(); }
     };
 
-    inline ContainerBase::ContainerBase() : Object(), parentFactory_(nullptr), type_("NullContainer") {}
             
     inline ContainerBase::ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const Value& info) : parentFactory_(parentFactory), type_(typeName), Object(info) { }
 
@@ -156,10 +164,20 @@ namespace nerikiri {
 
 
     inline Value ContainerBase::addOperation(std::shared_ptr<ContainerOperationBase> operation) { 
-        auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("name").stringValue(), ".ope");
-        operation->setInstanceName(name);
-        if (!getOperation(operation->getContainerOperationInfo())->isNull()) {
-            return Value::error("ContainerBase::addOperation failed. ContainerOperation with same name is registered. "+ str(operation->getContainerOperationInfo()));
+
+        if (operation->getInstanceName() == "") {
+          auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("name").stringValue(), ".ope");
+          operation->setFullName(getFullName(), name);
+        } else {
+          if (!getOperation(operation->info())->isNull()) {
+            /// 重複があるようなのでエラーを返す
+            for(auto& o: operations_) {
+                if (operation->info().at("instanceName") == o->info().at("instanceName")) {
+                    return Value::error("ContaienrBase::addOperation(" + operation->info().at("instanceName").stringValue() + ") Error. Process already has the same instanceName operation");
+                }
+            }
+          } 
+          operation->setFullName(getFullName(), operation->getInstanceName());
         }
         operation->setContainer(this);
         operations_.push_back(operation); 
@@ -190,13 +208,21 @@ namespace nerikiri {
             return nullptr;
         }
         for(auto& opf : parentFactory_->operationFactories_) {
-            if (opf->typeName() == opf->containerTypeName() + ":"+ info.at("name").stringValue()) {
-            return opf;
+            if (opf->typeName() == opf->containerTypeName() + ":"+ info.at("typeName").stringValue()) {
+                return opf;
             }
         }
         return nullptr;
     }
 
+    inline Value ContainerBase::setFullName(const std::string& nameSpace, const std::string& name) {
+        Object::setFullName(nameSpace, name);
+        for(auto& op: operations_) {
+            op->setFullName(getFullName(), op->getInstanceName());
+            op->setContainer(this);
+        }
+        return this->info();
+    }
 
     inline std::vector<Value> ContainerBase::getOperationInfos() const {
         return nerikiri::map<Value, std::shared_ptr<ContainerOperationBase>>(operations_, [](auto op) { return op->getContainerOperationInfo();});

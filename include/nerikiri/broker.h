@@ -43,8 +43,10 @@ namespace nerikiri {
 
     bool isRunning() const { return info_.at("state").stringValue() == "running"; }
 
-    static std::shared_ptr<Broker> null;
+    // static std::shared_ptr<Broker> null;
   };
 
-
+  inline std::shared_ptr<Broker> nullBroker() {
+    return std::make_shared<Broker>();
+  }
 }

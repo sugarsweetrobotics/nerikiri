@@ -34,7 +34,7 @@ public:
         thread_ = new std::thread([this]() {
             logger::trace("TimerEC::onStarted() in Thread starting....");
             while(!flag_) {
-                logger::trace("TimerEC::onStarted() in Thread svc calling");
+                logger::trace("TimerEC::svc_thread. svc calling");
                 svc();
                 std::this_thread::sleep_for(std::chrono::nanoseconds( (int)(1.0E+9/rate_) ));
             }

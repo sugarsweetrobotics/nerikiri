@@ -10,7 +10,7 @@ extern "C" {
     NK_OPERATION  void* joy2turtlevel() {
         return operationFactory(
             {
-                {"name", "joy2turtlevel"},
+                {"typeName", "joy2turtlevel"},
                 {"defaultArg", {
                     {"data", {
                         {"axis", Value(std::vector<double>{0.,0.,0.,0.,0.,0.})}

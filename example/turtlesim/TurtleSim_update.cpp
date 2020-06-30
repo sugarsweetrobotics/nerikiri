@@ -25,7 +25,7 @@ extern "C" {
     NK_OPERATION  void* TurtleSim_update() {
         return containerOperationFactory<TurtleSim>(
             {
-                {"name", "update"},
+                {"typeName", "update"},
                 {"defaultArg", {
                     {"interval_ms", "10"}
                 }},

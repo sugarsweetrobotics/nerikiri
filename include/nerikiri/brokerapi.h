@@ -23,6 +23,8 @@ namespace nerikiri {
 
     virtual Value getOperationInfos() const = 0;
 
+    virtual Value getAllOperationInfos()  const = 0;
+
     virtual Value getOperationInfo(const Value& name) const = 0;
 
     virtual Value getContainerInfos() const = 0;
@@ -115,6 +117,10 @@ class NullBroker : public BrokerAPI {
 
     virtual Value getOperationInfo(const Value& name) const override {
       return Value::error("BrokerAPI::getOperationInfo() failed. Broker is null.");
+    }
+
+    virtual Value getAllOperationInfos() const override {
+      return Value::error("BrokerAPI::getAllOperationInfo() failed. Broker is null.");
     }
 
     virtual Value getContainerInfos() const override  {

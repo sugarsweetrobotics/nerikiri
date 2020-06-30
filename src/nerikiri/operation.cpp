@@ -4,7 +4,7 @@
 
 using namespace nerikiri;
 
-std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationBase>();
+//std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationBase>();
 
 
 
@@ -24,7 +24,7 @@ Value OperationBase::addProviderConnection(Connection&& c) {
         return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); 
     }
     if (c.isNull()) {
-        return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
+        return Value::error(logger::error("OperationBase::addProviderConnection failed. Given connection is null."));
     }
     outputConnectionList_.emplace_back(std::move(c));
     return c.info();
@@ -34,17 +34,12 @@ Value OperationBase::addConsumerConnection(Connection&& c) {
     logger::trace("Operation::addConsumerConnection({})", str(c.info()));
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     if (c.isNull()) {
-        return Value::error(logger::error("addConsumerConnection failed. Given connection is null."));
+        return Value::error(logger::error("OperationBase::addConsumerConnection() failed. Given connection is null."));
     }
 
     // もし指定されたインスタンス名が自身のインスタンス名と違ったら・・・
-    if (c.info()["input"]["info"]["instanceName"] != info().at("instanceName")) {
-        if ( (info().hasKey("ownerContainerInstanceName")) ) {
-            if (c.info()["input"]["info"]["instanceName"].stringValue() !=
-               info().at("ownerContainerInstanceName").stringValue() + ":" + info().at("instanceName").stringValue()) {
-                return Value::error(logger::error("Operation::addConsumerConnection failed. Requested connection ({}) 's instanceName does not match to this operation.", c.info()));
-            }
-        }
+    if (c.info()["input"]["info"]["fullName"] != info().at("fullName")) {
+        return Value::error(logger::error("OperationBase::addConsumerConnection failed. Requested connection ({}) 's instanceName does not match to this operation.", c.info()));
     }
 
     const auto argumentName = c.info()["input"]["target"]["name"].stringValue();
@@ -211,7 +206,7 @@ Value OperationBase::push(const Value& ci, Value&& value) {
 }
 
 Value OperationBase::putToArgument(const std::string& argName, const Value& value) {
-    if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
+    if (isNull()) { return Value::error(logger::error("OperationBase({})::{} failed. Caller Operation is null.", info().at("fullName"), __func__)); }
     if (bufferMap_.count(argName) > 0) {
         {
             std::lock_guard<std::mutex> lock(argument_mutex_);
@@ -220,16 +215,16 @@ Value OperationBase::putToArgument(const std::string& argName, const Value& valu
         }
         return value;
     }
-    return Value::error(logger::error("OperationBaseBase::putToArgument({}) failed.", argName));
+    return Value::error(logger::error("OperationBase::putToArgument({}) failed.", argName));
 }
 
 Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
-    logger::trace("OperationBaseBase::putToArgumentViaConnection()");
+    logger::trace("OperationBase({})::putToArgumentViaConnection({}, {})", info().at("fullName"), conInfo.at("name"), value);
     if (isNull()) {
-         return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); 
+         return Value::error(logger::error("OperationBase::{} failed. Caller Operation is null.", __func__)); 
     }
     if (value.isError()) {
-        logger::error("{} failed. Argument Value is Error. ({})", __func__, str(value));
+        logger::error("OperationBase::{} failed. Argument Value is Error. ({})", __func__, str(value));
         return value;
     }
     const std::string& argName = conInfo.at("input").at("target").at("name").stringValue();
@@ -242,15 +237,17 @@ Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Valu
             argument_updated_ = true;
         }
         if (connection.isEvent()) {
-            execute();
+            logger::trace("In OperationBase({})::putToArgumentViaConnection({}) executing myself", info().at("fullName"), conInfo.at("fullName"));
+            auto v = execute();
+            logger::trace("In OperationBase::putToArgumentViaConnection(): execution result: {}", v);
         }
         return value;
     }
-    return Value::error(logger::error("OperationBaseBase::putToArgument({}) failed.", argName));
+    return Value::error(logger::error("OperationBaseBase::putToArgumentViaConnection({}) failed.", argName));
 }
 
 Value OperationBase::removeProviderConnection(const ConnectionInfo& ci) {
-    logger::trace("Operation::removeProviderConnection({})", str(ci));
+    logger::trace("OperationBase::removeProviderConnection({})", str(ci));
     if (isNull()) return Value::error(logger::error("Operation::removeProviderConnection failed. Operation is null"));
     //auto olist = getOutputConnectionList();
     for(auto it = this->outputConnectionList_.begin();it != outputConnectionList_.end();) {
@@ -262,7 +259,7 @@ Value OperationBase::removeProviderConnection(const ConnectionInfo& ci) {
 }
 
 Value OperationBase::removeConsumerConnection(const ConnectionInfo& ci) {
-    logger::trace("Operation::removeConsumerConnection({})", str(ci));
+    logger::trace("OperationBase::removeConsumerConnection({})", str(ci));
     if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
     const auto argName = ci.at("input").at("target").at("name").stringValue();
     for (auto it = inputConnectionListDictionary_[argName].begin(); it != inputConnectionListDictionary_[argName].end();) {
@@ -274,12 +271,8 @@ Value OperationBase::removeConsumerConnection(const ConnectionInfo& ci) {
 }
 
 
-
-
-
-
-
 Value Operation::call(const Value& value) {
+    logger::trace("Operation({})::call({})", info().at("fullName"), value);
     std::lock_guard<std::mutex> lock(mutex_);
     bool flag = false;
     argument_mutex_.lock();

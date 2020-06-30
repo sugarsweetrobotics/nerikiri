@@ -15,7 +15,7 @@ extern "C" {
     NK_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
-          {"name", "detectMultiScale"},
+          {"typeName", "detectMultiScale"},
           {"defaultArg", {
                 {"image", {
                     {"rows", 0},

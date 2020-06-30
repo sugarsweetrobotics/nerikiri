@@ -15,13 +15,19 @@ namespace nerikiri {
     std::function<Value(const Value&)> function_;
     
   public:
-    Operation(): OperationBase(), function_(nullptr) {}
+    Operation(): OperationBase(), function_(nullptr) {
 
-    Operation(Value&& info) : OperationBase(std::move(info)), function_(nullptr) {}
+    }
+
+    Operation(Value&& info) : OperationBase(std::move(info)), function_(nullptr) {
+
+    }
 
     Operation(Value&& info, std::function<Value(const Value&)> func): OperationBase(std::move(info)), function_((func)) {}
 
-    Operation(const Value& info, std::function<Value(const Value&)> func) : OperationBase(info), function_(func) {}
+    Operation(const Value& info, std::function<Value(const Value&)> func) : OperationBase(info), function_(func) {
+      
+    }
 
     virtual ~Operation() {}
 

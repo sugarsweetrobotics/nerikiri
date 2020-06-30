@@ -24,6 +24,8 @@ public:
 
     virtual Value getOperationInfos() const override;
 
+    virtual Value getAllOperationInfos() const override;
+
     virtual Value getContainerInfos() const override;
 
     virtual Value getContainerInfo(const Value& info) const override;
@@ -94,7 +96,7 @@ private:
   std::shared_ptr<BrokerAPI> coreBroker_;
 
 public:
-  CoreBrokerFactory(std::shared_ptr<BrokerAPI> coreBroker): BrokerFactory({{"name", "CoreBroker"}}), coreBroker_(coreBroker) {}
+  CoreBrokerFactory(std::shared_ptr<BrokerAPI> coreBroker): BrokerFactory({{"typeName", "CoreBroker"}}), coreBroker_(coreBroker) {}
   virtual ~CoreBrokerFactory() {}
 
 public:

@@ -4,4 +4,4 @@
 using namespace nerikiri;
 
 
-std::shared_ptr<ExecutionContext> ExecutionContext::null(new ExecutionContext());
+//std::shared_ptr<ExecutionContext> ExecutionContext::null(new ExecutionContext());

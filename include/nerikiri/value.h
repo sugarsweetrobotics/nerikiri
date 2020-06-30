@@ -352,6 +352,10 @@ namespace nerikiri {
 
     friend Value merge(const Value& v1, const Value& v2);
 
+#ifdef ERROR_MESSAGE_LEVEL_FAST
+#else
+    // Value errorMessageValue;
+#endif
   };
 
 
@@ -500,31 +504,38 @@ inline Value::~Value() {}
 
 inline bool Value::boolValue() const {
   if (isBoolValue()) return boolvalue_;
+  if (isError()) throw ValueTypeError(std::string("trying bool value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying bool value acecss. actual ") + getTypeString());
 }
 
 inline int64_t Value::intValue() const {
   if (isIntValue()) return intvalue_;
+  if (isError()) throw ValueTypeError(std::string("trying int64 value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying int value acecss. actual ") + getTypeString());
 }
 
 inline double Value::doubleValue() const {
   if (isDoubleValue()) return doublevalue_;
+  if (isError()) throw ValueTypeError(std::string("trying double value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying double value acecss. actual ") + getTypeString());
 }
 
 inline const std::string& Value::stringValue() const {
   if (isStringValue()) return stringvalue_;
+  if (isError()) throw ValueTypeError(std::string("trying string value acecss. actual Error(") + getErrorMessage() + ")");
+
   throw ValueTypeError(std::string("trying string value acecss. actual ") + getTypeString());
 }
 
 inline const std::map<std::string, Value>& Value::objectValue() const {
   if (isObjectValue()) return objectvalue_;
+  if (isError()) throw ValueTypeError(std::string("trying object value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
 }
 
 inline const std::vector<Value>& Value::listValue() const {
   if (isListValue()) return listvalue_;
+  if (isError()) throw ValueTypeError(std::string("trying list value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
 
@@ -563,22 +574,40 @@ inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::strin
 }
 
 
-
+#ifdef ERROR_MESSAGE_LEVEL_FAST
     static const Value errorTypeError  { Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value type is wrong."}; 
 
     static const Value errorError { Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value is ERROR type." }; 
 
     static const Value errorKeyError {Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But key is not included." }; 
+#else 
+    static Value errorMessageValue;
 
+#endif
     inline const Value& Value::at(const std::string& key) const {
       if (isError()) {
+#ifdef ERROR_MESSAGE_LEVEL_FAST
         return errorError;
+#else
+        errorMessageValue = Value{ Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value is ERROR type. (ErrorMessage is " + this->getErrorMessage() +")"};
+        return errorMessageValue;
+#endif
       }
       if (!isObjectValue()) {
+#ifdef ERROR_MESSAGE_LEVEL_FAST
         return errorTypeError;
+#else
+        errorMessageValue = Value{ Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value type is " + this->getTypeString() };
+        return errorMessageValue;
+#endif
       }
       if (objectvalue_.count(key) == 0) {
+#ifdef ERROR_MESSAGE_LEVEL_FAST
         return errorKeyError;
+#else
+        errorMessageValue = Value{ Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But key (" + key + ") is not included."};
+        return errorMessageValue;
+#endif
       }
       return objectvalue_.at(key);
     }

@@ -9,7 +9,7 @@
 using namespace nerikiri;
 
 DLLProxy::DLLProxy(const Value& info):info_(info) {
-    auto name = info.at("name").stringValue();
+    auto name = info.at("typeName").stringValue();
 #ifdef WIN32
     dll_name_ = name + ".dll";
     if (!(handle_ = ::LoadLibraryEx(dll_name_.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH))) {
@@ -21,7 +21,7 @@ DLLProxy::DLLProxy(const Value& info):info_(info) {
     }
 }
 
-DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"name", name}}) {
+DLLProxy::DLLProxy(std::string path, const std::string& name): info_({{"typeName", name}}) {
     if (path.rfind("/") != path.length()) path = path + "/";
 #ifdef WIN32
     dll_name_ = path + name + ".dll";

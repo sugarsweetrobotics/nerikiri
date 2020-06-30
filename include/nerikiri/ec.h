@@ -26,7 +26,6 @@ namespace nerikiri {
             operationBrokers_.clear();
         }
 
-        static std::shared_ptr<ExecutionContext> null;
 
     public:
         virtual bool start() {
@@ -57,18 +56,23 @@ namespace nerikiri {
         virtual bool onStopped() {return true;}
 
         virtual void svc() {
+            logger::trace("ExecutionContext::svc()");
             for(auto& op : operations_) {
                 try {
-                    op->execute();
+                    logger::trace("In EC::svc. OperationBase({})::executing....", op->info().at("fullName"));
+                    auto v = op->execute();
+                    logger::trace("In EC::svc. execution result is {}", v);
                 } catch (std::exception& ex) {
-                    logger::error("Exception in ExecutionContext::svc(): {}", ex.what());
+                    logger::error("In EC::svc. Exception in ExecutionContext::svc(): {}", ex.what());
                 }
             }
             for(auto& b : operationBrokers_) {
                 try {
-                    b.second->executeOperation(b.first);
+                    logger::trace("In EC::svc. Broker()::executing Operation({})....", b.first.at("fullName"));
+                    auto v = b.second->executeOperation(b.first);
+                    logger::trace("In EC::svc. execution result is {}", v);
                 } catch (std::exception& ex) {
-                    logger::error("Exception in ExecutionContext::svc(): {}", ex.what());
+                    logger::error("In EC::svc. Exception in ExecutionContext::svc(): {}", ex.what());
                 }
             }
         }
@@ -79,20 +83,11 @@ namespace nerikiri {
             }
             auto info = op->info();           
             for(auto it = operations_.begin(); it != operations_.end();++it) {
-                if ((*it)->info().at("instanceName") == info.at("instanceName")) {
-                    if ( !((*it)->info().hasKey("ownerContainerInstanceName")) && 
-                         !( info.hasKey("ownerContainerInstanceName")) ) {
-                        it = operations_.erase(it);
-                    }
-                    else if ( ((*it)->info().hasKey("ownerContainerInstanceName")) && 
-                         ( info.hasKey("ownerContainerInstanceName")) ) {
-                        
-                        if ((*it)->info().at("ownerContainerInstanceName") == 
-                             info.at("ownerContainerInstanceName")) {
-                            it = operations_.erase(it);
-                        }
-                    }
-                 }
+                if ((*it)->info().at("fullName") == info.at("fullName")) {
+                    
+                    it = operations_.erase(it);
+            
+                }
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
                 if ((*it).second->info().at("name") == info.at("name")) {
@@ -106,35 +101,29 @@ namespace nerikiri {
 
         Value bind(const Value& opInfo, std::shared_ptr<BrokerAPI> br) {
             /// 存在確認
-            if (opInfo.at("instanceName").stringValue().find(":") >= 0) {
-                auto instanceName = opInfo.at("instanceName").stringValue();
-                auto containerName = instanceName.substr(0, instanceName.find(":"));
-                auto operationName = instanceName.substr(instanceName.find(":")+1);
-                auto i = br->getContainerOperationInfo({{"instanceName", containerName}}, {{"instanceName", operationName}});
-                if (i.at("instanceName").stringValue() == "null") return i;
-            } else {
+            //if (opInfo.at("fullName").stringValue().find(":") >= 0) {
+            //    auto instanceName = opInfo.at("fullName").stringValue();
+            //    auto containerName = instanceName.substr(0, instanceName.find(":"));
+            //    auto operationName = instanceName.substr(instanceName.find(":")+1);
+            //    auto i = br->getContainerOperationInfo({{"fullName", containerName}}, {{"fullName", operationName}});
+            //    if (i.at("fullName").stringValue() == "null") return i;
+            //} else {
                 auto i = br->getOperationInfo(opInfo);
-                if (i.at("instanceName").stringValue() == "null") return i;
-            }
+                if (i.at("fullName").stringValue() == "null") return i;
+            //}
             operationBrokers_.push_back({opInfo, br});
             return br->info();
         }
 
         Value unbind(const Value& info) {
             for(auto it = operations_.begin(); it != operations_.end();++it) {
-                if ((*it)->info().at("instanceName") == info.at("instanceName")) {
+                if ((*it)->info().at("fullName") == info.at("fullName")) {
                     it = operations_.erase(it);
                     return info;
-                } else if ( ((*it)->info().hasKey("ownerContainerInstanceName"))) {
-                    auto instanceName = (*it)->info().at("ownerContainerInstanceName").stringValue() + ":" + (*it)->info().at("instanceName").stringValue();
-                    if (instanceName == info.at("instanceName").stringValue()) {
-                        it = operations_.erase(it);
-                        return info;
-                    }
-                }
+                } 
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it).first.at("instanceName") == info.at("instanceName")) {
+                if ((*it).first.at("fullName") == info.at("fullName")) {
                     it = operationBrokers_.erase(it);
                     return info;
                 } 
@@ -155,14 +144,19 @@ namespace nerikiri {
 
         std::shared_ptr<OperationBase> getBoundOperation(const Value& info) const {
             for(auto& op : operations_) {
-                if (op->info().at("instanceName") == info.at("instanceName")) {
+                if (op->info().at("fullName") == info.at("fullName")) {
                     return op;
                 }
             }
-            return OperationBase::null;
+            return nullOperation();
         }
     };
     
+
+    inline std::shared_ptr<ExecutionContext> nullExecutionContext() {
+      return std::make_shared<ExecutionContext>();
+    }
+
     class ExecutionContextFactory {
     public:
         virtual ~ExecutionContextFactory() {}

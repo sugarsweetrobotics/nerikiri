@@ -19,7 +19,7 @@ namespace nerikiri {
             flag = argument_updated_;
             argument_mutex_.unlock();
             if (flag) {
-                std::cout << "Topic (" + this->info().at("instanceName").stringValue() + ") called with " + str(value) << std::endl;;
+                //std::cout << "Topic (" + this->info().at("instanceName").stringValue() + ") called with " + str(value) << std::endl;;
                 if (value.hasKey("data"))
                     outputBuffer_.push(value.at("data"));
                 argument_mutex_.lock();
@@ -66,4 +66,8 @@ namespace nerikiri {
             return std::make_shared<Topic>(); // Null Topic
         }
     };
+
+    inline std::shared_ptr<Topic> nullTopic() {
+        return std::make_shared<Topic>();
+    }
 }

@@ -12,7 +12,7 @@ extern "C" {
     NK_OPERATION  void* TurtleSim_setVelocity() {
         return containerOperationFactory<TurtleSim>(
             {
-              {"name", "setVelocity"},
+              {"typeName", "setVelocity"},
               {"defaultArg", {
                   {"data", {
                     {"name", "turtle0"},

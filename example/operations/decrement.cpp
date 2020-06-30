@@ -8,7 +8,7 @@ using namespace nerikiri;
 extern "C" {
 
     NK_OPERATION void* decrement() {
-        return operationFactory({ {"name", "decrement"},
+        return operationFactory({ {"typeName", "decrement"},
               {"defaultArg", {
                 {"arg01", 0}
               }}
