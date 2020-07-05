@@ -117,10 +117,9 @@ namespace nerikiri {
 
 	Value execute() {
 		  if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
-	//	  logger::trace(("OperationBase(" + this->info().at("instanceName").stringValue() + ") invoking").c_str());
 		  Value&& v = this->invoke();
-	//	  logger::trace(("OperationBase(" + this->info().at("instanceName").stringValue() + ") invoked").c_str());
-		  for (auto& c : outputConnectionList_) {
+	
+  	  for (auto& c : outputConnectionList_) {
 			  c.putToArgumentViaConnection(v);
 		  }
 		  return v;

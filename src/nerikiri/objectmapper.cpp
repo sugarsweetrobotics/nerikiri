@@ -18,34 +18,34 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
         return store->info();
     }
     if (path == "/process/operations/") {
-        return store->getOperationInfos();
+        return store->getAllOperationInfos();
     }
     if (path == "/process/all_operations/") {
       return store->getAllOperationInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/info/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->info();
+        return store->getAllOperation({{"fullName", Value(match[1])}})->info();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->invoke();
+        return store->getAllOperation({{"fullName", Value(match[1])}})->invoke();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->getConnectionInfos();
+        return store->getAllOperation({{"fullName", Value(match[1])}})->getConnectionInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/connections/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->getInputConnectionInfos();
+        return store->getAllOperation({{"fullName", Value(match[1])}})->getInputConnectionInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->getInputConnectionInfo(match[2]);
+        return store->getAllOperation({{"fullName", Value(match[1])}})->getInputConnectionInfo(match[2]);
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
-        return store->getOperation({{"fulllName", Value(match[1])}})->getInputConnectionInfo(match[2], {{"name", Value(match[3])}});
+        return store->getAllOperation({{"fulllName", Value(match[1])}})->getInputConnectionInfo(match[2], {{"name", Value(match[3])}});
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->getOutputConnectionInfos();
+        return store->getAllOperation({{"fullName", Value(match[1])}})->getOutputConnectionInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/([^/]*)/"))) {
-        return store->getOperation({{"fullName", Value(match[1])}})->getOutputConnectionInfo({{"name", Value(match[2])}});
+        return store->getAllOperation({{"fullName", Value(match[1])}})->getOutputConnectionInfo({{"name", Value(match[2])}});
     }
 
     if (path == "/process/containers/") {
@@ -168,10 +168,10 @@ Value ObjectMapper::updateResource(ProcessStore* store, const std::string& path,
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/execution/"))) {
     logger::trace("In ObjectMapper::updateResource. executing operation(store, {})", value);
-    return store->getOperation({{"fullName", Value(match[1])}})->execute();
+    return store->getAllOperation({{"fullName", Value(match[1])}})->execute();
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {
-    return store->getOperation({{"fullName", Value(match[1])}})->putToArgument(match[2], value);
+    return store->getAllOperation({{"fullName", Value(match[1])}})->putToArgument(match[2], value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     if (value.isError()) {

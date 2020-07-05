@@ -1,5 +1,5 @@
 {
-    "logger": { "logLevel": "TRACE" },
+    "logger": { "logLevel": "INFO" },
 
     "load_paths": ["./"],
 
@@ -82,7 +82,7 @@
           {
             "typeName": "TimerEC",
             "instanceName": "TimerEC0.ec",
-            "rate": 1000.0
+            "rate": 30.0
           }
         ],
         "bind": {

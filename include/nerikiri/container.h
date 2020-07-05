@@ -188,12 +188,9 @@ namespace nerikiri {
         auto it = operations_.begin();
         for(;it != operations_.end();++it) {
             auto op = *it;
-            auto instanceName = opInfo.at("instanceName").stringValue();
-            auto pos = instanceName.find(":");
-            if (pos >= 0) {
-                instanceName = instanceName.substr(pos+1);
-            }
-            if (op->info().at("instanceName").stringValue() == instanceName) {
+            auto instanceName = opInfo.at("fullName").stringValue();
+            
+            if (op->info().at("fullName").stringValue() == instanceName) {
                 // match operation
                 it = operations_.erase(it);
                 return opInfo;
