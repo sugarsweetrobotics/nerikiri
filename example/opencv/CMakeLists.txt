@@ -1,9 +1,10 @@
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/libaqua2/include)
+# include_directories(${CMAKE_SOURCE_DIR}/thirdparty/libaqua2/include)
 
 set(OPERATIONS)
 
 find_package(OpenCV REQUIRED)
+
 function(add_operation NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
   add_dependencies(${NAME} nerikiri)

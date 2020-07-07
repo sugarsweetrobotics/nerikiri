@@ -49,13 +49,10 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
   return store.addExecutionContext(f->create(value));
 }
 
-
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   return store.addTopic(store.getTopicFactory(topicInfo)->create(topicInfo));
   return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
 }
-
-
 
 Value ObjectFactory::deleteOperation(ProcessStore& store, const Value& info) {
   return store.deleteOperation(info);
