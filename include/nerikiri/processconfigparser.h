@@ -82,10 +82,43 @@ namespace nerikiri {
       auto v = nerikiri::json::toValue(fp);
       v["projectDir"] = projectDir;
       v["projectFilePath"] = projectFilePath;
-      return parseShelves(v, projectDir);
+      auto vv = parseSubProjects(v, projectDir);
+      return parseShelves(vv, projectDir);
     }
 
   private:
+
+    static Value parseSubProjects(const Value& value, const std::string& projectDir) {
+      logger::trace("ProcessConfigParser::parseSubProjects()");
+      std::map<std::string, std::string> env_dictionary;
+      if (value.hasKey("includes") && value.at("includes").isListValue()) {
+        Value retval({});
+        value.at("includes").list_for_each([&env_dictionary, &projectDir, &retval](auto v) {
+          auto projpath =  v.at("path").stringValue();
+          if (projpath.find("/") != 0) {
+            projpath = projectDir + projpath;
+          }
+          auto projDir = projpath.substr(0, projpath.rfind("/")+1);
+          env_dictionary["${SubProjectDirectory}"] = projDir;
+          logger::trace(" - SubProjectDirectory = {}", projDir);
+          retval.operator=(merge(retval, replaceAndCopy(parseSubProject(projpath, projectDir), env_dictionary)));
+        });
+        return merge(retval, value);
+      }
+      return value;
+    }
+
+    static Value parseSubProject(const std::string& projFilePath, const std::string& projectDir) {
+      logger::trace("ProcessConfigParser::parseSubProject({})", projFilePath);
+      auto fp = fopen(projFilePath.c_str(), "r");
+      if (fp == nullptr) {
+        logger::warn("ProcessConfigParser::parseSubProject failed. File is " + projFilePath);
+        return Value({});
+      }
+      auto v = nerikiri::json::toValue(fp);
+      return parseSubProjects(v, projectDir);
+    }
+
 
     static Value parseShelves(const Value& value, const std::string& projectDir) {
       logger::trace("ProcessConfigParser::parseShelves()");
@@ -93,7 +126,10 @@ namespace nerikiri {
       if (value.hasKey("shelves") && value.at("shelves").isListValue()) {
         Value retval({});
         value.at("shelves").list_for_each([&env_dictionary, &projectDir, &retval](auto v) {
-          auto shelfpath = projectDir +  v.at("path").stringValue();
+          auto shelfpath = v.at("path").stringValue();
+          if (shelfpath.find("/") != 0) {
+            shelfpath = projectDir + shelfpath;
+          }
           auto shelfDir = shelfpath.substr(0, shelfpath.rfind("/")+1);
           env_dictionary["${ShelfDirectory}"] = shelfDir;
           logger::trace(" - ShelfDirectory = {}", shelfDir);

@@ -3,46 +3,14 @@
 
     "load_paths": ["./"],
 
-    "shelves": [
-        {"path": "turtlesim/turtlesim.nkshelf"},
-        {"path": "brokers.nkshelf"}
+    "includes": [
+        {"path": "turtlesim/turtlesim.nkproj"}
     ],
 
-    "operations": {
-        "precreate": [
-        ]
-    },
-
-    "containers": {
-        "precreate": [
-            {
-                "typeName": "TurtleSim",
-                "instanceName": "TurtleSim0.ctn",
-                "operations": [
-                    {
-                        "typeName": "update",
-                        "instanceName": "update0.ope"
-                    },
-                    {
-                        "typeName": "spawn",
-                        "instanceName": "spawn0.ope"
-                    },
-                    {
-                        "typeName": "kill",
-                        "instanceName": "kill0.ope"
-                    },
-                    {
-                        "typeName": "setVelocity",
-                        "instanceName": "setVelocity0.ope"
-                    },
-                    {
-                        "typeName": "getPose",
-                        "instanceName": "getPose0.ope"
-                    }
-                ]
-            }
-        ]
-    },
+    "shelves": [
+        {"path": "brokers.nkshelf"},
+        {"path": "ecs.nkshelf"}
+    ],
 
     "brokers": {
         "precreate": [ 
@@ -61,8 +29,6 @@
     },
 
     "ecs": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example", "../../build/example", "../build/bin/Debug", "../../build/bin/Debug", "../../../build/bin"],
-        "preload": ["TimerEC"],
         "precreate": [
           {
             "typeName": "TimerEC",

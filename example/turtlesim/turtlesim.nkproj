@@ -1,0 +1,46 @@
+{
+    "logger": { "logLevel": "INFO" },
+
+    "load_paths": ["./"],
+
+    "shelves": [
+        {"path": "${SubProjectDirectory}/turtlesim.nkshelf"}
+    ],
+
+    "operations": {
+        "precreate": [
+        ]
+    },
+
+    "containers": {
+        "precreate": [
+            {
+                "typeName": "TurtleSim",
+                "instanceName": "TurtleSim0.ctn",
+                "operations": [
+                    {
+                        "typeName": "update",
+                        "instanceName": "update0.ope"
+                    },
+                    {
+                        "typeName": "spawn",
+                        "instanceName": "spawn0.ope"
+                    },
+                    {
+                        "typeName": "kill",
+                        "instanceName": "kill0.ope"
+                    },
+                    {
+                        "typeName": "setVelocity",
+                        "instanceName": "setVelocity0.ope"
+                    },
+                    {
+                        "typeName": "getPose",
+                        "instanceName": "getPose0.ope"
+                    }
+                ]
+            }
+        ]
+    }
+
+}  

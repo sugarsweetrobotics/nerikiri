@@ -61,9 +61,9 @@ namespace nerikiri {
     std::string contentType;
     std::ifstream file_;
     bool is_file_;
-    Response() : version("1.0"), status(0) {}
-    Response(int32_t s) : version("1.0"), status(s), body("") {}
-    Response(int32_t s, std::string &&body, std::string&&  contentType) : version("1.0"), status(s), body(body), contentType(contentType) {}
+    Response() : version("1.0"), status(0), is_file_(false) {}
+    Response(int32_t s) : version("1.0"), status(s), body(""), is_file_(false) {}
+    Response(int32_t s, std::string &&body, std::string&&  contentType) : version("1.0"), status(s), body(body), contentType(contentType), is_file_(false) {}
     Response(const std::string& filepath) : version("1.0"), file_(filepath, std::ios_base::binary) {
       if (file_.is_open()) {
         status = 200;
@@ -80,8 +80,8 @@ namespace nerikiri {
         is_file_ = false;
       }      
     }
-    Response(int32_t s, const std::string &body, const std::string& contentType) : version("1.0"), status(s), body(body), contentType(contentType) {}
-    Response(Response &&r) : version(r.version), status(r.status), body(r.body) {}
+    Response(int32_t s, const std::string &body, const std::string& contentType) : version("1.0"), status(s), body(body), contentType(contentType), is_file_(false) {}
+    Response(Response &&r) : version(r.version), status(r.status), body(r.body), is_file_(false) {}
     Response& operator=(const Response&& r) {
       version = r.version;
       status = r.status;

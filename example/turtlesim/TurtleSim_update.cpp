@@ -19,7 +19,7 @@ extern "C" {
         t->th = t->th + dth;
         while (t->th > M_PI) t->th -= M_PI*2;
         while (t->th < -M_PI) t->th += M_PI*2;
-        std::cout << "Turtle(" << t->name << " (" << t->x << "," << t->y << "," << t->th << ") )" << std::endl;
+        //std::cout << "Turtle(" << t->name << " (" << t->x << "," << t->y << "," << t->th << ") )" << std::endl;
     }
 
     NK_OPERATION  void* TurtleSim_update() {
@@ -31,7 +31,7 @@ extern "C" {
                 }},
             },
             [](auto& container, auto arg) {
-                std::cout << "TurtleSim_update called." << std::endl;
+                //std::cout << "TurtleSim_update called." << std::endl;
                 auto now = std::chrono::system_clock::now();
                 auto dt = std::chrono::duration_cast<std::chrono::microseconds>(now - container.now).count() / 1000000.0;
                 container.now = now;

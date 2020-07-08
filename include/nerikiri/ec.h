@@ -28,25 +28,25 @@ namespace nerikiri {
 
 
     public:
-        virtual bool start() {
+        virtual Value start() {
             if (info_["state"].stringValue() != "started") {
                 onStarting();
                 info_["state"] = Value("started");
                 if (!onStarted()) {
                     stop();
-                    return false;
+                    return Value::error("ExecutionContext::start() failed. onStarted callback returns false.");;
                 }
             }
-            return true;
+            return info();
         }
 
-        virtual bool stop() {
+        virtual Value stop() {
             if (info_["state"].stringValue() != "stopped") {
                 onStopping();
                 info_["state"] = Value("stopped");
                 onStopped();
             }
-            return true;
+            return info();
         }
 
         virtual bool onStarting() {return true;};

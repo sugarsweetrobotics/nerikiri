@@ -1,14 +1,14 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/containeroperationfactory.h"
 
-#include "JoyController.h"
+#include "KeyboardJoy.h"
 
 using namespace nerikiri;
 
 extern "C" {
 
-    NK_OPERATION  void* JoyController_initialize() {
-        return containerOperationFactory<JoyController>(
+    NK_OPERATION  void* KeyboardJoy_initialize() {
+        return containerOperationFactory<KeyboardJoy>(
         {
           {"typeName", "initialize"},
           {"defaultArg", {
@@ -16,7 +16,7 @@ extern "C" {
           }},
         },
         [](auto& container, auto arg) {
-            container.gamepad = std::make_shared<ssr::aqua2::GamePad>(arg.at("arg").stringValue().c_str());
+            ::initialize(container);
             return arg;
         });
     }

@@ -1,0 +1,37 @@
+{
+    "logger": { "logLevel": "INFO" },
+
+    "load_paths": ["./"],
+
+    "shelves": [
+        {"path": "${SubProjectDirectory}/joy.nkshelf"}
+    ],
+
+    "operations": {
+        "precreate": [
+        ]
+    },
+
+    "containers": {
+        "precreate": [
+            {
+                "typeName": "KeyboardJoy",
+                "instanceName": "KeyboardJoy0.ctn",
+                "operations": [
+                    {
+                        "typeName": "update",
+                        "instanceName": "update0.ope"
+                    },
+                    {
+                        "typeName": "initialize",
+                        "instanceName": "initialize0.ope"
+                    },
+                    {
+                        "typeName": "get",
+                        "instanceName": "get0.ope"
+                    }
+                ]
+            }
+        ]
+    }
+}  

@@ -6,6 +6,7 @@
     "configurations": [
 
 
+
     
 
         {
@@ -114,13 +115,12 @@
 
         },
         {
-            "name": "Debug ec_test",
+            "name": "Debug turtle_sim_teleop",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/test/ec_test",
-            "args": [],
-            "cwd": "${workspaceFolder}/test"
-
+            "program": "${workspaceFolder}/build/bin/nkd",
+            "args": ["${workspaceFolder}/example/turtlesim_keyteleop.nkproj"],
+            "cwd": "${workspaceFolder}/example"
         },
         {
             "name": "Debug turtle_sim",
@@ -136,6 +136,17 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/nkd",
             "args": ["${workspaceFolder}/example/opencv.nkproj"],
+            "cwd": "${workspaceFolder}/example/",
+            "env": {
+                "OPENCV_AVFOUNDATION_SKIP_AUTH": "1"
+            }
+        },
+        {
+            "name": "Debug joy",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/nkd",
+            "args": ["${workspaceFolder}/example/joy.nkproj"],
             "cwd": "${workspaceFolder}/example/",
             "env": {
                 "OPENCV_AVFOUNDATION_SKIP_AUTH": "1"

@@ -122,9 +122,24 @@ void Process::_setupLogger() {
 
 void Process::parseConfigFile(const std::string& filepath) {
   logger::trace("Process::parseConfigFile({})", filepath);
+
+  /// まず読み込んでみてロガーの設定を確認します
+  auto fp = fopen(filepath.c_str(), "r");
+  if (fp == nullptr) {
+    logger::warn("ProcessConfigParser::parseConfig failed. File pointer is NULL.");
+  }
+  auto v = nerikiri::json::toValue(fp);
+  if (v.hasKey("logger")) {
+    auto loggerConf = v.at("logger");
+    if (loggerConf.hasKey("logLevel")) {
+      auto loglevel_str = loggerConf.at("logLevel").stringValue();
+      logger::setLogLevel(loglevel_str);
+    }
+  }
+
+  
   /// ここでプロジェクトを読み込む
   config_ = merge(config_, ProcessConfigParser::parseProjectFile(filepath));
-
   /// ここで環境変数の辞書の設定
   if (filepath.find("/") != 0) {
     env_dictionary_["${ProjectDirectory}"] = nerikiri::getCwd() + "/";
@@ -137,6 +152,7 @@ void Process::parseConfigFile(const std::string& filepath) {
 }
 
 void Process::_preloadOperations() {
+  logger::trace("Process::_preloadOperations()");
   try {
     auto c = config_.at("operations").at("preload");
     c.list_for_each([this](auto& value) {
@@ -164,6 +180,7 @@ void Process::_preloadOperations() {
 
 
 void Process::_preloadContainers() {
+  logger::trace("Process::_preloadContainers()");
   try {
     auto c = config_.at("containers").at("preload");
     c.object_for_each([this](auto& key, auto& value) {
@@ -203,6 +220,7 @@ void Process::_preloadContainers() {
 }
 
 void Process::_preloadExecutionContexts() {
+  logger::trace("Process::_preloadExecutionContexts()");
   try {
     auto c = config_.at("ecs").at("preload");
     c.list_for_each([this](auto& value) {
@@ -241,6 +259,8 @@ void Process::_preloadExecutionContexts() {
 
 
 void Process::_preStartExecutionContexts() {
+
+  logger::trace("Process::_preStartExecutionContexts()");
   try {
     auto c = config_.at("ecs").at("start");
     c.list_for_each([this](auto& value) {

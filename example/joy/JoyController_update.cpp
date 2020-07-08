@@ -10,13 +10,13 @@ extern "C" {
     NK_OPERATION  void* JoyController_update() {
         return containerOperationFactory<JoyController>(
         {
-          {"name", "update"},
+          {"typeName", "update"},
           {"defaultArg", {
               {}
           }},
         },
         [](auto& container, auto arg) {
-            std::cout << "JoyController_update called" << std::endl;
+            // std::cout << "JoyController_update called" << std::endl;
             if (container.gamepad) {
                 container.gamepad->update();
                 auto v = Value(container.gamepad->buttons);

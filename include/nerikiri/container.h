@@ -166,7 +166,7 @@ namespace nerikiri {
     inline Value ContainerBase::addOperation(std::shared_ptr<ContainerOperationBase> operation) { 
 
         if (operation->getInstanceName() == "") {
-          auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("name").stringValue(), ".ope");
+          auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("typeName").stringValue(), ".ope");
           operation->setFullName(getFullName(), name);
         } else {
           if (!getOperation(operation->info())->isNull()) {

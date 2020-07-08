@@ -46,10 +46,18 @@ function(add_container NAME)
   set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
 endfunction(add_container)
 
+add_operation(joy2turtlevel)
+
 add_container(JoyController)
 add_container(JoyController_initialize)
 add_container(JoyController_update)
 add_container(JoyController_get)
+
+
+add_container(KeyboardJoy)
+add_container(KeyboardJoy_initialize)
+add_container(KeyboardJoy_get)
+add_container(KeyboardJoy_update)
 
 set(JOY_MODULES ${OPERATIONS} ${CONTAINERS} PARENT_SCOPE)
 

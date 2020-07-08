@@ -1,0 +1,66 @@
+{
+    "logger": { "logLevel": "INFO" },
+
+    "load_paths": ["./"],
+
+    "shelves": [
+        {"path": "${SubProjectDirectory}/opencv.nkshelf"}
+    ],
+
+    "operations": {
+        "precreate": [
+            {
+                "typeName": "cv_flip",
+                "instanceName": "cv_flip0.ope"
+            },
+            {
+                "typeName": "cv_drawRects",
+                "instanceName": "cv_drawRects0.ope",
+                "subscribe": {
+                    "image": ["::image"],
+                    "rects": ["::rects"]
+                }
+            }
+        ]
+    },
+
+    "containers": {
+        "precreate": [
+            { 
+                "typeName": "OpenCVCamera",
+                "instanceName": "OpenCVCamera0.ctn",
+                "operations": [
+                    {
+                        "typeName": "initialize",
+                        "instanceName": "initialize0.ope"
+                    },
+                    {
+                        "typeName": "capture",
+                        "instanceName": "capture0.ope",
+                        "publish": ["::image"]
+                    }
+                ]
+            },
+            { 
+                "typeName": "OpenCVCascadeClassifier",
+                "instanceName": "OpenCVCascadeClassifier0.ctn",
+                "operations": [
+                    {
+                        "typeName": "initialize",
+                        "instanceName": "initialize0.ope"
+                    },
+                    {
+                        "typeName": "detectMultiScale",
+                        "instanceName": "detectMultiScale0.ope",
+                        "subscribe": {
+                            "image": ["::image"]
+                        },
+                        "publish": ["::rects"]
+                    }
+                ]
+            }
+        ]
+    }
+
+    
+}  

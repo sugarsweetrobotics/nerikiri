@@ -1,0 +1,6 @@
+{
+    "ecs": {
+        "load_paths": ["../ecs", "../build/lib"],
+        "preload": ["TimerEC"]
+    }
+}

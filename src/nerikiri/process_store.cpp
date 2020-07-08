@@ -228,7 +228,7 @@ std::shared_ptr<ContainerFactoryBase> ProcessStore::getContainerFactory(const Va
       return f;
     }
   }
-  logger::error("getContainerFactory failed. Can not find appropreate container factory.");
+  logger::error("ProcessStore::getContainerFactory({}) failed. Can not find appropreate container factory.", info.at("typeName"));
   return nullptr;
 }
 

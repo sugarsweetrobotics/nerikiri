@@ -18,7 +18,7 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
         return store->info();
     }
     if (path == "/process/operations/") {
-        return store->getAllOperationInfos();
+        return store->getOperationInfos();
     }
     if (path == "/process/all_operations/") {
       return store->getAllOperationInfos();
@@ -150,7 +150,7 @@ Value ObjectMapper::createResource(ProcessStore* store, const std::string& path,
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {
     if (value.stringValue() == "started") {
-        return store->getExecutionContext({{"fullName", Value(match[1])}})->start();
+        return store->getExecutionContext({{"fullName", Value(match[1])}})->start();  
     } else if (value.stringValue() == "stopped") {
         return store->getExecutionContext({{"fullName", Value(match[1])}})->stop();
     }

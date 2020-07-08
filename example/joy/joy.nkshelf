@@ -4,13 +4,16 @@
 
     "operations": {
         "load_paths": ["${ShelfDirectory}", "../build/lib/Debug"],
-        "preload": []
+        "preload": [
+            "joy2turtlevel"
+        ]
     },
 
     "containers": {
       "load_paths": [ "${ShelfDirectory}", "../build/lib/Debug}" ],
         "preload": {
-            "JoyController": ["initialize", "get", "update"]
+            "JoyController": ["initialize", "get", "update"],
+            "KeyboardJoy": ["initialize", "get", "update"]
         }
     }
 }

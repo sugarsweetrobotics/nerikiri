@@ -4,15 +4,23 @@
     "load_paths": ["./"],
 
     "includes": [
-        {"path": "opencv/opencv.nkproj"}
+        {"path": "turtlesim/turtlesim.nkproj"},
+        {"path": "joy/keyjoy.nkproj"}
     ],
 
-    
     "shelves": [
-        {"path": "opencv/opencv.nkshelf"},
         {"path": "brokers.nkshelf"},
         {"path": "ecs.nkshelf"}
     ],
+
+    "operations": {
+        "precreate": [
+            {
+                "typeName": "joy2turtlevel",
+                "instanceName": "joy2turtlevel0.ope"
+            }
+        ]
+    },
 
     "brokers": {
         "precreate": [ 
@@ -21,7 +29,11 @@
             "instanceName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080,
-            "baseDir": "${ProjectDirectory}/../systemeditor"
+            "baseDir": "${ProjectDirectory}/../systemeditor",
+            "route": {
+                "/turtlesim/(.*)": "${ProjectDirectory}turtlesim/"
+            }
+            
           }
         ]
     },
@@ -31,13 +43,17 @@
           {
             "typeName": "TimerEC",
             "instanceName": "TimerEC0.ec",
-            "rate": 30.0
+            "rate": 10.0
           }
         ],
         "bind": {
             "TimerEC0.ec": [
                 {
-                    "fullName": "OpenCVCamera0.ctn:capture0.ope",
+                    "fullName": "TurtleSim0.ctn:update0.ope",
+                    "broker": "CoreBroker"
+                },
+                {
+                    "fullName": "KeyboardJoy0.ctn:update0.ope",
                     "broker": "CoreBroker"
                 }
             ]
@@ -54,20 +70,11 @@
             "name": "on_started",
             "target": [
                 {
-                    "fullName": "OpenCVCamera0.ctn:initialize0.ope",
-                    "argument":  {
-                        "cameraId": 0,
-                        "width": 320,
-                        "height": 240
-                    }
-                },
-                {
-                    "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
-                    "argument":  {
-                        "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
-                    }
+                    "fullName": "KeyboardJoy0.ctn:initialize0.ope",
+                    "argument": {
+                        "arg": ""
+                    } 
                 }
-            
             ]
         }
     ]

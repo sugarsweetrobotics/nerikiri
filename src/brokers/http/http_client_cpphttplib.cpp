@@ -23,8 +23,8 @@ public:
     double to_sec = floor(sec);
     double m = sec - to_sec;
     double to_usec = floor(m/1000000);      
-    client_.set_read_timeout(to_sec, to_usec);
-    client_.set_write_timeout(to_sec, to_usec);
+    //client_.set_read_timeout(to_sec, to_usec);
+    //client_.set_write_timeout(to_sec, to_usec);
   }
 public:
   virtual Response request(const std::string& url, const std::string& method) {
