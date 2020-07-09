@@ -8,6 +8,8 @@
 #include "nerikiri/operation.h"
 #include "nerikiri/naming.h"
 
+#include "nerikiri/containeroperationbase.h"
+
 namespace nerikiri {
 
 
