@@ -3,6 +3,7 @@
 #include <memory>
 #include "nerikiri/value.h"
 #include "nerikiri/broker.h"
+#include "nerikiri/nullbroker.h"
 
 namespace nerikiri {
 

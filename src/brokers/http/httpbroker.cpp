@@ -14,7 +14,7 @@
 
 
 #include "nerikiri/broker.h"
-#include "nerikiri/brokerproxy.h"
+#include "nerikiri/abstractbrokerproxy.h"
 #include "nerikiri/brokerfactory.h"
 
 #include "nerikiri/json.h"
