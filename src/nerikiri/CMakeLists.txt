@@ -9,7 +9,7 @@ logger.cpp
 objectmapper.cpp 
 objectfactory.cpp
 brokerfactory.cpp
-#brokerselector.cpp 
+fsm.cpp
 dllproxy.cpp 
 corebroker.cpp
 broker.cpp
