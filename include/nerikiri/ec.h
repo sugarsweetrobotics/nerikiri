@@ -69,7 +69,7 @@ namespace nerikiri {
             for(auto& b : operationBrokers_) {
                 try {
                     logger::trace("In EC::svc. Broker()::executing Operation({})....", b.first.at("fullName"));
-                    auto v = b.second->executeOperation(b.first);
+                    auto v = b.second->executeOperation(b.first.at("fullName").stringValue());
                     logger::trace("In EC::svc. execution result is {}", v);
                 } catch (std::exception& ex) {
                     logger::error("In EC::svc. Exception in ExecutionContext::svc(): {}", ex.what());
@@ -108,7 +108,7 @@ namespace nerikiri {
             //    auto i = br->getContainerOperationInfo({{"fullName", containerName}}, {{"fullName", operationName}});
             //    if (i.at("fullName").stringValue() == "null") return i;
             //} else {
-                auto i = br->getOperationInfo(opInfo);
+                auto i = br->getOperationInfo(opInfo.at("fullName").stringValue());
                 if (i.at("fullName").stringValue() == "null") return i;
             //}
             operationBrokers_.push_back({opInfo, br});

@@ -133,13 +133,13 @@ public:
     });
 
 
-      for(auto [k, v] : route_) {
-        const std::string path = v;
-        server_->response(k, "GET", "text/html", [this, path, &process](const nerikiri::Request& req) -> nerikiri::Response {
-          const std::string relpath = req.matches[1];
-          return nerikiri::Response(path + relpath);
-        });
-      }
+    for(auto [k, v] : route_) {
+      const std::string path = v;
+      server_->response(k, "GET", "text/html", [this, path, &process](const nerikiri::Request& req) -> nerikiri::Response {
+        const std::string relpath = req.matches[1];
+        return nerikiri::Response(path + relpath);
+      });
+    }
 
     Broker::run(process);
     server_->runBackground(port_);

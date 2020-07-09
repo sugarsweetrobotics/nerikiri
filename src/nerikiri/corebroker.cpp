@@ -88,13 +88,13 @@ Value CoreBroker::removeProviderConnection(const ConnectionInfo& ci) {
     return ConnectionBuilder::deleteProviderConnection(process_->store(), ci);
 }
 
-Value CoreBroker::putToArgument(const Value& opInfo, const std::string& argName, const Value& value) {
+Value CoreBroker::putToArgument(const std::string& fullName, const std::string& argName, const Value& value) {
     logger::trace("CoreBroker::putToArgument()");
     //return this->process_->putToArgument(opInfo, argName, value);    
     return process_->store()->getOperationOrTopic(opInfo)->putToArgument(argName, value);
 }
 
-Value CoreBroker::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
+Value CoreBroker::putToArgumentViaConnection(const std::string& fullName, const std::string& conName, const Value& value) {
     logger::trace("CoreBroker::putToArgumentViaConnection({})", conInfo.at("name"));
     return process_->store()->getOperationOrTopic(conInfo.at("input").at("info"))->putToArgumentViaConnection(
         conInfo, value);

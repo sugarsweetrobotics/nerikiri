@@ -10,34 +10,46 @@
 using namespace nerikiri;
 
 
-Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::string& path) {
+Value ObjectMapper::readResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path) {
 
     std::smatch match;
 
     if (path == "/process/info/") {
-        return store->info();
+        return coreBroker->getProcessInfo();
     }
     if (path == "/process/operations/") {
-        return store->getOperationInfos();
+        return coreBroker->getOperationInfos();
     }
     if (path == "/process/all_operations/") {
-      return store->getAllOperationInfos();
+      return coreBroker->getAllOperationInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/info/"))) {
-        return store->getAllOperation({{"fullName", Value(match[1])}})->info();
+        return coreBroker->getOperationInfo(match[1]);
+    }
+    if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/info/"))) {
+        return coreBroker->getAllOperationInfo(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
-        return store->getAllOperation({{"fullName", Value(match[1])}})->invoke();
+        return coreBroker->invokeOperation(match[1]);
     }
+    if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/"))) {
+        return coreBroker->invokeAllOperation(match[1]);
+    }
+
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
-        return store->getAllOperation({{"fullName", Value(match[1])}})->getConnectionInfos();
+        return coreBroker->getOperationConnectionInfos(match[1]);
     }
+    if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/connections/"))) {
+        return coreBroker->getAllOperationConnectionInfos(match[1]);
+    }
+    /*
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/connections/"))) {
         return store->getAllOperation({{"fullName", Value(match[1])}})->getInputConnectionInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
         return store->getAllOperation({{"fullName", Value(match[1])}})->getInputConnectionInfo(match[2]);
     }
+    
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
         return store->getAllOperation({{"fulllName", Value(match[1])}})->getInputConnectionInfo(match[2], {{"name", Value(match[3])}});
     }
@@ -47,147 +59,150 @@ Value ObjectMapper::readResource(nerikiri::ProcessStore* store, const std::strin
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/([^/]*)/"))) {
         return store->getAllOperation({{"fullName", Value(match[1])}})->getOutputConnectionInfo({{"name", Value(match[2])}});
     }
-
+    */
     if (path == "/process/containers/") {
-        return store->getContainerInfos();
+      return coreBroker->getContainerInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/"))) {
-        return store->getContainer({{"fullName", Value(match[1])}})->info();
+      return coreBroker->getContainerInfo(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
-        return store->getContainer({{"fullName", Value(match[1])}})->getOperationInfos();
+      return coreBroker->getContainerOperationInfos(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/info/"))) {
-        return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->info();
+      return coreBroker->getContainerOperationInfos(match[1].str() + ":" + match[2].str());
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-        return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->invoke();
+      return coreBroker->invokeContainerOperation(match[1].str() + ":" + match[2].str());
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/"))) {
-        return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->getConnectionInfos();
+      return coreBroker->getContainerOperationConnectionInfos(match[1].str() + ":" + match[2].str());
     }
 
     if (path == "/process/connections/") {
-      return store->getConnectionInfos();
+      return coreBroker->getConnectionInfos();
     }
-
     if (path == "/process/ecfactories/") {
-        return store->getExecutionContextFactoryInfos();
+        return coreBroker->getExecutionContextFactoryInfos();
     }
     if (path == "/process/ecs/") {
-        return store->getExecutionContextInfos();
+        return coreBroker->getExecutionContextInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/"))) {
-        return store->getExecutionContext({{"fullName", Value(match[1])}})->info();
+        return coreBroker->getExecutionContextInfo(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {
-        return store->getExecutionContext({{"fullName", Value(match[1])}})->info().at("state");
+        return coreBroker->getExecutionContextState(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/"))) {
-        return store->getExecutionContext({{"fullName", Value(match[1])}})->getBoundOperationInfos();
+      return coreBroker->getExecutionContextBoundOperationInfos(match[1]);
+    }
+    if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/all_operations/"))) {
+      return coreBroker->getExecutionContextBoundAllOperationInfos(match[1]);
     }
 
-
     if (path == "/process/brokers/") {
-      return store->getBrokerInfos();
+      return coreBroker->getBrokerInfos();
     }
 
     if (path == "/process/callbacks/") {
-      return store->getCallbacks();
+      return coreBroker->getCallbacks();
     }
 
     if (path == "/process/operationFactories/") {
-      return store->getOperationFactoryInfos();
+      return coreBroker->getOperationFactoryInfos();
     }
 
     if (path == "/process/containerFactories/") {
-      return store->getContainerFactoryInfos();
+      return coreBroker->getContainerFactoryInfos();
     }
 
     if (path == "/process/topics/") {
-      return store->getTopicInfos();
+      return coreBroker->getTopicInfos();
     }
     if (std::regex_match(path, match, std::regex("/process/topics/([^/]*)/"))) {
-      return store->getTopic({{"fullName", Value(match[1])}})->invoke();
+      return coreBroker->invokeTopic(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/topics/([^/]*)/connections/"))) {
-        return store->getTopic({{"fullName", Value(match[1])}})->getConnectionInfos();
+      return coreBroker->getInvokeConnectionInfos(match[1]);
     }
 
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
 
-Value ObjectMapper::createResource(ProcessStore* store, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+Value ObjectMapper::createResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
-//  auto store = process->store();
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
-    //return process->registerConsumerConnection(value);
-    return ConnectionBuilder::registerConsumerConnection(store, value);
+    return coreBroker->registerConsumerConnection(value);
+  }
+  if (std::regex_match(path, match, std::regex("/process/connections/"))) {
+    return coreBroker->registerProviderConnection(value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
-    //return process->registerProviderConnection(value, receiverBroker);
-    return ConnectionBuilder::registerProviderConnection(store, value, receiverBroker);
+    return coreBroker->registerProviderConnection(value);
   }
 
   if (path == "/process/ecs/") {
-    //return process->createExecutionContext(value);
-    return ObjectFactory::createExecutionContext(*store, value);
+    return coreBroker->createExecutionContext(value);
   }
 
   if (path == "/process/operations/") {
-    //return process->createOperation(value);
-    return ObjectFactory::createOperation(*store, value);
+    return coreBroker->createOperation(value);
   }
-
-  
 
 
   if (path == "/process/containers/") {
-    //return process->createContainer(value);
-    return ObjectFactory::createContainer(*store, value);
+    return coreBroker->createContainer(value);
   }
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {
-    if (value.stringValue() == "started") {
-        return store->getExecutionContext({{"fullName", Value(match[1])}})->start();  
-    } else if (value.stringValue() == "stopped") {
-        return store->getExecutionContext({{"fullName", Value(match[1])}})->stop();
-    }
+    return coreBroker->setExecutionContextState(match[1], value.stringValue());
   }
 
-  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/"))) {
-    return store->getExecutionContext({{"fullName", {match[1]}}})->bind(store->getOperation(value));
+  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/([^/]*)/"))) {
+    return coreBroker->bindOperationToExecutionContext(match[1], match[2], value);
   }
 
   return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
 }
 
-Value ObjectMapper::updateResource(ProcessStore* store, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+/**
+ * 
+ * 
+ * 
+ */
+Value ObjectMapper::updateResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path, Value&& value, BrokerAPI* receiverBroker) {
   logger::trace("ObjectMapper::updateResource(store, path={}", path);
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/execution/"))) {
-    logger::trace("In ObjectMapper::updateResource. executing operation(store, {})", value);
-    return store->getAllOperation({{"fullName", Value(match[1])}})->execute();
+    //logger::trace("In ObjectMapper::updateResource. executing operation(store, {})", value);
+    return coreBroker->executeOperation(match[1]);
+  }
+  if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/execution/"))) {
+    //logger::trace("In ObjectMapper::updateResource. executing operation(store, {})", value);
+    return coreBroker->executeAllOperation(match[1]);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {
-    return store->getAllOperation({{"fullName", Value(match[1])}})->putToArgument(match[2], value);
+    return coreBroker->putToArgument(match[1], match[2], value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     if (value.isError()) {
       logger::error("ObjectMapper::updateResource() error. ({})", value);
       return value;
     }
-    return store->getAllOperation({{"fullName", Value(match[1])}})->putToArgumentViaConnection({
-        {"input", {
-            {"info", {{"fullName", Value(match[1])}} },
-            {"target", {{"name", Value(match[2])}} },
-        }},
-        {"name", Value(match[3])} 
-        }, value);  
+    return coreBroker->putToArgumentViaConnection(match[1], match[2], match[3], value);
+    //return store->getAllOperation({{"fullName", Value(match[1])}})->putToArgumentViaConnection({
+    //    {"input", {
+    //        {"info", {{"fullName", Value(match[1])}} },
+    //        {"target", {{"name", Value(match[2])}} },
+    //    }},
+    //    {"name", Value(match[3])} 
+    //    }, value);  
   }
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-    return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
+    coreBroker->callContainerOperation(match[1].str() + ":" + match[2].str(), std::move(value));
+    //return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
   }
 
 
@@ -195,36 +210,42 @@ Value ObjectMapper::updateResource(ProcessStore* store, const std::string& path,
   return Value::error(logger::error("ObjectMapper::updateResource({}) failed.", path));
 }
 
-Value ObjectMapper::deleteResource(ProcessStore* store, const std::string& path, BrokerAPI* receiverBroker) {
+/**
+ * 
+ * 
+ * 
+ * 
+ */
+Value ObjectMapper::deleteResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path, BrokerAPI* receiverBroker) {
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
-    return ConnectionBuilder::deleteConsumerConnection(store, {
-        {"name", Value(match[3])},
-        {"input", {
-            {"target", {
-                {"name", Value(match[2])}
-            }},
-            {"info", {
-                {"fullName", Value(match[1])}
-            }}
-        }}
-    });
+    return coreBroker->removeConsumerConnection(match[1], match[2], match[3]);
+    //return ConnectionBuilder::deleteConsumerConnection(store, {
+    //    {"name", Value(match[3])},
+    //    {"input", {
+    //        {"target", {
+    //            {"name", Value(match[2])}
+    //        }},
+    //        {"info", {
+    //            {"fullName", Value(match[1])}
+    //        }}
+    //    }}
+    //});
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/([^/]*)/"))) {
-    return ConnectionBuilder::deleteProviderConnection(store, {
-        {"name", Value(match[2])},
-        {"output", {
-            {"info", {
-                {"fullName", Value(match[1])}
-            }}
-        }}
-    });
+    return coreBroker->removeProviderConnection(match[1], match[2]);
+    //return ConnectionBuilder::deleteProviderConnection(store, {
+    //    {"name", Value(match[2])},
+    //    {"output", {
+    //        {"info", {
+    //            {"fullName", Value(match[1])}
+    //        }}
+    //    }}
+    //});
   }
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/([^/]*)/"))) {
-    
-    return store->getExecutionContext({{"fullName", {match[1]}}})->unbind({{"fullName", {match[2]} }});
-    
+    return coreBroker->unbindOperationFromExecutionContext(match[1], match[2]);
   }
 
   return Value::error(logger::error("ObjectMapper::deleteResource({}) failed.", path));

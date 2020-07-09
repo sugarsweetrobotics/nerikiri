@@ -10,7 +10,7 @@ class Process;
 
 class CoreBroker : public BrokerAPI {
 protected:
-  Process* process_;
+    Process* process_;
 
 public:
 
@@ -22,29 +22,69 @@ public:
 
     virtual Value getProcessInfo() const override;
 
+
     virtual Value getOperationInfos() const override;
 
-    virtual Value getAllOperationInfos() const override;
+    virtual Value getOperationInfo(const std::string& fullName) const override;
+
+    virtual Value callOperation(const std::string& fullName, Value&& value) override;
+
+    virtual Value invokeOperation(const std::string& fullName) const override;
+
+    virtual Value executeOperation(const std::string& fullName) override;
+
+    virtual Value getOperationConnectionInfos(const std::string& fullName) override;
+
+    virtual Value getOperationFactoryInfos() const override;
+
+    virtual Value createOperation(const Value& value) override;
+
+    virtual Value deleteOperation(const std::string& fullName) override;
+
+
 
     virtual Value getContainerInfos() const override;
 
-    virtual Value getContainerInfo(const Value& info) const override;
+    virtual Value getContainerInfo(const std::string& fullName) const override;
 
-    virtual Value getContainerOperationInfos(const Value& info) const override;
+    virtual Value getContainerOperationInfos(const std::string& fullName) const override;
 
-    virtual Value getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const override;
+    virtual Value createContainer(const Value& value) override;
 
-    virtual Value callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) override;
+    virtual Value deleteContainer(const std::string& fullName) override;
 
-    virtual Value invokeContainerOperation(const Value& cinfo, const Value& oinfo) const override;
+    virtual Value getContainerFactoryInfos() const override;
 
-    virtual Value getOperationInfo(const Value& info) const override;
 
-    virtual Value callOperation(const Value& info, Value&& value) override;
 
-    virtual Value invokeOperation(const Value& v) const override;
+    virtual Value getContainerOperationInfo(const std::string& fullName) const override;
 
-    virtual Value executeOperation(const Value& v) override;
+    virtual Value getContainerOperationConnectionInfos(const std::string& fullName) override;
+
+    virtual Value callContainerOperation(const std::string& fullName, Value&& arg) override;
+
+    virtual Value invokeContainerOperation(const std::string& fullName) const override;
+
+    virtual Value executeContainerOperation(const std::string& fullName) override;
+
+    virtual Value createContainerOperation(const std::string& fullName, const Value& value) override;
+
+    virtual Value deleteContainerOperation(const std::string& fullName) override;
+
+
+
+    virtual Value getAllOperationInfos() const override;
+
+    virtual Value getAllOperationInfo(const std::string& fullName) const override;
+
+    virtual Value invokeAllOperation(const std::string& fullName) const override;
+
+    virtual Value executeAllOperation(const std::string& fullName) const override;
+
+    virtual Value callAllOperation(const std::string& fullName, Value&& value) const override;
+
+    virtual Value getAllOperationConnectionInfos(const std::string& fullName) const override;
+
 
     virtual Value getConnectionInfos() const override;
 
@@ -52,21 +92,15 @@ public:
 
     virtual Value registerProviderConnection(const Value& ci) override;
 
-    virtual Value removeConsumerConnection(const Value& ci) override;
+    virtual Value removeConsumerConnection(const std::string& fullName, const std::string& targetArgName, const std::string& conName) override;
 
-    virtual Value removeProviderConnection(const Value& ci) override;
+    virtual Value removeProviderConnection(const std::string& fullName, const std::string& conName) override;
 
-    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override;
+    virtual Value putToArgument(const std::string& fullName, const std::string& argName, const Value& value) override;
 
-    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override;
-    
-    virtual Value getOperationFactoryInfos() const override;
+    virtual Value putToArgumentViaConnection(const std::string& fullName, const std::string& targetArgName, const std::string& conName, const Value& value) override;
 
-    virtual Value getContainerFactoryInfos() const override;
 
-    virtual Value createOperation(const Value& value) override;
-
-    virtual Value createContainer(const Value& value) override;
 
     virtual Value createResource(const std::string& path, const Value& value) override;
 
@@ -76,17 +110,13 @@ public:
 
     virtual Value deleteResource(const std::string& path) override;
 
-    virtual Value createContainerOperation(const Value& containerInfo, const Value& value) override;
 
-    virtual Value deleteOperation(const Value& value) override;
 
-    virtual Value deleteContainer(const Value& value) override;
-
-    virtual Value deleteContainerOperation(const Value& containerInfo, const Value& value) override;
+    virtual Value getExecutionContextFactoryInfos() override;
 
     virtual Value createExecutionContext(const Value& value) override;
 
-    virtual Value deleteExecutionContext(const Value& value) override;
+    virtual Value deleteExecutionContext(const std::string& fullName) override;
 
 };
 
