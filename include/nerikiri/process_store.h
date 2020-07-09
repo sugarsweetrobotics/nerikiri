@@ -12,6 +12,7 @@
 #include "nerikiri/operationfactory.h"
 
 //#include "nerikiri/brokers/corebroker.h"
+#include "nerikiri/broker.h"
 #include "nerikiri/brokerfactory.h"
 #include "nerikiri/topic.h"
 
@@ -75,9 +76,9 @@ namespace nerikiri {
      * 
      */
     template<class T>
-    std::shared_ptr<T> get(std::vector<std::shared_ptr<T>>& collection, const Value& info, std::function<std::shared_ptr<T>()> nullConstructor) {
+    std::shared_ptr<T> get(std::vector<std::shared_ptr<T>>& collection, const std::string& fullName, std::function<std::shared_ptr<T>()> nullConstructor) {
       for(auto& c : collection) {
-        if (c->info().at("fullName") == info.at("fullName")) return c;
+        if (c->info().at("fullName").stringValue() == fullName) return c;
       }
       return nullConstructor();
     }
@@ -146,13 +147,13 @@ namespace nerikiri {
     /**
      * Containerの取得
      */
-    std::shared_ptr<ContainerBase> getContainer(const Value& info) {
-      return get<ContainerBase>(containers_, info, nullContainer);
+    std::shared_ptr<ContainerBase> getContainer(const std::string& fullName) {
+      return get<ContainerBase>(containers_, fullName, nullContainer);
     }
     
     ProcessStore& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf);
     std::shared_ptr<ContainerFactoryBase> getContainerFactory(const Value& info);
-    std::shared_ptr<OperationBase> getContainerOperation(const Value& oi);
+    std::shared_ptr<OperationBase> getContainerOperation(const std::string& fullName);
 
     Value getOperationInfos();
 
@@ -178,14 +179,14 @@ namespace nerikiri {
     /**
      * Operationの取得
      */
-    std::shared_ptr<OperationBase> getOperation(const Value& info) {
-      return get<OperationBase>(operations_, info, nullOperation);
+    std::shared_ptr<OperationBase> getOperation(const std::string& fullName) {
+      return get<OperationBase>(operations_, fullName, nullOperation);
     }
 
-    std::shared_ptr<OperationBase> getAllOperation(const Value& info) {
-      auto op = getOperation(info);
+    std::shared_ptr<OperationBase> getAllOperation(const std::string& fullName) {
+      auto op = getOperation(fullName);
       if (op->isNull()) {
-        return getContainerOperation(info);
+        return getContainerOperation(fullName);
       }
       return op;
     }
@@ -208,8 +209,8 @@ namespace nerikiri {
     /**
      * ExecutionContextの取得
      */
-    std::shared_ptr<ExecutionContext> getExecutionContext(const Value& info) {
-      return get<ExecutionContext>(executionContexts_, info, nullExecutionContext);
+    std::shared_ptr<ExecutionContext> getExecutionContext(const std::string& fullName) {
+      return get<ExecutionContext>(executionContexts_, fullName, nullExecutionContext);
     }
 
     ProcessStore& addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec);
@@ -235,8 +236,8 @@ namespace nerikiri {
     /**
      * Brokerの取得
      */
-    std::shared_ptr<Broker> getBroker(const Value& info) {
-      return get<Broker>(brokers_, info, nullBroker);
+    std::shared_ptr<Broker> getBroker(const std::string& fullName) {
+      return get<Broker>(brokers_, fullName, nullBroker);
     }
 
     Value addBrokerFactory(std::shared_ptr<BrokerFactory> factory);
@@ -253,7 +254,7 @@ namespace nerikiri {
     Value getTopicInfos() const;
     Value addTopic(std::shared_ptr<Topic> topic);
 
-    std::shared_ptr<OperationBase> getOperationOrTopic(const Value& info);
+    std::shared_ptr<OperationBase> getOperationOrTopic(const std::string& fullName);
 
 
     Value deleteOperation(const Value& info);

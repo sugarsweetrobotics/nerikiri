@@ -52,7 +52,7 @@ namespace nerikiri {
             return Value::error("BrokerAPI::getContainerOperationInfo() failed. Broker is null.");
         }
 
-        virtual Value callContainerOperation(const std::string& fullName, Value&& arg) override {
+        virtual Value callContainerOperation(const std::string& fullName, const Value& arg) override {
             return Value::error("BrokerAPI::callContainerOperation() failed. Broker is null.");
         }
 
@@ -60,7 +60,7 @@ namespace nerikiri {
             return Value::error("BrokerAPI::invokeContainerOperation() failed. Broker is null.");
         }
 
-        virtual Value callOperation(const std::string& fullName, Value&& value) override {
+        virtual Value callOperation(const std::string& fullName, const Value& value) override {
             return Value::error("BrokerAPI::callOperation() failed. Broker is null.");
         }
 
@@ -132,7 +132,7 @@ namespace nerikiri {
             return Value::error("BrokerAPI::createContainerOperation({}) failed. Broker is null.");
         }
 
-        virtual Value getExecutionContextFactoryInfos() override {
+        virtual Value getExecutionContextFactoryInfos() const override {
              return Value::error("BrokerAPI::getExecutionContextFactoryInfos({}) failed. Broker is null.");
         }
 
@@ -145,11 +145,11 @@ namespace nerikiri {
         }
 
 
-        virtual Value getOperationConnectionInfos(const std::string& fullName) override {
+        virtual Value getOperationConnectionInfos(const std::string& fullName) const override {
             return Value::error("BrokerAPI::getOperationConnectionInfos({}) failed. Broker is null.");
         }
 
-        virtual Value getContainerOperationConnectionInfos(const std::string& fullName) override {
+        virtual Value getContainerOperationConnectionInfos(const std::string& fullName) const override {
             return Value::error("BrokerAPI::getContainerOperationConnectionInfos({}) failed. Broker is null.");
         }
 
@@ -170,31 +170,68 @@ namespace nerikiri {
             return Value::error("BrokerAPI::invokeAllOperation({}) failed. Broker is null.");
         }
 
-        virtual Value callAllOperation(const std::string& fullName, Value&& arg) const  override {
+        virtual Value callAllOperation(const std::string& fullName, const Value& arg) override {
             return Value::error("BrokerAPI::callAllOperation({}) failed. Broker is null.");
         }
 
-        virtual Value executeAllOperation(const std::string& fullName) const  override {
+        virtual Value executeAllOperation(const std::string& fullName) override {
             return Value::error("BrokerAPI::createContainerOperation({}) failed. Broker is null.");
         }
 
-        virtual Value getExecutionContextInfos()  override {
-            return Value::error("BrokerAPI::"  "({}) failed. Broker is null.");
+        virtual Value getExecutionContextInfos() const override {
+            return Value::error("BrokerAPI::getExecutionContextInfos({}) failed. Broker is null.");
         }
 
-virtual Value getExecutionContextInfo(const std::string& fullName) = 0;
-virtual Value getExecutionContextState(const std::string& fullName) = 0;
-virtual Value setExecutionContextState(const std::string& fullName, const std::string& state) = 0;
+        virtual Value getExecutionContextInfo(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::getExecutionContextInfo({}) failed. Broker is null.");
+        }
 
-virtual Value getExecutionContextBoundOperationInfos(const std::string& fullName) = 0;
-virtual Value getExecutionContextBoundAllOperationInfos(const std::string& fullName) = 0;
-virtual Value bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& opInfo) = 0;
-virtual Value unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) = 0;
+        virtual Value getExecutionContextState(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::getExecutionContextState({}) failed. Broker is null.");
+        }
 
-virtual Value getBrokerInfos() const = 0;
-virtual Value getCallbacks() const = 0;
-virtual Value getTopicInfos() = 0;
-virtual Value invokeTopic(const std::string& fullName) = 0;
+        virtual Value setExecutionContextState(const std::string& fullName, const std::string& state)  override {
+            return Value::error("BrokerAPI::setExecutionContextState({}) failed. Broker is null.");
+        }
+
+
+        virtual Value getExecutionContextBoundOperationInfos(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::getExecutionContextBoundOperationInfos({}) failed. Broker is null.");
+        }
+
+        virtual Value getExecutionContextBoundAllOperationInfos(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::getExecutionContextBoundAllOperationInfos({}) failed. Broker is null.");
+        }
+
+        virtual Value bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& opInfo)  override {
+            return Value::error("BrokerAPI::bindOperationToExecutionContext({}) failed. Broker is null.");
+        }
+
+        virtual Value unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName)  override {
+            return Value::error("BrokerAPI::unbindOperationFromExecutionContext({}) failed. Broker is null.");
+        }
+
+
+        virtual Value getBrokerInfos() const  override {
+            return Value::error("BrokerAPI::getBrokerInfos({}) failed. Broker is null.");
+        }
+
+        virtual Value getCallbacks() const  override {
+            return Value::error("BrokerAPI::getCallbacks({}) failed. Broker is null.");
+        }
+
+        virtual Value getTopicInfos() const override {
+            return Value::error("BrokerAPI::getTopicInfos({}) failed. Broker is null.");
+        }
+
+        virtual Value invokeTopic(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::invokeTopic({}) failed. Broker is null.");
+        }
+
+
+        virtual Value getTopicConnectionInfos(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::getTopicConnectionInfos({}) failed. Broker is null.");
+        }
 
         virtual Value createResource(const std::string& path, const Value& value) override {
             return Value::error("BrokerAPI::createResource() failed. Broker is null.");

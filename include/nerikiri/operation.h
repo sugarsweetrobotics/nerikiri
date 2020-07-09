@@ -20,7 +20,6 @@ namespace nerikiri {
     }
 
     Operation(Value&& info) : OperationBase(std::move(info)), function_(nullptr) {
-
     }
 
     Operation(Value&& info, std::function<Value(const Value&)> func): OperationBase(std::move(info)), function_((func)) {}

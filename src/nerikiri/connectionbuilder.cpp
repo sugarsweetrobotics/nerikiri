@@ -11,18 +11,14 @@ using namespace nerikiri;
 /**
  * もしConnectionInfoで指定されたBrokerが引数のbrokerでなければ，親プロセスに対して別のブローカーをリクエストする
  */
-Value checkProcessHasProviderOperation(ProcessStore* store, const ConnectionInfo& ci) {
-    if (ci.isError()) return ci;    
-    if (store->getOperation(ci.at("output").at("info"))->isNull()) {
-      return Value::error(logger::warn("The broker received makeConnection does not have the provider operation."));
-    }
-    return ci;
-}
+//static bool doProcessHasProviderOperation(ProcessStore* store, const std::string& fullName) {
+//    return store->getOperation(fullName)->isNull();/
+//}
 
 
-static std::shared_ptr<OperationBase> _getOperationOrTopic(ProcessStore* store, const Value& info) {
-  return store->getOperationOrTopic(info);
-}
+//static std::shared_ptr<OperationBase> _getOperationOrTopic(ProcessStore* store, const Value& info) {
+//  return store->getOperationOrTopic(info.at("fullName").stringValue());
+//}
 
 Value ConnectionBuilder::_validateConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
   auto ret = conInfo;
@@ -41,8 +37,10 @@ Value ConnectionBuilder::_validateConnectionInfo(std::shared_ptr<OperationBase> 
 
 Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const Value& ci) {
   logger::trace("Process::registerConsumerConnection({}", (ci));
-  auto ret = ConnectionBuilder::_validateConnectionInfo(_getOperationOrTopic(store, ci.at("input").at("info")), ci);
-  return _getOperationOrTopic(store, ci.at("input").at("info"))->addConsumerConnection(consumerConnection(ret,
+  auto fullName = ci.at("input").at("info").at("fullName").stringValue();
+  auto ret = ConnectionBuilder::_validateConnectionInfo(store->getOperationOrTopic(fullName), ci);
+
+  return store->getOperationOrTopic(fullName)->addConsumerConnection(consumerConnection(ret,
             ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
 }
 
@@ -51,13 +49,22 @@ Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const V
 Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
   logger::trace("ConnectionBuilder::registerProviderConnection({})", (ci));
   try {
-    auto ret = ConnectionBuilder::_validateConnectionInfo(_getOperationOrTopic(store, ci.at("output").at("info")), ci);
-    auto ret2 = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"))->registerConsumerConnection(ret);
+    auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
+    auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
+    auto conName = ci.at("name").stringValue();
+    auto argName = ci.at("target").at("name").stringValue();
+
+    auto ret = ConnectionBuilder::_validateConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
+    auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
+    auto ret2 = inputBroker->registerConsumerConnection(ret);
     // リクエストが成功なら、こちらもConnectionを登録。
-    auto ret3 = _getOperationOrTopic(store, ci.at("output").at("info"))->addProviderConnection(providerConnection(ret2, ObjectFactory::createBrokerProxy(*store, ret2.at("input").at("broker"))));
+    auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(providerConnection(ret2, inputBroker));
     if (ret3.isError()) {
         // 登録が失敗ならConsumer側のConnectionを破棄。
-        auto ret3 = deleteConsumerConnection(store, ret2);
+        if (ret2.isError()) {
+            auto consumerConName = ret2.at("name").stringValue();
+            inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
+        }
         return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
     }// 登録成功ならciを返す
     return ret3;
@@ -67,25 +74,29 @@ Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const V
 }
 
   
-Value ConnectionBuilder::deleteConsumerConnection(ProcessStore* store, const Value& ci) {
-  logger::trace("Process::deleteConsumerConnection({}", (ci));
-  return store->getOperation(ci.at("input").at("info"))->removeConsumerConnection(ci);
+Value ConnectionBuilder::deleteConsumerConnection(ProcessStore* store, const std::string& fullName, const std::string& targetArgName, const std::string& conName) {
+  logger::trace("Process::deleteConsumerConnection({}", fullName);
+  return store->getOperation(fullName)->removeConsumerConnection(targetArgName, conName);
 }
 
-Value ConnectionBuilder::deleteProviderConnection(ProcessStore* store, const Value& ci) {
-    logger::trace("Process::deleteProviderConnection({}", (ci));
-    if (ci.isError()) return ci;
-
-    auto provider = store->getOperation(ci.at("output").at("info"));
-    const auto& connection = provider->getOutputConnection(ci);
-
+Value ConnectionBuilder::deleteProviderConnection(ProcessStore* store, const std::string& fullName, const std::string& conName) {
+    logger::trace("Process::deleteProviderConnection({}, {})", fullName, conName);
+    
+    auto provider = store->getOperation(fullName);
+    const auto& connection = provider->getOutputConnection(conName);
+    if (connection.isNull()) {
+      return Value::error(logger::error("ConnectionBuilder::deleteProviderConnection failed. ProviderOperation can not find connection named(" + conName + ")"));
+    }
     auto ret = connection.info();
+    auto consumerName = connection.info().at("input").at("info").at("fullName").stringValue();
+    auto targetArgName = connection.info().at("target").at("name").stringValue();
+
     //auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
     auto consumerBroker = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"));
     if (!consumerBroker) {
       return Value::error(logger::error("Process::deleteProviderConnection failed. ConsumerBrokerProxy cannot be created."));
     }
-    ret = consumerBroker->removeConsumerConnection(ret);
+    ret = consumerBroker->removeConsumerConnection(consumerName, targetArgName, conName);
     if (ret.isError()) {
       return Value::error(logger::error("Process::deleteProviderConnection failed. RemoveConsumerConnection failed."));
     }

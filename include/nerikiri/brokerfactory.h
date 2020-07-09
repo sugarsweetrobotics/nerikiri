@@ -2,36 +2,29 @@
 
 #include <memory>
 #include "nerikiri/value.h"
-#include "nerikiri/broker.h"
-#include "nerikiri/nullbroker.h"
 
 namespace nerikiri {
 
-  class BrokerAPI;
-  class Broker;
+    class BrokerAPI;
+    class Broker;
 
-  class BrokerFactory {
-  private:
-    const std::string typeName_;
-  public:
-    BrokerFactory() : typeName_("NullBroker") {}
-    BrokerFactory(const Value& value) : typeName_(value.at("typeName").stringValue()) {}
+    class BrokerFactory {
+    private:
+        const std::string typeName_;
+    public:
+        BrokerFactory();
+        BrokerFactory(const Value& value);
 
-    virtual ~BrokerFactory() {}
+        virtual ~BrokerFactory();
 
-  public:
-    const std::string& typeName() { return typeName_; }
-    
-  public:
-    virtual std::shared_ptr<Broker> create(const Value& param) {
-        return std::shared_ptr<Broker>(new Broker());
-    }
+    public:
+        const std::string& typeName();
+      
+    public:
+        virtual std::shared_ptr<Broker> create(const Value& param);
 
-    virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param) {
-        return std::shared_ptr<BrokerAPI>(new NullBroker());
-    }
+        virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param);
+    };
 
-    static std::shared_ptr<BrokerFactory> null;
-  };
-
+    std::shared_ptr<BrokerFactory> nullBrokerFactory();
 }

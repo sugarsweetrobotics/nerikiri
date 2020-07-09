@@ -15,7 +15,7 @@ endif (APPLE)
 function(add_operation NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
   add_dependencies(${NAME} nerikiri)
-  target_link_libraries(${NAME} ${EXT_LIBS})
+  target_link_libraries(${NAME} nerikiri ${EXT_LIBS})
   set_target_properties(${NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -32,7 +32,7 @@ set(CONTAINERS)
 function(add_container NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
   add_dependencies(${NAME} nerikiri)
-  target_link_libraries(${NAME} ${EXT_LIBS})
+  target_link_libraries(${NAME} nerikiri ${EXT_LIBS})
 
   set_target_properties(${NAME}
     PROPERTIES

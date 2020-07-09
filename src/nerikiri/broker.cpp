@@ -7,7 +7,27 @@
 
 using namespace nerikiri;
 
-//std::shared_ptr<Broker> Broker::null = std::shared_ptr<Broker>(new Broker());
+Broker::Broker() : Object() {}
 
-// std::shared_ptr<BrokerAPI> BrokerAPI::null = std::shared_ptr<BrokerAPI>(new NullBroker());
-std::shared_ptr<BrokerFactory> BrokerFactory::null = std::shared_ptr<BrokerFactory>(nullptr);
+Broker::Broker(const Value& info) : Object(info) {}
+
+Broker::~Broker() {}
+
+bool Broker::run(Process* process) {
+    logger::trace("Broker::run()");
+    info_["state"] = "running";
+    return true;
+}
+
+void Broker::shutdown(Process* process) {
+    logger::trace("Broker::shutdown()");
+    info_["state"] = "stopped";
+}
+
+bool Broker::isRunning() const { 
+    return info_.at("state").stringValue() == "running"; 
+}
+
+std::shared_ptr<Broker> nerikiri::nullBroker() {
+    return std::make_shared<Broker>();
+}

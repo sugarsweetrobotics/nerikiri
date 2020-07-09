@@ -69,7 +69,7 @@ namespace nerikiri {
   public:
 
   public:
-      OperationBase() :  Object()/*, process_(nullptr)*/, argument_updated_(false) {}
+      OperationBase() : Object(), argument_updated_(false) {}
 
       OperationBase(const OperationBase& op);
 
@@ -130,7 +130,7 @@ namespace nerikiri {
 
     Value getInputConnectionInfos() const;
 
-    Connection getInputConnection(const Value& conInfo) const;
+    Connection getInputConnection(const std::string& argName, const std::string& conName) const;
 
     Value getInputConnectionInfo(const std::string& arg) const;
 
@@ -145,7 +145,7 @@ namespace nerikiri {
 
     Value getOutputConnectionInfos() const;
 
-    Connection getOutputConnection(const Value& ci) const;
+    Connection getOutputConnection(const std::string& name) const;
 
     Value getOutput();
 
@@ -172,11 +172,11 @@ namespace nerikiri {
     
     Value putToArgument(const std::string& argName, const Value& value);
 
-    Value putToArgumentViaConnection(const Value& conInfo, const Value& value);
+    Value putToArgumentViaConnection(const std::string& argName, const std::string& conName, const Value& value);
 
     Value removeProviderConnection(const ConnectionInfo& ci);
 
-    Value removeConsumerConnection(const ConnectionInfo& ci);
+    Value removeConsumerConnection(const std::string& targetArgName, const std::string& conName);
 
 
     

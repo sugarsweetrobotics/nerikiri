@@ -51,7 +51,7 @@ namespace nerikiri {
                 auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("typeName").stringValue(), ".ope");
                 operation->setFullName(getFullName(), name);
             } else {
-                if (!getOperation(operation->info())->isNull()) {
+                if (!getOperation(operation->info().at("instanceName").stringValue())->isNull()) {
                     /// 重複があるようなのでエラーを返す
                     for(auto& o: operations_) {
                         if (operation->info().at("instanceName") == o->info().at("instanceName")) {
@@ -72,16 +72,15 @@ namespace nerikiri {
          * @param opInfo
          * @returns
          */
-        Value deleteOperation(const Value& opInfo) { 
+        Value deleteOperation(const std::string& instanceName) { 
             auto it = operations_.begin();
             for(;it != operations_.end();++it) {
                 auto op = *it;
-                auto instanceName = opInfo.at("fullName").stringValue();
                 
                 if (op->info().at("fullName").stringValue() == instanceName) {
                     // match operation
                     it = operations_.erase(it);
-                    return opInfo;
+                    return op->info();
                 }
             }
             return Value::error("ContainerBase::deleteOperation() failed. Operation not found.");        
@@ -111,9 +110,9 @@ namespace nerikiri {
          * @param info
          * @returns
          */
-        std::shared_ptr<OperationBase> getOperation(const Value& info) const {
+        std::shared_ptr<OperationBase> getOperation(const std::string& instanceName) const {
             for(auto op: operations_) {
-                if (op->getContainerOperationInfo().at("instanceName") == info.at("instanceName")) {
+                if (op->getContainerOperationInfo().at("instanceName").stringValue() == instanceName) {
                     return op;
                 }
             }
@@ -143,12 +142,12 @@ namespace nerikiri {
             return addOperation(f->create(info));
         }
 
-        Value deleteContainerOperation(const Value& info) {
-            auto f = getOperation(info);
+        Value deleteContainerOperation(const std::string& instanceName) {
+            auto f = getOperation(instanceName);
             if (!f) {
                 return Value::error("ContainerBase::deleteContainerOperation failed. Can not find appropreate operation factory.");
             }
-            return deleteOperation(info);
+            return deleteOperation(instanceName);
         }
 
 

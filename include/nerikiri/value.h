@@ -4,19 +4,17 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <exception>
 #include <map>
-#include <optional>
+//#include <optional>
 #include <functional>
-#include <algorithm>
+//#include <algorithm>
 #include <cstdlib>
-#include <stdlib.h>
-#include <regex>
-#include <iostream>
+///#include <stdlib.h>
+//#include <iostream>
 
 #include "nerikiri/nerikiri.h"
 
@@ -90,18 +88,8 @@ namespace nerikiri {
     Value(const std::vector<Value>& value);
     Value(std::vector<std::pair<std::string, Value>>&& value);
     Value(std::initializer_list<std::pair<std::string, Value>>&& vs);
-
     Value(const VALUE_TYPE_CODE typeCode, const std::string& message);
-
-    Value(Value&& value) : typecode_(std::move(value.typecode_)), 
-      boolvalue_(std::move(value.boolvalue_)),
-      intvalue_(std::move(value.intvalue_)),
-      doublevalue_(std::move(value.doublevalue_)),
-      objectvalue_(std::move(value.objectvalue_)),
-      listvalue_(std::move(value.listvalue_)),
-      stringvalue_(std::move(value.stringvalue_)),
-      bytevalue_(std::move(value.bytevalue_)) {
-    }
+    Value(Value&& value);
 
     explicit Value(const std::vector<float>& dbls);
 
@@ -111,26 +99,14 @@ namespace nerikiri {
 
     explicit Value(const uint8_t* byte, const uint32_t size);
 
-    static Value error(const std::string& msg) {
-      Value v;
-      v.typecode_ = VALUE_TYPE_ERROR;
-      v.errormessage_ = msg;
-      return v;
-    }
-    
     virtual ~Value();
 
-    static Value list() {
-      Value v;
-      v.typecode_ = VALUE_TYPE_LIST;
-      return v;
-    }
+  public:
+    static Value error(const std::string& msg);
+    
+    static Value list();
 
-    static Value object() {
-      Value v;
-      v.typecode_ = VALUE_TYPE_OBJECT;
-      return v;
-    }
+    static Value object();
   private:
     
     void _clear() {
@@ -138,16 +114,7 @@ namespace nerikiri {
     }
     
   public:
-    std::string getTypeString() const {
-      if (isIntValue()) return "int";
-      else if (isDoubleValue()) return "double";
-      else if (isStringValue()) return "string";
-      else if (isObjectValue()) return "object";
-      else if (isListValue()) return "list";
-      else if (isBoolValue()) return "bool";
-      else if (isError()) return "error";
-      return "null";
-    }
+    std::string getTypeString() const;
 
     bool isBoolValue() const { return typecode_ == VALUE_TYPE_BOOL; }
 
@@ -161,9 +128,7 @@ namespace nerikiri {
 
     bool isListValue() const { return typecode_ == VALUE_TYPE_LIST; }
 
-    bool isByteArrayValue() const {
-      return typecode_ == VALUE_TYPE_BYTEARRAY;
-    }
+    bool isByteArrayValue() const {return typecode_ == VALUE_TYPE_BYTEARRAY; }
     
     bool isNull() const { return typecode_ == VALUE_TYPE_NULL; }
 
@@ -176,21 +141,9 @@ namespace nerikiri {
       return (objectvalue_.count(key) != 0);
     }
 
+    void object_for_each(std::function<void(const std::string&, Value&)>&& func);
     
-    void object_for_each(std::function<void(const std::string&, Value&)>&& func) {
-      if (!isObjectValue()) return;
-      for(auto& [k, v] : objectvalue_) {
-        func(k, v);
-      }
-    }
-    
-
-    void object_for_each(std::function<void(const std::string&, const Value&)>&& func) const {
-      if (!isObjectValue()) return;
-      for(const auto& [k, v] : objectvalue_) {
-        func(k, v);
-      }
-    }
+    void object_for_each(std::function<void(const std::string&, const Value&)>&& func) const;
 
     template<typename T>
     std::vector<T> object_map(std::function<T(const std::string&, Value&)>&& func) {
@@ -212,12 +165,7 @@ namespace nerikiri {
       return r;
     }
 
-    void list_for_each(std::function<void(const Value&)>&& func) const {
-      if (!isListValue()) return;
-      for(auto& v: listvalue_) {
-        func(v);
-      }
-    }
+    void list_for_each(std::function<void(const Value&)>&& func) const;
 
     template<typename T>
     std::vector<T> list_map(std::function<T(Value&)>&& func) {
@@ -261,7 +209,6 @@ namespace nerikiri {
 
     Value& emplace(std::pair<std::string, Value>&& v) {
       typecode_ = VALUE_TYPE_OBJECT;
-      //if (!isObjectValue()) throw new ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
       objectvalue_.emplace(std::move(v));
       return *this;
     }
@@ -371,208 +318,13 @@ namespace nerikiri {
    return Value::error(msg);
   }
 
-  inline Value merge(const Value& v1, const Value& v2) {
-    if((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_LIST)) {
-      std::vector<Value> result;
-      result.insert(result.end(), v2.listvalue_.begin(), v2.listvalue_.end());
-      for(auto& v : v1.listvalue_) {
-        bool match = false;
-        for(auto& v2 : v2.listvalue_) {
-          if (v2 == v) match = true;
-        }
-        if (!match) {
-          result.push_back(v);
-        }
-      }
-      return {result};
-    } else if ((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_OBJECT)) {
-      Value rvalue;
-      rvalue.typecode_ = Value::VALUE_TYPE_OBJECT;
-      for(auto& [key, value] : v2.objectvalue_) {
-        if (v1.objectvalue_.count(key) > 0) {
-          rvalue[key] = merge(v1.at(key), v2.at(key));
-        } else {
-          rvalue[key] = value;
-        }
-      }
-      for(auto& [key, value] : v1.objectvalue_) {
-        if (v2.objectvalue_.count(key) == 0) {
-          rvalue[key] = value;
-        }
-      }
-      return rvalue;
-    }
-    return v2;
-//    return Value::error("Value::merge failed. Invalid Value types of arguments v1 and v2.");
-  }
+Value merge(const Value& v1, const Value& v2);
 
-  inline std::string str(const nerikiri::Value& value) {
-    if (value.isIntValue()) return std::to_string(value.intValue());
-    if (value.isDoubleValue()) return std::to_string(value.doubleValue());
-    if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
-    if (value.isObjectValue()) {
-      if (value.objectValue().size() == 0) return "{}";
-        std::stringstream ss;
-        for(auto [k, v] : value.objectValue()) {
-            ss << ",\"" << k << "\":" << str(v);
-        }
-        ss << "}";
-        return ss.str().replace(0, 1, "{");
-    }
-    if (value.isListValue()) {
-      if (value.listValue().size() == 0) return "[]";
-        std::stringstream ss;
-        for(auto& v : value.listValue()) {
-            ss << "," << str(v);
-        }
-        ss << "]";
-        return ss.str().replace(0, 1, "[");
-    }
-    if (value.isByteArrayValue()) {
-      return "[\"bytes\"]";
-    }
-    if (value.isNull()) {
-        return "{}";
-    }
-    if (value.isError()) {
-    return "{\"Error\": \"Value is error('" + value.getErrorMessage() + "').\"}";
-        //throw ValueTypeError(value.getErrorMessage());
-    }
-    return "{\"Error\": \"Value is not supported type.\"}";
-  }
+std::string str(const nerikiri::Value& value);
 
-//inline Value::Value(bool&& value) : typecode_(VALUE_TYPE_BOOL), boolvalue_(std::move(value)) {}
-inline Value::Value(int&& value) : typecode_(VALUE_TYPE_INT), intvalue_(std::move(value)) {}
-inline Value::Value(const bool value) : typecode_(VALUE_TYPE_BOOL), boolvalue_(value) {}
-inline Value::Value(const int64_t value) : typecode_(VALUE_TYPE_INT), intvalue_(value) {}
-inline Value::Value(const double value) : typecode_(VALUE_TYPE_DOUBLE), doublevalue_(value) {}
-inline Value::Value(const std::string& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(value) {}
-inline Value::Value(std::string&& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(std::move(value)) {}
-inline Value::Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(value) {}
-inline Value::Value(const Value& value): typecode_(value.typecode_), boolvalue_(value.boolvalue_), intvalue_(value.intvalue_), doublevalue_(value.doublevalue_), stringvalue_(value.stringvalue_), objectvalue_(value.objectvalue_), listvalue_(value.listvalue_), bytevalue_(value.bytevalue_) {}
+Value lift(const nerikiri::Value& v);
 
-inline Value::Value(const std::vector<float>& dbls) : typecode_(VALUE_TYPE_LIST) {
-  for(auto v : dbls) {
-    listvalue_.emplace_back(Value((double)v));
-  }
-}
-
-inline Value::Value(const VALUE_TYPE_CODE typeCode, const std::string& message) {
-  typecode_ = typeCode;
-  errormessage_ = message;
-}
-
-inline Value::Value(const std::vector<double>& dbls) : typecode_(VALUE_TYPE_LIST) {
-  for(auto v : dbls) {
-    listvalue_.emplace_back(Value(v));
-  }
-}
-
-inline Value::Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
-  for(auto v : bls) {
-    Value val{v};
-    listvalue_.emplace_back(val);
-  }
-}
-
-inline Value::Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY) {
-  //std::cout << "value::byte(" << size << ")" << std::endl;
-  bytevalue_.resize(size);
-  bytevaluesize_ = size;
-  //memcpy(&bytevalue_[0], bytes, size);
-  for(int i = 0;i < size;i++) {
-    bytevalue_[i] = bytes[i];
-  }
-  //std::cout << "value::byte OK" << std::endl;
-}
-
-inline Value::Value(std::vector<std::pair<std::string, Value>>&& ps): typecode_(VALUE_TYPE_OBJECT) {
-  for(auto &p : ps) {
-    objectvalue_[p.first] = p.second;
-  }
-}
-
-inline Value::Value(std::initializer_list<std::pair<std::string, Value>>&& ps) : typecode_(VALUE_TYPE_OBJECT) {
-  for(auto &p : ps) {
-    objectvalue_[p.first] = p.second;
-  }
-}
-
-inline Value::Value(): typecode_(VALUE_TYPE_NULL){}
-
-inline Value::~Value() {}
-
-inline bool Value::boolValue() const {
-  if (isBoolValue()) return boolvalue_;
-  if (isError()) throw ValueTypeError(std::string("trying bool value acecss. actual Error(") + getErrorMessage() + ")");
-  throw ValueTypeError(std::string("trying bool value acecss. actual ") + getTypeString());
-}
-
-inline int64_t Value::intValue() const {
-  if (isIntValue()) return intvalue_;
-  if (isError()) throw ValueTypeError(std::string("trying int64 value acecss. actual Error(") + getErrorMessage() + ")");
-  throw ValueTypeError(std::string("trying int value acecss. actual ") + getTypeString());
-}
-
-inline double Value::doubleValue() const {
-  if (isDoubleValue()) return doublevalue_;
-  if (isError()) throw ValueTypeError(std::string("trying double value acecss. actual Error(") + getErrorMessage() + ")");
-  throw ValueTypeError(std::string("trying double value acecss. actual ") + getTypeString());
-}
-
-inline const std::string& Value::stringValue() const {
-  if (isStringValue()) return stringvalue_;
-  if (isError()) throw ValueTypeError(std::string("trying string value acecss. actual Error(") + getErrorMessage() + ")");
-
-  throw ValueTypeError(std::string("trying string value acecss. actual ") + getTypeString());
-}
-
-inline const std::map<std::string, Value>& Value::objectValue() const {
-  if (isObjectValue()) return objectvalue_;
-  if (isError()) throw ValueTypeError(std::string("trying object value acecss. actual Error(") + getErrorMessage() + ")");
-  throw ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
-}
-
-inline const std::vector<Value>& Value::listValue() const {
-  if (isListValue()) return listvalue_;
-  if (isError()) throw ValueTypeError(std::string("trying list value acecss. actual Error(") + getErrorMessage() + ")");
-  throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
-}
-
-inline nerikiri::Value lift(const nerikiri::Value& v) {
-  if (v.isError()) return v;
-  if (!v.isListValue()) return v;
-  if (v.listValue().size() == 0) return v;
-  if (!v.listValue()[0].isListValue()) return v;
-
-  std::vector<Value> vlist;
-  v.list_for_each([&vlist](auto& iv) {
-    iv.list_for_each([&vlist](auto& iiv) {
-      vlist.push_back(iiv);      
-    });
-  });
-  return vlist;
-}
-
-inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::string& pattern, const std::string& substring) {
-  if (value.isStringValue()) {
-    return std::regex_replace(value.stringValue(), std::regex(pattern.c_str()), substring);
-  }
-  if (value.isListValue()) {
-    return value.list_map<Value>([pattern, substring](auto v) {
-      return replaceAll(v, pattern, substring);
-    });
-  }
-  if (value.isObjectValue()) {
-    return value.object_map<std::pair<std::string,Value>>([pattern, substring](auto key, auto v) {
-      return std::make_pair(key, replaceAll(v, pattern, substring));
-    });
-  }
-
-
-  return value;
-}
-
+inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::string& pattern, const std::string& substring);
 
 #ifdef ERROR_MESSAGE_LEVEL_FAST
     static const Value errorTypeError  { Value::VALUE_TYPE_ERROR, "Value::at() failed. Program tried to access with key value access. But value type is wrong."}; 

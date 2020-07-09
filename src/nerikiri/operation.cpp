@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "nerikiri/logger.h"
 #include "nerikiri/functional.h"
 #include "nerikiri/operation.h"
@@ -96,13 +98,13 @@ Value OperationBase::getInputConnectionInfos() const {
     });
 }
 
-Connection OperationBase::getInputConnection(const Value& conInfo) const {
-    if (inputConnectionListDictionary_.count(conInfo.at("input").at("target").at("name").stringValue()) == 0) {
+Connection OperationBase::getInputConnection(const std::string& argName, const std::string& conName) const {
+    if (inputConnectionListDictionary_.count(conName) == 0) {
         return Connection::null;
     }
 
-    return nerikiri::find_first<Connection, nerikiri::Connection>(inputConnectionListDictionary_.at(conInfo.at("input").at("target").at("name").stringValue()), 
-        [&conInfo](const Connection& con) -> bool { return con.info().at("name") == conInfo.at("name"); },
+    return nerikiri::find_first<Connection, nerikiri::Connection>(inputConnectionListDictionary_.at(conName), 
+        [&conName](const Connection& con) -> bool { return con.info().at("name").stringValue() == conName; },
         [](const auto& con) { return con; },
         Connection::null);
 }
@@ -134,10 +136,10 @@ Value OperationBase::getOutput() {
     return outputBuffer_.pop();
 }
 
-Connection OperationBase::getOutputConnection(const Value& ci) const {
+Connection OperationBase::getOutputConnection(const std::string& name) const {
     auto olist = getOutputConnectionList();
     for(auto it = olist.begin();it != olist.end();++it) {
-        if ((*it).info().at("name") == ci.at("name")) {
+        if ((*it).info().at("name").stringValue() == name) {
             return (*it);
         }
     }
@@ -218,8 +220,8 @@ Value OperationBase::putToArgument(const std::string& argName, const Value& valu
     return Value::error(logger::error("OperationBase::putToArgument({}) failed.", argName));
 }
 
-Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Value& value) {
-    logger::trace("OperationBase({})::putToArgumentViaConnection({}, {})", info().at("fullName"), conInfo.at("name"), value);
+Value OperationBase::putToArgumentViaConnection(const std::string& argName, const std::string& conName, const Value& value) {
+    logger::trace("OperationBase({})::putToArgumentViaConnection({})", conName);
     if (isNull()) {
          return Value::error(logger::error("OperationBase::{} failed. Caller Operation is null.", __func__)); 
     }
@@ -227,9 +229,7 @@ Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Valu
         logger::error("OperationBase::{} failed. Argument Value is Error. ({})", __func__, str(value));
         return value;
     }
-    const std::string& argName = conInfo.at("input").at("target").at("name").stringValue();
-    const std::string& conName = conInfo.at("name").stringValue();
-    auto connection = this->getInputConnection(conInfo);
+    auto connection = this->getInputConnection(argName, conName);
     if (bufferMap_.count(argName) > 0) {
         {
             std::lock_guard<std::mutex> lock(argument_mutex_);
@@ -237,7 +237,7 @@ Value OperationBase::putToArgumentViaConnection(const Value& conInfo, const Valu
             argument_updated_ = true;
         }
         if (connection.isEvent()) {
-            logger::trace("In OperationBase({})::putToArgumentViaConnection({}) executing myself", info().at("fullName"), conInfo.at("fullName"));
+            logger::trace("In OperationBase({})::putToArgumentViaConnection({}) executing myself", info().at("fullName"), conName);
             auto v = execute();
             logger::trace("In OperationBase::putToArgumentViaConnection(): execution result: {}", v);
         }
@@ -258,16 +258,20 @@ Value OperationBase::removeProviderConnection(const ConnectionInfo& ci) {
     return ci;
 }
 
-Value OperationBase::removeConsumerConnection(const ConnectionInfo& ci) {
-    logger::trace("OperationBase::removeConsumerConnection({})", str(ci));
-    if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
-    const auto argName = ci.at("input").at("target").at("name").stringValue();
-    for (auto it = inputConnectionListDictionary_[argName].begin(); it != inputConnectionListDictionary_[argName].end();) {
-        if ((*it).info().at("name") == ci.at("name")) {
-            it = inputConnectionListDictionary_[argName].erase(it);
+Value OperationBase::removeConsumerConnection(const std::string& targetArgName, const std::string& conName) {
+    logger::trace("OperationBase::removeConsumerConnection({}, {})", targetArgName, conName);
+    //if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
+    //const auto argName = ci.at("input").at("target").at("name").stringValue();
+    //const auto conName = ci.at("name").stringValue();
+
+    for (auto it = inputConnectionListDictionary_[targetArgName].begin(); it != inputConnectionListDictionary_[targetArgName].end();) {
+        if ((*it).info().at("name").stringValue() == conName) {
+            auto info = it->info();
+            it = inputConnectionListDictionary_[targetArgName].erase(it);
+            return info;
         } else { ++it; }
     }
-    return ci;
+    return Value::error(logger::warn("OperationBase::removeConsumerConnection failed. Connection not found."));
 }
 
 

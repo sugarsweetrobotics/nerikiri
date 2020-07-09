@@ -20,13 +20,8 @@
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
-//std::shared_ptr<Broker> Broker::null = std::make_shared<Broker>();;
 
- 
-
-std::map<std::string, std::string> env_dictionary_default{
-
-};
+std::map<std::string, std::string> env_dictionary_default{};
 
 Value defaultProcessConfig({
   {"logger", {
@@ -249,7 +244,8 @@ void Process::_preloadExecutionContexts() {
     c.object_for_each([this](auto& key, auto& value) {
       value.list_for_each([this, key](auto& v) {
         auto broker = store()->getBrokerFactory({{"typeName", v.at("broker").stringValue()}})->createProxy(v.at("broker"));
-        store()->getExecutionContext({{"fullName", key}})->bind(v, broker);
+        auto fullName = v.at("fullName").stringValue();
+        store()->getExecutionContext(key)->bind(fullName, broker);
       });
     });
   } catch (nerikiri::ValueTypeError& e) {
@@ -264,7 +260,7 @@ void Process::_preStartExecutionContexts() {
   try {
     auto c = config_.at("ecs").at("start");
     c.list_for_each([this](auto& value) {
-      this->store()->getExecutionContext({{"fullName", value}})->start();
+      this->store()->getExecutionContext(value.stringValue())->start();
     });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
@@ -345,7 +341,7 @@ void Process::_preloadCallbacksOnStarted() {
         value.at("target").list_for_each([this](auto& v) {
           auto opName = v.at("fullName").stringValue();
           auto argument = v.at("argument");
-          store()->getAllOperation({{"fullName", opName}})->call(argument);
+          store()->getAllOperation(opName)->call(argument);
         });
       }
     });

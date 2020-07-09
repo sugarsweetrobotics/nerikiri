@@ -13,7 +13,7 @@ namespace nerikiri {
     class ExecutionContext : public Object {
     private:
         std::vector<std::shared_ptr<OperationBase>> operations_;
-        std::vector<std::pair<Value, std::shared_ptr<BrokerAPI>>> operationBrokers_;
+        std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>> operationBrokers_;
 
     public:
         ExecutionContext(const Value& info) : Object(info) {
@@ -68,8 +68,8 @@ namespace nerikiri {
             }
             for(auto& b : operationBrokers_) {
                 try {
-                    logger::trace("In EC::svc. Broker()::executing Operation({})....", b.first.at("fullName"));
-                    auto v = b.second->executeOperation(b.first.at("fullName").stringValue());
+                    logger::trace("In EC::svc. Broker()::executing Operation({})....", b.first);
+                    auto v = b.second->executeOperation(b.first);
                     logger::trace("In EC::svc. execution result is {}", v);
                 } catch (std::exception& ex) {
                     logger::error("In EC::svc. Exception in ExecutionContext::svc(): {}", ex.what());
@@ -99,7 +99,7 @@ namespace nerikiri {
             return op->info();
         }
 
-        Value bind(const Value& opInfo, std::shared_ptr<BrokerAPI> br) {
+        Value bind(const std::string& opName, std::shared_ptr<BrokerAPI> br) {
             /// 存在確認
             //if (opInfo.at("fullName").stringValue().find(":") >= 0) {
             //    auto instanceName = opInfo.at("fullName").stringValue();
@@ -108,27 +108,30 @@ namespace nerikiri {
             //    auto i = br->getContainerOperationInfo({{"fullName", containerName}}, {{"fullName", operationName}});
             //    if (i.at("fullName").stringValue() == "null") return i;
             //} else {
-                auto i = br->getOperationInfo(opInfo.at("fullName").stringValue());
-                if (i.at("fullName").stringValue() == "null") return i;
+            auto i = br->getOperationInfo(opName);
+            if (i.at("fullName").stringValue() == "null") return i;
             //}
-            operationBrokers_.push_back({opInfo, br});
+            operationBrokers_.push_back({opName, br});
             return br->info();
         }
 
-        Value unbind(const Value& info) {
+        Value unbind(const std::string& opName) {
+            
             for(auto it = operations_.begin(); it != operations_.end();++it) {
-                if ((*it)->info().at("fullName") == info.at("fullName")) {
+                if ((*it)->info().at("fullName").stringValue() == opName) {
                     it = operations_.erase(it);
-                    return info;
+                    return opName;
                 } 
             }
+            
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it).first.at("fullName") == info.at("fullName")) {
+                if ((*it).first == opName) {
+                    auto br = it->second->info();
                     it = operationBrokers_.erase(it);
-                    return info;
+                    return br;
                 } 
             }
-            return Value::error(logger::error("ExecutionContext::unbind({}) failed. Not Found.", str(info)));
+            return Value::error(logger::error("ExecutionContext::unbind({}) failed. Not Found.", opName));
         }
 
         Value getBoundOperationInfos() {

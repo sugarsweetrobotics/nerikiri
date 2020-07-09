@@ -77,23 +77,9 @@ Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
 */
 
 
-std::shared_ptr<OperationBase> ProcessStore::getContainerOperation(const Value& oi) {
-  if (oi.isError()) return nullOperation();
-  auto name = oi.at("fullName");
-  if (name.isError()) { // クエリがfullNameを持ってないとき．
-    return nullOperation();
-  }
-  auto pos = name.stringValue().rfind(":");
-  if (pos != std::string::npos) {
-    auto containerName = name.stringValue().substr(0, pos);
-    auto operationName = name.stringValue().substr(pos+1);
-    return getContainer({{"fullName", containerName}})->getOperation({{"instanceName", operationName}});
-  } else if (oi.hasKey("ownerContainerInstanceName")) {
-    auto containerName = oi.at("ownerContainerInstanceName").stringValue();
-    auto operationName = name.stringValue();
-    return getContainer({{"fullName", containerName}})->getOperation({{"instanceName", operationName}});
-  }
-  return nullOperation();
+std::shared_ptr<OperationBase> ProcessStore::getContainerOperation(const std::string& fullName) {
+  auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+  return getContainer(containerName)->getOperation(operationName);
 }
 
 /*
@@ -141,11 +127,12 @@ std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const Value&
 */
 
 
-std::shared_ptr<OperationBase> ProcessStore::getOperationOrTopic(const Value& info) {
-  if (info.at("topicType").isError()) {
-    return getAllOperation(info);
+std::shared_ptr<OperationBase> ProcessStore::getOperationOrTopic(const std::string& fullName) {
+  auto op = getAllOperation(fullName);
+  if (!op->isNull()) {
+    return op;
   }
-  return getTopic(info);
+  return getTopic(fullName);
 }
 
 

@@ -27,13 +27,13 @@ public:
 
     virtual Value getOperationInfo(const std::string& fullName) const override;
 
-    virtual Value callOperation(const std::string& fullName, Value&& value) override;
+    virtual Value callOperation(const std::string& fullName, const Value& value) override;
 
     virtual Value invokeOperation(const std::string& fullName) const override;
 
     virtual Value executeOperation(const std::string& fullName) override;
 
-    virtual Value getOperationConnectionInfos(const std::string& fullName) override;
+    virtual Value getOperationConnectionInfos(const std::string& fullName) const override;
 
     virtual Value getOperationFactoryInfos() const override;
 
@@ -59,9 +59,9 @@ public:
 
     virtual Value getContainerOperationInfo(const std::string& fullName) const override;
 
-    virtual Value getContainerOperationConnectionInfos(const std::string& fullName) override;
+    virtual Value getContainerOperationConnectionInfos(const std::string& fullName) const override;
 
-    virtual Value callContainerOperation(const std::string& fullName, Value&& arg) override;
+    virtual Value callContainerOperation(const std::string& fullName, const Value& arg) override;
 
     virtual Value invokeContainerOperation(const std::string& fullName) const override;
 
@@ -79,9 +79,9 @@ public:
 
     virtual Value invokeAllOperation(const std::string& fullName) const override;
 
-    virtual Value executeAllOperation(const std::string& fullName) const override;
+    virtual Value executeAllOperation(const std::string& fullName) override;
 
-    virtual Value callAllOperation(const std::string& fullName, Value&& value) const override;
+    virtual Value callAllOperation(const std::string& fullName, const Value& value) override;
 
     virtual Value getAllOperationConnectionInfos(const std::string& fullName) const override;
 
@@ -111,8 +111,33 @@ public:
     virtual Value deleteResource(const std::string& path) override;
 
 
+    virtual Value getExecutionContextInfos() const override;
 
-    virtual Value getExecutionContextFactoryInfos() override;
+    virtual Value getExecutionContextInfo(const std::string& fullName) const override;
+
+    virtual Value getExecutionContextState(const std::string& fullName) const override;
+
+    virtual Value setExecutionContextState(const std::string& fullName, const std::string& state) override;
+
+    virtual Value getExecutionContextBoundOperationInfos(const std::string& fullName) const override;
+
+    virtual Value getExecutionContextBoundAllOperationInfos(const std::string& fullName) const override;
+
+    virtual Value bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& opInfo) override;
+
+    virtual Value unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) override;
+
+    virtual Value getBrokerInfos() const override;
+
+    virtual Value getCallbacks() const override;
+
+    virtual Value getTopicInfos() const override;
+
+    virtual Value invokeTopic(const std::string& fullName) const override;
+    
+    virtual Value getTopicConnectionInfos(const std::string& fullName) const override;
+
+    virtual Value getExecutionContextFactoryInfos() const override;
 
     virtual Value createExecutionContext(const Value& value) override;
 

@@ -13,40 +13,28 @@
 #include "nerikiri/value.h"
 #include "nerikiri/object.h"
 
-
 namespace nerikiri {
 
-  class Process;
+    class Process;
 
-  /**
-   * Brokerの基本クラス
-   */
-  class Broker : public Object {
-  private:
-  public:
+    /**
+     * Brokerの基本クラス
+     */
+    class Broker : public Object {
+    private:
+    public:
 
-  public:
-    Broker() : Object() {}
-    Broker(const Value& info) : Object(info) {}
-    virtual ~Broker() {}
+    public:
+        Broker();
+        Broker(const Value& info);
+        virtual ~Broker();
 
-    virtual bool run(Process* process) {
-      logger::trace("Broker::run()");
-      info_["state"] = "running";
-      return true;
-    }
-    
-    virtual void shutdown(Process* process) {
-      logger::trace("Broker::shutdown()");
-      info_["state"] = "stopped";
-    }
+        virtual bool run(Process* process);
+        
+        virtual void shutdown(Process* process);
 
-    bool isRunning() const { return info_.at("state").stringValue() == "running"; }
+        bool isRunning() const;
+    };
 
-    // static std::shared_ptr<Broker> null;
-  };
-
-  inline std::shared_ptr<Broker> nullBroker() {
-    return std::make_shared<Broker>();
-  }
+    std::shared_ptr<Broker> nullBroker();
 }

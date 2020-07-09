@@ -10,6 +10,7 @@ namespace nerikiri {
 
     class OperationBrokerAPI {
     public:
+        virtual ~OperationBrokerAPI() {}
 
         virtual Value getOperationInfos() const = 0;
 
@@ -17,11 +18,11 @@ namespace nerikiri {
 
         virtual Value invokeOperation(const std::string& fullName) const = 0;
 
-        virtual Value callOperation(const std::string& fullName, Value&& value) = 0;
+        virtual Value callOperation(const std::string& fullName, const Value& value) = 0;
 
         virtual Value executeOperation(const std::string& fullName) = 0;
 
-        virtual Value getOperationConnectionInfos(const std::string& fullName) = 0;
+        virtual Value getOperationConnectionInfos(const std::string& fullName) const = 0;
 
 
 
@@ -35,6 +36,7 @@ namespace nerikiri {
 
     class ContainerBrokerAPI {  
     public:
+        virtual ~ContainerBrokerAPI() {}
 
         virtual Value getContainerInfos() const = 0;
 
@@ -54,22 +56,23 @@ namespace nerikiri {
 
         virtual Value getContainerOperationInfo(const std::string& fullName) const  = 0;
 
-        virtual Value getContainerOperationConnectionInfos(const std::string& fullName) = 0;
+        virtual Value getContainerOperationConnectionInfos(const std::string& fullName) const = 0;
 
         virtual Value invokeContainerOperation(const std::string& fullName) const  = 0;
 
-        virtual Value callContainerOperation(const std::string& fullName, Value&& arg) = 0;
+        virtual Value callContainerOperation(const std::string& fullName, const Value& arg) = 0;
 
         virtual Value executeContainerOperation(const std::string& fullName) = 0;
     };
 
     class ContainerOperationBrokerAPI {
     public:
-
+        virtual ~ContainerOperationBrokerAPI() {}
     };
 
     class AllOperationBrokerAPI {
     public:
+        virtual ~AllOperationBrokerAPI() {}
 
         virtual Value getAllOperationInfos() const = 0;
 
@@ -77,15 +80,17 @@ namespace nerikiri {
 
         virtual Value invokeAllOperation(const std::string& fullName) const = 0;
 
-        virtual Value callAllOperation(const std::string& fullName, Value&& arg) const = 0;
+        virtual Value callAllOperation(const std::string& fullName, const Value& arg) = 0;
 
-        virtual Value executeAllOperation(const std::string& fullName) const = 0;
+        virtual Value executeAllOperation(const std::string& fullName) = 0;
 
         virtual Value getAllOperationConnectionInfos(const std::string& fullName) const = 0;
     };
     
 
     class ConnectionBrokerAPI {
+    public:
+        virtual ~ConnectionBrokerAPI() {}
     public:
         virtual Value getConnectionInfos() const = 0;
 
@@ -102,11 +107,42 @@ namespace nerikiri {
         virtual Value putToArgumentViaConnection(const std::string& fullName, const std::string& targetArgName, const std::string& conName, const Value& value) = 0;
     };
 
+
+    class ECBrokerAPI {
+    public:
+        virtual ~ECBrokerAPI() {}
+
+
+        virtual Value getExecutionContextInfos() const = 0;
+
+        virtual Value getExecutionContextFactoryInfos() const = 0;
+
+        virtual Value getExecutionContextInfo(const std::string& fullName)const = 0;
+
+        virtual Value createExecutionContext(const Value& value) = 0;
+
+        virtual Value deleteExecutionContext(const std::string& fullName) = 0;
+
+        virtual Value getExecutionContextState(const std::string& fullName) const = 0;
+
+        virtual Value setExecutionContextState(const std::string& fullName, const std::string& state) = 0;
+
+        virtual Value getExecutionContextBoundOperationInfos(const std::string& fullName) const = 0;
+
+        virtual Value getExecutionContextBoundAllOperationInfos(const std::string& fullName) const = 0;
+
+        virtual Value bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& opInfo) = 0;
+
+        virtual Value unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) = 0;
+
+    };
+
     class BrokerAPI : public Object, public OperationBrokerAPI, 
                 public ContainerBrokerAPI, 
                 public ContainerOperationBrokerAPI, 
                 public AllOperationBrokerAPI,
-                public ConnectionBrokerAPI
+                public ConnectionBrokerAPI,
+                public ECBrokerAPI
     {
     private:
 
@@ -131,41 +167,16 @@ namespace nerikiri {
         virtual Value deleteResource(const std::string& path) = 0;
 
 
-
-
-        virtual Value getExecutionContextInfos() = 0;
-
-        virtual Value getExecutionContextFactoryInfos() = 0;
-
-        virtual Value getExecutionContextInfo(const std::string& fullName) = 0;
-
-        virtual Value createExecutionContext(const Value& value) = 0;
-
-        virtual Value deleteExecutionContext(const std::string& fullName) = 0;
-
-        virtual Value getExecutionContextState(const std::string& fullName) = 0;
-
-        virtual Value setExecutionContextState(const std::string& fullName, const std::string& state) = 0;
-
-        virtual Value getExecutionContextBoundOperationInfos(const std::string& fullName) = 0;
-
-        virtual Value getExecutionContextBoundAllOperationInfos(const std::string& fullName) = 0;
-
-        virtual Value bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& opInfo) = 0;
-
-        virtual Value unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) = 0;
-
         virtual Value getBrokerInfos() const = 0;
 
         virtual Value getCallbacks() const = 0;
 
 
+        virtual Value getTopicInfos() const = 0;
 
-        virtual Value getTopicInfos() = 0;
+        virtual Value invokeTopic(const std::string& fullName) const = 0;
 
-        virtual Value invokeTopic(const std::string& fullName) = 0;
-
-        virtual Value getInvokeConnectionInfos(const std::string& fullName);
+        virtual Value getTopicConnectionInfos(const std::string& fullName) const = 0;
         /*
         virtual Value getGenericFSMInfos() = 0;
 

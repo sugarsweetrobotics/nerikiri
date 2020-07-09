@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nerikiri/brokerapi.h"
+#include "nerikiri/naming.h"
 
 namespace nerikiri {
 
@@ -20,53 +21,49 @@ namespace nerikiri {
     }
 
     virtual Value getOperationInfos() const override {
-      return readResource("/process/operations/");
+        return readResource("/process/operations/");
     }
 
     virtual Value getAllOperationInfos() const override {
-      return readResource("/process/all_operations/");
+        return readResource("/process/all_operations/");
     }
 
     virtual Value getContainerInfos() const override {
-      return readResource("/process/containers/");
+        return readResource("/process/containers/");
     }
 
     virtual Value getConnectionInfos() const override {
-      return readResource("/process/connections/");
+        return readResource("/process/connections/");
     }
 
-    virtual Value getContainerInfo(const Value& v) const override {
-      if (v.isError()) return v;    
-      return readResource("/process/containers/" + v.at("fullName").stringValue() + "/");
+    virtual Value getContainerInfo(const std::string& fullName) const override {
+        return readResource("/process/containers/" + fullName + "/");
     }
 
-    virtual Value getContainerOperationInfos(const Value& v) const override {
-      if (v.isError()) return v;    
-      return readResource("/process/containers/" + v.at("fullName").stringValue() + "/operations/");
+    virtual Value getContainerOperationInfos(const std::string& fullName) const override {
+        return readResource("/process/containers/" + fullName + "/operations/");
     }
 
-    virtual Value getContainerOperationInfo(const Value& ci, const Value& oi) const override {
-      if (ci.isError()) return ci;    
-      return readResource("/process/containers/" + ci.at("fullName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/info/");
+    virtual Value getContainerOperationInfo(const std::string& fullName) const override {
+        auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+        return readResource("/process/containers/" + containerName + "/operations/" + operationName + "/info/");
     }
 
-    virtual Value invokeContainerOperation(const Value& ci, const Value& oi) const override {
-      if (ci.isError()) return ci;    
-      return readResource("/process/containers/" + ci.at("fullName").stringValue() + "/operations/" + oi.at("instanceName").stringValue() + "/");
+    virtual Value invokeContainerOperation(const std::string& fullName) const override {
+        auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+        return readResource("/process/containers/" + containerName + "/operations/" + operationName + "/");
     }
 
-    virtual Value executeOperation(const Value& info) override {
-      if (info.isError()) return info;    
-      return updateResource("/process/operations/" + info.at("fullName").stringValue() + "/execution/", {});
+    virtual Value executeOperation(const std::string& fullName) override {
+        return updateResource("/process/operations/" + fullName + "/execution/", {});
     }
 
-    virtual Value getOperationInfo(const Value& v) const override {
-      if (v.isError()) return v;    
-      return readResource("/process/operations/" + v.at("fullName").stringValue() + "/info/");
+    virtual Value getOperationInfo(const std::string& fullName) const override {
+        return readResource("/process/operations/" + fullName + "/info/");
     }
 
-    virtual Value invokeOperation(const Value& v) const override {
-      return readResource("/process/operations/" + v.at("fullName").stringValue() + "/");
+    virtual Value invokeOperation(const std::string& fullName) const override {
+        return readResource("/process/operations/" + fullName + "/");
     }
 
     virtual Value registerConsumerConnection(const Value& ci) override {
@@ -76,12 +73,8 @@ namespace nerikiri {
       return createResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/", ci);
     }
 
-    virtual Value removeConsumerConnection(const Value& ci) override {
-      if (ci.isError()) return ci;    
-      auto operation_name = ci.at("input").at("info").at("fullName").stringValue();
-      auto argument_name  = ci.at("input").at("target").at("name").stringValue();
-      auto connection_name = ci.at("name").stringValue();
-      return deleteResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/");
+    virtual Value removeConsumerConnection(const std::string& operationFullName, const std::string& targetArgName, const std::string& connectionName) override {
+        return deleteResource("/process/operations/" + operationFullName + "/input/arguments/" + targetArgName + "/connections/" + connectionName + "/");
     }
 
     virtual Value registerProviderConnection(const Value& ci) override {
@@ -101,34 +94,25 @@ namespace nerikiri {
       return createResource("/process/operations/" + operation_name + "/output/connections/", ci);
     }
 
-    virtual Value removeProviderConnection(const Value& ci) override {
-      auto operation_name = ci.at("input").at("info").at("fullName").stringValue();
-      auto connection_name = ci.at("name").stringValue();
-      return deleteResource("/process/operations/" + operation_name + "/output/connections/" + connection_name + "/");
+    virtual Value removeProviderConnection(const std::string& operationFullName, const std::string& connectionName) override {
+        return deleteResource("/process/operations/" + operationFullName + "/output/connections/" + connectionName + "/");
     }
 
-    virtual Value callContainerOperation(const Value& ci, const Value& oi, Value&& arg) override {
-     return updateResource("/process/container/" + ci.at("fullName").stringValue() + "/operation/" + oi.at("instanceName").stringValue() + "/", arg);
+    virtual Value callContainerOperation(const std::string& fullName, const Value& arg) override {
+        auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+        return updateResource("/process/container/" + containerName + "/operation/" + operationName + "/", arg);
     }
 
-    virtual Value callOperation(const Value& info, Value&& value) override {
-      return updateResource("/process/operation/" + info.at("fullName").stringValue() + "/", value);
+    virtual Value callOperation(const std::string& fullName, const Value& value) override {
+        return updateResource("/process/operation/" + fullName + "/", value);
     }
 
-    virtual Value putToArgument(const Value& opInfo, const std::string& argName, const Value& value) override {
-      auto operation_name = opInfo.at("fullName").stringValue();
-      return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argName + "/", value);
+    virtual Value putToArgument(const std::string& fullName, const std::string& argName, const Value& value) override {
+        return updateResource("/process/all_operations/" + fullName + "/input/arguments/" + argName + "/", value);
     }
 
-
-    virtual Value putToArgumentViaConnection(const Value& conInfo, const Value& value) override {
-      if (conInfo.isNull()) {
-        return Value::error(logger::error("HTTPBrokerProxyImpl::putToArgumentViaConnection failed. Connection is null."));
-      }
-      const auto operation_name = conInfo.at("input").at("info").at("fullName").stringValue();
-      const auto connection_name = conInfo.at("name").stringValue();
-      const auto argument_name = conInfo.at("input").at("target").at("name").stringValue();
-      return updateResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/" + connection_name + "/", value);
+    virtual Value putToArgumentViaConnection(const std::string& fullName, const std::string& targetArgName, const std::string& conName, const Value& value) override {
+        return updateResource("/process/all_operations/" + fullName + "/input/arguments/" + targetArgName + "/connections/" + conName + "/", value);
     }
 
     virtual Value getOperationFactoryInfos() const override {
@@ -148,30 +132,119 @@ namespace nerikiri {
       return createResource("/process/containers/", value);
     }
 
-
-
-    virtual Value createContainerOperation(const Value& containerInfo, const Value& value) override {
-      return createResource("/process/containers/" + containerInfo.at("fullName").stringValue() + "/operations/", value);
+    virtual Value createContainerOperation(const std::string& fullName, const Value& value) override {
+        return createResource("/process/containers/" +  fullName + "/operations/", value);
     }
 
-    virtual Value deleteOperation(const Value& value) override {
-      return deleteResource("/process/operations/" + value.at("fullName").stringValue() + "/");
+    virtual Value deleteOperation(const std::string& fullName) override {
+        return deleteResource("/process/operations/" + fullName + "/");
     }
 
-    virtual Value deleteContainer(const Value& value) override {
-      return deleteResource("/process/containers/" + value.at("fullName").stringValue() + "/");
+    virtual Value getOperationConnectionInfos(const std::string& fullName) const override {
+        return readResource("/process/operations/" + fullName + "/connections/");
     }
 
-    virtual Value deleteContainerOperation(const Value& containerInfo, const Value& value) override {
-      return deleteResource("/process/containers/" + containerInfo.at("fullName").stringValue() + "/operations/" + value.at("instanceName").stringValue()+ "/");
+    virtual Value getContainerOperationConnectionInfos(const std::string& fullName) const override {
+        auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+        return readResource("/process/containers/" + containerName + "/operations/" + operationName + "/connections/");
+    }
+
+    virtual Value executeContainerOperation(const std::string& fullName) override {
+      auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+      return updateResource("/process/containers/" + containerName + "/operations/" + operationName + "/execution/", Value::object());
+    }
+
+    virtual Value getAllOperationInfo(const std::string& fullName) const override {
+      return readResource("/process/all_operations/");
+    }
+
+    virtual Value invokeAllOperation(const std::string& fullName) const override {
+      return readResource("/process/all_operations/" + fullName + "/");
+    }
+    
+    virtual Value callAllOperation(const std::string& fullName, const Value& value) override {
+      return updateResource("/process/all_operations/" + fullName + "/", value);
+    }
+
+    virtual Value executeAllOperation(const std::string& fullName) override {
+      return updateResource("/process/all_operations/" + fullName + "/execution/", Value::object());
+    }
+
+    virtual Value getAllOperationConnectionInfos(const std::string& fullName) const override {
+      return readResource("/process/all_operations/" + fullName + "/connections/");
+    }
+
+    virtual Value getExecutionContextInfos() const override {
+      return readResource("/process/ecs/");
+    }
+
+    virtual Value getExecutionContextFactoryInfos() const override {
+      return readResource("/process/ecfactories/");
+    }
+
+    virtual Value getExecutionContextInfo(const std::string& fullName) const override {
+      return readResource("/process/ecs/" + fullName + "/");
+    }
+
+    virtual Value getExecutionContextState(const std::string& fullName) const override {
+      return readResource("/process/ecs/" + fullName + "/state/");
+    }
+
+    virtual Value setExecutionContextState(const std::string& fullName, const std::string& state) override {
+      return updateResource("/process/ecs/" + fullName + "/state/", Value(state));
+    }
+
+    virtual Value getExecutionContextBoundOperationInfos(const std::string& fullName) const override {
+      return readResource("/process/ecs/" + fullName + "/operations/");
+    }
+    
+    virtual Value getExecutionContextBoundAllOperationInfos(const std::string& fullName) const override {
+      return readResource("/process/ecs/" + fullName + "/all_operations/");
+    }
+
+    virtual Value bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& opInfo) override {
+      return createResource("/process/ecs/" + ecFullName + "/operations/" + opFullName + "/", opInfo);
+    }
+
+    virtual Value unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) override {
+      return deleteResource("/process/ecs/" + ecFullName + "/operations/" + opFullName + "/");
+    }
+
+    virtual Value getBrokerInfos() const override {
+      return readResource("/process/brokers/");
+    }
+
+    virtual Value getCallbacks() const override {
+      return readResource("/process/callbacks/");
+    }
+
+    virtual Value getTopicInfos() const override {
+      return readResource("/process/topics/");
+    }
+
+    virtual Value invokeTopic(const std::string& fullName) const override {
+      return readResource("/process/topics/" + fullName + "/");
+    }
+
+    virtual Value getTopicConnectionInfos(const std::string& fullName) const override {
+      return readResource("/process/topics/" + fullName + "/connections/");
+    }
+
+    virtual Value deleteContainer(const std::string& fullName) override {
+        return deleteResource("/process/containers/" + fullName + "/");
+    }
+
+    virtual Value deleteContainerOperation(const std::string& fullName) override {
+        auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+        return deleteResource("/process/containers/" + containerName + "/operations/" + operationName + "/");
     }
 
     virtual Value createExecutionContext(const Value& value) override {
-      return createResource("/process/ecs/", value);
+        return createResource("/process/ecs/", value);
     }
 
-    virtual Value deleteExecutionContext(const Value& value) override {
-      return deleteResource("/process/ecs/" + value.at("fullName").stringValue() + "/");
+    virtual Value deleteExecutionContext(const std::string& fullName) override {
+      return deleteResource("/process/ecs/" + fullName + "/");
     }
   };
 

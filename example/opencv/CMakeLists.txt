@@ -8,7 +8,7 @@ find_package(OpenCV REQUIRED)
 function(add_operation NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
   add_dependencies(${NAME} nerikiri)
-  target_link_libraries(${NAME} ${OpenCV_LIBS})
+  target_link_libraries(${NAME} nerikiri ${OpenCV_LIBS})
   set_target_properties(${NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -25,7 +25,7 @@ set(CONTAINERS)
 function(add_container NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
   add_dependencies(${NAME} nerikiri)
-  target_link_libraries(${NAME} ${OpenCV_LIBS})
+  target_link_libraries(${NAME} nerikiri ${OpenCV_LIBS})
 
   set_target_properties(${NAME}
     PROPERTIES

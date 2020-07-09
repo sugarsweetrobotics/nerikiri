@@ -25,7 +25,7 @@ namespace nerikiri {
                 argument_updated_ = false;
                 argument_mutex_.unlock();
             } else {
-                std::cout << "memorized output" << std::endl;
+               // std::cout << "memorized output" << std::endl;
             }
             return getOutput();
         }

@@ -17,9 +17,9 @@ info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), 
     }
 
     if (providerBroker_) {
-        auto info = info_.at("output").at("info");
-        pull_func_ = [providerBroker, info]() {
-            return providerBroker->invokeOperation(info);
+        auto operationName = info_.at("output").at("info").at("fullName").stringValue();
+        pull_func_ = [providerBroker, operationName]() {
+            return providerBroker->invokeOperation(operationName);
         };
         is_null_ = false;
         if(info_.objectValue().count("type") > 0) {
@@ -30,9 +30,11 @@ info_(_info), providerBroker_(providerBroker), consumerBroker_(consumerBroker), 
     }
 
     if (consumerBroker_) {
-        //auto name = info_.at("output").at("info").at("name").stringValue();
-        push_func_ = [_info, consumerBroker](const Value& value) { 
-            return consumerBroker->putToArgumentViaConnection(_info, std::move(value)); };
+        auto operationName = info_.at("input").at("info").at("fullName").stringValue();
+        auto argName = info_.at("target").at("name").stringValue();
+        auto conName = info_.at("name").stringValue();
+        push_func_ = [operationName, argName, conName, consumerBroker](const Value& value) { 
+            return consumerBroker->putToArgumentViaConnection(operationName, argName, conName, value); };
         is_null_ = false;
     }
     if (_info.objectValue().count("event") > 0) {

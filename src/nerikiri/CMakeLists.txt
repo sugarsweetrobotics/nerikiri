@@ -1,18 +1,20 @@
 set(nk_base_srcs process.cpp process_store.cpp 
 operation.cpp 
 #operationinfo.cpp 
-# value.cpp 
+value.cpp 
 ec.cpp
 # valuemap.cpp 
 logger.cpp 
 #broker.cpp
 objectmapper.cpp 
 objectfactory.cpp
+brokerfactory.cpp
 #brokerselector.cpp 
 dllproxy.cpp 
 corebroker.cpp
 broker.cpp
 moduleloader.cpp
+processconfigparser.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 connectionbuilder.cpp
 signal.cpp connection.cpp connectiondictionary.cpp container.cpp json.cpp base64.c)

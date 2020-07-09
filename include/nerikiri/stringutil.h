@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <string>
 
 namespace nerikiri {
@@ -11,7 +12,7 @@ namespace nerikiri {
      * @param m 置き換え文字列
      * @return 置き換え後の文字列
      */
-    std::string replaceAll(const std::string ss, const std::string& p, const std::string& m) {
+    inline std::string replaceAll(const std::string ss, const std::string& p, const std::string& m) {
         auto s = ss; // コピーする
         auto pos = s.find(p);
         int toLen = m.length();
@@ -26,4 +27,17 @@ namespace nerikiri {
         return s;
     }
 
+    inline std::vector<std::string> stringSplit(const std::string& str, const char sep=' ') {
+        std::vector<std::string> result;
+        int i = 0;
+        do {
+            const int begin = i;
+            ///const char *begin = pstr;
+            while(str[i] != sep && str[i] != 0)
+                i++;
+
+            result.push_back(str.substr(begin, i));//std::string(begin, pstr));
+        } while (0 != str[i++]);
+        return result;
+    }
 }

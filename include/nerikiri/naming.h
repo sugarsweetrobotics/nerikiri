@@ -4,6 +4,7 @@
 #include <vector>
 #include <typeinfo>
 
+#include "nerikiri/stringutil.h"
 #ifdef __APPLE__
 #include <cxxabi.h>
 #elif WIN32
@@ -38,6 +39,18 @@ namespace nerikiri {
       return abi::__cxa_demangle(demangled, 0, 0, &status);
 #endif
 
+    }
+
+    inline std::vector<std::string> separateNamingContext(const std::string& name) {
+        return stringSplit(name, ':');
+    }
+
+    inline std::pair<std::string, std::string> splitContainerAndOperationName(const std::string& name) {
+        auto i = name.rfind(':');
+        if (i == std::string::npos) {
+            return {name.substr(0, i), ""};
+        }
+        return {name.substr(0, i), name.substr(i+1)};
     }
 
     template<typename T>

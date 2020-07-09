@@ -10,7 +10,7 @@
 using namespace nerikiri;
 
 
-Value ObjectMapper::readResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path) {
+Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string& path) {
 
     std::smatch match;
 
@@ -124,14 +124,14 @@ Value ObjectMapper::readResource(const std::shared_ptr<CoreBroker>& coreBroker, 
       return coreBroker->invokeTopic(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/topics/([^/]*)/connections/"))) {
-      return coreBroker->getInvokeConnectionInfos(match[1]);
+      return coreBroker->getTopicConnectionInfos(match[1]);
     }
 
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
 
-Value ObjectMapper::createResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
+Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
     return coreBroker->registerConsumerConnection(value);
@@ -156,9 +156,6 @@ Value ObjectMapper::createResource(const std::shared_ptr<CoreBroker>& coreBroker
     return coreBroker->createContainer(value);
   }
 
-  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {
-    return coreBroker->setExecutionContextState(match[1], value.stringValue());
-  }
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/([^/]*)/"))) {
     return coreBroker->bindOperationToExecutionContext(match[1], match[2], value);
@@ -172,9 +169,18 @@ Value ObjectMapper::createResource(const std::shared_ptr<CoreBroker>& coreBroker
  * 
  * 
  */
-Value ObjectMapper::updateResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path, Value&& value, BrokerAPI* receiverBroker) {
+Value ObjectMapper::updateResource(CoreBroker* coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   logger::trace("ObjectMapper::updateResource(store, path={}", path);
   std::smatch match;
+
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
+    return coreBroker->callOperation(match[1].str(), (value));
+  }
+  if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/"))) {
+    return coreBroker->callAllOperation(match[1].str(), (value));
+  }
+
+
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/execution/"))) {
     //logger::trace("In ObjectMapper::updateResource. executing operation(store, {})", value);
     return coreBroker->executeOperation(match[1]);
@@ -183,28 +189,29 @@ Value ObjectMapper::updateResource(const std::shared_ptr<CoreBroker>& coreBroker
     //logger::trace("In ObjectMapper::updateResource. executing operation(store, {})", value);
     return coreBroker->executeAllOperation(match[1]);
   }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/"))) {
+
+  if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/input/arguments/([^/]*)/"))) {
     return coreBroker->putToArgument(match[1], match[2], value);
   }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
+  if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     if (value.isError()) {
       logger::error("ObjectMapper::updateResource() error. ({})", value);
       return value;
     }
     return coreBroker->putToArgumentViaConnection(match[1], match[2], match[3], value);
-    //return store->getAllOperation({{"fullName", Value(match[1])}})->putToArgumentViaConnection({
-    //    {"input", {
-    //        {"info", {{"fullName", Value(match[1])}} },
-    //        {"target", {{"name", Value(match[2])}} },
-    //    }},
-    //    {"name", Value(match[3])} 
-    //    }, value);  
-  }
-  if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-    coreBroker->callContainerOperation(match[1].str() + ":" + match[2].str(), std::move(value));
-    //return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
   }
 
+  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/state/"))) {
+    return coreBroker->setExecutionContextState(match[1], value.stringValue());
+  }
+
+  if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
+    coreBroker->callContainerOperation(match[1].str() + ":" + match[2].str(), (value));
+    //return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
+  }
+  if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/execution/"))) {
+    coreBroker->executeContainerOperation(match[1].str() + ":" + match[2].str());
+  }
 
 
   return Value::error(logger::error("ObjectMapper::updateResource({}) failed.", path));
@@ -216,7 +223,7 @@ Value ObjectMapper::updateResource(const std::shared_ptr<CoreBroker>& coreBroker
  * 
  * 
  */
-Value ObjectMapper::deleteResource(const std::shared_ptr<CoreBroker>& coreBroker, const std::string& path, BrokerAPI* receiverBroker) {
+Value ObjectMapper::deleteResource(CoreBroker* coreBroker, const std::string& path, BrokerAPI* receiverBroker) {
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     return coreBroker->removeConsumerConnection(match[1], match[2], match[3]);

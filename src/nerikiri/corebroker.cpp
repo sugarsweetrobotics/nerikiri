@@ -1,4 +1,4 @@
-
+#include <utility>
 
 #include "nerikiri/process.h"
 #include "nerikiri/corebroker.h"
@@ -26,41 +26,58 @@ Value CoreBroker::getContainerInfos() const {
     return process_->store()->getContainerInfos();
 }
 
-Value CoreBroker::getContainerInfo(const Value& value) const {
-    return process_->store()->getContainer(value)->info();
+Value CoreBroker::getContainerInfo(const std::string& fullName) const {
+    return process_->store()->getContainer(fullName)->info();
 }
 
-Value CoreBroker::getContainerOperationInfos(const Value& info) const {
-    return process_->store()->getContainer(info)->getOperationInfos();
+Value CoreBroker::getContainerOperationInfos(const std::string& fullName) const {
+    return process_->store()->getContainer(fullName)->getOperationInfos();
 }
 
-Value CoreBroker::getContainerOperationInfo(const Value& cinfo, const Value& oinfo) const {
-    return process_->store()->getContainer(cinfo)->getOperation(oinfo)->info();
+Value CoreBroker::getContainerOperationInfo(const std::string& fullName) const {
+    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    return process_->store()->getContainer(containerName)->getOperation(operationName)->info();
 }
 
-Value CoreBroker::getOperationInfo(const Value& info) const {
-    return process_->store()->getAllOperation(info)->info();
+Value CoreBroker::getOperationInfo(const std::string& fullName) const {
+    return process_->store()->getOperation(fullName)->info();
 }
 
-Value CoreBroker::callContainerOperation(const Value& cinfo, const Value& oinfo, Value&& arg) {
-    return process_->store()->getContainer(cinfo)->getOperation(oinfo)->call(std::move(arg));
+Value CoreBroker::callContainerOperation(const std::string& fullName, const Value& arg) {
+    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    return process_->store()->getContainer(containerName)->getOperation(operationName)->call(std::move(arg));
 }
 
-Value CoreBroker::invokeContainerOperation(const Value& cinfo, const Value& oinfo) const {
-    return process_->store()->getContainer(cinfo)->getOperation(oinfo)->invoke();
+Value CoreBroker::invokeContainerOperation(const std::string& fullName) const {
+    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    return process_->store()->getContainer(containerName)->getOperation(operationName)->invoke();
 }
 
-Value CoreBroker::callOperation(const Value& info, Value&& value) {
-    return process_->store()->getAllOperation(info)->call(std::move(value));
+Value CoreBroker::callOperation(const std::string& fullName, const Value& value) {
+    return process_->store()->getOperation(fullName)->call(std::move(value));
 }
 
-Value CoreBroker::invokeOperation(const Value& v) const {
-    return process_->store()->getAllOperation(v)->invoke();
+Value CoreBroker::invokeOperation(const std::string& fullName) const {
+    return process_->store()->getOperation(fullName)->invoke();
 }
 
-Value CoreBroker::executeOperation(const Value& v) {
-    logger::trace("CoreBroker::executeOperation({})", v);
-    return process_->store()->getAllOperation(v)->execute();
+Value CoreBroker::executeOperation(const std::string& fullName) {
+    logger::trace("CoreBroker::executeOperation({})", fullName);
+    return process_->store()->getOperation(fullName)->execute();
+}
+
+
+Value CoreBroker::callAllOperation(const std::string& fullName, const Value& value) {
+    return process_->store()->getAllOperation(fullName)->call(std::move(value));
+}
+
+Value CoreBroker::invokeAllOperation(const std::string& fullName) const {
+    return process_->store()->getAllOperation(fullName)->invoke();
+}
+
+Value CoreBroker::executeAllOperation(const std::string& fullName) {
+    logger::trace("CoreBroker::executeOperation({})", fullName);
+    return process_->store()->getAllOperation(fullName)->execute();
 }
 
 
@@ -78,26 +95,26 @@ Value CoreBroker::registerProviderConnection(const Value& ci) {
     return ConnectionBuilder::registerProviderConnection(process_->store(), ci);
 }
 
-Value CoreBroker::removeConsumerConnection(const ConnectionInfo& ci) {
-    logger::trace("CoreBroker::removeConsumerConnection({}", str(ci));
-    return ConnectionBuilder::deleteConsumerConnection(process_->store(), ci);
+Value CoreBroker::removeConsumerConnection(const std::string& operationFullName, const std::string& targetArgName, const std::string& conName) {
+    logger::trace("CoreBroker::removeConsumerConnection({}", conName);
+    return ConnectionBuilder::deleteConsumerConnection(process_->store(), operationFullName, targetArgName, conName);
 }
 
-Value CoreBroker::removeProviderConnection(const ConnectionInfo& ci) {
-    logger::trace("CoreBroker::removeProviderConnection({}", str(ci));
-    return ConnectionBuilder::deleteProviderConnection(process_->store(), ci);
+Value CoreBroker::removeProviderConnection(const std::string& operationFullName, const std::string& conName) {
+    logger::trace("CoreBroker::removeProviderConnection({}", conName);
+    return ConnectionBuilder::deleteProviderConnection(process_->store(), operationFullName, conName);
 }
 
 Value CoreBroker::putToArgument(const std::string& fullName, const std::string& argName, const Value& value) {
     logger::trace("CoreBroker::putToArgument()");
     //return this->process_->putToArgument(opInfo, argName, value);    
-    return process_->store()->getOperationOrTopic(opInfo)->putToArgument(argName, value);
+    return process_->store()->getOperationOrTopic(fullName)->putToArgument(argName, value);
 }
 
-Value CoreBroker::putToArgumentViaConnection(const std::string& fullName, const std::string& conName, const Value& value) {
-    logger::trace("CoreBroker::putToArgumentViaConnection({})", conInfo.at("name"));
-    return process_->store()->getOperationOrTopic(conInfo.at("input").at("info"))->putToArgumentViaConnection(
-        conInfo, value);
+Value CoreBroker::putToArgumentViaConnection(const std::string& fullName, const std::string& argName, const std::string& conName, const Value& value) {
+    logger::trace("CoreBroker::putToArgumentViaConnection({})", conName);
+    return process_->store()->getOperationOrTopic(fullName)->putToArgumentViaConnection(
+        argName, conName, value);
 }
 
 Value CoreBroker::getOperationFactoryInfos() const {
@@ -122,55 +139,132 @@ Value CoreBroker::createContainer(const Value& value) {
 }
 
 
-Value CoreBroker::createContainerOperation(const Value& containerInfo, const Value& value) {
+Value CoreBroker::createContainerOperation(const std::string& fullName, const Value& value) {
     logger::trace("Broker::createContainerOperation({})", value);
-    return process_->store()->getContainer(containerInfo)->createContainerOperation(value);
+    return process_->store()->getContainer(fullName)->createContainerOperation(value);
 }
 
-Value CoreBroker::deleteOperation(const Value& value) {
-    logger::trace("Broker::deleteOperation({})", value);
-    return ObjectFactory::deleteOperation(*process_->store(), value);
+Value CoreBroker::deleteOperation(const std::string& fullName) {
+    logger::trace("Broker::deleteOperation({})", fullName);
+    return ObjectFactory::deleteOperation(*process_->store(), fullName);
 }
 
-Value CoreBroker::deleteContainer(const Value& value) {
-    logger::trace("CoreBroker::deleteContainer({})", value);
-    return ObjectFactory::deleteContainer(*process_->store(), value);
+Value CoreBroker::deleteContainer(const std::string& fullName) {
+    logger::trace("CoreBroker::deleteContainer({})", fullName);
+    return ObjectFactory::deleteContainer(*process_->store(), fullName);
     
 }
 
-Value CoreBroker::deleteContainerOperation(const Value& containerInfo, const Value& value) { 
-    logger::trace("CoreBroker::deleteContainerOperation({})", value);
-    return process_->store()->getContainer(containerInfo)->deleteContainerOperation(value);
-    
+Value CoreBroker::deleteContainerOperation(const std::string& fullName) { 
+    logger::trace("CoreBroker::deleteContainerOperation({})", fullName);
+    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    return process_->store()->getContainer(containerName)->deleteContainerOperation(operationName);
 }
+
 Value CoreBroker::createExecutionContext(const Value& value) {
     logger::trace("CoreBroker::createExecutionContext({})", value);
     return ObjectFactory::createExecutionContext(*process_->store(), value);
     
 }
-Value CoreBroker::deleteExecutionContext(const Value& value) {
-    logger::trace("CoreBroker::deleteExecutionContext({})", value);
-    return ObjectFactory::deleteExecutionContext(*process_->store(), value);
-    
+Value CoreBroker::deleteExecutionContext(const std::string& fullName) {
+    logger::trace("CoreBroker::deleteExecutionContext({})", fullName);
+    return ObjectFactory::deleteExecutionContext(*process_->store(), fullName);
 }
 
 Value CoreBroker::createResource(const std::string& path, const Value& value) {
     //return process_->createResource(path, value);
-    return ObjectMapper::createResource(process_->store(), path, value);
+    return ObjectMapper::createResource(this, path, std::move(value));
 }
 
 Value CoreBroker::readResource(const std::string& path) const {
     //return process_->readResource(path);//
-    return ObjectMapper::readResource(process_->store(), path);
+    return ObjectMapper::readResource(this, path);
 }
 
 Value CoreBroker::updateResource(const std::string& path, const Value& value) {
     //return process_->updateResource(path, value);
-    return ObjectMapper::updateResource(process_->store(), path, value);
+    return ObjectMapper::updateResource(this, path, std::move(value));
 }
 
 Value CoreBroker::deleteResource(const std::string& path) {
     //return process_->deleteResource(path);
-    return ObjectMapper::deleteResource(process_->store(), path);
+    return ObjectMapper::deleteResource(this, path);
 }
 
+
+Value CoreBroker::setExecutionContextState(const std::string& fullName, const std::string& state) {
+    return process_->store()->getExecutionContext(fullName)->setState(state);
+}
+
+Value CoreBroker::executeContainerOperation(const std::string& fullName) {
+    return process_->store()->getContainerOperation(fullName)->execute();
+}
+
+Value CoreBroker::bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& brokerInfo) {
+    auto broker = process_->store()->getBrokerFactory(brokerInfo)->createProxy(brokerInfo);
+    return process_->store()->getExecutionContext(ecFullName)->bind(opFullName, broker);
+}
+
+Value CoreBroker::unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) {
+    return process_->store()->getExecutionContext(ecFullName)->unbind(opFullName);
+}
+
+Value CoreBroker::getBrokerInfos() const {
+    return process_->store()->getBrokerInfos();
+}
+
+Value CoreBroker::getCallbacks() const {
+    return process_->store()->getCallbacks();
+}
+
+Value CoreBroker::getTopicInfos() const {
+    return process_->store()->getTopicInfos();
+}
+
+Value CoreBroker::invokeTopic(const std::string& fullName) const {
+    return process_->store()->getTopic(fullName)->invoke();
+}
+
+Value CoreBroker::getExecutionContextInfos() const {
+    return process_->store()->getExecutionContextInfos();
+}
+
+Value CoreBroker::getAllOperationInfo(const std::string& fullName) const {
+    return process_->store()->getAllOperation(fullName)->info();
+}
+
+Value CoreBroker::getExecutionContextInfo(const std::string& fullName) const {
+    return process_->store()->getExecutionContext(fullName)->info();
+}
+
+Value CoreBroker::getTopicConnectionInfos(const std::string& fullName) const {
+    return process_->store()->getTopic(fullName)->getConnectionInfos();
+}
+
+Value CoreBroker::getExecutionContextState(const std::string& fullName) const {
+    return process_->store()->getExecutionContext(fullName)->getState();
+}
+
+Value CoreBroker::getOperationConnectionInfos(const std::string& fullName) const {
+    return process_->store()->getOperation(fullName)->getConnectionInfos();
+}
+
+Value CoreBroker::getAllOperationConnectionInfos(const std::string& fullName) const {
+    return process_->store()->getAllOperation(fullName)->getConnectionInfos();
+}
+
+Value CoreBroker::getExecutionContextFactoryInfos() const {
+    return process_->store()->getExecutionContextFactoryInfos();
+}
+
+Value CoreBroker::getContainerOperationConnectionInfos(const std::string& fullName) const {
+    return process_->store()->getContainerOperation(fullName)->getConnectionInfos();
+}
+
+Value CoreBroker::getExecutionContextBoundOperationInfos(const std::string& fullName) const {
+    return process_->store()->getExecutionContext(fullName)->getBoundOperationInfos();
+}
+
+Value CoreBroker::getExecutionContextBoundAllOperationInfos(const std::string& fullName) const {
+    return process_->store()->getExecutionContext(fullName)->getBoundOperationInfos();
+}
