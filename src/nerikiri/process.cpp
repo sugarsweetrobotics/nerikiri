@@ -1,21 +1,18 @@
 #include <sstream>
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/functional.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/signal.h"
-#include "nerikiri/naming.h"
-#include "nerikiri/argparse.h"
-#include "nerikiri/os.h"
+#include <iostream>
 
-#include "nerikiri/broker.h"
-#include "nerikiri/moduleloader.h"
-#include "nerikiri/objectfactory.h"
-#include "nerikiri/connectionbuilder.h"
 
 #include "nerikiri/process.h"
-#include "nerikiri/processconfigparser.h"
 
-#include <iostream>
+
+#include "nerikiri/argparse.h"
+#include "nerikiri/os.h"
+#include "nerikiri/signal.h"
+
+#include "nerikiri/processconfigparser.h"
+#include "nerikiri/objectfactory.h"
+#include "nerikiri/connectionbuilder.h"
+#include "nerikiri/moduleloader.h"
 
 using namespace nerikiri;
 using namespace nerikiri::logger;

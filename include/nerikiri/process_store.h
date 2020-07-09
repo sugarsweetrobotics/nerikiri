@@ -11,7 +11,6 @@
 #include "nerikiri/connectiondictionary.h"
 #include "nerikiri/operationfactory.h"
 
-//#include "nerikiri/brokers/corebroker.h"
 #include "nerikiri/broker.h"
 #include "nerikiri/brokerfactory.h"
 #include "nerikiri/topic.h"
@@ -140,19 +139,17 @@ namespace nerikiri {
     /**
      * Containerの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addContainer(const std::shared_ptr<ContainerBase>& container) {
-      return add<ContainerBase>(containers_, container, ".ctn");
-    }
+    Value addContainer(const std::shared_ptr<ContainerBase>& container);
 
     /**
      * Containerの取得
      */
-    std::shared_ptr<ContainerBase> getContainer(const std::string& fullName) {
-      return get<ContainerBase>(containers_, fullName, nullContainer);
-    }
+    std::shared_ptr<ContainerBase> getContainer(const std::string& fullName);
     
     ProcessStore& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf);
+
     std::shared_ptr<ContainerFactoryBase> getContainerFactory(const Value& info);
+
     std::shared_ptr<OperationBase> getContainerOperation(const std::string& fullName);
 
     Value getOperationInfos();
@@ -164,32 +161,19 @@ namespace nerikiri {
     /**
      * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addOperation(const std::shared_ptr<Operation>& operation) {
-      auto temp = std::dynamic_pointer_cast<OperationBase>(operation);
-      return add<OperationBase>(operations_, temp, ".ope");
-    }
+    Value addOperation(const std::shared_ptr<Operation>& operation);
 
     /**
      * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addOperation(std::shared_ptr<Operation>&& operation) {
-      return add<OperationBase>(operations_, std::dynamic_pointer_cast<OperationBase>(operation), ".ope");
-    }
+    Value addOperation(std::shared_ptr<Operation>&& operation);
 
     /**
      * Operationの取得
      */
-    std::shared_ptr<OperationBase> getOperation(const std::string& fullName) {
-      return get<OperationBase>(operations_, fullName, nullOperation);
-    }
+    std::shared_ptr<OperationBase> getOperation(const std::string& fullName);
 
-    std::shared_ptr<OperationBase> getAllOperation(const std::string& fullName) {
-      auto op = getOperation(fullName);
-      if (op->isNull()) {
-        return getContainerOperation(fullName);
-      }
-      return op;
-    }
+    std::shared_ptr<OperationBase> getAllOperation(const std::string& fullName);
 
     ProcessStore& addOperationFactory(std::shared_ptr<OperationFactory> opf);
     std::shared_ptr<OperationFactory> getOperationFactory(const Value& info);
@@ -202,43 +186,36 @@ namespace nerikiri {
     /**
      * ExecutionContextの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addExecutionContext(const std::shared_ptr<ExecutionContext>& ec) {
-      return add<ExecutionContext>(executionContexts_, ec, ".ec");
-    }
+    Value addExecutionContext(const std::shared_ptr<ExecutionContext>& ec);
 
     /**
      * ExecutionContextの取得
      */
-    std::shared_ptr<ExecutionContext> getExecutionContext(const std::string& fullName) {
-      return get<ExecutionContext>(executionContexts_, fullName, nullExecutionContext);
-    }
+    std::shared_ptr<ExecutionContext> getExecutionContext(const std::string& fullName);
 
     ProcessStore& addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec);
+
     std::shared_ptr<ExecutionContextFactory> getExecutionContextFactory(const Value& info);
+
     Value getExecutionContextInfos();
+
     Value getExecutionContextFactoryInfos();
     
 
     /**
      * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addBroker(const std::shared_ptr<Broker>& brk) {
-      return add<Broker>(brokers_, brk, ".brk");
-    }
+    Value addBroker(const std::shared_ptr<Broker>& brk);
 
     /**
      * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addBroker(std::shared_ptr<Broker>&& brk) {
-      return add<Broker>(brokers_, std::move(brk), ".brk");
-    }
+    Value addBroker(std::shared_ptr<Broker>&& brk);
 
     /**
      * Brokerの取得
      */
-    std::shared_ptr<Broker> getBroker(const std::string& fullName) {
-      return get<Broker>(brokers_, fullName, nullBroker);
-    }
+    std::shared_ptr<Broker> getBroker(const std::string& fullName);
 
     Value addBrokerFactory(std::shared_ptr<BrokerFactory> factory);
     Value getBrokerInfos() const;

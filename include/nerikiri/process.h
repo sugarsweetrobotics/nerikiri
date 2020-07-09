@@ -1,27 +1,20 @@
 #pragma once
 
+#include <string>
+#include <memory>
+#include <map>
+#include <vector>
+#include <functional>
+
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/dllproxy.h"
 
 #include "nerikiri/object.h"
 #include "nerikiri/value.h"
 
-#include "nerikiri/operation.h"
-#include "nerikiri/brokerapi.h"
-#include "nerikiri/broker.h"
 #include "nerikiri/corebroker.h"
 
 #include "nerikiri/systemeditor.h"
-#include "nerikiri/container.h"
-#include "nerikiri/containerfactory.h"
-#include "nerikiri/containeroperation.h"
-#include "nerikiri/containeroperationfactory.h"
-#include "nerikiri/ec.h"
 #include "nerikiri/process_store.h"
-#include "nerikiri/objectfactory.h"
-#include "nerikiri/operationfactory.h"
-#include "nerikiri/objectmapper.h"
-
 
 namespace nerikiri {
   

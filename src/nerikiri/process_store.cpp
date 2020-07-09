@@ -21,6 +21,85 @@ Value ProcessStore::getContainerInfos() {
   return {nerikiri::map<Value, std::shared_ptr<ContainerBase>>(containers_, [](auto& ctn) { return ctn->info(); })};
 }
 
+/**
+ * Containerの追加．fullNameやinstanceNameの自動割り当ても行う
+ */
+Value ProcessStore::addContainer(const std::shared_ptr<ContainerBase>& container) {
+  return add<ContainerBase>(containers_, container, ".ctn");
+}
+
+/**
+ * Containerの取得
+ */
+std::shared_ptr<ContainerBase> ProcessStore::getContainer(const std::string& fullName) {
+  return get<ContainerBase>(containers_, fullName, nullContainer);
+}
+
+/**
+ * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
+ */
+Value ProcessStore::addOperation(const std::shared_ptr<Operation>& operation) {
+  auto temp = std::dynamic_pointer_cast<OperationBase>(operation);
+  return add<OperationBase>(operations_, temp, ".ope");
+}
+
+/**
+ * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
+ */
+Value ProcessStore::addOperation(std::shared_ptr<Operation>&& operation) {
+  return add<OperationBase>(operations_, std::dynamic_pointer_cast<OperationBase>(operation), ".ope");
+}
+
+/**
+ * Operationの取得
+ */
+std::shared_ptr<OperationBase> ProcessStore::getOperation(const std::string& fullName) {
+  return get<OperationBase>(operations_, fullName, nullOperation);
+}
+
+std::shared_ptr<OperationBase> ProcessStore::getAllOperation(const std::string& fullName) {
+  auto op = getOperation(fullName);
+  if (op->isNull()) {
+    return getContainerOperation(fullName);
+  }
+  return op;
+}
+
+/**
+ * ExecutionContextの追加．fullNameやinstanceNameの自動割り当ても行う
+ */
+Value ProcessStore::addExecutionContext(const std::shared_ptr<ExecutionContext>& ec) {
+  return add<ExecutionContext>(executionContexts_, ec, ".ec");
+}
+
+/**
+ * ExecutionContextの取得
+ */
+std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const std::string& fullName) {
+  return get<ExecutionContext>(executionContexts_, fullName, nullExecutionContext);
+}
+
+/**
+ * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
+ */
+Value ProcessStore::addBroker(const std::shared_ptr<Broker>& brk) {
+  return add<Broker>(brokers_, brk, ".brk");
+}
+
+/**
+ * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
+ */
+Value ProcessStore::addBroker(std::shared_ptr<Broker>&& brk) {
+  return add<Broker>(brokers_, std::move(brk), ".brk");
+}
+
+/**
+ * Brokerの取得
+ */
+std::shared_ptr<Broker> ProcessStore::getBroker(const std::string& fullName) {
+  return get<Broker>(brokers_, fullName, nullBroker);
+}
+
 /*
 Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
   trace("Process::addContainer({})", container->info());
