@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 
-#include "nerikiri/nerikir.h"
+#include "nerikiri/nerikiri.h"
 #include "nerikiri/object.h"
 
 
@@ -22,9 +22,9 @@ namespace nerikiri {
         bool _isTransitable(const std::string& current, const std::string& next);
 
     public:
-        std::string getState() const;
+        std::string getFSMState() const;
         
-        Value setState(const std::string& state);
+        Value setFSMState(const std::string& state);
 
     };
 }
