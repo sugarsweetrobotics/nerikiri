@@ -10,6 +10,7 @@ OPTION(TEST_PROCESS "Process Test" OFF)
 OPTION(TEST_OPERATION "Operation Test" OFF)
 OPTION(TEST_CONTAINER "Container Test" OFF)
 OPTION(TEST_EC "ExecutionContext Test" OFF)
+OPTION(TEST_FSM "FSM Test" ON)
 
 
 set(EXAMPLE_LIBS nerikiri)
@@ -47,6 +48,11 @@ endif ()
 if (${TEST_EC})
   declare_test(ec)
 endif ()
+
+if (${TEST_FSM})
+  declare_test(fsm)
+endif ()
+
 
 if (${TEST_OPTION})
   declare_test(option)

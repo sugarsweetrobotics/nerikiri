@@ -20,6 +20,7 @@ add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(example)
 add_subdirectory(apps)
+add_subdirectory(test)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${nk_public_headers}")
 

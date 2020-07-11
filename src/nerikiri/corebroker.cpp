@@ -85,6 +85,12 @@ Value CoreBroker::getConnectionInfos() const {
     return process_->store()->getConnectionInfos();
 }
 
+Value CoreBroker::createConnection(const Value& connectionInfo, const Value& brokerInfo) {
+    logger::trace("CoreBroker::registerConsumerConnection({}");
+    return ConnectionBuilder::registerProviderConnection(process_->store(), connectionInfo);
+}
+
+
 Value CoreBroker::registerConsumerConnection(const ConnectionInfo& ci) {
     logger::trace("CoreBroker::registerConsumerConnection({}", str(ci));
     return ConnectionBuilder::registerConsumerConnection(process_->store(), ci);
@@ -267,4 +273,9 @@ Value CoreBroker::getExecutionContextBoundOperationInfos(const std::string& full
 
 Value CoreBroker::getExecutionContextBoundAllOperationInfos(const std::string& fullName) const {
     return process_->store()->getExecutionContext(fullName)->getBoundOperationInfos();
+}
+
+
+Value CoreBroker::getFSMInfos() const {
+    return process_->store()->getFSMInfos();
 }

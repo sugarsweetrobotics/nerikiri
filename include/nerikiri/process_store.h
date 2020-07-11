@@ -14,6 +14,7 @@
 #include "nerikiri/broker.h"
 #include "nerikiri/brokerfactory.h"
 #include "nerikiri/topic.h"
+#include "nerikiri/fsm.h"
 
 namespace nerikiri {
 
@@ -40,12 +41,20 @@ namespace nerikiri {
 
     std::vector<std::shared_ptr<Topic>> topics_;
     std::vector<std::shared_ptr<TopicFactory>> topicFactories_;
+
+    std::vector<std::shared_ptr<FSM>> fsms_;
+    std::vector<std::shared_ptr<FSMFactory>> fsmFactories_;
+
     friend class Process;
   public:
     ProcessStore(Process* process) : process_(process) {}
 
     ~ProcessStore() {
       /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
+      fsms_.clear();
+
+      topics_.clear();
+      topicFactories_.clear();
       executionContexts_.clear();
       executionContextFactories_.clear();
       operations_.clear();
@@ -92,7 +101,7 @@ namespace nerikiri {
       } else { /// instanceNameが指定されているなら，重複をチェックする
         for(auto& c : collection) {
           if (c->info().at("instanceName") == obj->info().at("instanceName")) {
-            return Value::error(logger::error("Process::add({}) Error. Process already has the same name operation", obj->info().at("name").stringValue()));
+            return Value::error(logger::error("ProcessStore::add({}) Error. Process already has the same name operation", typeid(T).name()));
           }
         }
         obj->setFullName(nameSpace, obj->getInstanceName()); /// fullName指定
@@ -107,7 +116,7 @@ namespace nerikiri {
     Value add(std::vector<std::shared_ptr<T>>& collection, const std::shared_ptr<T>& obj, const std::string& ext) {
       logger::trace("Process::add({})", obj->info());
       /// まずはNULLオブジェクトならエラーを返す
-      if (obj->isNull()) { return Value::error(logger::error("Process::add failed. Object is null.")); }
+      if (obj->isNull()) { return Value::error(logger::error("ProcessStore::add{} failed. Object is null.", typeid(T).name())); }
 
       auto info = updateFullName(collection, obj, ext);
       if (!info.isError()) {
@@ -146,7 +155,7 @@ namespace nerikiri {
      */
     std::shared_ptr<ContainerBase> getContainer(const std::string& fullName);
     
-    ProcessStore& addContainerFactory(std::shared_ptr<ContainerFactoryBase> cf);
+    ProcessStore& addContainerFactory(const std::shared_ptr<ContainerFactoryBase> &cf);
 
     std::shared_ptr<ContainerFactoryBase> getContainerFactory(const Value& info);
 
@@ -175,13 +184,13 @@ namespace nerikiri {
 
     std::shared_ptr<OperationBase> getAllOperation(const std::string& fullName);
 
-    ProcessStore& addOperationFactory(std::shared_ptr<OperationFactory> opf);
+    ProcessStore& addOperationFactory(const std::shared_ptr<OperationFactory>& opf);
     std::shared_ptr<OperationFactory> getOperationFactory(const Value& info);
     
     Value addConnection(Connection_ptr con);
     Value getConnectionInfos() const ;
 
-    Value addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof);
+    Value addContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryBase>& cof);
 
     /**
      * ExecutionContextの追加．fullNameやinstanceNameの自動割り当ても行う
@@ -193,7 +202,7 @@ namespace nerikiri {
      */
     std::shared_ptr<ExecutionContext> getExecutionContext(const std::string& fullName);
 
-    ProcessStore& addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec);
+    ProcessStore& addExecutionContextFactory(const std::shared_ptr<ExecutionContextFactory>& ec);
 
     std::shared_ptr<ExecutionContextFactory> getExecutionContextFactory(const Value& info);
 
@@ -217,25 +226,31 @@ namespace nerikiri {
      */
     std::shared_ptr<Broker> getBroker(const std::string& fullName);
 
-    Value addBrokerFactory(std::shared_ptr<BrokerFactory> factory);
+    Value addBrokerFactory(const std::shared_ptr<BrokerFactory>& factory);
     Value getBrokerInfos() const;
     std::shared_ptr<BrokerFactory> getBrokerFactory(const Value& info);
 
-    Value addDLLProxy(std::shared_ptr<DLLProxy> dllproxy);
+    Value addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy);
 
     Value getCallbacks() const;
 
     std::shared_ptr<TopicFactory> getTopicFactory(const Value& topicInfo);
-    Value addTopicFactory(std::shared_ptr<TopicFactory> tf);
+    Value addTopicFactory(const std::shared_ptr<TopicFactory>& tf);
     std::shared_ptr<Topic> getTopic(const Value& topicInfo);
     Value getTopicInfos() const;
-    Value addTopic(std::shared_ptr<Topic> topic);
+    Value addTopic(const std::shared_ptr<Topic>& topic);
 
     std::shared_ptr<OperationBase> getOperationOrTopic(const std::string& fullName);
 
+    Value addFSM(const std::shared_ptr<FSM>& fsm);
+    Value getFSMInfos() const;
+    std::shared_ptr<FSMFactory> getFSMFactory(const Value& fsmInfo);
+    Value addFSMFactory(const std::shared_ptr<FSMFactory>& ff);
+    //Value getFSM();
 
-    Value deleteOperation(const Value& info);
-    Value deleteContainer(const Value& info);
-    Value deleteExecutionContext(const Value& info);
+    Value deleteOperation(const std::string& fullName);
+    Value deleteContainer(const std::string& fullName);
+    Value deleteExecutionContext(const std::string& fullName);
+    Value deleteFSM(const std::string& fullName);
   };
 }

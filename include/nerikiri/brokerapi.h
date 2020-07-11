@@ -92,6 +92,8 @@ namespace nerikiri {
     public:
         virtual ~ConnectionBrokerAPI() {}
     public:
+        virtual Value createConnection(const Value& connectionInfo, const Value& brokerInfo) = 0;
+
         virtual Value getConnectionInfos() const = 0;
 
         virtual Value registerConsumerConnection(const Value& ci)  = 0;
@@ -137,12 +139,23 @@ namespace nerikiri {
 
     };
 
+
+    class FSMAPI {
+    public:
+        virtual ~FSMAPI() {}
+
+
+    public:
+        virtual Value getFSMInfos() const = 0;
+    };
+
     class BrokerAPI : public Object, public OperationBrokerAPI, 
                 public ContainerBrokerAPI, 
                 public ContainerOperationBrokerAPI, 
                 public AllOperationBrokerAPI,
                 public ConnectionBrokerAPI,
-                public ECBrokerAPI
+                public ECBrokerAPI,
+                public FSMAPI
     {
     private:
 

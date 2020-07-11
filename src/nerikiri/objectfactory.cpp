@@ -52,17 +52,25 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   return store.addTopic(store.getTopicFactory(topicInfo)->create(topicInfo));
-  return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
+  //return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
 }
 
-Value ObjectFactory::deleteOperation(ProcessStore& store, const Value& info) {
-  return store.deleteOperation(info);
+Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
+  return store.addFSM(store.getFSMFactory(fsmInfo)->create(fsmInfo));
 }
 
-Value ObjectFactory::deleteContainer(ProcessStore& store, const Value& ci) {
-  return store.deleteContainer(ci);
+Value ObjectFactory::deleteOperation(ProcessStore& store, const std::string& fullName)  {
+  return store.deleteOperation(fullName);
+}
+
+Value ObjectFactory::deleteContainer(ProcessStore& store, const std::string& fullName)  {
+  return store.deleteContainer(fullName);
 }
         
-Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const Value& value) {
-  return store.deleteExecutionContext(value);
+Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const std::string& fullName) {
+  return store.deleteExecutionContext(fullName);
+}
+
+Value ObjectFactory::deleteFSM(ProcessStore& store, const std::string& fullName)  {
+  return store.deleteFSM(fullName);
 }

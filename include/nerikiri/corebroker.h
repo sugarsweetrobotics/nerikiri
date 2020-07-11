@@ -88,6 +88,8 @@ public:
 
     virtual Value getConnectionInfos() const override;
 
+    virtual Value createConnection(const Value& connectionInfo, const Value& brokerInfo) override;
+
     virtual Value registerConsumerConnection(const Value& ci) override;
 
     virtual Value registerProviderConnection(const Value& ci) override;
@@ -143,6 +145,8 @@ public:
 
     virtual Value deleteExecutionContext(const std::string& fullName) override;
 
+
+    virtual Value getFSMInfos() const override;
 };
 
 

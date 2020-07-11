@@ -32,18 +32,16 @@ namespace nerikiri {
     };
 
 
-    class TopicFactory {
-    private:
-        Value info_;
+    class TopicFactory : public Object {
+    protected:
 
+        TopicFactory(bool dmy) : Object() {}
     public:
         TopicFactory() : TopicFactory({{"typeName", "TopicFactory"}}) {}
-        TopicFactory(const Value& info) : info_(info) {}
+        TopicFactory(const Value& info) : Object(info) {}
 
         ~TopicFactory() {}
 
-    public:
-        Value info() const { return info_; }
     public:
         std::shared_ptr<Topic> create(const Value& info) {
             auto i = nerikiri::merge(info, info_);
@@ -55,8 +53,7 @@ namespace nerikiri {
     private:
 
     public:
-        NullTopicFactory() : TopicFactory(Value({{"typeName", "NullTopicFactory"}})) {}
-
+        NullTopicFactory() : TopicFactory(false) {}
         ~NullTopicFactory() {}
 
     public:

@@ -65,6 +65,7 @@ namespace nerikiri {
     void _preloadConnections();
     void _preloadCallbacksOnStarted();
     void _preloadTopics();
+    void _preloadFSMs();
 
     void _setupLogger();
   public:

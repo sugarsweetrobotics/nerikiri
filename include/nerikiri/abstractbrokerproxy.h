@@ -73,6 +73,10 @@ namespace nerikiri {
       return createResource("/process/operations/" + operation_name + "/input/arguments/" + argument_name + "/connections/", ci);
     }
 
+    virtual Value createConnection(const Value& connectionInfo, const Value& brokerInfo) override {
+        return createResource("/process/connections/", connectionInfo);
+    }
+
     virtual Value removeConsumerConnection(const std::string& operationFullName, const std::string& targetArgName, const std::string& connectionName) override {
         return deleteResource("/process/operations/" + operationFullName + "/input/arguments/" + targetArgName + "/connections/" + connectionName + "/");
     }
@@ -246,6 +250,12 @@ namespace nerikiri {
     virtual Value deleteExecutionContext(const std::string& fullName) override {
       return deleteResource("/process/ecs/" + fullName + "/");
     }
+
+    virtual Value getFSMInfos() const override {
+      return readResource("/process/fsms/");
+    }
+
+    
   };
 
 }

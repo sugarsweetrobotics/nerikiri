@@ -56,6 +56,7 @@ Process::Process(const std::string& name) : Object({{"typeName", "Process"}, {"i
   try {
     store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
     store_.addTopicFactory(std::make_shared<TopicFactory>());
+    store_.addFSMFactory(std::make_shared<FSMFactory>());
     setExecutablePath(path);
   } catch (std::exception & ex) {
     logger::error("Process::Process failed. Exception: {}", ex.what());
@@ -250,6 +251,20 @@ void Process::_preloadExecutionContexts() {
   }
 }
 
+void Process::_preloadFSMs() {
+  logger::trace("Process::_preloadFSMs()");
+  
+
+  try {
+    auto c = config_.at("fsms").at("precreate");
+    c.list_for_each([this](auto& value) {
+      auto cinfo = ObjectFactory::createFSM(store_, value);
+    });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
+  }
+}
+
 
 void Process::_preStartExecutionContexts() {
 
@@ -390,6 +405,7 @@ void Process::startAsync() {
   if (on_starting_) on_starting_(this);
   _preloadOperations();
   _preloadContainers();
+  _preloadFSMs();
   _preloadExecutionContexts();
   _preloadBrokers();
   _preStartExecutionContexts();

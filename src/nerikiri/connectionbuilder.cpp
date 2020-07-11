@@ -44,6 +44,10 @@ Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const V
             ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
 }
 
+Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+
+
+}
 
 
 Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {

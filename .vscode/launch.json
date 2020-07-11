@@ -7,6 +7,7 @@
 
 
 
+
     
 
         {
@@ -92,6 +93,15 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/test/process_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
+            "name": "Debug fsm_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/fsm_test",
             "args": [],
             "cwd": "${workspaceFolder}/test"
 

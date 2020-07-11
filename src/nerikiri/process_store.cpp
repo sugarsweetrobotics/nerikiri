@@ -260,22 +260,22 @@ Value ProcessStore::getConnectionInfos() const {
   return nerikiri::merge(nerikiri::lift(ocons), nerikiri::lift(ccons));
 }
 
-ProcessStore& ProcessStore::addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory> ec) {
+ProcessStore& ProcessStore::addExecutionContextFactory(const std::shared_ptr<ExecutionContextFactory>& ec) {
   executionContextFactories_.push_back(ec);
   return *this;
 }
 
-ProcessStore& ProcessStore::addOperationFactory(std::shared_ptr<OperationFactory> f) {
+ProcessStore& ProcessStore::addOperationFactory(const std::shared_ptr<OperationFactory>& f) {
   operationFactories_.push_back(f);
   return *this;
 }
 
-ProcessStore& ProcessStore::addContainerFactory(std::shared_ptr<ContainerFactoryBase> f) {
+ProcessStore& ProcessStore::addContainerFactory(const std::shared_ptr<ContainerFactoryBase>& f) {
   containerFactories_.push_back(f);
   return *this;
 }
 
-Value ProcessStore::addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase> cof) {
+Value ProcessStore::addContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryBase>& cof) {
   auto name = cof->containerTypeName();
   for(auto& cf : containerFactories_) {
     if(cf->typeName() == cof->containerTypeName()) {
@@ -318,7 +318,7 @@ Value ProcessStore::getExecutionContextFactoryInfos() {
 }
 
 
-Value ProcessStore::addBrokerFactory(std::shared_ptr<BrokerFactory> factory) {
+Value ProcessStore::addBrokerFactory(const std::shared_ptr<BrokerFactory>& factory) {
   auto name = factory->typeName();
   brokerFactories_.push_back(factory);
   return {{"typeName", factory->typeName()}};
@@ -363,7 +363,7 @@ std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info)
   return std::make_shared<BrokerFactory>(); // Null Broker Factory
 }
 
-Value ProcessStore::addDLLProxy(std::shared_ptr<DLLProxy> dllproxy) {
+Value ProcessStore::addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy) {
   dllproxies_.push_back(dllproxy);
   return Value{{"STATUS", "OK"}};
 }
@@ -381,11 +381,11 @@ std::shared_ptr<TopicFactory> ProcessStore::getTopicFactory(const Value& topicIn
   return std::make_shared<NullTopicFactory>();
 }
 
-Value ProcessStore::addTopicFactory(std::shared_ptr<TopicFactory> tf) {
+Value ProcessStore::addTopicFactory(const std::shared_ptr<TopicFactory>& tf) {
   if (tf == nullptr) {
     return Value::error(logger::error("ProcessStore::addTopicFactory() failed. TopicFactory is null"));
   }
-  if (getTopicFactory(tf->info()) == nullptr) {
+  if (getTopicFactory(tf->info())->isNull()) {
     topicFactories_.push_back(tf);
   }
   return tf->info();
@@ -406,7 +406,7 @@ Value ProcessStore::getTopicInfos() const {
   });
 }
 
-Value ProcessStore::addTopic(std::shared_ptr<Topic> topic) {
+Value ProcessStore::addTopic(const std::shared_ptr<Topic>& topic) {
   if (topic == nullptr) {
     return Value::error(logger::error("ProcessStore::addTopic() failed. Topic is null"));
   }
@@ -416,18 +416,51 @@ Value ProcessStore::addTopic(std::shared_ptr<Topic> topic) {
   return topic->info();
 }
 
+Value ProcessStore::addFSM(const std::shared_ptr<FSM>& fsm) {
+  return this->add<FSM>(fsms_, fsm, ".fsm");
+}
 
 
-Value ProcessStore::deleteOperation(const Value& info) {
+Value ProcessStore::addFSMFactory(const std::shared_ptr<FSMFactory>& ff) {
+  if (ff == nullptr) {
+    return Value::error(logger::error("ProcessStore::addFSMFactory() failed. FSMFactory is null"));
+  }
+  if (ff->isNull()) {
+    return Value::error(logger::error("ProcessStore::addFSMFactory() failed. FSMFactory is null"));
+  }
+  if (getFSMFactory(ff->info())->isNull()) {
+    fsmFactories_.push_back(ff);
+  }
+  return ff->info();
+}
+
+Value ProcessStore::getFSMInfos() const {
+  return nerikiri::map<Value, std::shared_ptr<FSM>>(fsms_, [](auto t) {
+    return t->info();
+  });
+}
+
+std::shared_ptr<FSMFactory> ProcessStore::getFSMFactory(const Value& fsmInfo) {
+  for(auto& f : fsmFactories_) {
+    if (f->info().at("typeName") == fsmInfo.at("typeName")) {
+      return f;
+    }
+  }
+  return std::make_shared<NullFSMFactory>();
+}
+
+Value ProcessStore::deleteOperation(const std::string& fullName) {
   
 }
 
-Value ProcessStore::deleteContainer(const Value& info) {
+Value ProcessStore::deleteContainer(const std::string& fullName) {
 
 }
 
-Value ProcessStore::deleteExecutionContext(const Value& info) {
+Value ProcessStore::deleteExecutionContext(const std::string& fullName) {
 
 }
 
+Value ProcessStore::deleteFSM(const std::string& fullName) {
 
+}

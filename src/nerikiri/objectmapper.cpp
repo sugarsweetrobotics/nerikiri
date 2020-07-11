@@ -79,6 +79,12 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
       return coreBroker->getContainerOperationConnectionInfos(match[1].str() + ":" + match[2].str());
     }
 
+    if (path == "/process/fsms/") {
+      return coreBroker->getFSMInfos();
+    }
+
+
+
     if (path == "/process/connections/") {
       return coreBroker->getConnectionInfos();
     }
@@ -137,7 +143,7 @@ Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& pa
     return coreBroker->registerConsumerConnection(value);
   }
   if (std::regex_match(path, match, std::regex("/process/connections/"))) {
-    return coreBroker->registerProviderConnection(value);
+    return coreBroker->createConnection(value, Value::error("Not Implemented"));
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
     return coreBroker->registerProviderConnection(value);

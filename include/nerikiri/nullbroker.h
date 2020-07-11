@@ -76,6 +76,10 @@ namespace nerikiri {
             return Value::error("BrokerAPI::getConnectionInfos() failed. Broker is null.");
         }
 
+        virtual Value createConnection(const Value& conInfo, const Value& brokInfo) override {
+            return Value::error("BrokerAPI::createConnection() failed. Broker is null.");
+        }
+
         virtual Value registerConsumerConnection(const Value& ci) override {
             return Value::error("BrokerAPI::registerConsumerConnection() failed. Broker is null.");
         }
@@ -247,6 +251,11 @@ namespace nerikiri {
 
         virtual Value deleteResource(const std::string& path) override {
             return Value::error("BrokerAPI::deleteResource() failed. Broker is null.");
+        }
+
+
+        virtual Value getFSMInfos() const override {
+            return Value::error("BrokerAPI::getFSMInfos() failed. Broker is null.");
         }
     };
 }
