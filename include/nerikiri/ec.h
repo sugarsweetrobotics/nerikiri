@@ -6,6 +6,7 @@
 #include "nerikiri/object.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/operationbase.h"
+#include "nerikiri/naming.h"
 
 namespace nerikiri {
 
@@ -167,6 +168,24 @@ namespace nerikiri {
     public:
         virtual std::shared_ptr<ExecutionContext> create(const Value& arg) const = 0;
         virtual std::string typeName() const = 0;
+    };
+
+    template<typename T>
+    class ECFactory : public ExecutionContextFactory {
+    private:
+        const std::string typeName_;
+    public:
+        ECFactory() : typeName_(nerikiri::demangle(typeid(T).name())) {}
+        virtual ~ECFactory() {}
+
+    public:
+        virtual std::shared_ptr<ExecutionContext> create(const Value& arg) const {
+            return std::shared_ptr<ExecutionContext>(new T(arg));
+        };
+
+        virtual std::string typeName() const { 
+            return typeName_;
+        }
     };
 
 
