@@ -1,66 +1,163 @@
 
 #include <iostream>
+#include <memory>
 #include "nerikiri/logger.h"
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/process.h"
+#include "nerikiri/operationfactory.h"
+#include "nerikiri/connectionbuilder.h"
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch.hpp>
 using namespace nerikiri;
+
+
+bool operationIsCalled = false;
+
 
 SCENARIO( "ExecutionContext test", "[ec]" ) {
   GIVEN("ExecutionContext basic behavior") {
   const std::string jsonStr = R"({
     "logger": { "logLevel": "OFF" },
 
+    "operations": {
+      "precreate": [
+        { "typeName": "add", "instanceName": "add0.ope"}
+      ]
+    },  
+
     "fsms": {
         "precreate": [
             {
                 "typeName": "GenericFSM",
-                "instanceName": "FSM0.ope"
+                "instanceName": "FSM0.fsm",
+                "states" : [
+                  {
+                    "name": "created",
+                    "transit": ["stopped"]
+                  },
+                  { 
+                    "name": "stopped",
+                    "transit": ["running"] 
+                  },
+                  { 
+                    "name": "running",
+                    "transit": ["stopped"]
+                  }
+                ],
+                "defaultState" : "created"
             }
-        ]
-    },
-
-    "brokers": {
-        "load_paths": ["test", "build/test", "../build/test", "../build/example"],
-        "preload": ["HTTPBroker"],
-        "precreate": [ 
-          {
-            "typeName": "HTTPBroker",
-            "instanceName": "HTTPBroker0.brk",
-            "host": "0.0.0.0",
-            "port": 8080
-          }
         ]
     }
   })";
 
   Process p("ec_tset", jsonStr);
 
+  auto opf = std::shared_ptr<OperationFactory>( new OperationFactory{
+    { {"typeName", "add"},
+      {"defaultArg", {
+        {"arg01", 0},
+        {"arg02", 0}
+      }}
+    },
+    [](const Value& arg) -> Value {
+      operationIsCalled = true;
+      return Value({ {"result", arg.at("arg01").intValue() + arg.at("arg02").intValue()} });
+    }
+  });
+
+  p.loadOperationFactory(opf);
+
   THEN("FSM is stanby") {
       p.startAsync();
       auto infos = p.store()->getFSMInfos();
       REQUIRE(infos.listValue().size() == 1);
-      /*
-      auto ec = p.getExecutionContext({{"instanceName", "OneShotEC0.ec"}});
-      REQUIRE(!ec->isNull());
-      auto brk = p.createBrokerProxy({{"name", "HTTPBroker"}, {"host", "localhost"}, {"port", 8080}});
-      REQUIRE(brk->isNull() == false);
-      auto ops = ec->getBoundOperationInfos();
-      REQUIRE(ops.listValue().size() == 0);
 
-      ec->bind({{"instanceName", "one0.ope"}}, brk);
+      auto fsm = p.store()->getFSM("FSM0.fsm");
+      REQUIRE(fsm->isNull() == false);
 
-      auto ops2 = ec->getBoundOperationInfos();
-      REQUIRE(ops2.listValue().size() == 1);
+      auto state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "created");
 
-      AND_THEN("ExecutionContext ec test") {
-        ec->unbind(ops2[0]);
-        auto ops2 = ec->getBoundOperationInfos();
-        REQUIRE(ops2.listValue().size() == 0);
-      }
-      */
+      state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+
+      state = fsm->setFSMState("hoge");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      state = fsm->setFSMState("created");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+  }
+
+  THEN("FSM can bind operation to state") {
+      p.startAsync();
+      auto ope = p.store()->getOperation("add0.ope");
+      REQUIRE(ope->isNull() == false);
+
+      auto fsm = p.store()->getFSM("FSM0.fsm");
+      REQUIRE(fsm->isNull() == false);
+
+      auto state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      auto bindResult = fsm->bindStateToOperation("running", ope);
+      REQUIRE(bindResult.isError() == false);
+
+      operationIsCalled = false;
+      state = fsm->setFSMState("running");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "running");
+      REQUIRE(operationIsCalled == true);
+    }
+  
+    THEN("FSM can be bound from Operation") {
+      p.startAsync();
+      auto ope = p.store()->getOperation("add0.ope");
+      REQUIRE(ope->isNull() == false);
+
+      auto fsm = p.store()->getFSM("FSM0.fsm");
+      REQUIRE(fsm->isNull() == false);
+
+      auto state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      Value conInfo{
+        {"name", "con0"},
+        {"type", "stateBind"},
+        {"broker", "CoreBroker"},
+        {"input", {
+          {"info", {
+            {"fullName", "FSM0.fsm"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }},
+        {"target", {
+          {"name", "running"}
+        }},
+        {"output", {
+          {"info", {
+            {"fullName", "add0.ope"}
+          }}
+        }}
+      };
+      ConnectionBuilder::createConnection(p.store(), conInfo);
+
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      ope->execute();
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "running");
+
+
     }
   }
 }

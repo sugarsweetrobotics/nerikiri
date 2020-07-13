@@ -420,6 +420,9 @@ Value ProcessStore::addFSM(const std::shared_ptr<FSM>& fsm) {
   return this->add<FSM>(fsms_, fsm, ".fsm");
 }
 
+std::shared_ptr<FSM> ProcessStore::getFSM(const std::string& fullName) {
+  return get<FSM>(fsms_, fullName, nullFSM);
+}
 
 Value ProcessStore::addFSMFactory(const std::shared_ptr<FSMFactory>& ff) {
   if (ff == nullptr) {

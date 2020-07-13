@@ -364,6 +364,25 @@ inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::strin
       return objectvalue_.at(key);
     }
 
+
+  /**
+   * 
+   */
+  inline std::string getStringValue(const Value& v, const std::string& _default) {
+    if (v.isError()) return _default;
+    if (v.isStringValue()) return v.stringValue();
+    return _default;
+  }
+  
+  /**
+   * 
+   */
+  inline int64_t getIntValue(const Value& v, const int64_t& _default) {
+    if (v.isError()) return _default;
+    if (v.isIntValue()) return v.intValue();
+    return _default;
+  }
+
 } // namespace nerikiri
 
 

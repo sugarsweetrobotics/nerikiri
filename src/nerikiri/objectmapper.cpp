@@ -82,9 +82,9 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
     if (path == "/process/fsms/") {
       return coreBroker->getFSMInfos();
     }
-
-
-
+    if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/state/"))) {
+      return coreBroker->getFSMState(match[1].str());
+    }
     if (path == "/process/connections/") {
       return coreBroker->getConnectionInfos();
     }
@@ -212,13 +212,16 @@ Value ObjectMapper::updateResource(CoreBroker* coreBroker, const std::string& pa
   }
 
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
-    coreBroker->callContainerOperation(match[1].str() + ":" + match[2].str(), (value));
+    return coreBroker->callContainerOperation(match[1].str() + ":" + match[2].str(), (value));
     //return store->getContainer({{"fullName", Value(match[1])}})->getOperation({{"instanceName", Value(match[2])}})->call(value);
   }
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/execution/"))) {
-    coreBroker->executeContainerOperation(match[1].str() + ":" + match[2].str());
+    return coreBroker->executeContainerOperation(match[1].str() + ":" + match[2].str());
   }
 
+  if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/state/"))) {
+    return coreBroker->setFSMState(match[1].str(), getStringValue(value, ""));
+  }
 
   return Value::error(logger::error("ObjectMapper::updateResource({}) failed.", path));
 }

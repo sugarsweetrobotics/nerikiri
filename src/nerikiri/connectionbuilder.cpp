@@ -20,72 +20,165 @@ using namespace nerikiri;
 //  return store->getOperationOrTopic(info.at("fullName").stringValue());
 //}
 
-Value ConnectionBuilder::_validateConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
+Value ConnectionBuilder::_validateOutputConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
   auto ret = conInfo;
   if (op->hasOutputConnectionRoute(ret)) {
-    return Value::error(logger::warn("ConnectionBuilder::_validateConnectionInfo failed. Provider already have the same connection route {}", str(ret.at("output"))));
+    return Value::error(logger::warn("ConnectionBuilder::_validateOutputConnectionInfo failed. Provider already have the same connection route {}", str(ret.at("output"))));
   }
   int i = 2;
   while (op->hasOutputConnectionName(ret)) {
-      logger::warn("In ConnectionBuilder::_validateConnectionInfo, Provider already have the same connection name {}", str(ret.at("output")));
+      logger::warn("In ConnectionBuilder::_validateOutputConnectionInfo, Provider already have the same connection name {}", str(ret.at("output")));
       ret["name"] = conInfo.at("name").stringValue() + "_" + std::to_string(i);
       ++i;
   }
   return ret;
 }
 
+Value ConnectionBuilder::_validateInputConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
+  auto ret = conInfo;
+  if (op->hasInputConnectionRoute(ret)) {
+    return Value::error(logger::warn("ConnectionBuilder::_validateInputConnectionInfo failed. Consumer already have the same connection route {}", str(ret.at("input"))));
+  }
+  int i = 2;
+  while (op->hasInputConnectionName(ret)) {
+      logger::warn("In ConnectionBuilder::_validateInputConnectionInfo, Consumer already have the same connection name {}", str(ret.at("input")));
+      ret["name"] = conInfo.at("name").stringValue() + "_" + std::to_string(i);
+      ++i;
+  }
+  return ret;
+}
+
+Value ConnectionBuilder::_validateInputConnectionInfo(std::shared_ptr<FSM> fsm, const Value& conInfo) {
+  auto ret = conInfo;
+  if (fsm->hasInputConnectionRoute(ret)) {
+    return Value::error(logger::warn("ConnectionBuilder::_validateInputConnectionInfo failed. FSM already have the same connection route {}", str(ret.at("output"))));
+  }
+  int i = 2;
+  while (fsm->hasInputConnectionName(ret)) {
+      logger::warn("In ConnectionBuilder::_validateInputConnectionInfo, FSM already have the same connection name {}", str(ret.at("output")));
+      ret["name"] = conInfo.at("name").stringValue() + "_" + std::to_string(i);
+      ++i;
+  }
+  return ret;
+}
 
 Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const Value& ci) {
-  logger::trace("Process::registerConsumerConnection({}", (ci));
+  auto type = getStringValue(ci.at("type"), "");
+  if (type == "stateBind") {
+    return ConnectionBuilder::registerFSMConsumerConnection(store, ci);
+  }
+  return ConnectionBuilder::registerOperationConsumerConnection(store, ci);
+}
+
+Value ConnectionBuilder::registerFSMConsumerConnection(ProcessStore* store, const Value& ci) {
+  logger::trace("Process::registerFSMConsumerConnection({}", (ci));
   auto fullName = ci.at("input").at("info").at("fullName").stringValue();
-  auto ret = ConnectionBuilder::_validateConnectionInfo(store->getOperationOrTopic(fullName), ci);
+  auto ret = ConnectionBuilder::_validateInputConnectionInfo(store->getFSM(fullName), ci);
+
+  return store->getFSM(fullName)->addInputConnection(fsmConnection(ret,
+            ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
+}
+
+
+Value ConnectionBuilder::registerOperationConsumerConnection(ProcessStore* store, const Value& ci) {
+  logger::trace("Process::registerOperationConsumerConnection({}", (ci));
+  auto fullName = ci.at("input").at("info").at("fullName").stringValue();
+  auto ret = ConnectionBuilder::_validateInputConnectionInfo(store->getOperationOrTopic(fullName), ci);
 
   return store->getOperationOrTopic(fullName)->addConsumerConnection(consumerConnection(ret,
             ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
 }
 
 Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
-
-
+  auto type = getStringValue(ci.at("type"), "");
+  if (type == "stateBind") {
+    return ConnectionBuilder::bindOperationToFSM(store, ci, receiverBroker);
+  }
+  return ConnectionBuilder::registerProviderConnection(store, ci, receiverBroker);
 }
 
+Value ConnectionBuilder::deleteConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+  return Value::error(logger::error("ConnectionBuilder::deleteConnection(" + str(ci) + ") failed."));
+}
+
+Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+    logger::trace("ConnectionBuilder::bindOperationToFSM({})", (ci));
+    try {
+        auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
+        auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
+        auto conName = ci.at("name").stringValue();
+        auto argName = ci.at("target").at("name").stringValue();
+
+        auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
+        auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
+        auto ret2 = inputBroker->registerConsumerConnection(ret);
+        // リクエストが成功なら、こちらもConnectionを登録。
+        auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(fsmConnection(ret2, inputBroker));
+        if (ret3.isError()) {
+            // 登録が失敗ならConsumer側のConnectionを破棄。
+            if (ret2.isError()) {
+                auto consumerConName = ret2.at("name").stringValue();
+                inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
+            }
+            return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
+        }// 登録成功ならciを返す
+        return ret3;
+    } catch (ValueTypeError& ex) {
+        return Value::error(logger::error("ConnectionBuilder::registerProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
+    }
+}
+
+Value ConnectionBuilder::unbindOperationToFSM(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+
+}
 
 Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
-  logger::trace("ConnectionBuilder::registerProviderConnection({})", (ci));
-  try {
-    auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
-    auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
-    auto conName = ci.at("name").stringValue();
-    auto argName = ci.at("target").at("name").stringValue();
-
-    auto ret = ConnectionBuilder::_validateConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
-    auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
-    auto ret2 = inputBroker->registerConsumerConnection(ret);
-    // リクエストが成功なら、こちらもConnectionを登録。
-    auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(providerConnection(ret2, inputBroker));
-    if (ret3.isError()) {
-        // 登録が失敗ならConsumer側のConnectionを破棄。
-        if (ret2.isError()) {
-            auto consumerConName = ret2.at("name").stringValue();
-            inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
-        }
-        return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
-    }// 登録成功ならciを返す
-    return ret3;
-  } catch (ValueTypeError& ex) {
-    return Value::error(logger::error("ConnectionBuilder::registerProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
-  }
+  return ConnectionBuilder::registerOperationProviderConnection(store, ci, receiverBroker);
 }
 
-  
+Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+    logger::trace("ConnectionBuilder::registerProviderConnection({})", (ci));
+    try {
+        auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
+        auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
+        auto conName = ci.at("name").stringValue();
+        auto argName = ci.at("target").at("name").stringValue();
+
+        auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
+        auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
+        auto ret2 = inputBroker->registerConsumerConnection(ret);
+        // リクエストが成功なら、こちらもConnectionを登録。
+        auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(providerConnection(ret2, inputBroker));
+        if (ret3.isError()) {
+            // 登録が失敗ならConsumer側のConnectionを破棄。
+            if (ret2.isError()) {
+                auto consumerConName = ret2.at("name").stringValue();
+                inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
+            }
+            return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
+        }// 登録成功ならciを返す
+        return ret3;
+    } catch (ValueTypeError& ex) {
+        return Value::error(logger::error("ConnectionBuilder::registerProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
+    }
+}
+
 Value ConnectionBuilder::deleteConsumerConnection(ProcessStore* store, const std::string& fullName, const std::string& targetArgName, const std::string& conName) {
-  logger::trace("Process::deleteConsumerConnection({}", fullName);
+  return ConnectionBuilder::deleteOperationConsumerConnection(store, fullName, targetArgName, conName);
+}
+  
+Value ConnectionBuilder::deleteOperationConsumerConnection(ProcessStore* store, const std::string& fullName, const std::string& targetArgName, const std::string& conName) {
+  logger::trace("Process::deleteOperationConsumerConnection({}", fullName);
   return store->getOperation(fullName)->removeConsumerConnection(targetArgName, conName);
 }
 
 Value ConnectionBuilder::deleteProviderConnection(ProcessStore* store, const std::string& fullName, const std::string& conName) {
-    logger::trace("Process::deleteProviderConnection({}, {})", fullName, conName);
-    
+  return ConnectionBuilder::deleteOperationProviderConnection(store, fullName, conName);
+}
+
+
+Value ConnectionBuilder::deleteOperationProviderConnection(ProcessStore* store, const std::string& fullName, const std::string& conName) {
+    logger::trace("Process::deleteOperationProviderConnection({}, {})", fullName, conName);
     auto provider = store->getOperation(fullName);
     const auto& connection = provider->getOutputConnection(conName);
     if (connection.isNull()) {

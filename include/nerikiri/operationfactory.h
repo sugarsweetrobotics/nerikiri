@@ -13,7 +13,7 @@ namespace nerikiri {
   public:
     std::string typeName() { return info_.at("typeName").stringValue(); }
   public:
-    OperationFactory(const Value& info, std::function<Value(const Value&)>&& func): info_(info), function_(func) {}
+    OperationFactory(const Value& info, const std::function<Value(const Value&)>& func): info_(info), function_(func) {}
     virtual ~OperationFactory() {}
 
     std::shared_ptr<Operation> create(const Value& info) {
@@ -22,5 +22,5 @@ namespace nerikiri {
     }
   };
 
-  inline void* operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(info, std::move(func)); }
+  inline void* operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(info, func); }
 }

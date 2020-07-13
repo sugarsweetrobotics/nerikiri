@@ -11,6 +11,10 @@ namespace nerikiri {
     protected:
       Value info_;
       bool is_null_;
+
+    protected: 
+      void _setNull() { is_null_ = true; }
+
     public:
       Value info() const { return info_; };
       /*

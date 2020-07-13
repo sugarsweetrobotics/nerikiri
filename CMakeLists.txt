@@ -6,9 +6,8 @@ cmake_minimum_required(VERSION 3.5)
 project(nerikiri LANGUAGES CXX C VERSION 0.0.1)
 
 enable_testing()
-option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" ON)
-option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" ON)
-option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" ON)
+option(BUILD_EXAMPLE "Build Example" OFF)
+option(BUILD_TEST "Build Test" OFF)
 
 set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)

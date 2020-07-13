@@ -14,9 +14,13 @@ protected:
 
 public:
 
-    CoreBroker(Process* process, const Value& info): BrokerAPI(info), process_(process) {}
+    CoreBroker(Process* process, const Value& info): BrokerAPI(info), process_(process) {
 
-    virtual ~CoreBroker() {}
+    }
+
+    virtual ~CoreBroker() {
+      
+    }
 
     virtual Value getBrokerInfo() const override { return info_; }
 
@@ -147,6 +151,10 @@ public:
 
 
     virtual Value getFSMInfos() const override;
+    
+    virtual Value setFSMState(const std::string& fullName, const std::string& state) override;
+    
+    virtual Value getFSMState(const std::string& fullName) const override;
 };
 
 
@@ -155,7 +163,7 @@ private:
   std::shared_ptr<BrokerAPI> coreBroker_;
 
 public:
-  CoreBrokerFactory(std::shared_ptr<BrokerAPI> coreBroker): BrokerFactory({{"typeName", "CoreBroker"}}), coreBroker_(coreBroker) {}
+  CoreBrokerFactory(const std::shared_ptr<BrokerAPI>& coreBroker): BrokerFactory({{"typeName", "CoreBroker"}}), coreBroker_(coreBroker) {}
   virtual ~CoreBrokerFactory() {}
 
 public:

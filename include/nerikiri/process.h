@@ -85,6 +85,12 @@ namespace nerikiri {
     int32_t wait();
     void stop();
     
+
+    Process& loadOperationFactory(const std::shared_ptr<OperationFactory>& opf) {
+      store()->addOperationFactory(opf); return *this;
+    }
+
+    
   public:
     bool isRunning() { return started_; }
 

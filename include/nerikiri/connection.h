@@ -26,6 +26,9 @@ namespace nerikiri {
         bool is_event_;
     public:
         Connection();
+
+        Connection(const ConnectionInfo& info);
+
         Connection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker, std::shared_ptr<BrokerAPI> consumerBroker);
         ~Connection() {}
 
@@ -50,6 +53,11 @@ namespace nerikiri {
 
     public:
         ConnectionInfo info() const { return info_; }
+
+    public:
+        friend Connection providerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> consumerBroker);
+        friend Connection consumerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
+        friend Connection fsmConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
     };
 
     using Connection_ptr = std::shared_ptr<Connection>;
@@ -59,12 +67,10 @@ namespace nerikiri {
     using ConnectionListDictionary = std::map<std::string, ConnectionList>;
 
 
-    inline Connection providerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> consumerBroker) {
-        return Connection(info, nullptr, consumerBroker);
-    }
+    Connection providerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> consumerBroker);
 
-    inline Connection consumerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker) {
-        return Connection(info, providerBroker, nullptr);
-    }
+    Connection consumerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
+
+    Connection fsmConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
 
 }

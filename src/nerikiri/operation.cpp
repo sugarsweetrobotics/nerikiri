@@ -8,11 +8,23 @@ using namespace nerikiri;
 
 //std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationBase>();
 
-
+OperationBase::OperationBase(const Value& info):
+    Object(info), argument_updated_(true) {
+    //logger::trace("OperationBase::OperationBase({})", str(info));
+    if (!operationValidator(info_)) {
+        is_null_ = true;//logger::error("OperationInformation is invalid.");
+    } else {
+    info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
+        inputConnectionListDictionary_.emplace(key, ConnectionList());
+        bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
+    });
+    }
+}
 
 OperationBase::OperationBase(const OperationBase& op): /*process_(op.process_),*/ Object(op.info_),
   outputConnectionList_(op.outputConnectionList_), 
-  inputConnectionListDictionary_(op.inputConnectionListDictionary_), bufferMap_(op.bufferMap_), argument_updated_(false) {
+  inputConnectionListDictionary_(op.inputConnectionListDictionary_), 
+  bufferMap_(op.bufferMap_), argument_updated_(op.argument_updated_) {
     logger::trace("OperationBase copy construction."); 
     if (!operationValidator(info_)) {
         logger::error("OperationInformation is invalid.");
@@ -44,7 +56,7 @@ Value OperationBase::addConsumerConnection(Connection&& c) {
         return Value::error(logger::error("OperationBase::addConsumerConnection failed. Requested connection ({}) 's instanceName does not match to this operation.", c.info()));
     }
 
-    const auto argumentName = c.info()["input"]["target"]["name"].stringValue();
+    const auto argumentName = c.info()["target"]["name"].stringValue();
     if (info().at("defaultArg").hasKey(argumentName)) {
         auto inf = c.info();
         inputConnectionListDictionary_[argumentName].emplace_back(std::move(c));
@@ -189,6 +201,44 @@ bool OperationBase::hasOutputConnectionName(const ConnectionInfo& ci) const {
     if (v.info().at("name") == ci.at("name")) return true;
     }
     return false;
+}
+
+Value OperationBase::collectValues() {
+        if (isNull()) { return Value::error("OperationBase::collectValues() failed. Caller Operation is null."); }
+
+        std::lock_guard<std::mutex> lock(argument_mutex_);
+        return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
+          [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
+            if (!bufferMap_.at(key)->isEmpty()) {
+              return { key, bufferMap_.at(key)->popRef() };
+            }
+            for (auto& con : getInputConnectionsByArgName(key)) {
+              if (con.isPull()) { return { key, con.pull() }; }
+            }
+            return { key, value };
+          }
+        ));
+    }
+
+Value OperationBase::execute() {
+        if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
+        Value&& v = this->invoke();
+
+    for (auto& c : outputConnectionList_) {
+            c.putToArgumentViaConnection(v);
+        }
+        return v;
+
+}
+
+
+Value OperationBase::invoke() {
+    if (isNull()) { return Value::error("OperationBase::invoke() failed. Caller Operation is null."); }
+    try {
+        return call(collectValues());
+    } catch (const std::exception& ex) {
+        return Value::error(std::string("OperationBase::invoke() failed. Exception occurred: ") + ex.what());
+    }
 }
 /*
 Value OperationBase::invoke() {

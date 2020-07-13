@@ -246,7 +246,7 @@ namespace nerikiri {
     Value getFSMInfos() const;
     std::shared_ptr<FSMFactory> getFSMFactory(const Value& fsmInfo);
     Value addFSMFactory(const std::shared_ptr<FSMFactory>& ff);
-    //Value getFSM();
+    std::shared_ptr<FSM> getFSM(const std::string& fullName);
 
     Value deleteOperation(const std::string& fullName);
     Value deleteContainer(const std::string& fullName);

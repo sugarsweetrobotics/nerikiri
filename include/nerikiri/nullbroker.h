@@ -257,5 +257,13 @@ namespace nerikiri {
         virtual Value getFSMInfos() const override {
             return Value::error("BrokerAPI::getFSMInfos() failed. Broker is null.");
         }
+
+        virtual Value setFSMState(const std::string& fullName, const std::string& state) override {
+            return Value::error("BrokerAPI::setFSMState(" + fullName + ", " + state + ") failed. Broker is null.");
+        }
+
+        virtual Value getFSMState(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::setFSMState(" + fullName + ") failed. Broker is null.");
+        }
     };
 }

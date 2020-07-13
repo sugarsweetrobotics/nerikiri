@@ -69,7 +69,7 @@ namespace nerikiri {
   public:
 
   public:
-      OperationBase() : Object(), argument_updated_(false) {}
+      OperationBase() : Object(), argument_updated_(true) {}
 
       OperationBase(const OperationBase& op);
 
@@ -98,33 +98,9 @@ namespace nerikiri {
           return Value::error("OperationBase::call() failed. Caller Operation is null.");
       };
 
-      Value collectValues() {
-        if (isNull()) { return Value::error("OperationBase::collectValues() failed. Caller Operation is null."); }
+      Value collectValues();
 
-        std::lock_guard<std::mutex> lock(argument_mutex_);
-        return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
-          [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
-            if (!bufferMap_.at(key)->isEmpty()) {
-              return { key, bufferMap_.at(key)->popRef() };
-            }
-            for (auto& con : getInputConnectionsByArgName(key)) {
-              if (con.isPull()) { return { key, con.pull() }; }
-            }
-            return { key, value };
-          }
-        ));
-    }
-
-	Value execute() {
-		  if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
-		  Value&& v = this->invoke();
-	
-  	  for (auto& c : outputConnectionList_) {
-			  c.putToArgumentViaConnection(v);
-		  }
-		  return v;
-
-	}
+	 Value execute();
 
     Value getConnectionInfos() const;
 
@@ -159,14 +135,7 @@ namespace nerikiri {
 
     bool hasOutputConnectionName(const ConnectionInfo& ci) const;
 
-    Value invoke() {
-        if (isNull()) { return Value::error("OperationBase::invoke() failed. Caller Operation is null."); }
-        try {
-          return call(collectValues());
-        } catch (const std::exception& ex) {
-          return Value::error(std::string("OperationBase::invoke() failed. Exception occurred: ") + ex.what());
-        }
-    }
+    Value invoke();
 
     Value push(const Value& ci, Value&& value);
     
@@ -187,18 +156,7 @@ inline std::shared_ptr<OperationBase> nullOperation() {
   return std::make_shared<OperationBase>();
 }
 
-inline OperationBase::OperationBase(const Value& info):
-    Object(info) {
-    //logger::trace("OperationBase::OperationBase({})", str(info));
-    if (!operationValidator(info_)) {
-        is_null_ = true;//logger::error("OperationInformation is invalid.");
-    } else {
-    info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
-        inputConnectionListDictionary_.emplace(key, ConnectionList());
-        bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
-    });
-    }
-}
+
 
 
 }

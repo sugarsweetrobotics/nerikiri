@@ -1,5 +1,7 @@
 # add_compile_options(-std=gnu++17)
 
+if (BUILD_TEST)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2)
 
@@ -11,7 +13,7 @@ OPTION(TEST_OPERATION "Operation Test" OFF)
 OPTION(TEST_CONTAINER "Container Test" OFF)
 OPTION(TEST_EC "ExecutionContext Test" OFF)
 OPTION(TEST_FSM "FSM Test" ON)
-
+OPTION(TEST_CONNECTION "Connection Test" ON)
 
 set(EXAMPLE_LIBS nerikiri)
 
@@ -53,7 +55,12 @@ if (${TEST_FSM})
   declare_test(fsm)
 endif ()
 
+if (${TEST_CONNECTION})
+  declare_test(connection)
+endif ()
 
 if (${TEST_OPTION})
   declare_test(option)
 endif ()
+
+endif (BUILD_TEST)

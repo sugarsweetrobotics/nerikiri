@@ -279,3 +279,11 @@ Value CoreBroker::getExecutionContextBoundAllOperationInfos(const std::string& f
 Value CoreBroker::getFSMInfos() const {
     return process_->store()->getFSMInfos();
 }
+
+Value CoreBroker::setFSMState(const std::string& fullName, const std::string& state) {
+    return process_->store()->getFSM(fullName)->setFSMState(state);
+}
+
+Value CoreBroker::getFSMState(const std::string& fullName) const {
+    return process_->store()->getFSM(fullName)->getFSMState();
+}

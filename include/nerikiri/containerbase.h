@@ -150,7 +150,6 @@ namespace nerikiri {
             return deleteOperation(instanceName);
         }
 
-
         virtual Value setFullName(const std::string& nameSpace, const std::string& name) override  {
             Object::setFullName(nameSpace, name);
             for(auto& op: operations_) {
@@ -161,12 +160,9 @@ namespace nerikiri {
         }
     };
 
-
     inline static std::shared_ptr<ContainerBase> nullContainer() {
       return std::make_shared<ContainerBase>();
     }
-
-
 
     inline bool containerNameValidator(const std::string& name) {
         if (name.find("/") != std::string::npos) {
