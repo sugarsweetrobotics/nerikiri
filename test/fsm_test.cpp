@@ -15,8 +15,44 @@ using namespace nerikiri;
 bool operationIsCalled = false;
 
 
-SCENARIO( "ExecutionContext test", "[ec]" ) {
-  GIVEN("ExecutionContext basic behavior") {
+auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
+  { {"typeName", "add"},
+    {"defaultArg", {
+      {"arg01", 0},
+      {"arg02", 0}
+    }}
+  },
+  [](const Value& arg) -> Value {
+    operationIsCalled = true;
+    return Value(arg.at("arg01").intValue() + arg.at("arg02").intValue());
+  }
+});
+
+auto opf2 = std::shared_ptr<OperationFactory>( new OperationFactory{
+  { {"typeName", "inc"},
+    {"defaultArg", {
+      {"arg01", 0}
+    }}
+  },
+  [](const Value& arg) -> Value {
+    operationIsCalled = true;
+    return Value(arg.at("arg01").intValue()+1);
+  }
+});
+
+auto opf3 = std::shared_ptr<OperationFactory>( new OperationFactory{
+  { {"typeName", "zero"},
+    {"defaultArg", {}}
+  },
+  [](const Value& arg) -> Value {
+    operationIsCalled = true;
+    return Value(0);
+  }
+});
+
+
+SCENARIO( "FSM test", "[ec]" ) {
+  GIVEN("FSM basic behavior") {
   const std::string jsonStr = R"({
     "logger": { "logLevel": "OFF" },
 
@@ -54,41 +90,6 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
   })";
 
   Process p("ec_tset", jsonStr);
-
-  auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
-    { {"typeName", "add"},
-      {"defaultArg", {
-        {"arg01", 0},
-        {"arg02", 0}
-      }}
-    },
-    [](const Value& arg) -> Value {
-      operationIsCalled = true;
-      return Value(arg.at("arg01").intValue() + arg.at("arg02").intValue());
-    }
-  });
-
-  auto opf2 = std::shared_ptr<OperationFactory>( new OperationFactory{
-    { {"typeName", "inc"},
-      {"defaultArg", {
-        {"arg01", 0}
-      }}
-    },
-    [](const Value& arg) -> Value {
-      operationIsCalled = true;
-      return Value(arg.at("arg01").intValue()+1);
-    }
-  });
-
-  auto opf3 = std::shared_ptr<OperationFactory>( new OperationFactory{
-    { {"typeName", "zero"},
-      {"defaultArg", {}}
-    },
-    [](const Value& arg) -> Value {
-      operationIsCalled = true;
-      return Value(0);
-    }
-  });
 
   p.loadOperationFactory(opf1);
   p.loadOperationFactory(opf2);
@@ -215,10 +216,10 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           }},
           {"broker", {
             {"typeName", "CoreBroker"}
+          }},
+          {"target", {
+            {"name", "running"}
           }}
-        }},
-        {"target", {
-          {"name", "running"}
         }},
         {"output", {
           {"info", {
@@ -241,10 +242,10 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           }},
           {"broker", {
             {"typeName", "CoreBroker"}
+          }},
+          {"target", {
+            {"name", "running"}
           }}
-        }},
-        {"target", {
-          {"name", "running"}
         }},
         {"output", {
           {"info", {
@@ -287,10 +288,10 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           }},
           {"broker", {
             {"typeName", "CoreBroker"}
+          }},
+          {"target", {
+            {"name", "running"}
           }}
-        }},
-        {"target", {
-          {"name", "running"}
         }},
         {"output", {
           {"info", {
@@ -313,10 +314,10 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           }},
           {"broker", {
             {"typeName", "CoreBroker"}
+          }},
+          {"target", {
+            {"name", "running"}
           }}
-        }},
-        {"target", {
-          {"name", "running"}
         }},
         {"output", {
           {"info", {

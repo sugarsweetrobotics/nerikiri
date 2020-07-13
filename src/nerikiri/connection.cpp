@@ -86,7 +86,7 @@ Connection nerikiri::fsmConnection(const ConnectionInfo& info, std::shared_ptr<B
     Connection c{info};
     c.consumerBroker_ = consumerBroker;
     auto fsmName = info.at("input").at("info").at("fullName").stringValue();
-    auto argName = info.at("target").at("name").stringValue();
+    auto argName = info.at("input").at("target").at("name").stringValue();
     auto conName = info.at("name").stringValue();
     c.push_func_ = [fsmName, argName, conName, consumerBroker](const Value& value) { 
         return consumerBroker->setFSMState(fsmName, argName);
