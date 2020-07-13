@@ -63,6 +63,8 @@ Value ConnectionBuilder::_validateInputConnectionInfo(std::shared_ptr<FSM> fsm, 
 }
 
 Value ConnectionBuilder::registerConsumerConnection(ProcessStore* store, const Value& ci) {
+  if (ci.isError()) return ci;
+
   auto type = getStringValue(ci.at("type"), "");
   if (type == "stateBind") {
     return ConnectionBuilder::registerFSMConsumerConnection(store, ci);
@@ -112,14 +114,15 @@ Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci
         auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
         auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
         auto ret2 = inputBroker->registerConsumerConnection(ret);
+        if (ret2.isError()) {
+          return ret2;
+        }
         // リクエストが成功なら、こちらもConnectionを登録。
         auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(fsmConnection(ret2, inputBroker));
         if (ret3.isError()) {
             // 登録が失敗ならConsumer側のConnectionを破棄。
-            if (ret2.isError()) {
-                auto consumerConName = ret2.at("name").stringValue();
-                inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
-            }
+            auto consumerConName = ret2.at("name").stringValue();
+            inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
             return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
         }// 登録成功ならciを返す
         return ret3;
@@ -147,14 +150,13 @@ Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store
         auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
         auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
         auto ret2 = inputBroker->registerConsumerConnection(ret);
+        if (ret2.isError()) {return ret2;}
         // リクエストが成功なら、こちらもConnectionを登録。
         auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(providerConnection(ret2, inputBroker));
         if (ret3.isError()) {
             // 登録が失敗ならConsumer側のConnectionを破棄。
-            if (ret2.isError()) {
-                auto consumerConName = ret2.at("name").stringValue();
-                inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
-            }
+            auto consumerConName = ret2.at("name").stringValue();
+            inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
             return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
         }// 登録成功ならciを返す
         return ret3;

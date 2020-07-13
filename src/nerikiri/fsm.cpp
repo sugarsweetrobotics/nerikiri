@@ -87,10 +87,20 @@ Value FSM::_executeInState(const std::string& stateName) {
 
 
 bool FSM::hasInputConnectionRoute(const Value& conInfo) const {
+    for(auto it = connections_.begin();it != connections_.end();++it) {
+        if (it->info().at("output").at("info").at("fullName") == conInfo.at("output").at("info").at("fullName")) {
+            return true;
+        }
+    }
     return false;
 }
 
 bool FSM::hasInputConnectionName(const Value& conInfo) const {
+    for(auto it = connections_.begin();it != connections_.end();++it) {
+        if (it->info().at("name") == conInfo.at("name")) {
+            return true;
+        }
+    }
     return false;
 }
 

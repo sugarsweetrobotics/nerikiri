@@ -22,7 +22,9 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
 
     "operations": {
       "precreate": [
-        { "typeName": "add", "instanceName": "add0.ope"}
+        { "typeName": "add", "instanceName": "add0.ope"},
+        { "typeName": "zero", "instanceName": "zero0.ope"},
+        { "typeName": "inc", "instanceName": "inc0.ope"}
       ]
     },  
 
@@ -53,7 +55,7 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
 
   Process p("ec_tset", jsonStr);
 
-  auto opf = std::shared_ptr<OperationFactory>( new OperationFactory{
+  auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
     { {"typeName", "add"},
       {"defaultArg", {
         {"arg01", 0},
@@ -62,11 +64,35 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
     },
     [](const Value& arg) -> Value {
       operationIsCalled = true;
-      return Value({ {"result", arg.at("arg01").intValue() + arg.at("arg02").intValue()} });
+      return Value(arg.at("arg01").intValue() + arg.at("arg02").intValue());
     }
   });
 
-  p.loadOperationFactory(opf);
+  auto opf2 = std::shared_ptr<OperationFactory>( new OperationFactory{
+    { {"typeName", "inc"},
+      {"defaultArg", {
+        {"arg01", 0}
+      }}
+    },
+    [](const Value& arg) -> Value {
+      operationIsCalled = true;
+      return Value(arg.at("arg01").intValue()+1);
+    }
+  });
+
+  auto opf3 = std::shared_ptr<OperationFactory>( new OperationFactory{
+    { {"typeName", "zero"},
+      {"defaultArg", {}}
+    },
+    [](const Value& arg) -> Value {
+      operationIsCalled = true;
+      return Value(0);
+    }
+  });
+
+  p.loadOperationFactory(opf1);
+  p.loadOperationFactory(opf2);
+  p.loadOperationFactory(opf3);
 
   THEN("FSM is stanby") {
       p.startAsync();
@@ -145,6 +171,9 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
         {"output", {
           {"info", {
             {"fullName", "add0.ope"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
           }}
         }}
       };
@@ -157,6 +186,150 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
       state = fsm->getFSMState();
       REQUIRE(state.stringValue() == "running");
 
+
+    }
+
+
+
+    THEN("FSM connection name duplication change name") {
+      p.startAsync();
+      auto ope = p.store()->getOperation("add0.ope");
+      REQUIRE(ope->isNull() == false);
+      auto ope2 = p.store()->getOperation("zero0.ope");
+      REQUIRE(ope2->isNull() == false);
+
+      auto fsm = p.store()->getFSM("FSM0.fsm");
+      REQUIRE(fsm->isNull() == false);
+
+      auto state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      Value conInfo{
+        {"name", "con0"},
+        {"type", "stateBind"},
+        {"broker", "CoreBroker"},
+        {"input", {
+          {"info", {
+            {"fullName", "FSM0.fsm"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }},
+        {"target", {
+          {"name", "running"}
+        }},
+        {"output", {
+          {"info", {
+            {"fullName", "add0.ope"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }}
+      };
+      ConnectionBuilder::createConnection(p.store(), conInfo);
+
+      Value conInfo2{
+        {"name", "con0"},
+        {"type", "stateBind"},
+        {"broker", "CoreBroker"},
+        {"input", {
+          {"info", {
+            {"fullName", "FSM0.fsm"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }},
+        {"target", {
+          {"name", "running"}
+        }},
+        {"output", {
+          {"info", {
+            {"fullName", "zero0.ope"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }}
+      };
+
+      auto ret = ConnectionBuilder::createConnection(p.store(), conInfo2);
+      REQUIRE(ret.at("name").stringValue() != "con0");
+
+    }
+
+
+
+    THEN("FSM connection route duplication will fail") {
+      p.startAsync();
+      auto ope = p.store()->getOperation("add0.ope");
+      REQUIRE(ope->isNull() == false);
+      auto ope2 = p.store()->getOperation("zero0.ope");
+      REQUIRE(ope2->isNull() == false);
+
+      auto fsm = p.store()->getFSM("FSM0.fsm");
+      REQUIRE(fsm->isNull() == false);
+
+      auto state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      Value conInfo{
+        {"name", "con0"},
+        {"type", "stateBind"},
+        {"broker", "CoreBroker"},
+        {"input", {
+          {"info", {
+            {"fullName", "FSM0.fsm"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }},
+        {"target", {
+          {"name", "running"}
+        }},
+        {"output", {
+          {"info", {
+            {"fullName", "add0.ope"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }}
+      };
+      ConnectionBuilder::createConnection(p.store(), conInfo);
+
+      Value conInfo2{
+        {"name", "con0"},
+        {"type", "stateBind"},
+        {"broker", "CoreBroker"},
+        {"input", {
+          {"info", {
+            {"fullName", "FSM0.fsm"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }},
+        {"target", {
+          {"name", "running"}
+        }},
+        {"output", {
+          {"info", {
+            {"fullName", "add0.ope"}
+          }},
+          {"broker", {
+            {"typeName", "CoreBroker"}
+          }}
+        }}
+      };
+
+      auto ret = ConnectionBuilder::createConnection(p.store(), conInfo2);
+      REQUIRE(ret.isError() == true);
 
     }
   }
