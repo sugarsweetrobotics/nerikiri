@@ -109,7 +109,7 @@ Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci
         auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
         auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
         auto conName = ci.at("name").stringValue();
-        auto argName = ci.at("target").at("name").stringValue();
+        auto argName = ci.at("input").at("target").at("name").stringValue();
 
         auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
         auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
@@ -145,7 +145,7 @@ Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store
         auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
         auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
         auto conName = ci.at("name").stringValue();
-        auto argName = ci.at("target").at("name").stringValue();
+        auto argName = ci.at("input").at("target").at("name").stringValue();
 
         auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
         auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
@@ -188,7 +188,7 @@ Value ConnectionBuilder::deleteOperationProviderConnection(ProcessStore* store, 
     }
     auto ret = connection.info();
     auto consumerName = connection.info().at("input").at("info").at("fullName").stringValue();
-    auto targetArgName = connection.info().at("target").at("name").stringValue();
+    auto targetArgName = connection.info().at("input").at("target").at("name").stringValue();
 
     //auto consumerBroker = createBrokerProxy(ret.at("input").at("broker"));
     auto consumerBroker = ObjectFactory::createBrokerProxy(*store, ret.at("input").at("broker"));

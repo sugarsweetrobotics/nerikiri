@@ -15,8 +15,8 @@ using namespace nerikiri;
 bool operationIsCalled = false;
 
 
-SCENARIO( "ExecutionContext test", "[ec]" ) {
-  GIVEN("ExecutionContext basic behavior") {
+SCENARIO( "Connection test", "[ec]" ) {
+  GIVEN("Connection basic behavior") {
   const std::string jsonStr = R"({
     "logger": { "logLevel": "OFF" },
 
@@ -78,7 +78,7 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
     
       Value conInfo{
         {"name", "con0"},
-        {"type", "stateBind"},
+        {"type", "event"},
         {"broker", "CoreBroker"},
         {"input", {
           {"info", {
@@ -86,12 +86,11 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           }},
           {"broker", {
             {"typeName", "CoreBroker"}
-          }}
-          
-        }},
+          }},
           {"target", {
             {"name", "arg01"}
-          }},
+          }}
+        }},
         {"output", {
           {"info", {
             {"fullName", "zero0.ope"}

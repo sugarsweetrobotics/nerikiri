@@ -56,7 +56,7 @@ Value OperationBase::addConsumerConnection(Connection&& c) {
         return Value::error(logger::error("OperationBase::addConsumerConnection failed. Requested connection ({}) 's instanceName does not match to this operation.", c.info()));
     }
 
-    const auto argumentName = c.info()["target"]["name"].stringValue();
+    const auto argumentName = c.info()["input"]["target"]["name"].stringValue();
     if (info().at("defaultArg").hasKey(argumentName)) {
         auto inf = c.info();
         inputConnectionListDictionary_[argumentName].emplace_back(std::move(c));
@@ -249,9 +249,9 @@ Value OperationBase::invoke() {
 
 Value OperationBase::push(const Value& ci, Value&& value) {
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
-    for (auto& c : inputConnectionListDictionary_[ci.at("target").at("name").stringValue()]) {
+    for (auto& c : inputConnectionListDictionary_[ci.at("input").at("target").at("name").stringValue()]) {
         if (c.info().at("name") == ci.at("name")) {
-            return bufferMap_[ci.at("target").at("name").stringValue()]->push(std::move(value));
+            return bufferMap_[ci.at("input").at("target").at("name").stringValue()]->push(std::move(value));
         }
     }
     return Value::error(logger::error("OperationBase::push(Value) can not found connection ({})", str(ci)));

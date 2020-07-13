@@ -163,10 +163,10 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           }},
           {"broker", {
             {"typeName", "CoreBroker"}
+          }},
+          {"target", {
+            {"name", "running"}
           }}
-        }},
-        {"target", {
-          {"name", "running"}
         }},
         {"output", {
           {"info", {

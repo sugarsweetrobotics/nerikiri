@@ -50,7 +50,7 @@ Connection::Connection(const ConnectionInfo& _info,
 
     if (consumerBroker_) {
         auto operationName = info_.at("input").at("info").at("fullName").stringValue();
-        auto argName = info_.at("target").at("name").stringValue();
+        auto argName = info_.at("input").at("target").at("name").stringValue();
         auto conName = info_.at("name").stringValue();
         push_func_ = [operationName, argName, conName, consumerBroker](const Value& value) { 
             return consumerBroker->putToArgumentViaConnection(operationName, argName, conName, value); };
@@ -62,7 +62,7 @@ Connection nerikiri::providerConnection(const ConnectionInfo& info, std::shared_
     Connection c{info};
     c.consumerBroker_ = consumerBroker;
     auto operationName = info.at("input").at("info").at("fullName").stringValue();
-    auto argName = info.at("target").at("name").stringValue();
+    auto argName = info.at("input").at("target").at("name").stringValue();
     auto conName = info.at("name").stringValue();
     c.push_func_ = [operationName, argName, conName, consumerBroker](const Value& value) { 
         return consumerBroker->putToArgumentViaConnection(operationName, argName, conName, value); };
