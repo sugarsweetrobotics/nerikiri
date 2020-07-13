@@ -82,6 +82,26 @@ Value FSM::_executeInState(const std::string& stateName) {
             retval.emplace_back(pair.second->executeAllOperation(pair.first));
         }
     }
+    if (ecsStart_.count(stateName) > 0) {
+        for(auto& ec : ecsStart_.at(stateName)) {
+            retval.emplace_back(ec->start());
+        }
+    }
+    if (ecStartBrokers_.count(stateName) > 0) {
+        for(auto& pair : ecStartBrokers_.at(stateName)) {
+            retval.emplace_back( pair.second->setExecutionContextState(pair.first, "started") );
+        }
+    }
+    if (ecsStop_.count(stateName) > 0) {
+        for(auto& ec : ecsStop_.at(stateName)) {
+            retval.emplace_back(ec->stop());
+        }
+    }
+    if (ecStopBrokers_.count(stateName) > 0) {
+        for(auto& pair : ecStopBrokers_.at(stateName)) {
+            retval.emplace_back( pair.second->setExecutionContextState(pair.first, "stopped") );
+        }
+    }
     return retval;
 }
 
@@ -138,5 +158,29 @@ Value FSM::bindStateToOperation(const std::string& stateName, const std::shared_
     }
     this->operations_[stateName].push_back(op);
     return op->info();
+    //return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. Not Implemented."));
+}
+
+Value FSM::bindStateToECStart(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec) {
+    if (isNull()) {
+        return Value::error(logger::error("FSM::bindStateToEC(" + stateName + ") error. FSM is null."));
+    }
+    if (ec->isNull()) {
+        return Value::error(logger::error("FSM::bindStateToEC(" + stateName + ") error. EC is null."));
+    }
+    this->ecsStart_[stateName].push_back(ec);
+    return ec->info();
+    //return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. Not Implemented."));
+}
+
+Value FSM::bindStateToECStop(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec) {
+    if (isNull()) {
+        return Value::error(logger::error("FSM::bindStateToEC(" + stateName + ") error. FSM is null."));
+    }
+    if (ec->isNull()) {
+        return Value::error(logger::error("FSM::bindStateToEC(" + stateName + ") error. EC is null."));
+    }
+    this->ecsStop_[stateName].push_back(ec);
+    return ec->info();
     //return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. Not Implemented."));
 }

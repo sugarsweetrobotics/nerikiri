@@ -14,6 +14,16 @@ using namespace nerikiri;
 
 bool operationIsCalled = false;
 
+class OneShotEC : public ExecutionContext {
+public:
+    OneShotEC(const Value& info) : ExecutionContext(info) {}
+
+public:
+    virtual bool onStarted() override {
+        svc();
+        return true;
+    }
+};
 
 auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
   { {"typeName", "add"},
@@ -86,6 +96,16 @@ SCENARIO( "FSM test", "[ec]" ) {
                 "defaultState" : "created"
             }
         ]
+    },
+    "ecs": {
+        "precreate": [
+          {
+            "typeName": "OneShotEC",
+            "instanceName": "OneShotEC0.ec"
+          }
+        ],
+        "bind": {},
+        "start": []
     }
   })";
 
@@ -94,6 +114,10 @@ SCENARIO( "FSM test", "[ec]" ) {
   p.loadOperationFactory(opf1);
   p.loadOperationFactory(opf2);
   p.loadOperationFactory(opf3);
+
+auto ecf1 = std::shared_ptr<ExecutionContextFactory>( static_cast<ExecutionContextFactory*>(new ECFactory<OneShotEC>()) );
+  p.store()->addExecutionContextFactory(ecf1);
+
 
   THEN("FSM is stanby") {
       p.startAsync();
@@ -120,7 +144,7 @@ SCENARIO( "FSM test", "[ec]" ) {
       REQUIRE(state.stringValue() == "stopped");
   }
 
-  THEN("FSM can bind operation to state") {
+  THEN("FSM can bind operation from state") {
       p.startAsync();
       auto ope = p.store()->getOperation("add0.ope");
       REQUIRE(ope->isNull() == false);
@@ -140,6 +164,36 @@ SCENARIO( "FSM test", "[ec]" ) {
       state = fsm->getFSMState();
       REQUIRE(state.stringValue() == "running");
       REQUIRE(operationIsCalled == true);
+    }
+
+    THEN("FSM can bind EC from state") {
+      p.startAsync();
+      auto ec = p.store()->getExecutionContext("OneShotEC0.ec");
+      REQUIRE(ec->isNull() == false);
+
+      auto fsm = p.store()->getFSM("FSM0.fsm");
+      REQUIRE(fsm->isNull() == false);
+
+      auto state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+
+      auto bindResult = fsm->bindStateToECStart("running", ec);
+      REQUIRE(bindResult.isError() == false);
+      bindResult = fsm->bindStateToECStop("stopped", ec);
+      REQUIRE(bindResult.isError() == false);
+
+      ec->stop();
+      REQUIRE(ec->getState() == "stopped");
+      state = fsm->setFSMState("running");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "running");
+      REQUIRE(ec->getState() == "started");
+
+      state = fsm->setFSMState("stopped");
+      state = fsm->getFSMState();
+      REQUIRE(state.stringValue() == "stopped");
+      REQUIRE(ec->getState() == "stopped");
     }
   
     THEN("FSM can be bound from Operation") {

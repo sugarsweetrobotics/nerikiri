@@ -18,7 +18,7 @@ public:
 public:
     virtual bool onStarted() override {
         svc();
-        return false;
+        return true;
     }
 };
 
@@ -105,6 +105,18 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
   }
 
   THEN("ExecutionContext can bind to operation") {
+    p.startAsync();
+    auto ec = p.store()->getExecutionContext("OneShotEC0.ec");
+    REQUIRE(ec->isNull() == false);
+
+    auto broker = p.store()->getBrokerFactory({{"typeName", "CoreBroker"}})->createProxy({{"typeName", "CoreBroker"}});
+    auto res = ec->bind("zero0.ope", broker);
+    REQUIRE(res.isError() == false);
+
+    operationIsCalled = false;
+    REQUIRE(operationIsCalled == false);
+    ec->start();
+    REQUIRE(operationIsCalled == true);
 
   }
   }

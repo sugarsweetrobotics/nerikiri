@@ -7,6 +7,7 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/object.h"
 #include "nerikiri/operationbase.h"
+#include "nerikiri/ec.h"
 
 
 
@@ -18,6 +19,10 @@ namespace nerikiri {
         std::string currentStateName_;
         std::map<std::string, std::vector<std::shared_ptr<OperationBase>>> operations_;
         std::map<std::string, std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>>> operationBrokers_;
+        std::map<std::string, std::vector<std::shared_ptr<ExecutionContext>>> ecsStart_;
+        std::map<std::string, std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>>> ecStartBrokers_;
+        std::map<std::string, std::vector<std::shared_ptr<ExecutionContext>>> ecsStop_;
+        std::map<std::string, std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>>> ecStopBrokers_;
     public:
         FSM(const Value& info);
         FSM();
@@ -38,6 +43,10 @@ namespace nerikiri {
         bool hasState(const std::string& stateName) const;
 
         Value bindStateToOperation(const std::string& stateName, const std::shared_ptr<OperationBase>& op);
+
+        Value bindStateToECStart(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec);
+        
+        Value bindStateToECStop(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec);
 
         bool hasInputConnectionRoute(const Value& conInfo) const;
         bool hasInputConnectionName(const Value& conInfo) const;
