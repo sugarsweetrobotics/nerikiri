@@ -3,7 +3,7 @@ operation.cpp
 #operationinfo.cpp 
 value.cpp 
 ec.cpp
-# valuemap.cpp 
+os.cpp
 logger.cpp 
 #broker.cpp
 objectmapper.cpp 

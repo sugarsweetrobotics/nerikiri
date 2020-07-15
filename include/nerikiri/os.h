@@ -29,4 +29,11 @@ namespace nerikiri {
             return dir;
         #endif
     }
+
+
+    std::vector<std::string> getEnv(const std::string& key);
+
+    std::string getExecutablePath(const std::string& path);
+
+    std::string simplifyPath(const std::string& path);
 }

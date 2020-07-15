@@ -57,42 +57,6 @@
 
 
     "connections": [
-        { 
-            "name": "connection01",
-            "type": "event", 
-            "broker": {"typeName": "HTTPBroker"},
-            "output": {
-                "info": {"fullName": "JoyController0.ctn:get0.ope"},
-                "broker": {"typeName": "HTTPBroker",
-                            "host": "localhost",
-                            "port": 8080}
-            },
-            "input": {
-                "info": {"fullName": "joy2turtlevel0.ope"},
-                "broker": {"typeName": "HTTPBroker",
-                    "host": "localhost",
-                    "port": 8080},
-                "target": {"name": "data"}
-            }
-        },
-        { 
-            "name": "connection02",
-            "type": "event", 
-            "broker": {"typeName": "HTTPBroker"},
-            "output": {
-                "info": {"fullName": "joy2turtlevel0.ope"},
-                "broker": {"typeName": "HTTPBroker",
-                            "host": "localhost",
-                            "port": 8080}
-            },
-            "input": {
-                "info": {"fullName": "TurtleSim0.ctn:setVelocity0.ope"},
-                "broker": {"typeName": "HTTPBroker",
-                    "host": "localhost",
-                    "port": 8080},
-                "target": {"name": "data"}
-            }
-        }
     ],
 
     "callbacks": [

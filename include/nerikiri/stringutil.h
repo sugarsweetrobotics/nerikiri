@@ -36,7 +36,7 @@ namespace nerikiri {
             while(str[i] != sep && str[i] != 0)
                 i++;
 
-            result.push_back(str.substr(begin, i));//std::string(begin, pstr));
+            result.push_back(str.substr(begin, i-begin));//std::string(begin, pstr));
         } while (0 != str[i++]);
         return result;
     }

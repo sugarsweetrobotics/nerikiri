@@ -57,7 +57,7 @@ Process::Process(const std::string& name) : Object({{"typeName", "Process"}, {"i
     store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
     store_.addTopicFactory(std::make_shared<TopicFactory>());
     store_.addFSMFactory(std::make_shared<FSMFactory>());
-    setExecutablePath(path);
+    setExecutablePath(getExecutablePath(name));
   } catch (std::exception & ex) {
     logger::error("Process::Process failed. Exception: {}", ex.what());
   }
