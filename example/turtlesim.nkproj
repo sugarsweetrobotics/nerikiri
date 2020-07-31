@@ -64,7 +64,7 @@
             "name": "on_started",
             "target": [
                 {
-                    "name": "JoyController0.ctn:initialize0.ope",
+                    "fullName": "JoyController0.ctn:initialize0.ope",
                     "argument": {
                         "arg": ""
                     } 

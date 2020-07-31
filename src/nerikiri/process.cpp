@@ -58,6 +58,9 @@ Process::Process(const std::string& name) : Object({{"typeName", "Process"}, {"i
     store_.addTopicFactory(std::make_shared<TopicFactory>());
     store_.addFSMFactory(std::make_shared<FSMFactory>());
     setExecutablePath(getExecutablePath(name));
+
+    env_dictionary_["${ExecutableDirectory}"] = path_.substr(0, path_.rfind('/'));
+
   } catch (std::exception & ex) {
     logger::error("Process::Process failed. Exception: {}", ex.what());
   }
@@ -80,6 +83,7 @@ Process::Process(const int argc, const char** argv) : Process(argv[0]) {
 
   logger::info("Process::Process(argv[0]=\"{}\")", argv[0]);
   logger::info("Process::Process() - ExecutablePath = {}", this->path_);
+  logger::info("ExecutableDirectory = {}", env_dictionary_["${ExecutableDirectory}"]);
 }
 
 Process::Process(const std::string& name, const Value& config) : Process(name) {
@@ -87,8 +91,8 @@ Process::Process(const std::string& name, const Value& config) : Process(name) {
   _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
   logger::info("Process::Process() - ExecutablePath = {}", path_);
+  logger::info("ExecutableDirectory = {}", env_dictionary_["${ExecutableDirectory}"]);
 }
-
 
 Process::Process(const std::string& name, const std::string& jsonStr): Process(name) {
   config_ = merge(config_, ProcessConfigParser::parseConfig(jsonStr));
