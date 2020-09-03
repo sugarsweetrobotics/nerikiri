@@ -263,6 +263,30 @@ namespace nerikiri {
       return readResource("/process/fsms/" + fullName + "/state/");
     }
     
+    virtual Value getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override {
+      return readResource("/process/fsms/" + fsmFullName + "/state/" + state + "/operations/");
+    }
+
+    virtual Value getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override {
+      return readResource("/process/fsms/" + fsmFullName + "/state/" + state + "/fsms/");
+    }
+
+    virtual Value getFSMsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override {
+      return readResource("/process/fsms/" + fsmFullName + "/state/" + state + "/ecs/");
+    }
+
+    virtual Value bindOperationToFSMState(const std::string& fsmFullName, const std::string& state, const Value& operation) override {
+      return createResource("/process/fsms/" + fsmFullName + "/state/" + state + "/operations/", operation);
+    }
+
+    virtual Value bindECStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& ecState) override {
+      return createResource("/process/fsms/" + fsmFullName + "/state/" + state + "/ecs/", ecState);
+    }
+
+    virtual Value bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& targetFsmState) override  {
+      return createResource("/process/fsms/" + fsmFullName + "/state/" + state + "/fsms/", targetFsmState);
+    }
+    
   };
 
 }

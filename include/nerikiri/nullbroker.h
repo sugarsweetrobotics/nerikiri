@@ -265,5 +265,30 @@ namespace nerikiri {
         virtual Value getFSMState(const std::string& fullName) const override {
             return Value::error("BrokerAPI::setFSMState(" + fullName + ") failed. Broker is null.");
         }
+
+        virtual Value getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override{
+            return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+        }
+
+        virtual Value getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override{
+            return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+        }
+
+        virtual Value getFSMsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override{
+            return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+        }
+
+        virtual Value bindOperationToFSMState(const std::string& fsmFullName, const std::string& state, const Value& operation) override{
+            return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+        }
+
+        virtual Value bindECStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& ecState) override{
+            return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+        }
+
+        virtual Value bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& fsmState) override{
+            return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
+        }
+
     };
 }

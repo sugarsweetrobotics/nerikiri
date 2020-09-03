@@ -182,6 +182,12 @@ namespace nerikiri {
      */
     std::shared_ptr<OperationBase> getOperation(const std::string& fullName);
 
+    inline std::shared_ptr<OperationBase> getOperation(const Value& info) {
+      return getOperation(info.at("fullName"));
+    }
+
+    inline std::shared_ptr<OperationBase> getOperation(const char* fullName) { return getOperation(std::string(fullName)); }
+
     std::shared_ptr<OperationBase> getAllOperation(const std::string& fullName);
 
     ProcessStore& addOperationFactory(const std::shared_ptr<OperationFactory>& opf);
@@ -246,7 +252,14 @@ namespace nerikiri {
     Value getFSMInfos() const;
     std::shared_ptr<FSMFactory> getFSMFactory(const Value& fsmInfo);
     Value addFSMFactory(const std::shared_ptr<FSMFactory>& ff);
+
     std::shared_ptr<FSM> getFSM(const std::string& fullName);
+
+    inline std::shared_ptr<FSM> getFSM(const Value& value) {
+      return getFSM(value.at("fullName"));
+    }
+
+    inline std::shared_ptr<FSM> getFSM(const char* fullName) { return getFSM(std::string(fullName)); }
 
     Value deleteOperation(const std::string& fullName);
     Value deleteContainer(const std::string& fullName);

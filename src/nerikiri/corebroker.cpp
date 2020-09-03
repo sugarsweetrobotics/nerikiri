@@ -72,6 +72,7 @@ Value CoreBroker::callAllOperation(const std::string& fullName, const Value& val
 }
 
 Value CoreBroker::invokeAllOperation(const std::string& fullName) const {
+    logger::trace("CoreBroker::invokeAllOperation({})", fullName);
     return process_->store()->getAllOperation(fullName)->invoke();
 }
 
@@ -113,7 +114,6 @@ Value CoreBroker::removeProviderConnection(const std::string& operationFullName,
 
 Value CoreBroker::putToArgument(const std::string& fullName, const std::string& argName, const Value& value) {
     logger::trace("CoreBroker::putToArgument()");
-    //return this->process_->putToArgument(opInfo, argName, value);    
     return process_->store()->getOperationOrTopic(fullName)->putToArgument(argName, value);
 }
 
@@ -207,8 +207,9 @@ Value CoreBroker::executeContainerOperation(const std::string& fullName) {
 }
 
 Value CoreBroker::bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& brokerInfo) {
-    auto broker = process_->store()->getBrokerFactory(brokerInfo)->createProxy(brokerInfo);
-    return process_->store()->getExecutionContext(ecFullName)->bind(opFullName, broker);
+    //auto broker = process_->store()->getBrokerFactory(brokerInfo)->createProxy(brokerInfo);
+    //return process_->store()->getExecutionContext(ecFullName)->bind(opFullName, broker);
+    return process_->store()->getExecutionContext(ecFullName)->bind(process_->store()->getAllOperation(opFullName));
 }
 
 Value CoreBroker::unbindOperationFromExecutionContext(const std::string& ecFullName, const std::string& opFullName) {
@@ -286,4 +287,28 @@ Value CoreBroker::setFSMState(const std::string& fullName, const std::string& st
 
 Value CoreBroker::getFSMState(const std::string& fullName) const {
     return process_->store()->getFSM(fullName)->getFSMState();
+}
+
+Value CoreBroker::getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
+    
+}
+
+Value CoreBroker::getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
+    
+}
+
+Value CoreBroker::getFSMsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
+    
+}
+
+Value CoreBroker::bindOperationToFSMState(const std::string& fsmFullName, const std::string& state, const Value& operation) {
+    
+}
+
+Value CoreBroker::bindECStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& ecState) {
+    
+}
+
+Value CoreBroker::bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& fsmState) {
+    
 }

@@ -27,6 +27,9 @@ namespace nerikiri {
             return Value::error("BrokerProxy::deleteResource failed. BrokerProxy is NullBrokerProxy.");
         }
 
+        
+
+
     };
 
     inline std::shared_ptr<BrokerAPI> nullBrokerProxy() { return std::make_shared<NullBrokerProxy>(); }

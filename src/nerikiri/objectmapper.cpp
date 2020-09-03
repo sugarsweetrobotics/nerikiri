@@ -11,9 +11,8 @@ using namespace nerikiri;
 
 
 Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string& path) {
-
     std::smatch match;
-
+    
     if (path == "/process/info/") {
         return coreBroker->getProcessInfo();
     }
@@ -85,6 +84,10 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
     if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/state/"))) {
       return coreBroker->getFSMState(match[1].str());
     }
+    if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/state/([^/]*)/operations/"))) {
+      return coreBroker->getFSMState(match[1].str());
+    }
+
     if (path == "/process/connections/") {
       return coreBroker->getConnectionInfos();
     }
@@ -136,9 +139,9 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
-
 Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
   std::smatch match;
+  logger::info("ObjectMapper::createResource({}, {}) called.", path, str(value));
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
     return coreBroker->registerConsumerConnection(value);
   }
@@ -157,7 +160,6 @@ Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& pa
     return coreBroker->createOperation(value);
   }
 
-
   if (path == "/process/containers/") {
     return coreBroker->createContainer(value);
   }
@@ -165,9 +167,10 @@ Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& pa
 
   if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/([^/]*)/"))) {
     return coreBroker->bindOperationToExecutionContext(match[1], match[2], value);
+    //return coreBroker->bindOperationToExecutionContext(match[1], match[2]);
   }
 
-  return Value::error(logger::error("ObjectMapper::createResource({}) failed.", path));
+  return Value::error(logger::error("ObjectMapper::createResource({}) failed. This request could not find appropreate callbacks", path));
 }
 
 /**
@@ -176,7 +179,7 @@ Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& pa
  * 
  */
 Value ObjectMapper::updateResource(CoreBroker* coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
-  logger::trace("ObjectMapper::updateResource(store, path={}", path);
+  logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
   std::smatch match;
 
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
@@ -233,6 +236,7 @@ Value ObjectMapper::updateResource(CoreBroker* coreBroker, const std::string& pa
  * 
  */
 Value ObjectMapper::deleteResource(CoreBroker* coreBroker, const std::string& path, BrokerAPI* receiverBroker) {
+  logger::debug("ObjectMapper::deleteResource(store, path={}", path);
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     return coreBroker->removeConsumerConnection(match[1], match[2], match[3]);

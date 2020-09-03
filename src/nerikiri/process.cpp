@@ -114,7 +114,13 @@ void Process::_setupLogger() {
       auto loglevel_str = loggerConf.at("logLevel").stringValue();
       logger::setLogLevel(loglevel_str);
     }
+    if (loggerConf.hasKey("logFile")) {
+      auto logfile_str = loggerConf.at("logFile").stringValue();
+      logger::setLogFileName(logfile_str);
+    }
   }
+
+  logger::initLogger();
 }
 
 void Process::parseConfigFile(const std::string& filepath) {
@@ -263,6 +269,17 @@ void Process::_preloadFSMs() {
     auto c = config_.at("fsms").at("precreate");
     c.list_for_each([this](auto& value) {
       auto cinfo = ObjectFactory::createFSM(store_, value);
+
+      value.at("states").list_for_each([this, value](auto& stateInfo) {
+        if (stateInfo.hasKey("bindOperations")) {
+          stateInfo.at("bindOperations").list_for_each([this, value, stateInfo](auto& opInfo) {
+            this->store()->getFSM(value)->bindStateToOperation(stateInfo.at("name").stringValue(), 
+              this->store()->getOperation(opInfo)
+            );
+          });
+        }
+      });
+      
     });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());

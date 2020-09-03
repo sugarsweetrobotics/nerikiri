@@ -107,6 +107,15 @@
 
         },
         {
+            "name": "Debug http_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/http_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/"
+
+        },
+        {
             "name": "Debug ec_test",
             "type": "lldb",
             "request": "launch",

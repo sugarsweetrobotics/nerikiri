@@ -155,6 +155,19 @@ public:
     virtual Value setFSMState(const std::string& fullName, const std::string& state) override;
     
     virtual Value getFSMState(const std::string& fullName) const override;
+
+    virtual Value getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override;
+
+    virtual Value getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override;
+
+    virtual Value getFSMsBoundToFSMState(const std::string& fsmFullName, const std::string& state) override;
+
+    virtual Value bindOperationToFSMState(const std::string& fsmFullName, const std::string& state, const Value& operation) override;
+
+    virtual Value bindECStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& ecState) override;
+
+    virtual Value bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& fsmState) override;
+
 };
 
 

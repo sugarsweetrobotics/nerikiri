@@ -1,13 +1,78 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch.hpp>
 #include <iostream>
-#include <nerikiri/nerikiri.h>
-#include <nerikiri/http/client.h>
-#include <nerikiri/http/server.h>
+#include "nerikiri/nerikiri.h"
+#include "nerikiri/process.h"
+
+
 using namespace nerikiri;
 
 
 SCENARIO( "HTTP Service", "[http]" ) {
+
+  GIVEN("HTTP Broker build") {
+    const std::string jsonStr = R"({
+    "logger": { "logLevel": "OFF" },
+
+    "operations": {
+        "precreate": [
+            {
+                "typeName": "zero",
+                "instanceName": "zero0.ope"
+            }, 
+            {
+                "typeName": "inc",
+                "instanceName": "inc0.ope"
+            }
+        ]
+    },
+
+    "brokers": {
+        "load_paths": ["build/bin", "build/lib", "../../../build/bin"],
+        "preload": ["HTTPBroker"],
+        "precreate": [
+          {
+            "typeName": "HTTPBroker",
+            "instanceName": "HTTPBroker0.brk",
+            "host": "0.0.0.0",
+            "port": 8080,
+            "baseDir": "${ProjectDirectory}/../systemeditor"
+          }
+        ]
+    },
+  
+    "ecs": {
+        "precreate": [
+          {
+            "typeName": "OneShotEC",
+            "instanceName": "OneShotEC0.ec"
+          }
+        ],
+        "bind": {},
+        "start": []
+    }
+    })";
+
+    Process p("http_test", jsonStr);
+
+    THEN("Broker is running") {
+      p.startAsync();
+      REQUIRE(p.isRunning() == true);
+
+      auto factory = p.store()->getBrokerFactory({{"typeName", "HTTPBroker"}, {"instanceName", "HTTPBroker0.brk"}});
+      REQUIRE(factory!= nullptr);
+      REQUIRE(factory->isNull() == false);
+      auto proxy = factory->createProxy({{"typeName", "HTTPBroker"}, {"host", "localhost"}, {"port", 8080}});
+      REQUIRE(proxy != nullptr);
+      REQUIRE(proxy->isNull() == false);
+
+      auto pInfo = proxy->getProcessInfo();
+
+      REQUIRE(pInfo["instanceName"].stringValue() == "http_test");
+    }
+  }
+
+  /*
   logger::setLogLevel(logger::TRACE);
   GIVEN("Without Service") {
     REQUIRE( http::get("localhost", 9955, "/").status == 0);

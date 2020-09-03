@@ -82,20 +82,17 @@ namespace nerikiri {
             if (op->isNull()) {
                 return Value::error(logger::error("ExecutionContext::bind failed. Operation is null"));
             }
-            auto info = op->info();           
+            auto info = op->info();     
             for(auto it = operations_.begin(); it != operations_.end();++it) {
                 if ((*it)->info().at("fullName") == info.at("fullName")) {
-                    
                     it = operations_.erase(it);
-            
                 }
             }
             for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it).second->info().at("name") == info.at("name")) {
+                if ((*it).second->info().at("fullName") == info.at("fullName")) {
                     it = operationBrokers_.erase(it);
                 } 
             }
-
             operations_.push_back(op);
             return op->info();
         }

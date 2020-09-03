@@ -151,6 +151,19 @@ namespace nerikiri {
         virtual Value setFSMState(const std::string& fullName, const std::string& state) = 0;
 
         virtual Value getFSMState(const std::string& fullName) const = 0;
+
+        virtual Value getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) = 0;
+
+        virtual Value getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) = 0;
+
+        virtual Value getFSMsBoundToFSMState(const std::string& fsmFullName, const std::string& state) = 0;
+
+        virtual Value bindOperationToFSMState(const std::string& fsmFullName, const std::string& state, const Value& operation) = 0;
+
+        virtual Value bindECStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& ecState) = 0;
+
+        virtual Value bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& fsmState) = 0;
+
     };
 
     class BrokerAPI : public Object, public OperationBrokerAPI, 

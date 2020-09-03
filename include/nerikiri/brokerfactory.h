@@ -8,7 +8,7 @@ namespace nerikiri {
     class BrokerAPI;
     class Broker;
 
-    class BrokerFactory {
+    class BrokerFactory : public Object{
     private:
         const std::string typeName_;
     public:

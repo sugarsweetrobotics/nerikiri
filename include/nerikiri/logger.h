@@ -53,9 +53,13 @@ namespace nerikiri::logger {
 
   NK_API LOG_LEVEL getLogLevel();
 
+  NK_API void setLogFileName(const std::string& fileName);
+
   inline bool doLog(const LOG_LEVEL& lvl) {
     return getLogLevel() <= lvl;
   }
+
+  NK_API bool initLogger();
 
   using format_type = std::string;
 
@@ -67,11 +71,14 @@ namespace nerikiri::logger {
 
   NK_API format_type formatter(format_type&& fmt, const std::string& arg);
 
-  /*
-  format_type formatter(format_type&& fmt, const nerikiri::Value& arg) {
+  inline NK_API format_type formatter(format_type&& fmt, const char* arg) {
+    return formatter(std::move(fmt), std::string(arg));
+  }
+
+  inline NK_API format_type formatter(format_type&& fmt, const nerikiri::Value& arg) {
     return formatter(std::move(fmt), nerikiri::str(arg));
   }
-  */
+  
 
   //template<typename T>
   //  format_type formatter(format_type&& fmt, const T& arg) {
@@ -86,10 +93,10 @@ namespace nerikiri::logger {
     return log(formatter(std::forward<format_type>(fmt), arg), args...);
   }
  
-  template<typename... Args>
-  inline std::string log(format_type&& fmt, const Value& arg, const Args &... args) {
-    return log(formatter(std::forward<format_type>(fmt), str(arg)), args...);
-  }
+  //template<typename... Args>
+  //inline std::string log(format_type&& fmt, const Value& arg, const Args &... args) {
+  //  return log(formatter(std::forward<format_type>(fmt), str(arg)), args...);
+  // }
 
   template<typename T, typename... Args>
   inline std::string doNotLog(format_type&& fmt, const T& arg, const Args &... args) {
@@ -98,7 +105,7 @@ namespace nerikiri::logger {
 
   template<typename... Args>
   inline std::string doNotLog(format_type&& fmt, const Value& arg, const Args &... args) {
-    return doNotLog(formatter(std::forward<format_type>(fmt), "object::Value"), args...);
+    return doNotLog(formatter(std::forward<format_type>(fmt), std::string("object::Value")), args...);
   }
     
   template<typename... Args>

@@ -9,8 +9,8 @@
 using namespace nerikiri;
 
 
-BrokerFactory::BrokerFactory() : typeName_("NullBroker") {}
-BrokerFactory::BrokerFactory(const Value& value) : typeName_(value.at("typeName").stringValue()) {}
+BrokerFactory::BrokerFactory() : Object(), typeName_("NullBroker") {}
+BrokerFactory::BrokerFactory(const Value& value) : Object(value), typeName_(value.at("typeName").stringValue()) {}
 
 BrokerFactory::~BrokerFactory() {}
 

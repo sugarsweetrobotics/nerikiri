@@ -70,6 +70,8 @@ Value FSM::setFSMState(const std::string& state) {
     return currentStateName_;
 }
 
+
+
 Value FSM::_executeInState(const std::string& stateName) {
     std::vector<Value> retval;
     if (operations_.count(stateName) > 0) {
@@ -158,8 +160,16 @@ Value FSM::bindStateToOperation(const std::string& stateName, const std::shared_
     }
     this->operations_[stateName].push_back(op);
     return op->info();
-    //return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. Not Implemented."));
 }
+
+
+std::vector<std::shared_ptr<OperationBase>> FSM::getBoundOperations(const std::string& stateName) {
+    if (operations_.count(stateName) > 0) {
+    return this->operations_[stateName];
+    }
+    return {};
+}
+
 
 Value FSM::bindStateToECStart(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec) {
     if (isNull()) {

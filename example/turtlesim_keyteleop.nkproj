@@ -1,5 +1,5 @@
 {
-    "logger": { "logLevel": "INFO" },
+    "logger": { "logLevel": "DEBUG" },
 
     "load_paths": ["./"],
 
