@@ -37,11 +37,12 @@ Value ObjectFactory::createBroker(ProcessStore& store, const Value& ci) {
 }
 
 std::shared_ptr<BrokerAPI>  ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
-  logger::trace("Process::createBrokerProxy({})", (bi));
+  logger::trace("ObjectFactory::createBrokerProxy({})", (bi));
   return store.getBrokerFactory(bi)->createProxy(bi);
 }
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {
+  logger::debug("ObjectFactory::createExecutionContext({})", value);
   auto f = store.getExecutionContextFactory(value);
   if (!f) {
     return Value::error(logger::error("createExecutionContext failed. Can not find appropreate execution context factory."));
@@ -51,11 +52,13 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
 }
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
+  logger::debug("ObjectFactory::createTopic({})", topicInfo);
   return store.addTopic(store.getTopicFactory(topicInfo)->create(topicInfo));
   //return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
 }
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
+  logger::debug("ObjectFactory::createFSM({})", fsmInfo);
   return store.addFSM(store.getFSMFactory(fsmInfo)->create(fsmInfo));
 }
 

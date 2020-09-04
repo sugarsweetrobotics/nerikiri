@@ -44,6 +44,7 @@ namespace nerikiri {
 
     public:
         std::shared_ptr<Topic> create(const Value& info) {
+            logger::trace("TopicFactory::create({}) called", info);
             auto i = nerikiri::merge(info, info_);
             return std::make_shared<Topic>(i); 
         }

@@ -16,6 +16,7 @@
 #include "nerikiri/broker.h"
 #include "nerikiri/abstractbrokerproxy.h"
 #include "nerikiri/brokerfactory.h"
+#include "nerikiri/nullbrokerproxy.h"
 
 #include "nerikiri/json.h"
 #include "http_client.h"
@@ -234,10 +235,14 @@ public:
   }
   
   virtual std::shared_ptr<BrokerAPI> createProxy(const Value& value) {
-    auto address = value.at("host").stringValue();
-    auto port = value.at("port").intValue();
-    return std::dynamic_pointer_cast<nerikiri::BrokerAPI>(std::make_shared<HTTPBrokerProxyImpl>(address, port));
-//    return std::shared_ptr<nerikiri::BrokerAPI> (new HTTPBrokerProxyImpl(address, port));
+    logger::trace("HTTPBrokerFactory::createProxy({})", value);
+    if (value.hasKey("host") && value.hasKey("port")) {
+      auto address = value.at("host").stringValue();
+      auto port = value.at("port").intValue();
+      return std::dynamic_pointer_cast<nerikiri::BrokerAPI>(std::make_shared<HTTPBrokerProxyImpl>(address, port));
+    }
+    logger::error("HTTPBrokerFactory::createProxy({}). Failed. Argument value does not have 'host' or 'port' value.");
+    return std::make_shared<NullBrokerProxy>();
   }
 
 };

@@ -100,6 +100,7 @@ std::shared_ptr<Broker> ProcessStore::getBroker(const std::string& fullName) {
   return get<Broker>(brokers_, fullName, nullBroker);
 }
 
+
 /*
 Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
   trace("Process::addContainer({})", container->info());
@@ -373,11 +374,15 @@ Value ProcessStore::getCallbacks() const {
 }
 
 std::shared_ptr<TopicFactory> ProcessStore::getTopicFactory(const Value& topicInfo) {
+  logger::trace("ProcessStore::getTopicFactory({}) called", topicInfo);
+  std::string typeName = "TopicFactory";
+  if (topicInfo.hasKey("typeName")) typeName = topicInfo.at("typeName").stringValue();
   for(auto& tf : topicFactories_) {
-    if (tf->info().at("name") == topicInfo.at("name")) {
+    if (tf->info().at("typeName").stringValue() == typeName) {
       return tf;
     }
   }
+  logger::error("ProcessStore::getTopicFactory failed. TopicInfo({}) was not found.", topicInfo);
   return std::make_shared<NullTopicFactory>();
 }
 
@@ -397,7 +402,12 @@ std::shared_ptr<Topic> ProcessStore::getTopic(const Value& topicInfo) {
       return t;
     }
   }
+  logger::error("ProcessStore::getTopic({}) failed. Can not be found", topicInfo);
   return nullTopic();
+}
+
+std::shared_ptr<Topic> ProcessStore::getTopic(const std::string& fullName) {
+  return get<Topic>(topics_, fullName, nullTopic);
 }
 
 Value ProcessStore::getTopicInfos() const {
@@ -407,12 +417,14 @@ Value ProcessStore::getTopicInfos() const {
 }
 
 Value ProcessStore::addTopic(const std::shared_ptr<Topic>& topic) {
+  logger::debug("ProcessStore::addTopic({}) called.", topic->info());
   if (topic == nullptr) {
-    return Value::error(logger::error("ProcessStore::addTopic() failed. Topic is null"));
+    return Value::error(logger::error("ProcessStore::addTopic({}) failed. Topic is null", topic->info()));
   }
-  if (getTopic(topic->info())->isNull()) {
+  if (getTopic(topic->info().at("fullName").stringValue())->isNull()) {
     topics_.push_back(topic);
   }
+  logger::info("ProcessStore::addTopic({}) success.", topic->info());
   return topic->info();
 }
 

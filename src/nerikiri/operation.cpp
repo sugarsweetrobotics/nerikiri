@@ -35,7 +35,7 @@ OperationBase::OperationBase(const OperationBase& op): /*process_(op.process_),*
 Value OperationBase::addProviderConnection(Connection&& c) {
     logger::trace("OperationBase::addProviderConnection({})", str(c.info()));
     if (isNull()) { 
-        return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); 
+        return Value::error(logger::error("OperationBase::addProviderConnection({}) failed. Caller Operation is null.", c.info())); 
     }
     if (c.isNull()) {
         return Value::error(logger::error("OperationBase::addProviderConnection failed. Given connection is null."));
@@ -45,7 +45,7 @@ Value OperationBase::addProviderConnection(Connection&& c) {
 }
 
 Value OperationBase::addConsumerConnection(Connection&& c) {
-    logger::trace("Operation::addConsumerConnection({})", str(c.info()));
+    logger::trace("OperationBase::addConsumerConnection({})", str(c.info()));
     if (isNull()) { return Value::error(logger::error("{} failed. Caller Operation is null.", __func__)); }
     if (c.isNull()) {
         return Value::error(logger::error("OperationBase::addConsumerConnection() failed. Given connection is null."));
@@ -60,6 +60,7 @@ Value OperationBase::addConsumerConnection(Connection&& c) {
     if (info().at("defaultArg").hasKey(argumentName)) {
         auto inf = c.info();
         inputConnectionListDictionary_[argumentName].emplace_back(std::move(c));
+        logger::info("OperationBase::addConsumerConnection({}) success.");
         return inf;
     }
     logger::error("Argument can not found ({}) ", str(c.info()));
@@ -204,21 +205,25 @@ bool OperationBase::hasOutputConnectionName(const ConnectionInfo& ci) const {
 }
 
 Value OperationBase::collectValues() {
-        if (isNull()) { return Value::error("OperationBase::collectValues() failed. Caller Operation is null."); }
+    logger::trace("OperationBase({})::collectValues()", info());
+    if (isNull()) { return Value::error(logger::error("OperationBase({})::collectValues() failed. Caller Operation is null.", info())); }
 
-        std::lock_guard<std::mutex> lock(argument_mutex_);
-        return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
-          [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
-            if (!bufferMap_.at(key)->isEmpty()) {
-              return { key, bufferMap_.at(key)->popRef() };
-            }
-            for (auto& con : getInputConnectionsByArgName(key)) {
-              if (con.isPull()) { return { key, con.pull() }; }
-            }
-            return { key, value };
-          }
-        ));
-    }
+    std::lock_guard<std::mutex> lock(argument_mutex_);
+    return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
+        [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
+        if (!bufferMap_.at(key)->isEmpty()) {
+            return { key, bufferMap_.at(key)->popRef() };
+        }
+        for (auto& con : getInputConnectionsByArgName(key)) {
+            if (con.isPull()) { 
+                logger::trace(" - pull by connection: {}", con.info());
+                return { key, con.pull() 
+            }; }
+        }
+        return { key, value };
+        }
+    ));
+}
 
 Value OperationBase::execute() {
         if (isNull()) { return Value::error("OperationBase::execute() failed. Caller Operation is null."); }
@@ -233,11 +238,16 @@ Value OperationBase::execute() {
 
 
 Value OperationBase::invoke() {
+    logger::trace("OperationBase({})::invoke() called", info());
     if (isNull()) { return Value::error("OperationBase::invoke() failed. Caller Operation is null."); }
     try {
-        return call(collectValues());
+        auto a = collectValues();
+        logger::trace("- argument value is {}", a);
+        auto v = call(a);
+        logger::trace(" - return value is {}", v);
+        return std::move(v);
     } catch (const std::exception& ex) {
-        return Value::error(std::string("OperationBase::invoke() failed. Exception occurred: ") + ex.what());
+        return Value::error(logger::error("OperationBase({})::invoke() failed. Exception occurred {}", info(), std::string(ex.what())));
     }
 }
 /*
@@ -280,6 +290,7 @@ Value OperationBase::putToArgumentViaConnection(const std::string& argName, cons
         return value;
     }
     auto connection = this->getInputConnection(argName, conName);
+
     if (bufferMap_.count(argName) > 0) {
         {
             std::lock_guard<std::mutex> lock(argument_mutex_);

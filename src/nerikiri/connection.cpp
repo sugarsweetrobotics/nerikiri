@@ -38,6 +38,7 @@ Connection::Connection(const ConnectionInfo& _info,
     if (providerBroker_) {
         auto operationName = info_.at("output").at("info").at("fullName").stringValue();
         pull_func_ = [providerBroker, operationName]() {
+            logger::trace("Connection::pull_func_ called for operation({})", operationName);
             return providerBroker->invokeOperation(operationName);
         };
         is_null_ = false;

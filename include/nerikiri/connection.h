@@ -37,7 +37,7 @@ namespace nerikiri {
         pull_func_(c.pull_func_), push_func_(c.push_func_),
         is_null_(c.is_null_), is_event_(c.is_event_) {}
 
-        bool isPull() const { return true; }
+        bool isPull() const { if (pull_func_) return true; return false; }
 
         Value pull() { return this->pull_func_(); }
 

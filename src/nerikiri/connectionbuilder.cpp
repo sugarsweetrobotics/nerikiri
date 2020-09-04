@@ -115,6 +115,7 @@ Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci
         auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
         auto ret2 = inputBroker->registerConsumerConnection(ret);
         if (ret2.isError()) {
+            logger::error("ConnectionBuilder::registerProviderConnection({}) failed. inputBroker->registerConsumerConnection({}) failed.", ci, ret); 
           return ret2;
         }
         // リクエストが成功なら、こちらもConnectionを登録。
@@ -123,7 +124,7 @@ Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci
             // 登録が失敗ならConsumer側のConnectionを破棄。
             auto consumerConName = ret2.at("name").stringValue();
             inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
-            return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
+            return Value::error(logger::error("ConnectionBuilder::registerProviderConnection({}) for provider's broker failed. ", ci, ret2.getErrorMessage()));
         }// 登録成功ならciを返す
         return ret3;
     } catch (ValueTypeError& ex) {
@@ -136,11 +137,12 @@ Value ConnectionBuilder::unbindOperationToFSM(ProcessStore* store, const Value& 
 }
 
 Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+  logger::trace("ConnectionBuilder::registerOperationProviderConnection({})", ci);
   return ConnectionBuilder::registerOperationProviderConnection(store, ci, receiverBroker);
 }
 
 Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
-    logger::trace("ConnectionBuilder::registerProviderConnection({})", (ci));
+    logger::trace("ConnectionBuilder::registerOperationProviderConnection({})", (ci));
     try {
         auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
         auto inputFullName = ci.at("input").at("info").at("fullName").stringValue();
@@ -150,18 +152,23 @@ Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store
         auto ret = ConnectionBuilder::_validateOutputConnectionInfo(store->getOperationOrTopic(outputFullName), ci);
         auto inputBroker = ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"));
         auto ret2 = inputBroker->registerConsumerConnection(ret);
-        if (ret2.isError()) {return ret2;}
+        if (ret2.isError()) {
+          logger::error("ConnectionBduiler::registerOperationProviderConnection({}) failed. registerConsumerConnection failed.", ci);
+          return ret2;
+        }
         // リクエストが成功なら、こちらもConnectionを登録。
         auto ret3 = store->getOperationOrTopic(outputFullName)->addProviderConnection(providerConnection(ret2, inputBroker));
         if (ret3.isError()) {
+            logger::error("ConnectionBuilder::registerOperationProviderConnection({}) failed. getOperationOrTopic({}) failed.", ci, outputFullName);
             // 登録が失敗ならConsumer側のConnectionを破棄。
             auto consumerConName = ret2.at("name").stringValue();
             inputBroker->removeConsumerConnection(inputFullName, argName, consumerConName);
-            return Value::error(logger::error("request registerProviderConnection for provider's broker failed. ", ret2.getErrorMessage()));
+            return Value::error(logger::error("ConnectionBuilder::registerOperationProviderConnection({}) for provider's broker failed. ", ci, ret2.getErrorMessage()));
         }// 登録成功ならciを返す
+        logger::info("ConnectionBuilder::registerOperationProviderConnection({}) success.", ret3);
         return ret3;
     } catch (ValueTypeError& ex) {
-        return Value::error(logger::error("ConnectionBuilder::registerProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
+        return Value::error(logger::error("ConnectionBuilder::registerOperationProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
     }
 }
 
@@ -203,6 +210,7 @@ Value ConnectionBuilder::deleteOperationProviderConnection(ProcessStore* store, 
 }
     
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore* store, const Value& opInfo, const Value& topicInfo) {
+  logger::trace("ConnectionBuilder::registerTopicPublisher({}, {})", opInfo, topicInfo);
   if (!topicInfo.isError() && !opInfo.isError()) {
     auto fullName = opInfo.at("fullName").stringValue();
     //if (opInfo.hasKey("ownerContainerInstanceName")) {
@@ -238,6 +246,7 @@ Value ConnectionBuilder::registerTopicPublisher(ProcessStore* store, const Value
 }
 
 Value ConnectionBuilder::registerTopicSubscriber(ProcessStore* store, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
+  logger::trace("ConnectionBuilder::registerTopicSubscriber({}, {}, {})", opInfo, argName, topicInfo);
   if (!topicInfo.isError() && !opInfo.isError()) {
     auto fullName = opInfo.at("fullName").stringValue();
     // if (opInfo.hasKey("ownerContainerInstanceName")) {

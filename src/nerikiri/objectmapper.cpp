@@ -11,6 +11,7 @@ using namespace nerikiri;
 
 
 Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string& path) {
+    logger::debug("ObjectMapper::readResource({})", path);
     std::smatch match;
     
     if (path == "/process/info/") {
@@ -29,7 +30,7 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
         return coreBroker->getAllOperationInfo(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
-        return coreBroker->invokeOperation(match[1]);
+        return coreBroker->invokeAllOperation(match[1]);
     }
     if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/"))) {
         return coreBroker->invokeAllOperation(match[1]);

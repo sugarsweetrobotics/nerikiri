@@ -326,21 +326,25 @@ void Process::_preloadBrokers() {
 }
 
 void Process::_preloadConnections() {
+  logger::trace("Process::_preloadConnections() called.");
   try {
     auto c = config_.at("connections");
+    logger::debug("Process::_preloadConnections() : config_.at('connections') is {}", c);
     c.list_for_each([this](auto& value) {
       ConnectionBuilder::registerProviderConnection(store(), value);
-      //this->registerProviderConnection(value);
     });
   } catch (ValueTypeError& ex) {
     logger::error("Process::_preloadConnections failed. Exception: {}", ex.what());
   }
+  logger::trace("Process::_preloadConnections() exit.");
 }
 
 
 void Process::_preloadTopics() {
+  logger::trace("Process::_preloadTopics() called");
   try {
     auto operationCallback = [this](auto& opInfo) {
+      logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
       opInfo.at("publish").list_for_each([this, &opInfo](auto v) {
         ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
          {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
@@ -363,6 +367,8 @@ void Process::_preloadTopics() {
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadTopics(). ValueTypeException:{}", e.what());
   } 
+  logger::trace("Process::_preloadTopics() exit");
+
 }
 
 void Process::_preloadCallbacksOnStarted() {

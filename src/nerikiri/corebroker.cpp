@@ -54,16 +54,16 @@ Value CoreBroker::invokeContainerOperation(const std::string& fullName) const {
 }
 
 Value CoreBroker::callOperation(const std::string& fullName, const Value& value) {
-    return process_->store()->getOperation(fullName)->call(std::move(value));
+    return process_->store()->getAllOperation(fullName)->call(std::move(value));
 }
 
 Value CoreBroker::invokeOperation(const std::string& fullName) const {
-    return process_->store()->getOperation(fullName)->invoke();
+    return process_->store()->getAllOperation(fullName)->invoke();
 }
 
 Value CoreBroker::executeOperation(const std::string& fullName) {
     logger::trace("CoreBroker::executeOperation({})", fullName);
-    return process_->store()->getOperation(fullName)->execute();
+    return process_->store()->getAllOperation(fullName)->execute();
 }
 
 
@@ -77,7 +77,7 @@ Value CoreBroker::invokeAllOperation(const std::string& fullName) const {
 }
 
 Value CoreBroker::executeAllOperation(const std::string& fullName) {
-    logger::trace("CoreBroker::executeOperation({})", fullName);
+    logger::trace("CoreBroker::executeAllOperation({})", fullName);
     return process_->store()->getAllOperation(fullName)->execute();
 }
 

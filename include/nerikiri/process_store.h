@@ -243,6 +243,7 @@ namespace nerikiri {
     std::shared_ptr<TopicFactory> getTopicFactory(const Value& topicInfo);
     Value addTopicFactory(const std::shared_ptr<TopicFactory>& tf);
     std::shared_ptr<Topic> getTopic(const Value& topicInfo);
+    std::shared_ptr<Topic> getTopic(const std::string& fullname);
     Value getTopicInfos() const;
     Value addTopic(const std::shared_ptr<Topic>& topic);
 
