@@ -46,6 +46,8 @@ namespace nerikiri {
 
         std::vector<std::shared_ptr<OperationBase>> getBoundOperations(const std::string& stateName);
 
+        std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>> getBoundECs(const std::string& stateName);
+
         Value bindStateToECStart(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec);
         
         Value bindStateToECStop(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec);

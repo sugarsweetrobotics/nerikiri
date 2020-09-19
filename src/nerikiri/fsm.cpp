@@ -165,7 +165,15 @@ Value FSM::bindStateToOperation(const std::string& stateName, const std::shared_
 
 std::vector<std::shared_ptr<OperationBase>> FSM::getBoundOperations(const std::string& stateName) {
     if (operations_.count(stateName) > 0) {
-    return this->operations_[stateName];
+        return this->operations_[stateName];
+    }
+    return {};
+}
+
+
+std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>> FSM::getBoundECs(const std::string& stateName) {
+    if (ecStartBrokers_.count(stateName) > 0) {
+        //return this->ecStartBrokers_[stateName];
     }
     return {};
 }

@@ -112,11 +112,15 @@ Value OperationBase::getInputConnectionInfos() const {
 }
 
 Connection OperationBase::getInputConnection(const std::string& argName, const std::string& conName) const {
-    if (inputConnectionListDictionary_.count(conName) == 0) {
+    logger::trace("OperationBase::getInputConnection()");
+    for(auto cn : inputConnectionListDictionary_) {
+        logger::trace(" - {}", cn.first);
+    }
+    if (inputConnectionListDictionary_.count(argName) == 0) {
         return Connection::null;
     }
 
-    return nerikiri::find_first<Connection, nerikiri::Connection>(inputConnectionListDictionary_.at(conName), 
+    return nerikiri::find_first<Connection, nerikiri::Connection>(inputConnectionListDictionary_.at(argName), 
         [&conName](const Connection& con) -> bool { return con.info().at("name").stringValue() == conName; },
         [](const auto& con) { return con; },
         Connection::null);
@@ -281,7 +285,7 @@ Value OperationBase::putToArgument(const std::string& argName, const Value& valu
 }
 
 Value OperationBase::putToArgumentViaConnection(const std::string& argName, const std::string& conName, const Value& value) {
-    logger::trace("OperationBase({})::putToArgumentViaConnection({})", conName);
+    logger::trace("OperationBase({})::putToArgumentViaConnection({}, {}, {})", getFullName(), argName, conName, value);
     if (isNull()) {
          return Value::error(logger::error("OperationBase::{} failed. Caller Operation is null.", __func__)); 
     }
@@ -290,13 +294,18 @@ Value OperationBase::putToArgumentViaConnection(const std::string& argName, cons
         return value;
     }
     auto connection = this->getInputConnection(argName, conName);
+    if (connection.isNull()) {
+        logger::error("OperationBase::putToArgumentViaConnection() failed. Connection is null");
+    }
 
     if (bufferMap_.count(argName) > 0) {
         {
             std::lock_guard<std::mutex> lock(argument_mutex_);
+            logger::trace(" - pushing value to buffer[{}]", argName);
             bufferMap_[argName]->push(value);
             argument_updated_ = true;
         }
+        logger::trace(" - connection type is {}", connection.info());
         if (connection.isEvent()) {
             logger::trace("In OperationBase({})::putToArgumentViaConnection({}) executing myself", info().at("fullName"), conName);
             auto v = execute();

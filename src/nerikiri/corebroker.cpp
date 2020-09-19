@@ -40,7 +40,7 @@ Value CoreBroker::getContainerOperationInfo(const std::string& fullName) const {
 }
 
 Value CoreBroker::getOperationInfo(const std::string& fullName) const {
-    return process_->store()->getOperation(fullName)->info();
+    return process_->store()->getAllOperation(fullName)->info();
 }
 
 Value CoreBroker::callContainerOperation(const std::string& fullName, const Value& arg) {
@@ -199,6 +199,7 @@ Value CoreBroker::deleteResource(const std::string& path) {
 
 
 Value CoreBroker::setExecutionContextState(const std::string& fullName, const std::string& state) {
+    logger::trace("CoreBroker::setExecutionContextState({}, {})", fullName, state);
     return process_->store()->getExecutionContext(fullName)->setState(state);
 }
 
@@ -290,12 +291,25 @@ Value CoreBroker::getFSMState(const std::string& fullName) const {
 }
 
 Value CoreBroker::getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
-    
+    auto ops = process_->store()->getFSM(fsmFullName)->getBoundOperations(state);
+    Value v = Value::list();
+    for(auto op : ops) {
+        v.push_back(op->info());
+    }
+    return v;
 }
 
 Value CoreBroker::getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
-    
+    auto ecAndStates = process_->store()->getFSM(fsmFullName)->getBoundECs(state);
+    Value v = Value::list();
+    for(auto ecAndState : ecAndStates) {
+        if (ecAndState.first == state) {
+            v.push_back(ecAndState.second->info());
+        }
+    }
+    return v;
 }
+
 
 Value CoreBroker::getFSMsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
     

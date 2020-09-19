@@ -41,8 +41,7 @@
                     "broker": "CoreBroker"
                 }
             ]
-        },
-        "start": ["TimerEC0.ec"]
+        }
     },
 
 

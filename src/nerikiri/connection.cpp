@@ -20,7 +20,7 @@ is_event_(false) {
         return;
     }
 
-    if (_info.objectValue().count("event") > 0) {
+    if (_info.objectValue().count("type") > 0) {
         if (_info.at("type").stringValue() == "event") {
             is_event_ = true;
         }

@@ -263,8 +263,6 @@ void Process::_preloadExecutionContexts() {
 
 void Process::_preloadFSMs() {
   logger::trace("Process::_preloadFSMs()");
-  
-
   try {
     auto c = config_.at("fsms").at("precreate");
     c.list_for_each([this](auto& value) {
@@ -301,6 +299,7 @@ void Process::_preStartExecutionContexts() {
 }
 
 void Process::_preloadBrokers() {
+  logger::trace("Process::_preloadBrokers()");
   try {
     auto c = config_.at("brokers").at("preload");
     c.list_for_each([this](auto& value) {

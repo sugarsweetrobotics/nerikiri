@@ -10,7 +10,73 @@
 
 namespace nerikiri {
 
+#if 0
+    class FSMObject;
 
+    class State : public Object {
+    private:
+        FSMObject* owner_;
+    public:
+        State(const std::string& name, FSMObject* owner): Object({{"stateName", name}}), owner_(owner) {}
+        virtual ~State() {}
+
+    public:
+        std::string stateName() const { return info().at("stateName").stringValue(); }
+
+        Value activate() {
+            return owner_->activateState(this);
+        }
+    };
+
+
+    class FSMObject: public Object {
+    private:
+        std::vector<State> states_;
+    public:
+        FSMObject(const Value& info): Object(info) {}
+
+        virtual ~FSMObject() {}
+
+    public:
+        void addState(State& state) {
+            for(auto it = states_.begin(); it != states_.end(); ++it) {
+                if ((*it).stateName() == state.stateName()) {
+                    states_.erase(it);
+                    return;
+                }   
+            }
+
+            states_.push_back(state);
+        }
+
+        void addDefaultState(State& state) {
+            for(auto it = states_.begin(); it != states_.end(); ++it) {
+                if ((*it).stateName() == state.stateName()) {
+                    states_.erase(it);
+                    return;
+                }   
+            }
+
+            states_.push_back(state);
+        }
+
+        void deleteState(State& state) {
+            for(auto it = states_.begin(); it != states_.end(); ++it) {
+                if ((*it).stateName() == state.stateName()) {
+                    states_.erase(it);
+                    return;
+                }   
+            }
+        }
+    public:
+        Value activateState(const State* state) {
+            for(auto it = states_.begin(); it != states_.end(); ++it) {
+                if ((*it).stateName() == state->stateName()) {
+
+        }
+    };
+
+#endif
     class ExecutionContext : public Object {
     private:
         std::vector<std::shared_ptr<OperationBase>> operations_;
@@ -29,23 +95,37 @@ namespace nerikiri {
 
 
     public:
+
+        virtual Value setState(const std::string& state) { 
+            if (state == "started") {
+                return start();
+            } else if (state == "stopped") {
+                return stop();
+            } 
+            return Value::error(logger::error("ExecutionContext({})::setState({}) failed. Unknown State.", getInstanceName(), state));
+        }
+
         virtual Value start() {
+            logger::trace("ExecutionContext({})::start() called", getInstanceName());
             if (info_["state"].stringValue() != "started") {
                 onStarting();
                 info_["state"] = Value("started");
                 if (!onStarted()) {
                     stop();
-                    return Value::error("ExecutionContext::start() failed. onStarted callback returns false.");;
+                    return Value::error(logger::error("ExecutionContext::start() failed. onStarted callback returns false."));;
                 }
+                logger::info("ExecutionContext({}) successfully started.", getInstanceName());
             }
             return info();
         }
 
         virtual Value stop() {
+            logger::trace("ExecutionContext({})::stop() called", getInstanceName());
             if (info_["state"].stringValue() != "stopped") {
                 onStopping();
                 info_["state"] = Value("stopped");
                 onStopped();
+                logger::info("ExecutionContext({}) successfully stopped.", getInstanceName());
             }
             return info();
         }
@@ -136,7 +216,7 @@ namespace nerikiri {
             auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_,
               [](auto op) { return op->info(); });
             for(auto p : operationBrokers_) {
-                Value info = p.first;
+                Value info = p.second->getOperationInfo(p.first);
                 info["broker"] = p.second->info();
                 ops.push_back(info);
             }
