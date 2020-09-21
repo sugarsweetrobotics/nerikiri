@@ -18,6 +18,7 @@ namespace nerikiri {
         std::vector<Connection> connections_;
         std::string currentStateName_;
         std::map<std::string, std::vector<std::shared_ptr<OperationBase>>> operations_;
+        std::map<std::string, std::vector<std::pair<std::shared_ptr<OperationBase>, Value>>> operationWithArguments_;
         std::map<std::string, std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>>> operationBrokers_;
         std::map<std::string, std::vector<std::shared_ptr<ExecutionContext>>> ecsStart_;
         std::map<std::string, std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>>> ecStartBrokers_;
@@ -43,6 +44,9 @@ namespace nerikiri {
         bool hasState(const std::string& stateName) const;
 
         Value bindStateToOperation(const std::string& stateName, const std::shared_ptr<OperationBase>& op);
+
+        Value bindStateToOperation(const std::string& stateName, const std::shared_ptr<OperationBase>& op, const Value& argumentInfo);
+
 
         std::vector<std::shared_ptr<OperationBase>> getBoundOperations(const std::string& stateName);
 

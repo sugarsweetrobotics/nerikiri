@@ -45,6 +45,43 @@
     },
 
 
+
+    "fsms": {
+        "precreate": [
+            {
+                "typeName": "GenericFSM",
+                "instanceName": "FSM01.fsm",
+                "states" : [
+                    {
+                      "name": "stopped",
+                      "transit": ["running"] 
+                    },
+                    { 
+                        "name": "running",
+                        "transit": ["stopped"],
+                        "bindOperations": [
+                            {
+                                "fullName": "OpenCVCamera0.ctn:initialize0.ope",
+                                "argument":  {
+                                    "cameraId": 0,
+                                    "width": 320,
+                                    "height": 240
+                                }
+                            },
+                            {
+                                "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
+                                "argument":  {
+                                    "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
+                                }
+                            }
+                        ] 
+                    }
+                ],
+                "defaultState": "stopped"
+            }
+        ]
+    },
+
     "connections": [
     ],
 

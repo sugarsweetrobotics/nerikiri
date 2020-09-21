@@ -79,6 +79,16 @@ Value FSM::_executeInState(const std::string& stateName) {
             retval.emplace_back(op->execute());
         }
     }
+    if (operationWithArguments_.count(stateName) > 0) {
+        for(auto& opAndArgs : operationWithArguments_.at(stateName)) {
+            auto op = opAndArgs.first;
+            auto args = opAndArgs.second;
+            args.object_for_each([op](auto key, auto& value) {
+                op->putToArgument(key, value);
+            });
+            retval.emplace_back(op->execute());
+        }
+    }
     if (operationBrokers_.count(stateName) > 0) {
         for(auto& pair: operationBrokers_.at(stateName)) {
             retval.emplace_back(pair.second->executeAllOperation(pair.first));
@@ -159,6 +169,17 @@ Value FSM::bindStateToOperation(const std::string& stateName, const std::shared_
         return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. Operation is null."));
     }
     this->operations_[stateName].push_back(op);
+    return op->info();
+}
+
+Value FSM::bindStateToOperation(const std::string& stateName, const std::shared_ptr<OperationBase>& op, const Value& argumentInfo) {
+    if (isNull()) {
+        return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. FSM is null."));
+    }
+    if (op->isNull()) {
+        return Value::error(logger::error("FSM::bindStateToOperation(" + stateName + ") error. Operation is null."));
+    }
+    this->operationWithArguments_[stateName].push_back({op, argumentInfo});
     return op->info();
 }
 

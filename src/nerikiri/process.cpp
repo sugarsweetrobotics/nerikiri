@@ -271,9 +271,15 @@ void Process::_preloadFSMs() {
       value.at("states").list_for_each([this, value](auto& stateInfo) {
         if (stateInfo.hasKey("bindOperations")) {
           stateInfo.at("bindOperations").list_for_each([this, value, stateInfo](auto& opInfo) {
-            this->store()->getFSM(value)->bindStateToOperation(stateInfo.at("name").stringValue(), 
-              this->store()->getOperation(opInfo)
-            );
+            if (opInfo.hasKey("argument")) {
+              this->store()->getFSM(value)->bindStateToOperation(stateInfo.at("name").stringValue(), 
+                this->store()->getOperation(opInfo), opInfo.at("argument")
+              );
+            } else {
+              this->store()->getFSM(value)->bindStateToOperation(stateInfo.at("name").stringValue(), 
+                this->store()->getOperation(opInfo)
+              );
+            }
           });
         }
       });

@@ -257,7 +257,7 @@ namespace nerikiri {
     std::shared_ptr<FSM> getFSM(const std::string& fullName);
 
     inline std::shared_ptr<FSM> getFSM(const Value& value) {
-      return getFSM(value.at("fullName"));
+      return getFSM(value.at("fullName").stringValue());
     }
 
     inline std::shared_ptr<FSM> getFSM(const char* fullName) { return getFSM(std::string(fullName)); }
