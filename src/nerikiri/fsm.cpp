@@ -25,6 +25,7 @@ FSM::FSM(const Value& info) : Object(info) {
         _setNull();
     } else {
         currentStateName_ = defaultState.stringValue();
+        info_["currentState"] = currentStateName_;
     }
 
     
@@ -63,6 +64,7 @@ Value FSM::setFSMState(const std::string& state) {
     }
     if (_isTransitable(currentStateName_, state)) {
         currentStateName_ = state;
+        info_["currentState"] = state;
         _executeInState(currentStateName_);
     } else {
         logger::warn("FSM(" + getInstanceName() + ") tried to transit from " + currentStateName_ + " to " + state + " but can not transit.");

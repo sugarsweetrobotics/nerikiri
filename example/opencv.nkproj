@@ -54,7 +54,12 @@
                 "states" : [
                     {
                       "name": "stopped",
-                      "transit": ["running"] 
+                      "transit": ["running"],
+                      "bindECStop": [
+                          {
+                              "fullName": "TimerEC0.ec"
+                          }
+                      ]
                     },
                     { 
                         "name": "running",
@@ -74,7 +79,12 @@
                                     "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
                                 }
                             }
-                        ] 
+                        ],
+                        "bindECStart": [
+                            {
+                                "fullName": "TimerEC0.ec"
+                            }
+                        ]
                     }
                 ],
                 "defaultState": "stopped"
