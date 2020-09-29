@@ -268,18 +268,25 @@ void Process::_preloadFSMs() {
     c.list_for_each([this](auto& value) {
       auto cinfo = ObjectFactory::createFSM(store_, value);
 
-      value.at("states").list_for_each([this, value](auto& stateInfo) {
+      value.at("states").list_for_each([this, cinfo](auto& stateInfo) {
         if (stateInfo.hasKey("bindOperations")) {
-          stateInfo.at("bindOperations").list_for_each([this, value, stateInfo](auto& opInfo) {
+          stateInfo.at("bindOperations").list_for_each([this, cinfo, stateInfo](auto& opInfo) {
             if (opInfo.hasKey("argument")) {
-              this->store()->getFSM(value)->bindStateToOperation(stateInfo.at("name").stringValue(), 
+              this->store()->getFSM(cinfo)->bindStateToOperation(stateInfo.at("name").stringValue(), 
                 this->store()->getOperation(opInfo), opInfo.at("argument")
               );
             } else {
-              this->store()->getFSM(value)->bindStateToOperation(stateInfo.at("name").stringValue(), 
+              this->store()->getFSM(cinfo)->bindStateToOperation(stateInfo.at("name").stringValue(), 
                 this->store()->getOperation(opInfo)
               );
             }
+          });
+        }
+        if (stateInfo.hasKey("bindECStart")) {
+          stateInfo.at("bindECStart").list_for_each([this, cinfo, stateInfo](auto& opInfo) {
+              this->store()->getFSM(cinfo)->bindStateToECStart(stateInfo.at("name").stringValue(), 
+                this->store()->getExecutionContext(opInfo)
+              );
           });
         }
       });

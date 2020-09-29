@@ -183,7 +183,7 @@ namespace nerikiri {
     std::shared_ptr<OperationBase> getOperation(const std::string& fullName);
 
     inline std::shared_ptr<OperationBase> getOperation(const Value& info) {
-      return getOperation(info.at("fullName"));
+      return getOperation(info.at("fullName").stringValue());
     }
 
     inline std::shared_ptr<OperationBase> getOperation(const char* fullName) { return getOperation(std::string(fullName)); }
@@ -207,6 +207,18 @@ namespace nerikiri {
      * ExecutionContextの取得
      */
     std::shared_ptr<ExecutionContext> getExecutionContext(const std::string& fullName);
+
+
+    std::shared_ptr<ExecutionContext> getExecutionContext(const char* fullName) {
+      return getExecutionContext(std::string(fullName));
+    }
+
+    std::shared_ptr<ExecutionContext> getExecutionContext(const Value& value) {
+      if (value.hasKey("fullName")) {
+        return getExecutionContext(value.at("fullName").stringValue());
+      }
+      return nerikiri::nullExecutionContext();
+    }
 
     ProcessStore& addExecutionContextFactory(const std::shared_ptr<ExecutionContextFactory>& ec);
 
@@ -257,7 +269,10 @@ namespace nerikiri {
     std::shared_ptr<FSM> getFSM(const std::string& fullName);
 
     inline std::shared_ptr<FSM> getFSM(const Value& value) {
+      if (value.hasKey("fullName")) {
       return getFSM(value.at("fullName").stringValue());
+      } 
+      return nerikiri::nullFSM();
     }
 
     inline std::shared_ptr<FSM> getFSM(const char* fullName) { return getFSM(std::string(fullName)); }

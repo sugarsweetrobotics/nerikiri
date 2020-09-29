@@ -50,7 +50,7 @@
         "precreate": [
             {
                 "typeName": "GenericFSM",
-                "instanceName": "FSM01.fsm",
+                "instanceName": "FSM0.fsm",
                 "states" : [
                     {
                       "name": "stopped",
