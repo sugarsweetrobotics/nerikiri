@@ -47,6 +47,58 @@
 
 
     "fsms": {
+        "bind": {        
+            "operations": [
+                {
+                    "operation": {
+                        "fullName": "OpenCVCamera0.ctn:initialize0.ope",
+                        "argument":  {
+                            "cameraId": 0,
+                            "width": 320,
+                            "height": 240
+                        }
+                    },
+                    "fsm": {
+                        "fullName": "FSM0.fsm",
+                        "state": "running"
+                    }
+                },
+                {
+                    "operation": {
+                        "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
+                        "argument":  {
+                            "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
+                        }
+                    },
+                    "fsm": {
+                        "fullName": "FSM0.fsm",
+                        "state": "running"
+                    }
+                }
+            ],
+            "ecs": [
+                {
+                    "ec": {
+                        "fullName": "TimerEC0.ec",
+                        "state": "started"
+                    },
+                    "fsm": {
+                        "fullName": "FSM0.fsm",
+                        "state": "running"
+                    }
+                },
+                {
+                    "ec": {
+                        "fullName": "TimerEC0.ec",
+                        "state": "stopped"
+                    },
+                    "fsm": {
+                        "fullName": "FSM0.fsm",
+                        "state": "stopped"
+                    }
+                }
+            ]
+        }, 
         "precreate": [
             {
                 "typeName": "GenericFSM",
@@ -54,37 +106,12 @@
                 "states" : [
                     {
                       "name": "stopped",
-                      "transit": ["running"],
-                      "bindECStop": [
-                          {
-                              "fullName": "TimerEC0.ec"
-                          }
-                      ]
+                      "transit": ["running"]
                     },
                     { 
                         "name": "running",
-                        "transit": ["stopped"],
-                        "bindOperations": [
-                            {
-                                "fullName": "OpenCVCamera0.ctn:initialize0.ope",
-                                "argument":  {
-                                    "cameraId": 0,
-                                    "width": 320,
-                                    "height": 240
-                                }
-                            },
-                            {
-                                "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
-                                "argument":  {
-                                    "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
-                                }
-                            }
-                        ],
-                        "bindECStart": [
-                            {
-                                "fullName": "TimerEC0.ec"
-                            }
-                        ]
+                        "transit": ["stopped"]
+                       
                     }
                 ],
                 "defaultState": "stopped"
@@ -96,25 +123,6 @@
     ],
 
     "callbacks": [
-        {
-            "name": "on_started",
-            "target": [
-                {
-                    "fullName": "OpenCVCamera0.ctn:initialize0.ope",
-                    "argument":  {
-                        "cameraId": 0,
-                        "width": 320,
-                        "height": 240
-                    }
-                },
-                {
-                    "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
-                    "argument":  {
-                        "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
-                    }
-                }
-            
-            ]
-        }
+        
     ]
 }  

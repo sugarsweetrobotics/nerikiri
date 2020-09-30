@@ -255,6 +255,10 @@ namespace nerikiri {
       return readResource("/process/fsms/");
     }
 
+    virtual Value getFSMInfo(const std::string& fullName) const override {
+      return readResource("/process/fsms/" + fullName + "/");
+    }
+
     virtual Value setFSMState(const std::string& fullName, const std::string& state) override {
       return updateResource("/process/fsms/" + fullName + "/state/", {state});
     }

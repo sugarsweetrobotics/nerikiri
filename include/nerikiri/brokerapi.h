@@ -148,6 +148,8 @@ namespace nerikiri {
     public:
         virtual Value getFSMInfos() const = 0;
 
+        virtual Value getFSMInfo(const std::string& fullName) const = 0;
+
         virtual Value setFSMState(const std::string& fullName, const std::string& state) = 0;
 
         virtual Value getFSMState(const std::string& fullName) const = 0;

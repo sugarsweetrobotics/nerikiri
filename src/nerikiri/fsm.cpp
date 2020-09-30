@@ -27,10 +27,58 @@ FSM::FSM(const Value& info) : Object(info) {
         currentStateName_ = defaultState.stringValue();
         info_["currentState"] = currentStateName_;
     }
-
-    
 }
 
+Value FSM::info() const {
+            
+    auto v = Object::info();
+    logger::trace("info---- {}", v);
+    auto states = Value::list();
+    v["states"].list_for_each([this,&states](auto stateValue) {
+        stateValue["boundOperations"] = Value::list();
+        for(auto opInfo : getBoundOperations(stateValue.at("name").stringValue())) {
+            logger::trace("pushing------- {}", opInfo->getFullName());
+            stateValue["boundOperations"].push_back(
+                {
+                    {"fullName", opInfo->getFullName()}
+                }
+            );
+        }
+         for(auto opPair : getBoundOperationWithArguments(stateValue.at("name").stringValue())) {
+            logger::trace("pushing------- {}", opPair.first->getFullName());
+            stateValue["boundOperations"].push_back(
+                {
+                    {"fullName", opPair.first->getFullName()},
+                    {"argument", opPair.second}
+                }
+            );
+        }
+
+        stateValue["boundECStart"] = Value::list();
+        stateValue["boundECStop"] = Value::list();
+        for(auto ecPair : getBoundECs(stateValue.at("name").stringValue())) {
+            //logger::trace("pushing------- {}", opInfo->getFullName());
+            if (ecPair.first == "started") {
+                stateValue["boundECStart"].push_back(
+                    {
+                        {"fullName", ecPair.second->getFullName()}
+                    }
+                );
+            } else if (ecPair.first == "stopped") {
+                stateValue["boundECStop"].push_back(
+                    {
+                    {"fullName", ecPair.second->getFullName()}
+                    }
+                );
+            }
+        }
+
+        states.push_back(stateValue);
+    });
+
+    v["states"] = states;
+    return v;
+}
 
 FSM::FSM() : Object() {}
 
@@ -56,6 +104,7 @@ Value FSM::getFSMState() const {
 }
 
 Value FSM::setFSMState(const std::string& state) {
+    logger::trace("FSM({})::setFSMState({})", getInstanceName(), state);
     if (isNull()) {
         return Value::error("FSM::setFSMState() error. FSM is null.");
     }
@@ -78,6 +127,7 @@ Value FSM::_executeInState(const std::string& stateName) {
     std::vector<Value> retval;
     if (operations_.count(stateName) > 0) {
         for(auto& op : operations_.at(stateName)) {
+            logger::trace(" - Executing Operation({})", op->getFullName());
             retval.emplace_back(op->execute());
         }
     }
@@ -85,6 +135,7 @@ Value FSM::_executeInState(const std::string& stateName) {
         for(auto& opAndArgs : operationWithArguments_.at(stateName)) {
             auto op = opAndArgs.first;
             auto args = opAndArgs.second;
+            logger::trace(" - Executing Operation({}) with Argument({})", op->getFullName(), args);
             args.object_for_each([op](auto key, auto& value) {
                 op->putToArgument(key, value);
             });
@@ -98,6 +149,7 @@ Value FSM::_executeInState(const std::string& stateName) {
     }
     if (ecsStart_.count(stateName) > 0) {
         for(auto& ec : ecsStart_.at(stateName)) {
+            logger::trace(" - StartingEC({})", ec->getFullName());
             retval.emplace_back(ec->start());
         }
     }
@@ -108,6 +160,7 @@ Value FSM::_executeInState(const std::string& stateName) {
     }
     if (ecsStop_.count(stateName) > 0) {
         for(auto& ec : ecsStop_.at(stateName)) {
+            logger::trace(" - StoppingEC({})", ec->getFullName());
             retval.emplace_back(ec->stop());
         }
     }
@@ -186,19 +239,36 @@ Value FSM::bindStateToOperation(const std::string& stateName, const std::shared_
 }
 
 
-std::vector<std::shared_ptr<OperationBase>> FSM::getBoundOperations(const std::string& stateName) {
+std::vector<std::shared_ptr<OperationBase>> FSM::getBoundOperations(const std::string& stateName) const {
     if (operations_.count(stateName) > 0) {
-        return this->operations_[stateName];
+        return this->operations_.at(stateName);
+    }
+    return {};
+}
+
+std::vector<std::pair<std::shared_ptr<OperationBase>, Value>> FSM::getBoundOperationWithArguments(const std::string& stateName) const {
+    if (operationWithArguments_.count(stateName) > 0) {
+        return this->operationWithArguments_.at(stateName);
     }
     return {};
 }
 
 
-std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>> FSM::getBoundECs(const std::string& stateName) {
-    if (ecStartBrokers_.count(stateName) > 0) {
-        //return this->ecStartBrokers_[stateName];
+
+std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>> FSM::getBoundECs(const std::string& stateName) const {
+
+    std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>>  v;
+    if (ecsStart_.count(stateName) > 0) {
+        for(auto ec: ecsStart_.at(stateName)) {
+            v.push_back({std::string("started"), ec});
+        }
     }
-    return {};
+    if (ecsStop_.count(stateName) > 0) {
+        for(auto ec: ecsStop_.at(stateName)) {
+            v.push_back({std::string("stopped"), ec});
+        }
+    }
+    return v;
 }
 
 

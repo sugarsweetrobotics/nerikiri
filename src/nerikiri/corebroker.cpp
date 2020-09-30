@@ -282,7 +282,12 @@ Value CoreBroker::getFSMInfos() const {
     return process_->store()->getFSMInfos();
 }
 
+Value CoreBroker::getFSMInfo(const std::string& fullName) const {
+    return process_->store()->getFSM(fullName)->info();
+}
+
 Value CoreBroker::setFSMState(const std::string& fullName, const std::string& state) {
+    logger::trace("CoreBroker::setFSMState({}, {})", fullName, state);
     return process_->store()->getFSM(fullName)->setFSMState(state);
 }
 

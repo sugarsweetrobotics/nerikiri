@@ -261,36 +261,53 @@ void Process::_preloadExecutionContexts() {
   }
 }
 
+void Process::_preStartFSMs() {
+logger::trace("Process::_preloadFSMs()");
+  try {
+    auto c = config_.at("fsms").at("bind");
+    if (c.isError()) {return;}
+
+    auto ops = c.at("operations");
+    ops.list_for_each([this](auto& value) {
+      auto fsmInfo = value.at("fsm");
+      
+      auto opInfo = value.at("operation");
+      if (opInfo.hasKey("argument")) {
+        this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
+          this->store()->getAllOperation(opInfo), opInfo.at("argument")
+        );
+      } else {
+        this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
+          this->store()->getAllOperation(opInfo)
+        );
+      }
+    });
+
+    auto ecs = c.at("ecs");
+    ecs.list_for_each([this](auto& value) {
+      auto fsmInfo = value.at("fsm");
+      auto ecInfo = value.at("ec");
+      if (ecInfo.at("state").stringValue() == "started") {
+        this->store()->getFSM(fsmInfo)->bindStateToECStart(fsmInfo.at("state").stringValue(), 
+          this->store()->getExecutionContext(ecInfo)
+        );
+      } else if (ecInfo.at("state").stringValue() == "stopped") {
+        this->store()->getFSM(fsmInfo)->bindStateToECStop(fsmInfo.at("state").stringValue(), 
+          this->store()->getExecutionContext(ecInfo)
+        );
+      }
+    });
+  } catch (nerikiri::ValueTypeError& e) {
+    logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
+  }
+}
+
 void Process::_preloadFSMs() {
   logger::trace("Process::_preloadFSMs()");
   try {
     auto c = config_.at("fsms").at("precreate");
     c.list_for_each([this](auto& value) {
       auto cinfo = ObjectFactory::createFSM(store_, value);
-
-      value.at("states").list_for_each([this, cinfo](auto& stateInfo) {
-        if (stateInfo.hasKey("bindOperations")) {
-          stateInfo.at("bindOperations").list_for_each([this, cinfo, stateInfo](auto& opInfo) {
-            if (opInfo.hasKey("argument")) {
-              this->store()->getFSM(cinfo)->bindStateToOperation(stateInfo.at("name").stringValue(), 
-                this->store()->getOperation(opInfo), opInfo.at("argument")
-              );
-            } else {
-              this->store()->getFSM(cinfo)->bindStateToOperation(stateInfo.at("name").stringValue(), 
-                this->store()->getOperation(opInfo)
-              );
-            }
-          });
-        }
-        if (stateInfo.hasKey("bindECStart")) {
-          stateInfo.at("bindECStart").list_for_each([this, cinfo, stateInfo](auto& opInfo) {
-              this->store()->getFSM(cinfo)->bindStateToECStart(stateInfo.at("name").stringValue(), 
-                this->store()->getExecutionContext(opInfo)
-              );
-          });
-        }
-      });
-      
     });
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
@@ -447,6 +464,7 @@ void Process::startAsync() {
   _preloadFSMs();
   _preloadExecutionContexts();
   _preloadBrokers();
+  _preStartFSMs();
   _preStartExecutionContexts();
   auto broker_futures = nerikiri::map<std::future<bool>, std::shared_ptr<Broker>>(store_.brokers_, [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, this, brk);

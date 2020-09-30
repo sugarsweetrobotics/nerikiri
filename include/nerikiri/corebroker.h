@@ -152,6 +152,8 @@ public:
 
     virtual Value getFSMInfos() const override;
     
+    virtual Value getFSMInfo(const std::string& fullName) const override;
+
     virtual Value setFSMState(const std::string& fullName, const std::string& state) override;
     
     virtual Value getFSMState(const std::string& fullName) const override;

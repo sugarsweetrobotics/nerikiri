@@ -82,6 +82,9 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
     if (path == "/process/fsms/") {
       return coreBroker->getFSMInfos();
     }
+    if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/"))) {
+      return coreBroker->getFSMInfo(match[1].str());
+    }
     if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/state/"))) {
       return coreBroker->getFSMState(match[1].str());
     }

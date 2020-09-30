@@ -254,6 +254,10 @@ namespace nerikiri {
         }
 
 
+        virtual Value getFSMInfo(const std::string& fullName) const override {
+            return Value::error("BrokerAPI::getFSMInfo() failed. Broker is null.");
+        }
+
         virtual Value getFSMInfos() const override {
             return Value::error("BrokerAPI::getFSMInfos() failed. Broker is null.");
         }

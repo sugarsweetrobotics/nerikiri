@@ -28,6 +28,7 @@ namespace nerikiri {
         FSM(const Value& info);
         FSM();
 
+        Value info() const;
         virtual ~FSM();
 
     private:
@@ -48,9 +49,11 @@ namespace nerikiri {
         Value bindStateToOperation(const std::string& stateName, const std::shared_ptr<OperationBase>& op, const Value& argumentInfo);
 
 
-        std::vector<std::shared_ptr<OperationBase>> getBoundOperations(const std::string& stateName);
+        std::vector<std::shared_ptr<OperationBase>> getBoundOperations(const std::string& stateName) const;
 
-        std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>> getBoundECs(const std::string& stateName);
+        std::vector<std::pair<std::shared_ptr<OperationBase>, Value>> getBoundOperationWithArguments(const std::string& stateName) const;
+
+        std::vector<std::pair<std::string, std::shared_ptr<ExecutionContext>>> getBoundECs(const std::string& stateName) const;
 
         Value bindStateToECStart(const std::string& stateName, const std::shared_ptr<ExecutionContext>& ec);
         

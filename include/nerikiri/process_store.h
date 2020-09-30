@@ -190,6 +190,11 @@ namespace nerikiri {
 
     std::shared_ptr<OperationBase> getAllOperation(const std::string& fullName);
 
+
+    std::shared_ptr<OperationBase> getAllOperation(const Value& info) {
+      return getAllOperation(info.at("fullName").stringValue());
+    }
+
     ProcessStore& addOperationFactory(const std::shared_ptr<OperationFactory>& opf);
     std::shared_ptr<OperationFactory> getOperationFactory(const Value& info);
     
