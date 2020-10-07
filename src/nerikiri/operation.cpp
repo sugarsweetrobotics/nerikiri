@@ -330,7 +330,7 @@ Value OperationBase::removeProviderConnection(const ConnectionInfo& ci) {
 
 Value OperationBase::removeConsumerConnection(const std::string& targetArgName, const std::string& conName) {
     logger::trace("OperationBase::removeConsumerConnection({}, {})", targetArgName, conName);
-    //if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
+    if (isNull()) return Value::error(logger::error("Operation::removeConsumerConnection failed. Operation is null"));
     //const auto argName = ci.at("input").at("target").at("name").stringValue();
     //const auto conName = ci.at("name").stringValue();
 

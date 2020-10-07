@@ -75,7 +75,7 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
     auto dllproxy = createDLLProxy(p, name);
     if (!dllproxy->isNull()) {
       store.addDLLProxy(dllproxy);
-      auto f = dllproxy->functionSymbol("create" + name);
+      auto f = dllproxy->functionSymbol("create" + name); 
       if (f) {
         logger::info("ModuleLoader::loadContainerFactory({}, {}) load success.", p, name);
         store.addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );

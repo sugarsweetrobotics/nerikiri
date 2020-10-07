@@ -98,7 +98,7 @@ endif (BUILD_TURTLESIM_EXAMPLE)
 
 if (BUILD_JOY_EXAMPLE)
 add_subdirectory(joy)
-list(APPEND EXAMPLES joy.nkproj)
+list(APPEND EXAMPLES keyjoy.nkproj)
 endif (BUILD_JOY_EXAMPLE)
 
 if (BUILD_OPENCV_EXAMPLE)

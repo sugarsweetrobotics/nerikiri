@@ -177,11 +177,12 @@ Value ConnectionBuilder::deleteConsumerConnection(ProcessStore* store, const std
 }
   
 Value ConnectionBuilder::deleteOperationConsumerConnection(ProcessStore* store, const std::string& fullName, const std::string& targetArgName, const std::string& conName) {
-  logger::trace("Process::deleteOperationConsumerConnection({}", fullName);
+  logger::trace("Process::deleteOperationConsumerConnection({}, {}, {}", fullName, targetArgName, conName);
   return store->getOperation(fullName)->removeConsumerConnection(targetArgName, conName);
 }
 
 Value ConnectionBuilder::deleteProviderConnection(ProcessStore* store, const std::string& fullName, const std::string& conName) {
+  logger::trace("Process::deleteOperationConsumerConnection({}, {}", fullName, conName);
   return ConnectionBuilder::deleteOperationProviderConnection(store, fullName, conName);
 }
 

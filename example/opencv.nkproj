@@ -53,7 +53,7 @@
                     "operation": {
                         "fullName": "OpenCVCamera0.ctn:initialize0.ope",
                         "argument":  {
-                            "cameraId": 0,
+                            "cameraId": 1,
                             "width": 320,
                             "height": 240
                         }
