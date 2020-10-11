@@ -372,13 +372,13 @@ void Process::_preloadConnections() {
 void Process::_preloadTopics() {
   logger::trace("Process::_preloadTopics() called");
   try {
-    auto operationCallback = [this](auto& opInfo) {
+    auto operationCallback = [this](const Value& opInfo) -> void {
       logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
-      opInfo.at("publish").list_for_each([this, &opInfo](auto v) {
+      opInfo.at("publish").const_list_for_each([this, &opInfo](auto v) {
         ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
          {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
       });
-      opInfo.at("subscribe").object_for_each([this, &opInfo](auto key, auto v) {
+      opInfo.at("subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
         v.list_for_each([this, &opInfo, key](auto sv) {
           ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
            {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
@@ -386,7 +386,7 @@ void Process::_preloadTopics() {
       });
     };
 
-    store()->getOperationInfos().list_for_each(operationCallback);
+    store()->getOperationInfos().const_list_for_each(operationCallback);
     for(auto pc : store()->getContainers()) {
       for(auto opInfo : pc->getOperationInfos()) {
         operationCallback(opInfo);
@@ -403,10 +403,10 @@ void Process::_preloadTopics() {
 void Process::_preloadCallbacksOnStarted() {
   try {
     auto c = config_.at("callbacks");
-    c.list_for_each([this](auto& value) {
+    c.const_list_for_each([this](auto& value) {
       // TODO: コールバックね
       if (value.at("name").stringValue() == "on_started") {
-        value.at("target").list_for_each([this](auto& v) {
+        value.at("target").const_list_for_each([this](auto& v) {
           auto opName = v.at("fullName").stringValue();
           auto argument = v.at("argument");
           store()->getAllOperation(opName)->call(argument);

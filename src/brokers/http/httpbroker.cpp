@@ -50,7 +50,7 @@ public:
     logger::trace("HTTPBroker::HTTPBroker()");
 
     if (!value.isError()) {
-      value.object_for_each([this](auto k, auto v) {
+      value.const_object_for_each([this](auto k, auto v) {
         route_[k] = v.stringValue();
       });
     }

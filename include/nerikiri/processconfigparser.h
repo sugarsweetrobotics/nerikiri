@@ -35,14 +35,14 @@ namespace nerikiri {
   static Value replaceAndCopy(const Value& value, const std::map<std::string, std::string>& dictionary) {
     if (value.isObjectValue()) {
       Value v({});
-      value.object_for_each([&v, &dictionary](auto& key, auto& cvalue) {
+      value.const_object_for_each([&v, &dictionary](auto& key, auto& cvalue) {
         v[key] = replaceAndCopy(cvalue, dictionary);
       });
       return v;
     }
     if (value.isListValue()) {
       Value v = Value::list();
-      value.list_for_each([&v, &dictionary](auto& cvalue) {
+      value.const_list_for_each([&v, &dictionary](auto& cvalue) {
         v.push_back(replaceAndCopy(cvalue, dictionary));
       });
       return v;

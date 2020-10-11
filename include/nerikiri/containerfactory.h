@@ -46,7 +46,7 @@ namespace nerikiri {
             //auto c = std::shared_ptr<ContainerBase>(new Container<T>(this, i)); 
             auto c = std::dynamic_pointer_cast<ContainerBase>(std::make_shared<Container<T>>(this, i));
             if (i.objectValue().count("operations") > 0) {
-                i.at("operations").list_for_each([&c, this](auto& value) {
+                i.at("operations").const_list_for_each([&c, this](auto& value) {
                     auto ret = c->createContainerOperation(value);
                     if (ret.isError()) {
                     //logger::error("ContainerFactory({}) failed. Can not create ContainerOperation({})", typeName(), str(ii));

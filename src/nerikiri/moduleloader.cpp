@@ -12,7 +12,7 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
   logger::trace("ModuleLoader::loadOperationFactory({})",(info));
   auto name = info.at("typeName").stringValue();
     if (info.hasKey("load_paths")) {
-    info.at("load_paths").list_for_each([&search_paths](auto& value) {
+    info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
       search_paths.push_back(value.stringValue());
     });
   }
@@ -40,7 +40,7 @@ Value ModuleLoader::loadContainerOperationFactory(ProcessStore& store, std::vect
   logger::trace("ModuleLoader::loadContainerOperationFactory({})", (info));
   auto name = info.at("container_name").stringValue() + "_" + info.at("typeName").stringValue();
   if (info.hasKey("load_paths")) {
-    info.at("load_paths").list_for_each([&search_paths](auto& value) {
+    info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
       search_paths.push_back(value.stringValue());
     });
   }
@@ -67,7 +67,7 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
   logger::trace("ModuleLoader::loadContainerFactory({})", (info));
   auto name = info.at("typeName").stringValue();
     if (info.hasKey("load_paths")) {
-    info.at("load_paths").list_for_each([&search_paths](auto& value) {
+    info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
       search_paths.push_back(value.stringValue());
     });
   }
@@ -95,7 +95,7 @@ Value ModuleLoader::loadExecutionContextFactory(ProcessStore& store, std::vector
   logger::trace("ModuleLoader::loadExecutionContextFactory({})", (info));
   auto name = info.at("typeName").stringValue();
   if (info.hasKey("load_paths")) {
-    info.at("load_paths").list_for_each([&search_paths](auto& value) {
+    info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
       search_paths.push_back(value.stringValue());
     });
   }
@@ -122,7 +122,7 @@ Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::stri
   logger::trace("ModuleLoader::loadBrokerFactory({})", (info));
   auto name = info.at("typeName").stringValue(); 
   if (info.hasKey("load_paths")) {
-    info.at("load_paths").list_for_each([&search_paths](auto& value) {
+    info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
       search_paths.push_back(value.stringValue());
     });
   }

@@ -90,7 +90,7 @@ bool FSM::hasState(const std::string& stateName) const {
         return false;
     }
     bool flag = false;
-    info().at("states").list_for_each([&flag, &stateName](auto state) {
+    info().at("states").const_list_for_each([&flag, &stateName](auto state) {
         if (getStringValue(state.at("name"), "") == stateName) flag = true;
     });
     return flag;
@@ -196,7 +196,7 @@ bool FSM::_isTransitable(const std::string& current, const std::string& next) {
         return false;
     }
     bool flag = false;
-    info().at("states").list_for_each([&flag, &current, &next](auto& value) {
+    info().at("states").const_list_for_each([&flag, &current, &next](auto& value) {
         if (getStringValue(value.at("name"), "") == current) {
             auto transit = value.at("transit");
             transit.list_for_each([&flag, &next](auto& tv) {

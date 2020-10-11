@@ -7,10 +7,12 @@
 
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/object.h"
-#include "nerikiri/value.h"
+#include "nerikiri/operation_api.h"
+
 #include "nerikiri/connection.h"
 #include "nerikiri/functional.h"
 
+#include "nerikiri/newest_value_buffer.h"
 namespace nerikiri {
 
   class Process;
@@ -37,28 +39,10 @@ namespace nerikiri {
   
 
 
-  class NewestValueBuffer {
-  private:
-    bool empty_;
-    Value buffer_;
-    Value defaultValue_;
-  public:
 
-    NewestValueBuffer(): empty_(true) {}
-    NewestValueBuffer(const Value& defaultValue) : buffer_(defaultValue), defaultValue_(defaultValue), empty_(true) {}
 
-    virtual ~NewestValueBuffer() {}
-  public:
-    virtual Value push(const Value& v) { buffer_ = (v); empty_ = false; return buffer_; }
-    virtual Value push(Value&& v) { buffer_ = std::move(v); empty_ = false; return buffer_; }
-    virtual Value pop() { return empty_ ? defaultValue_ : buffer_; }
-    virtual Value& popRef() { return empty_ ? defaultValue_ : buffer_; }
-    virtual bool isEmpty() const { return empty_; }
-  };
-
-  class OperationBase : public Object {
+  class OperationBase : public Object, public OperationAPI {
   protected:
-      //Process_ptr process_;
       ConnectionList outputConnectionList_;
       ConnectionListDictionary inputConnectionListDictionary_;
       std::map<std::string, std::shared_ptr<NewestValueBuffer>> bufferMap_;
@@ -94,13 +78,13 @@ namespace nerikiri {
 
       Value addConsumerConnection(Connection&& c);
 
-      virtual Value call(const Value& value) {
+      virtual Value call(const Value& value) override {
           return Value::error("OperationBase::call() failed. Caller Operation is null.");
       };
 
       Value collectValues();
 
-	  Value execute();
+	    virtual Value execute() override;
 
     Value getConnectionInfos() const;
 

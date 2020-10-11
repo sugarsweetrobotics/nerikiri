@@ -33,7 +33,7 @@ extern "C" {
             cv::Mat frame(arg.at("image").at("rows").intValue(), arg.at("image").at("cols").intValue(), CV_8UC3);
             memcpy(frame.data, &arg.at("image").at("data").byteArrayValue()[0], frame.rows * frame.cols * 3);
 
-            arg.at("rects").list_for_each([&frame](auto& v) {
+            arg.at("rects").const_list_for_each([&frame](auto& v) {
                 cv::Rect face(v.at("x").intValue(), v.at("y").intValue(), v.at("width").intValue(), v.at("height").intValue());
                 cv::Point center( face.x + face.width/2, face.y + face.height/2 );
                 cv::ellipse( frame, center, cv::Size( face.width/2, face.height/2 ), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4 );

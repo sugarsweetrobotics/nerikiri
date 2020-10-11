@@ -6,7 +6,6 @@
 
 using namespace nerikiri;
 
-//std::shared_ptr<OperationBase> OperationBase::null = std::make_shared<OperationBase>();
 
 OperationBase::OperationBase(const Value& info):
     Object(info), argument_updated_(true) {
@@ -14,7 +13,7 @@ OperationBase::OperationBase(const Value& info):
     if (!operationValidator(info_)) {
         is_null_ = true;//logger::error("OperationInformation is invalid.");
     } else {
-    info_.at("defaultArg").object_for_each([this](const std::string& key, const Value& value) -> void{
+    info_.at("defaultArg").const_object_for_each([this](const std::string& key, const Value& value) -> void{
         inputConnectionListDictionary_.emplace(key, ConnectionList());
         bufferMap_.emplace(key, std::make_shared<NewestValueBuffer>(info_.at("defaultArg").at(key)));
     });
@@ -213,11 +212,13 @@ Value OperationBase::collectValues() {
     if (isNull()) { return Value::error(logger::error("OperationBase({})::collectValues() failed. Caller Operation is null.", info())); }
 
     std::lock_guard<std::mutex> lock(argument_mutex_);
-    return Value(info().at("defaultArg").template object_map<std::pair<std::string, Value>>(
+    return Value(info().at("defaultArg").template const_object_map<std::pair<std::string, Value>>(
         [this](const std::string& key, const Value& value) -> std::pair<std::string, Value> {
-        if (!bufferMap_.at(key)->isEmpty()) {
+        
+        /// ここは吟味する必要がある．
+        //if (!bufferMap_.at(key)->isEmpty()) {
             return { key, bufferMap_.at(key)->popRef() };
-        }
+        //}
         for (auto& con : getInputConnectionsByArgName(key)) {
             if (con.isPull()) { 
                 logger::trace(" - pull by connection: {}", con.info());

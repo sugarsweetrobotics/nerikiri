@@ -31,7 +31,7 @@ Value ProcessConfigParser::parseSubProjects(const Value& value, const std::strin
     std::map<std::string, std::string> env_dictionary;
     if (value.hasKey("includes") && value.at("includes").isListValue()) {
         Value retval({});
-        value.at("includes").list_for_each([&env_dictionary, &projectDir, &retval](auto v) {
+        value.at("includes").const_list_for_each([&env_dictionary, &projectDir, &retval](auto v) {
             auto projpath =  v.at("path").stringValue();
             if (projpath.find("/") != 0) {
                 projpath = projectDir + projpath;
@@ -63,7 +63,7 @@ Value ProcessConfigParser::parseShelves(const Value& value, const std::string& p
     std::map<std::string, std::string> env_dictionary;
     if (value.hasKey("shelves") && value.at("shelves").isListValue()) {
     Value retval({});
-    value.at("shelves").list_for_each([&env_dictionary, &projectDir, &retval](auto v) {
+    value.at("shelves").const_list_for_each([&env_dictionary, &projectDir, &retval](auto v) {
         auto shelfpath = v.at("path").stringValue();
         if (shelfpath.find("/") != 0) {
             shelfpath = projectDir + shelfpath;
