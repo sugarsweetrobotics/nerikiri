@@ -490,6 +490,9 @@ void Process::startAsync() {
   _preloadTopics();
   _preloadCallbacksOnStarted();
   if (on_started_) on_started_(this);
+
+
+  system("open -a 'Google Chrome' http://localhost:3000/");
 }
   
 int32_t Process::wait() {
