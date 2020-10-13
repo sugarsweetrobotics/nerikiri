@@ -27,6 +27,15 @@ namespace nerikiri {
         return s;
     }
 
+    inline std::string stringJoin(const std::vector<std::string>& strs, const char sep) {
+        std::string buf;
+        for(int i = 0;i < strs.size();i++) {
+            buf += strs[i];
+            if (i != strs.size()-1) buf += sep;
+        }
+        return buf;
+    }
+
     inline std::vector<std::string> stringSplit(const std::string& str, const char sep=' ') {
         std::vector<std::string> result;
         int i = 0;
@@ -39,5 +48,15 @@ namespace nerikiri {
             result.push_back(str.substr(begin, i-begin));//std::string(begin, pstr));
         } while (0 != str[i++]);
         return result;
+    }
+
+    template<typename T>
+    std::vector<T> vectorSplice(const std::vector<T>& vec, int beginIndex, int endIndex=0) {
+        if (endIndex == 0) { endIndex = vec.size(); }
+        std::vector<T> out_vec;
+        for(int i = beginIndex;i < endIndex;i++) {
+            out_vec.push_back(vec[i]);
+        }
+        return out_vec;
     }
 }

@@ -21,7 +21,10 @@
             "instanceName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080,
-            "baseDir": "${ProjectDirectory}/../systemeditor"
+            "baseDir": "${ProjectDirectory}/../systemeditor",
+            "route": {
+                "/turtlesim/(.*)": "${ProjectDirectory}turtlesim/"
+            }
           }
         ]
     },
@@ -53,7 +56,7 @@
                     "operation": {
                         "fullName": "OpenCVCamera0.ctn:initialize0.ope",
                         "argument":  {
-                            "cameraId": 1,
+                            "cameraId": 0,
                             "width": 320,
                             "height": 240
                         }

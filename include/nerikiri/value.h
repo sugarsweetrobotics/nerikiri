@@ -16,6 +16,7 @@
 ///#include <stdlib.h>
 //#include <iostream>
 
+#include "nerikiri/stringutil.h"
 #include "nerikiri/nerikiri.h"
 
 namespace nerikiri {
@@ -48,6 +49,13 @@ namespace nerikiri {
   class Value {
 
   public:
+    
+    
+
+    
+
+  private:
+
     enum VALUE_TYPE_CODE {
 			  VALUE_TYPE_NULL,
 			  VALUE_TYPE_INT,
@@ -59,8 +67,20 @@ namespace nerikiri {
         VALUE_TYPE_BYTEARRAY,
         VALUE_TYPE_ERROR,
     };
-    
+    VALUE_TYPE_CODE typecode_;
 
+    std::string getTypeString() const {
+      if (isBoolValue()) return "bool";
+      else if (isIntValue()) return "int";
+      else if (isDoubleValue()) return "double";
+      else if (isStringValue()) return "string";
+      else if (isObjectValue()) return "object";
+      else if (isListValue()) return "list";
+      else if (isByteArrayValue()) return "byte";
+      else if (isError()) return "error";
+      return "null";
+    }
+  public:
     bool isBoolValue() const { return typecode_ == VALUE_TYPE_BOOL; }
 
     bool isIntValue() const { return typecode_ == VALUE_TYPE_INT; }
@@ -78,35 +98,56 @@ namespace nerikiri {
     bool isNull() const { return typecode_ == VALUE_TYPE_NULL; }
 
     bool isError() const { return typecode_ == VALUE_TYPE_ERROR; }
-
   private:
-    VALUE_TYPE_CODE typecode_;
-
     union {
       bool boolvalue_;
       int64_t intvalue_;
       double doublevalue_;
-      std::string stringvalue_;
-      std::map<std::string, Value> objectvalue_;
-      std::vector<Value> listvalue_;
-      std::vector<uint8_t> bytevalue_;
+      std::string* stringvalue_;
+      std::vector<Value>* listvalue_;
+      std::vector<uint8_t>* bytevalue_;
+      std::map<std::string, Value>* objectvalue_;
       //uint32_t bytevaluesize_;
-      std::string errormessage_;
+      std::string* errormessage_;
     };
+
     std::shared_ptr<Value> errorMessageValue;
 
+
   public:
-    std::string getTypeString() const {
-      if (isBoolValue()) return "bool";
-      else if (isIntValue()) return "int";
-      else if (isDoubleValue()) return "double";
-      else if (isStringValue()) return "string";
-      else if (isObjectValue()) return "object";
-      else if (isListValue()) return "list";
-      else if (isByteArrayValue()) return "byte";
-      else if (isError()) return "error";
-      return "null";
+    /**
+     * デフォルトコンストラクタ
+     */
+    Value() : typecode_(VALUE_TYPE_NULL), stringvalue_(nullptr) {}
+
+    /**
+     * デストラクタ
+     */
+    virtual ~Value() {
+      this->_clear();
     }
+  private:
+    void _clear() {
+      if (isStringValue()) {
+        delete stringvalue_;
+        stringvalue_ = nullptr;
+      }
+      else if (isListValue()) {
+        delete listvalue_; listvalue_ = nullptr;
+      }
+      else if (isObjectValue()) {
+        delete objectvalue_; objectvalue_ = nullptr;
+      }
+      else if (isError()) {
+        delete errormessage_; errormessage_ = nullptr;
+      }
+      else if (isByteArrayValue()) {
+        delete bytevalue_; bytevalue_ = nullptr;
+      }
+      typecode_ = VALUE_TYPE_NULL;
+    }
+
+  public:
 
     bool boolValue() const;
 
@@ -121,25 +162,21 @@ namespace nerikiri {
     const std::vector<Value>& listValue() const;
 
     const std::vector<uint8_t>& byteArrayValue() const { 
-      return bytevalue_;
+      return *bytevalue_;
     }
 
     const size_t byteArraySize() const {
-      return bytevalue_.size();
+      return (*bytevalue_).size();
     }
 
     std::string getErrorMessage() const { 
-      if (isError()) return errormessage_;
+      if (isError()) return *errormessage_;
       return "";
     }
 
   public:
-    /**
-     * デフォルトコンストラクタ
-     */
-    Value() : typecode_(VALUE_TYPE_NULL) {}
 
-    Value(const VALUE_TYPE_CODE typeCode, const std::string& message) : typecode_(typeCode), errormessage_(message) {}
+    Value(const VALUE_TYPE_CODE typeCode, const std::string& message) : typecode_(typeCode), errormessage_(new std::string(message)) {}
 
     explicit Value(const bool value) : typecode_(VALUE_TYPE_BOOL), boolvalue_(value) {}
 
@@ -155,55 +192,55 @@ namespace nerikiri {
 
     Value(double&& value) : typecode_(VALUE_TYPE_DOUBLE), doublevalue_(std::move(value)) {}
 
-    Value(const std::string& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(value) {}
+    Value(const std::string& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(new std::string(value)) {}
 
-    Value(std::string&& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(std::move(value)) {}
+    Value(std::string&& value) : typecode_(VALUE_TYPE_STRING), stringvalue_(new std::string(std::move(value))) {}
 
-    Value(const char* value) : Value(std::string(value)) {}
+    Value(const char* value) : Value(std::move(std::string(value))) {}
 
-    explicit Value(const std::vector<float>& dbls) : typecode_(VALUE_TYPE_LIST) {
+    explicit Value(const std::vector<float>& dbls) : typecode_(VALUE_TYPE_LIST), listvalue_(new std::vector<Value>()) {
       for(auto v : dbls) {
-        listvalue_.emplace_back(Value((double)v));
+        listvalue_->emplace_back(Value((double)v));
       }
     }
 
-    explicit Value(const std::vector<double>& dbls) : typecode_(VALUE_TYPE_LIST) {
+    explicit Value(const std::vector<double>& dbls) : typecode_(VALUE_TYPE_LIST), listvalue_(new std::vector<Value>()) {
       for(auto v : dbls) {
-        listvalue_.emplace_back(Value(v));
+        listvalue_->emplace_back(Value(v));
       }
     }
 
-    explicit Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST) {
+    explicit Value(const std::vector<bool>& bls) : typecode_(VALUE_TYPE_LIST), listvalue_(new std::vector<Value>()) {
       for(auto v : bls) {
-        listvalue_.emplace_back(Value{v});
+        listvalue_->emplace_back(Value{v});
       }
     }
 
-    Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(value) {}
+    Value(const std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(new std::vector<Value>(value)) {}
 
-    Value(std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(std::move(value)) {}
+    Value(std::vector<Value>& value) : typecode_(VALUE_TYPE_LIST), listvalue_(new std::vector<Value>(std::move(value))) {}
 
-    Value(std::vector<std::pair<std::string, Value>>&& pairs) : typecode_(VALUE_TYPE_OBJECT) {
+    Value(std::vector<std::pair<std::string, Value>>&& pairs) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(new std::map<std::string, Value>()) {
       for(auto &&p : pairs) {
-        objectvalue_.emplace(p.first, p.second);
+        objectvalue_->emplace(p.first, std::move(p.second));
       }
     }
 
-    Value(const std::map<std::string, Value>& map) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(map) {}
+    Value(const std::map<std::string, Value>& map) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(new std::map<std::string, Value>(map)) {}
 
-    Value(std::map<std::string, Value>&& map) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(std::move(map)) {}
+    Value(std::map<std::string, Value>&& map) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(new std::map<std::string, Value>(std::move(map))) {}
 
-    Value(std::initializer_list<std::pair<std::string, Value>>&& vs) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(std::map<std::string, Value>()) {
+    Value(std::initializer_list<std::pair<std::string, Value>>&& vs) : typecode_(VALUE_TYPE_OBJECT), objectvalue_(new std::map<std::string, Value>()) {
       for(auto &p : vs) {
-        objectvalue_[p.first] = p.second;
+        objectvalue_->emplace(p.first, std::move(p.second));
       }
     }
 
-    explicit Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY) {
-      bytevalue_.resize(size);
+    explicit Value(const uint8_t* bytes, const uint32_t size) : typecode_(VALUE_TYPE_BYTEARRAY), bytevalue_(new std::vector<uint8_t>()) {
+      bytevalue_->resize(size);
       //bytevaluesize_ = size;
       for(int i = 0;i < size;i++) {
-        bytevalue_[i] = bytes[i];
+        (*bytevalue_)[i] = bytes[i];
       }
     }
 
@@ -212,24 +249,27 @@ namespace nerikiri {
      * コピーコンストラクタ
      */
     Value(const Value& value): typecode_(value.typecode_) {
-      if (isObjectValue()) {
-        objectvalue_ = std::map<std::string, Value>();
-        objectvalue_ = (value.objectvalue_);
+      if (value.isObjectValue()) {
+        objectvalue_ = new std::map<std::string, Value>((*value.objectvalue_));
       }
-      else if (isBoolValue()) boolvalue_ = (value.boolvalue_);
-      else if (isIntValue()) intvalue_ = (value.intvalue_);
-      else if (isDoubleValue()) doublevalue_ = (value.doublevalue_);
-      else if (isListValue()) {
-        listvalue_ = std::vector<Value>(value.listvalue_);
+      else if (value.isBoolValue()) boolvalue_ = (value.boolvalue_);
+      else if (value.isIntValue()) intvalue_ = (value.intvalue_);
+      else if (value.isDoubleValue()) doublevalue_ = (value.doublevalue_);
+      else if (value.isListValue()) {
+        listvalue_ = new std::vector<Value>(*value.listvalue_);
       }
-      else if (isStringValue()) stringvalue_ = (value.stringvalue_);
-      else if (isByteArrayValue()) {
-        bytevalue_ = std::vector<uint8_t>(value.bytevalue_);
+      else if (value.isStringValue()) {
+        stringvalue_ = new std::string(*value.stringvalue_);
+      } 
+      else if (value.isByteArrayValue()) {
+        bytevalue_ = new std::vector<uint8_t>(*value.bytevalue_);
       }
-      else if (isError()) errormessage_ = (value.errormessage_);
+      else if (value.isError()) {
+        errormessage_ = new std::string(*value.errormessage_);
+      }
       else {
         typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;
-        errormessage_ = "Value::Value(const Value& value) failed. Argument value's typecode is unknown";
+        errormessage_ = new std::string("Value::Value(const Value& value) failed. Argument value's typecode is unknown");
       }
     }
 
@@ -237,33 +277,66 @@ namespace nerikiri {
      * ムーブコンストラクタ
      */
     Value(Value&& value) : typecode_(std::move(value.typecode_)) {
-      if (isBoolValue()) boolvalue_ = std::move(value.boolvalue_);
-      else if (isIntValue()) intvalue_ = std::move(value.intvalue_);
-      else if (isDoubleValue()) doublevalue_ = std::move(value.doublevalue_);
-      else if (isObjectValue()) objectvalue_ = std::move(value.objectvalue_);
-      else if (isListValue()) listvalue_ = std::move(value.listvalue_);
-      else if (isStringValue()) stringvalue_ = std::move(value.stringvalue_);
-      else if (isByteArrayValue()) bytevalue_ = std::move(value.bytevalue_);
-      else if (isError()) errormessage_ = std::move(value.errormessage_);
+      if (value.isBoolValue()) boolvalue_ = std::move(value.boolvalue_);
+      else if (value.isIntValue()) intvalue_ = std::move(value.intvalue_);
+      else if (value.isDoubleValue()) doublevalue_ = std::move(value.doublevalue_);
+      else if (value.isObjectValue()) {
+        objectvalue_ = std::move(value.objectvalue_);
+        value.objectvalue_ = nullptr;
+        value.typecode_ = VALUE_TYPE_NULL;
+      }
+      else if (value.isListValue()) {
+        listvalue_ = std::move(value.listvalue_);
+        value.listvalue_ = nullptr;
+        value.typecode_ = VALUE_TYPE_NULL;
+      }
+      else if (value.isStringValue()) {
+        stringvalue_ = std::move(value.stringvalue_);
+        value.stringvalue_ = nullptr;
+        value.typecode_ = VALUE_TYPE_NULL;
+      }
+      else if (value.isByteArrayValue()) {
+        bytevalue_ = std::move(value.bytevalue_);
+        value.bytevalue_ = nullptr;
+        value.typecode_ = VALUE_TYPE_NULL;
+      }
+      else if (value.isError()) {
+        errormessage_ = std::move(value.errormessage_);
+        value.errormessage_ = nullptr;
+        value.typecode_ = VALUE_TYPE_NULL;
+      }
       else {
         typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;
-        errormessage_ = "Value::Value(const Value& value) failed. Argument value's typecode is unknown";
+        errormessage_ = new std::string("Value::Value(const Value& value) failed. Argument value's typecode is unknown");
+        return;
       }
+
+      value.typecode_ = VALUE_TYPE_NULL;
     }
 
     Value& operator=(const Value& value) {
       typecode_ = value.typecode_;
-      if (isObjectValue()) objectvalue_ = (value.objectvalue_);
+      if (isObjectValue()) {
+        objectvalue_ = new std::map<std::string, Value>(*value.objectvalue_);
+      }
       else if (isBoolValue()) boolvalue_ = (value.boolvalue_);
       else if (isIntValue()) intvalue_ = (value.intvalue_);
       else if (isDoubleValue()) doublevalue_ = (value.doublevalue_);
-      else if (isListValue()) listvalue_ = (value.listvalue_);
-      else if (isStringValue()) stringvalue_ = (value.stringvalue_);
-      else if (isByteArrayValue()) bytevalue_ = (value.bytevalue_);
-      else if (isError()) errormessage_ = (value.errormessage_);
+      else if (isListValue()) {
+        listvalue_ = new std::vector<Value>(*value.listvalue_);
+      }
+      else if (isStringValue()) {
+        stringvalue_ = new std::string(*value.stringvalue_);
+      }
+      else if (isByteArrayValue()) {
+        bytevalue_ = new std::vector<uint8_t>(*value.bytevalue_);
+      }
+      else if (isError()) {
+        errormessage_ = new std::string(*value.errormessage_);
+      }
       else {
         typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;
-        errormessage_ = "Value::Value(const Value& value) failed. Argument value's typecode is unknown";
+        errormessage_ = new std::string("Value::Value(const Value& value) failed. Argument value's typecode is unknown");
       }
       return *this;
     }
@@ -280,16 +353,12 @@ namespace nerikiri {
       else if (isError()) errormessage_ = std::move(value.errormessage_);
       else {
         typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;
-        errormessage_ = "Value::Value(const Value& value) failed. Argument value's typecode is unknown";
+        errormessage_ = new std::string("Value::Value(const Value& value) failed. Argument value's typecode is unknown");
       }
+      value.typecode_ = VALUE_TYPE_NULL;
       return *this;
     }
 
-
-    /**
-     * デストラクタ
-     */
-    virtual ~Value() {}
 
   public:
     static Value error(const std::string& msg);
@@ -299,33 +368,24 @@ namespace nerikiri {
     static Value object();
   private:
     
-    void _clear() {
-      if (isObjectValue()) objectvalue_.clear();
-      else if (isListValue()) listvalue_.clear();
-      else if (isByteArrayValue()) {
-        bytevalue_.clear(); //bytevaluesize_ = 0;
-      }
-      typecode_ = VALUE_TYPE_NULL;
-    }
+    
     
   public:
-  
-    
     bool hasKey(const std::string& key) const {
       if (!isObjectValue()) return false;
-      return (objectvalue_.count(key) != 0);
+      return (objectvalue_->count(key) != 0);
     }
 
     void object_for_each(const std::function<void(const std::string&, Value&)>& func) {
       if (!isObjectValue()) return;
-      for(auto& [k, v] : objectvalue_) {
+      for(auto& [k, v] : *objectvalue_) {
           func(k, v);
       }
     }
     
     void const_object_for_each(const std::function<void(const std::string&, const Value&)>& func) const {
       if (!isObjectValue()) return;
-      for(const auto& [k, v] : objectvalue_) {
+      for(const auto& [k, v] : *objectvalue_) {
           func(k, v);
       }
     }
@@ -334,7 +394,7 @@ namespace nerikiri {
     std::vector<T> object_map(const std::function<T(const std::string&, Value&)>& func) {
       std::vector<T> r;
       if (!isObjectValue()) return r;
-      for(auto& [k, v] : objectvalue_) {
+      for(auto& [k, v] : *objectvalue_) {
         r.emplace_back(func(k, v));
       }
       return r;
@@ -344,7 +404,7 @@ namespace nerikiri {
     std::vector<T> const_object_map(const std::function<T(const std::string&, const Value&)>& func) const {
       if (!isObjectValue()) return {};
       std::vector<T> r;
-      for(const auto& [k, v] : objectvalue_) {
+      for(const auto& [k, v] : *objectvalue_) {
         r.emplace_back(func(k, v));
       }
       return r;
@@ -352,14 +412,14 @@ namespace nerikiri {
 
     void list_for_each(const std::function<void(Value&)>& func) {
       if (!isListValue()) return;
-      for(auto& v: listvalue_) {
+      for(auto& v: *listvalue_) {
           func(v);
       }
     }
 
     void const_list_for_each(const std::function<void(const Value&)>& func) const {
       if (!isListValue()) return;
-      for(const auto& v: listvalue_) {
+      for(const auto& v: *listvalue_) {
           func(v);
       }
     }
@@ -368,7 +428,7 @@ namespace nerikiri {
     std::vector<T> list_map(const std::function<T(Value&)>& func) {
       std::vector<T> r;
       if (!isListValue()) return r;
-      for(auto&  v : listvalue_) {
+      for(auto&  v : *listvalue_) {
         r.emplace_back(func(v));
       }
       return r;
@@ -378,7 +438,7 @@ namespace nerikiri {
     std::vector<T> const_list_map(const std::function<T(const Value&)>& func) const {
       std::vector<T> r;
       if (!isListValue()) return r;
-      for(auto&  v : listvalue_) {
+      for(auto&  v : *listvalue_) {
         r.push_back(func(v));
       }
       return r;
@@ -386,14 +446,14 @@ namespace nerikiri {
 
     Value& operator[](const std::string& key) {
       typecode_ = VALUE_TYPE_OBJECT;
-      return objectvalue_[key];
+      return (*objectvalue_)[key];
     }
 
     Value operator[](const int key) {
       if (!isListValue()) {
         return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But value is " + getTypeString() + " type.");
       }
-      if (listvalue_.size() <= key) {
+      if ((*listvalue_).size() <= key) {
         return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But list out of bounds.");
       } 
       return listvalue_[key];
@@ -406,33 +466,44 @@ namespace nerikiri {
       if (!isObjectValue()) {
         throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But value type is " + this->getTypeString());
       }
-      if (objectvalue_.count(key) == 0) {
+      if (objectvalue_->count(key) == 0) {
         throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But key (" + key + ") is not included.");
       }
-      return objectvalue_.at(key);
+      return objectvalue_->at(key);
     }
 
     Value& emplace(std::pair<std::string, Value>&& v) {
-      typecode_ = VALUE_TYPE_OBJECT;
-      listvalue_.clear();
-      bytevalue_.clear();
-      objectvalue_.emplace(std::move(v));
+      if (typecode_ == VALUE_TYPE_OBJECT) {
+//      listvalue_->clear();
+//      bytevalue_->clear();
+        objectvalue_->emplace(std::move(v));
+      } else {
+        _clear();
+        this->typecode_ = VALUE_TYPE_ERROR;
+        errormessage_ = new std::string("Value::emplace(std::pair<std::string, Value>&&) failed.");
+      }
       return *this;
     }
 
     Value& push_back(const Value& str) {
-      typecode_ = VALUE_TYPE_LIST;
-      objectvalue_.clear();
-      bytevalue_.clear();
-      listvalue_.push_back(str);
+      if (typecode_ == VALUE_TYPE_LIST) {
+        listvalue_->push_back(str);
+      } else {
+        _clear();
+        this->typecode_ = VALUE_TYPE_ERROR;
+        errormessage_ = new std::string("Value::push_back(const Value&) failed.");
+      }
       return *this;
     }
 
     Value& emplace_back(Value&& val) {
-      typecode_ = VALUE_TYPE_LIST;
-      objectvalue_.clear();
-      bytevalue_.clear();
-      listvalue_.emplace_back(std::move(val));
+      if (typecode_ == VALUE_TYPE_LIST) {
+        listvalue_->emplace_back(str);
+      } else {
+        _clear();
+        this->typecode_ = VALUE_TYPE_ERROR;
+        errormessage_ = new std::string("Value::emplace_back(const Value&) failed.");
+      }
       return *this;
     }
      
@@ -443,22 +514,22 @@ namespace nerikiri {
       else if (isDoubleValue()) return doubleValue() == v2.doubleValue();
       else if (isBoolValue()) return boolValue() == v2.boolValue();
       else if (isListValue()) {
-        if (listvalue_.size() != v2.listvalue_.size()) return false;
-        for(size_t i = 0;i < listvalue_.size();i++) {
-          if(listvalue_[i] != v2.listvalue_[i]) return false;
+        if (listvalue_->size() != v2.listvalue_->size()) return false;
+        for(size_t i = 0;i < listvalue_->size();i++) {
+          if((*listvalue_)[i] != (*v2.listvalue_)[i]) return false;
         }
         return true;
       }
       else if (isObjectValue()) {
-        if (objectvalue_.size() != v2.objectvalue_.size()) return false;
-        for(const auto& [k, v] : objectvalue_) {
-          if (v != v2.objectvalue_.at(k)) return false;
+        if (objectvalue_->size() != v2.objectvalue_->size()) return false;
+        for(const auto& [k, v] : *objectvalue_) {
+          if (v != (*v2.objectvalue_).at(k)) return false;
         }
         return true;
       }
       else if (isByteArrayValue()) {
-        if (bytevalue_.size() != v2.bytevalue_.size()) return false;
-        for(size_t i = 0;i < bytevalue_.size();i++) {
+        if (bytevalue_->size() != v2.bytevalue_->size()) return false;
+        for(size_t i = 0;i < bytevalue_->size();i++) {
           if(bytevalue_[i] != v2.bytevalue_[i]) return false;
         }
         return true;
@@ -477,13 +548,13 @@ namespace nerikiri {
 #endif
   };
 
-
+/*
   class value_pair : public std::pair<std::string, Value> {
   public:
     value_pair(const char* c, Value&& v): std::pair<std::string, Value>(c, std::move(v)) {}
     value_pair(const char* c, const int64_t v): value_pair(c, Value(v)) {}
 
-  };
+  };*/
 
 
   inline Value errorValue(const std::string& msg) {
@@ -526,6 +597,34 @@ inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::strin
     if (v.isError()) return _default;
     if (v.isIntValue()) return v.intValue();
     return _default;
+  }
+
+  inline const Value &getObjectValue(const Value& v, const std::string& key, const Value& defaultVal = {}) {
+    auto keys = stringSplit(key, '.');
+    if (keys.size() == 0) return defaultVal;
+    if (keys.size() == 1) {
+      if (v.hasKey(key)) {
+        return v.at(key);
+      }
+    }
+    if (v.hasKey(keys[0])) {
+      return getObjectValue(v.at(keys[0]), stringJoin(vectorSplice(keys, 1), '.'), defaultVal);
+    }
+    return defaultVal;
+  }
+
+  inline const Value &getListValue(const Value& v, const std::string& key, const Value& defaultVal = Value::list()) {
+    auto keys = stringSplit(key, '.');
+    if (keys.size() == 0) return defaultVal;
+    if (keys.size() == 1) {
+      if (v.hasKey(key)) {
+        return v.at(key);
+      }
+    }
+    if (v.hasKey(keys[0])) {
+      return getObjectValue(v.at(keys[0]), stringJoin(vectorSplice(keys, 1), '.'), defaultVal);
+    }
+    return defaultVal;
   }
 
 } // namespace nerikiri

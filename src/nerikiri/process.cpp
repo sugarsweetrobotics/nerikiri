@@ -1,4 +1,4 @@
-#include <sstream>
+ #include <sstream>
 #include <iostream>
 
 
@@ -28,7 +28,7 @@ Value defaultProcessConfig({
     {"preload", Value::list()}
   }},
   {"containers", {
-    {"preload", Value::object()}
+    {"preload", Value::list()}
   }},
   {"containerOperations", {
     {"preload", Value::list()}
@@ -319,10 +319,15 @@ void Process::_preStartExecutionContexts() {
 
   logger::trace("Process::_preStartExecutionContexts()");
   try {
+    nerikiri::getListValue(config_, "ecs.start").const_list_for_each([this](const auto& value) {
+      this->store()->getExecutionContext(value.stringValue())->start();
+    });
+    /*
     auto c = config_.at("ecs").at("start");
     c.list_for_each([this](auto& value) {
       this->store()->getExecutionContext(value.stringValue())->start();
     });
+    */
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadOperations(). ValueTypeException:{}", e.what());
   }
@@ -374,16 +379,30 @@ void Process::_preloadTopics() {
   try {
     auto operationCallback = [this](const Value& opInfo) -> void {
       logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
+      getListValue(opInfo, "publish").const_list_for_each([this, &opInfo](auto v) {
+        ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
+         {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+      });
+      /*
       opInfo.at("publish").const_list_for_each([this, &opInfo](auto v) {
         ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
          {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
       });
+      */
+      getObjectValue(opInfo, "subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
+        v.list_for_each([this, &opInfo, key](auto sv) {
+          ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
+           {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+        });
+      });
+      /*
       opInfo.at("subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
         v.list_for_each([this, &opInfo, key](auto sv) {
           ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
            {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
         });
       });
+      */
     };
 
     store()->getOperationInfos().const_list_for_each(operationCallback);

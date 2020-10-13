@@ -40,20 +40,20 @@ double Value::doubleValue() const {
 }
 
 const std::string& Value::stringValue() const {
-  if (isStringValue()) return stringvalue_;
+  if (isStringValue()) return *stringvalue_;
   if (isError()) throw ValueTypeError(std::string("trying string value acecss. actual Error(") + getErrorMessage() + ")");
 
   throw ValueTypeError(std::string("trying string value acecss. actual ") + getTypeString());
 }
 
 const std::map<std::string, Value>& Value::objectValue() const {
-  if (isObjectValue()) return objectvalue_;
+  if (isObjectValue()) return *objectvalue_;
   if (isError()) throw ValueTypeError(std::string("trying object value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying object value acecss. actual ") + getTypeString());
 }
 
 const std::vector<Value>& Value::listValue() const {
-  if (isListValue()) return listvalue_;
+  if (isListValue()) return *listvalue_;
   if (isError()) throw ValueTypeError(std::string("trying list value acecss. actual Error(") + getErrorMessage() + ")");
   throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
@@ -63,10 +63,10 @@ const std::vector<Value>& Value::listValue() const {
 Value nerikiri::merge(const Value& v1, const Value& v2) {
     if((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_LIST)) {
       std::vector<Value> result;
-      result.insert(result.end(), v2.listvalue_.begin(), v2.listvalue_.end());
-      for(auto& v : v1.listvalue_) {
+      result.insert(result.end(), v2.listvalue_->begin(), v2.listvalue_->end());
+      for(auto& v : *v1.listvalue_) {
         bool match = false;
-        for(auto& v2 : v2.listvalue_) {
+        for(auto& v2 : *v2.listvalue_) {
           if (v2 == v) match = true;
         }
         if (!match) {
@@ -75,17 +75,17 @@ Value nerikiri::merge(const Value& v1, const Value& v2) {
       }
       return {result};
     } else if ((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_OBJECT)) {
-      Value rvalue;
-      rvalue.typecode_ = Value::VALUE_TYPE_OBJECT;
-      for(auto& [key, value] : v2.objectvalue_) {
-        if (v1.objectvalue_.count(key) > 0) {
+      auto rvalue = Value::object();
+      //rvalue.typecode_ = Value::VALUE_TYPE_OBJECT;
+      for(auto& [key, value] : *v2.objectvalue_) {
+        if (v1.objectvalue_->count(key) > 0) {
           rvalue[key] = merge(v1.at(key), v2.at(key));
         } else {
           rvalue[key] = value;
         }
       }
-      for(auto& [key, value] : v1.objectvalue_) {
-        if (v2.objectvalue_.count(key) == 0) {
+      for(auto& [key, value] : *v1.objectvalue_) {
+        if (v2.objectvalue_->count(key) == 0) {
           rvalue[key] = value;
         }
       }
