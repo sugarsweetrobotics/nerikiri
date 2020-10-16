@@ -20,6 +20,8 @@
 #define NK_OPERATION
 #endif
 
+#include <string>
+using TypeName = std::string;
 
 //#include "nerikiri/process.h"
 //#include "nerikiri/operation.h"

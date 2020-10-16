@@ -36,6 +36,17 @@ namespace nerikiri {
         return buf;
     }
 
+    inline std::string stringJoin(std::vector<std::string>::iterator starts, const std::vector<std::string>::const_iterator& ends, const char sep) {
+        std::string buf;
+        while(true) {
+            buf += *starts;
+            ++starts;
+            if (starts == ends) break;
+            buf += sep;
+        }
+        return buf;
+    }
+
     inline std::vector<std::string> stringSplit(const std::string& str, const char sep=' ') {
         std::vector<std::string> result;
         int i = 0;
