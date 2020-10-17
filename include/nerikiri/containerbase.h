@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "nerikiri/value.h"
-#include "nerikiri/object.h"
+#include "nerikiri/container_api.h"
 
 #include "nerikiri/containeroperationbase.h"
 #include "nerikiri/containerfactorybase.h"
@@ -16,7 +16,7 @@ namespace nerikiri {
      * 
      * Containerの元になるクラス．メンバーOperationの管理などを担う
      */
-    class ContainerBase : public Object {
+    class ContainerBase : public ContainerAPI {
     protected:
         std::string type_;
         std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
@@ -28,12 +28,12 @@ namespace nerikiri {
         /**
          * コンストラクタ．Nullコンテナができます
          */
-        ContainerBase() : Object(), parentFactory_(nullptr), type_("NullContainer") {}
+        ContainerBase() : ContainerAPI(), parentFactory_(nullptr), type_("NullContainer") {}
 
         /**
          * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
          */
-        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const Value& info) :  parentFactory_(parentFactory), type_(typeName), Object(info) {}
+        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const Value& info) :  parentFactory_(parentFactory), type_(typeName), ContainerAPI(info) {}
 
         /**
          * デストラクタ
@@ -102,6 +102,17 @@ namespace nerikiri {
          */
         std::vector<std::shared_ptr<ContainerOperationBase>> getOperations() const {
             return operations_;
+        }
+
+        virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { 
+            return {operations_.begin(), operations_.end()};
+            //return operations_;
+        }
+
+        virtual std::shared_ptr<OperationAPI> operation(const std::string& fullName) const override {
+            auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
+            if (op) return op.value();;
+            return std::make_shared<NullOperation>();
         }
 
         /**

@@ -15,70 +15,84 @@ using namespace nerikiri;
 Value CoreBroker::getProcessInfo() const{ return process_->info(); }
 
 Value CoreBroker::getOperationInfos() const {
-    return process_->store()->getOperationInfos();
+    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](const auto& op) -> Value { return op->info(); });
 }
 
 Value CoreBroker::getAllOperationInfos() const {
-    return process_->store()->getAllOperationInfos();
+    //return process_->store()->getAllOperationInfos();
+    return getOperationInfos();
 }
 
 Value CoreBroker::getContainerInfos() const {
-    return process_->store()->getContainerInfos();
+    //return process_->store()->getContainerInfos();
+    return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->containers(), [](const auto& c) { return c->info(); });
 }
 
 Value CoreBroker::getContainerInfo(const std::string& fullName) const {
-    return process_->store()->getContainer(fullName)->info();
+    return process_->store()->container(fullName)->info();
+    //return process_->store()->getContainer(fullName)->info();
 }
 
 Value CoreBroker::getContainerOperationInfos(const std::string& fullName) const {
-    return process_->store()->getContainer(fullName)->getOperationInfos();
+    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->container(fullName)->operations(), [](auto op) { return op->info(); });
+    //return process_->store()->getContainer(fullName)->getOperationInfos();
 }
 
 Value CoreBroker::getContainerOperationInfo(const std::string& fullName) const {
-    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
-    return process_->store()->getContainer(containerName)->getOperation(operationName)->info();
+    return process_->store()->operation(fullName)->info();
+    //auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    //return process_->store()->getContainer(containerName)->getOperation(operationName)->info();
 }
 
 Value CoreBroker::getOperationInfo(const std::string& fullName) const {
-    return process_->store()->getAllOperation(fullName)->info();
+    //return process_->store()->getAllOperation(fullName)->info();
+    return process_->store()->container(fullName)->info();
 }
 
 Value CoreBroker::callContainerOperation(const std::string& fullName, const Value& arg) {
-    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
-    return process_->store()->getContainer(containerName)->getOperation(operationName)->call(std::move(arg));
+    return process_->store()->operation(fullName)->call(arg);
+    //auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    //return process_->store()->getContainer(containerName)->getOperation(operationName)->call(std::move(arg));
+    //return process_->store()->container(containerName)->operation(operationName)->call(std::move(arg));
 }
 
 Value CoreBroker::invokeContainerOperation(const std::string& fullName) const {
-    auto [containerName, operationName] = splitContainerAndOperationName(fullName);
-    return process_->store()->getContainer(containerName)->getOperation(operationName)->invoke();
+    return process_->store()->operation(fullName)->invoke();
+    //auto [containerName, operationName] = splitContainerAndOperationName(fullName);
+    //return process_->store()->getContainer(containerName)->getOperation(operationName)->invoke();
 }
 
 Value CoreBroker::callOperation(const std::string& fullName, const Value& value) {
-    return process_->store()->getAllOperation(fullName)->call(std::move(value));
+    return process_->store()->operation(fullName)->call(value);
 }
 
 Value CoreBroker::invokeOperation(const std::string& fullName) const {
-    return process_->store()->getAllOperation(fullName)->invoke();
+    //return process_->store()->getAllOperation(fullName)->invoke();
+    return process_->store()->operation(fullName)->invoke();
 }
 
 Value CoreBroker::executeOperation(const std::string& fullName) {
-    logger::trace("CoreBroker::executeOperation({})", fullName);
-    return process_->store()->getAllOperation(fullName)->execute();
+    //logger::trace("CoreBroker::executeOperation({})", fullName);
+    //return process_->store()->getAllOperation(fullName)->execute();
+    return process_->store()->operation(fullName)->execute();
 }
 
 
 Value CoreBroker::callAllOperation(const std::string& fullName, const Value& value) {
-    return process_->store()->getAllOperation(fullName)->call(std::move(value));
+    //return process_->store()->getAllOperation(fullName)->call(std::move(value));
+    return process_->store()->operation(fullName)->call(value);
 }
 
 Value CoreBroker::invokeAllOperation(const std::string& fullName) const {
     logger::trace("CoreBroker::invokeAllOperation({})", fullName);
-    return process_->store()->getAllOperation(fullName)->invoke();
+    //return process_->store()->getAllOperation(fullName)->invoke();
+    return process_->store()->operation(fullName)->invoke();
 }
 
 Value CoreBroker::executeAllOperation(const std::string& fullName) {
     logger::trace("CoreBroker::executeAllOperation({})", fullName);
-    return process_->store()->getAllOperation(fullName)->execute();
+    //return process_->store()->getAllOperation(fullName)->execute();
+    return process_->store()->operation(fullName)->execute();
 }
 
 

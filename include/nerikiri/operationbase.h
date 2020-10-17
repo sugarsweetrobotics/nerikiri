@@ -41,7 +41,7 @@ namespace nerikiri {
 
 
 
-  class OperationBase : public Object, public OperationAPI {
+  class OperationBase : public OperationAPI {
   protected:
       ConnectionList outputConnectionList_;
       ConnectionListDictionary inputConnectionListDictionary_;
@@ -53,7 +53,7 @@ namespace nerikiri {
   public:
 
   public:
-      OperationBase() : Object(), argument_updated_(true) {}
+      OperationBase() : argument_updated_(true) {}
 
       OperationBase(const OperationBase& op);
 
@@ -65,7 +65,7 @@ namespace nerikiri {
           //logger::trace("Operation copy");
           //process_ = op.process_;
           info_ = op.info_;
-          is_null_ = op.is_null_;
+          ///is_null_ = op.is_null_;
           outputConnectionList_ = op.outputConnectionList_;
           inputConnectionListDictionary_ = op.inputConnectionListDictionary_;
           bufferMap_ = op.bufferMap_;
@@ -119,7 +119,7 @@ namespace nerikiri {
 
     bool hasOutputConnectionName(const ConnectionInfo& ci) const;
 
-    Value invoke();
+    virtual Value invoke() override;
 
     Value push(const Value& ci, Value&& value);
     

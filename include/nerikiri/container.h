@@ -27,7 +27,8 @@ namespace nerikiri {
     public:
         Container(ContainerFactoryBase* parentFactory, const Value& info): ContainerBase(parentFactory, demangle(typeid(T).name()), info), _ptr(std::make_shared<T>()) {
             if (!containerNameValidator(info.at("typeName").stringValue())) {
-                is_null_ = true;
+                //is_null_ = true;
+                _setNull();
             }
         }
         virtual ~Container() {}

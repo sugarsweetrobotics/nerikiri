@@ -8,7 +8,7 @@
 namespace nerikiri {
 
 
-  std::pair<std::string, std::string> separateNamespaceAndInstanceName(const std::string& fullName) {
+  inline std::pair<std::string, std::string> separateNamespaceAndInstanceName(const std::string& fullName) {
     auto tokens = nerikiri::stringSplit(fullName, ':');
     return {stringJoin(tokens.begin(), tokens.end()-1, ':'), tokens[tokens.size()-1]};
   }
@@ -38,24 +38,28 @@ namespace nerikiri {
 
   public:
 
-    TypeName getTypeName() const { 
+    TypeName typeName() const { 
       return info_.at("typeName").stringValue();
     }
 
-    virtual bool isInstanceOf(const TypeName& typeName) const { 
-      return(getTypeName() == typeName);
+
+
+    virtual bool isInstanceOf(const TypeName& _typeName) const { 
+      return(typeName() == _typeName);
     }
     
-    bool isNull() const { return getTypeName() == "null"; }
+    bool isNull() const { return typeName() == "null"; }
 
 
-    std::string getFullName() const { 
+    std::string fullName() const { 
       if (info_.objectValue().count("fullName") == 0) { return ""; }
       else if (!info_.at("fullName").isStringValue()) { 
         return ""; 
       }
       return info_.at("fullName").stringValue();
     }
+
+    std::string getFullName() const { return fullName(); }
 
     virtual Value setFullName(const std::string& nameSpace, const std::string& name) {
       info_["instanceName"] = name;
@@ -71,15 +75,18 @@ namespace nerikiri {
       return info_;
     }  
     
-    std::string getInstanceName() const { 
+    std::string instanceName() const { 
       return info_.at("instanceName").stringValue();
+    }
+
+    std::string getInstanceName() const { return instanceName();
     }
 
   protected:
     Value info_;
 
   protected: 
-    void _setNull() { info_["typeName"] == "null"; }
+    void _setNull() { info_["typeName"] = "null"; }
 
   public:
     Value info() const { return info_; };
@@ -91,10 +98,12 @@ namespace nerikiri {
       return info_;
     }
 
-    std::string getState() const { 
-      return info_.at("state").stringValue();
+    std::string getState() const { return state();
     }
 
+    std::string state() const { 
+      return info_.at("state").stringValue();
+    }
 
 
 

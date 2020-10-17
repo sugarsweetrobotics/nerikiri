@@ -195,11 +195,41 @@ namespace nerikiri {
       return getAllOperation(info.at("fullName").stringValue());
     }
 
+    
+
     ProcessStore& addOperationFactory(const std::shared_ptr<OperationFactory>& opf);
     std::shared_ptr<OperationFactory> getOperationFactory(const Value& info);
     
     Value addConnection(Connection_ptr con);
     Value getConnectionInfos() const ;
+
+    std::vector<std::shared_ptr<OperationAPI>> operations() const {
+      std::vector<std::shared_ptr<OperationAPI>> ops(operations_.begin(), operations_.end());
+      for(auto& c : containers_) {
+        auto cops = c->operations();
+        for(auto& cop : cops) {
+          ops.push_back(cop);
+        }
+      }
+      return ops;
+    }
+
+    std::shared_ptr<OperationAPI> operation(const std::string& fullName) const { 
+      auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
+      if (op) return op.value();;
+      return std::make_shared<NullOperation>();
+    }
+
+    std::vector<std::shared_ptr<ContainerAPI>> containers() const {
+      std::vector<std::shared_ptr<ContainerAPI>> cs(containers_.begin(), containers_.end());
+      return cs;
+    }
+
+    std::shared_ptr<ContainerAPI> container(const std::string& fullName) const { 
+      auto op = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containers(), [&fullName](auto op) { return op->fullName() == fullName; });
+      if (op) return op.value();;
+      return std::make_shared<NullContainer>();
+    }
 
     Value addContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryBase>& cof);
 

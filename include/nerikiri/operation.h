@@ -16,7 +16,6 @@ namespace nerikiri {
     
   public:
     Operation(): OperationBase(), function_(nullptr) {
-
     }
 
     Operation(Value&& info) : OperationBase(std::move(info)), function_(nullptr) {

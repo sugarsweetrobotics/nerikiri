@@ -8,10 +8,11 @@ using namespace nerikiri;
 
 
 OperationBase::OperationBase(const Value& info):
-    Object(info), argument_updated_(true) {
+    OperationAPI(info), argument_updated_(true) {
     //logger::trace("OperationBase::OperationBase({})", str(info));
     if (!operationValidator(info_)) {
-        is_null_ = true;//logger::error("OperationInformation is invalid.");
+        //is_null_ = true;//logger::error("OperationInformation is invalid.");
+        _setNull();
     } else {
     info_.at("defaultArg").const_object_for_each([this](const std::string& key, const Value& value) -> void{
         inputConnectionListDictionary_.emplace(key, ConnectionList());
@@ -20,7 +21,7 @@ OperationBase::OperationBase(const Value& info):
     }
 }
 
-OperationBase::OperationBase(const OperationBase& op): /*process_(op.process_),*/ Object(op.info_),
+OperationBase::OperationBase(const OperationBase& op): /*process_(op.process_),*/ OperationAPI(op.info_),
   outputConnectionList_(op.outputConnectionList_), 
   inputConnectionListDictionary_(op.inputConnectionListDictionary_), 
   bufferMap_(op.bufferMap_), argument_updated_(op.argument_updated_) {

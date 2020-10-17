@@ -127,4 +127,30 @@ namespace nerikiri {
     return acc;
   }
 
+
+  namespace functional {
+
+
+    template<typename T, typename V>
+    std::vector<T> map(const std::vector<V>& vec, std::function<T(const V&)> func) {
+      std::vector<T> ret;
+      for(const auto& v : vec) {
+        ret.emplace_back(func(v));
+      }
+      return ret;
+    }
+
+    template<typename V>
+    std::optional<V> find(const std::vector<V>& vec, std::function<bool(const V&)> filter) {
+      for(auto& v : vec) {
+        if (filter(v)) {
+          return v;
+        }
+      }
+      return std::nullopt;
+    }
+
+
+
+  }
 }
