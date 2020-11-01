@@ -25,7 +25,7 @@ endfunction(add_broker)
 
 
 add_broker(HTTPBroker
-  SRCS httpbroker.cpp http_client_cpphttplib.cpp http_server_cpphttplib.cpp
+  SRCS http_broker.cpp http_broker_proxy.cpp http_client_cpphttplib.cpp http_server_cpphttplib.cpp
 )
 
 install(TARGETS HTTPBroker DESTINATION share/nerikiri/brokers)

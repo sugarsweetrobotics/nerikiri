@@ -12,22 +12,16 @@ using namespace nerikiri;
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("Process::createOperation({})", (info));
-  auto f = store.getOperationFactory(info);
-  if (!f) {
-    return Value::error(logger::error("createOperation failed. Can not find appropreate operation factory."));
-  }
-  logger::info("Creating Operation({})", (info));
-  return store.addOperation(f->create(info));
+  return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(Value::string(info.at("fullName"))));
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("Process::createContainer({})", (info));
-  auto f = store.getContainerFactory(info);
-  if (!f) {
-    return Value::error(logger::error("createContainer failed. Can not find appropreate container factory."));
-  }
-  logger::info("Creating Container({})", (info));
-  return store.addContainer(f->create(info));
+  auto c = store.containerFactory(Value::string(info.at("typeName")))->create(Value::string(info.at("fullName")));
+  info.at("operations").const_list_for_each([&store, &c](auto& value) {
+    store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, Value::string(value.at("fullName"))));
+  });
+  return store.addContainer(c);
 }
 
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& ci) {
@@ -43,23 +37,17 @@ std::shared_ptr<BrokerAPI>  ObjectFactory::createBrokerProxy(ProcessStore& store
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {
   logger::debug("ObjectFactory::createExecutionContext({})", value);
-  auto f = store.getExecutionContextFactory(value);
-  if (!f) {
-    return Value::error(logger::error("createExecutionContext failed. Can not find appropreate execution context factory."));
-  }
-  logger::info("Creating Execution Context({})", (value));
-  return store.addExecutionContext(f->create(value));
+  return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(Value::string(value.at("fullName"))));
 }
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   logger::debug("ObjectFactory::createTopic({})", topicInfo);
-  return store.addTopic(store.getTopicFactory(topicInfo)->create(topicInfo));
-  //return Value::error(logger::error("Creating Topic Failed: {}", topicInfo));
+  return store.addTopic(store.topicFactory(Value::string("typeName"))->create(Value::string(topicInfo.at("fullName"))));
 }
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
   logger::debug("ObjectFactory::createFSM({})", fsmInfo);
-  return store.addFSM(store.getFSMFactory(fsmInfo)->create(fsmInfo));
+  return store.addFSM(store.fsmFactory(Value::string(fsmInfo.at("typeName")))->create(Value::string(fsmInfo.at("fullName"))));
 }
 
 Value ObjectFactory::deleteOperation(ProcessStore& store, const std::string& fullName)  {
@@ -71,7 +59,7 @@ Value ObjectFactory::deleteContainer(ProcessStore& store, const std::string& ful
 }
         
 Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const std::string& fullName) {
-  return store.deleteExecutionContext(fullName);
+  return store.deleteEC(fullName);
 }
 
 Value ObjectFactory::deleteFSM(ProcessStore& store, const std::string& fullName)  {

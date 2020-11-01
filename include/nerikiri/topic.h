@@ -1,70 +1,68 @@
 #pragma once
 
-#include "nerikiri/operationbase.h"
+#include <nerikiri/operation_base.h>
 
 
 namespace nerikiri {
 
-    class Topic : public OperationBase {
+    using TopicBase = OperationBase;
 
+    class Topic : public TopicBase {
     public:
-        Topic() : OperationBase() {} // NullTopic
-        Topic(const Value& config) : OperationBase(config) {}
+        Topic(const std::string& _fullName, const Value& defaultArgs = {}): OperationBase("Topic", "Topic", _fullName, defaultArgs) {}
         virtual ~Topic() {}
     public:
         virtual Value call(const Value& value) override {
-            //std::lock_guard<std::mutex> lock(mutex_);
-            bool flag = false;
-            argument_mutex_.lock();
-            flag = argument_updated_;
-            argument_mutex_.unlock();
-            if (flag) {
-                if (value.hasKey("data"))
-                    outputBuffer_.push(value.at("data"));
-                argument_mutex_.lock();
-                argument_updated_ = false;
-                argument_mutex_.unlock();
-            } else {
-               // std::cout << "memorized output" << std::endl;
-            }
-            return getOutput();
+          return value.at("data");
+        }
+    };
+
+    class NullTopic : public TopicBase {
+    public:
+        NullTopic(): OperationBase("NullTopic", "NullTopic", "null") {}
+        virtual ~NullTopic() {}
+    public:
+        virtual Value call(const Value& value) override {
+          return Value::error(logger::error("NullTopic::call() called. Topic is null."));
         }
     };
 
 
-    class TopicFactory : public Object {
-    protected:
-
-        TopicFactory(bool dmy) : Object() {}
+    class TopicFactoryAPI : public Object {
     public:
-        TopicFactory() : TopicFactory({{"typeName", "TopicFactory"}}) {}
-        TopicFactory(const Value& info) : Object(info) {}
-
-        ~TopicFactory() {}
+        TopicFactoryAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName) {}
+        ~TopicFactoryAPI() {}
 
     public:
-        std::shared_ptr<Topic> create(const Value& info) {
-            logger::trace("TopicFactory::create({}) called", info);
-            auto i = nerikiri::merge(info, info_);
-            return std::make_shared<Topic>(i); 
+        virtual std::string topicTypeFullName() const = 0;
+        virtual std::shared_ptr<TopicBase> create(const std::string& fullName) = 0;
+    };
+
+    class TopicFactory : public TopicFactoryAPI {
+    public:
+        TopicFactory(const std::string& fullName) : TopicFactoryAPI("TopicFactory", fullName) {}
+        virtual ~TopicFactory() {}
+
+    public:
+        virtual std::string topicTypeFullName() const { return "Topic"; }
+
+    public:
+        virtual std::shared_ptr<TopicBase> create(const std::string& fullName) {
+            logger::trace("TopicFactory::create({}) called", fullName);
+            return std::make_shared<Topic>(fullName); 
         }
     };
 
-    class NullTopicFactory : public TopicFactory {
-    private:
+    class NullTopicFactory : public TopicFactoryAPI {
+    public:
+        NullTopicFactory() : TopicFactoryAPI("NullTopicFactory", "null") {}
+        virtual ~NullTopicFactory() {}
+    public:
+        virtual std::string topicTypeFullName() const override { return "NullTopic"; }
 
     public:
-        NullTopicFactory() : TopicFactory(false) {}
-        ~NullTopicFactory() {}
-
-    public:
-    public:
-        std::shared_ptr<Topic> create(const Value& info) {
-            return std::make_shared<Topic>(); // Null Topic
+        virtual std::shared_ptr<TopicBase> create(const std::string& fullName) override {
+            return std::make_shared<NullTopic>(); // Null Topic
         }
     };
-
-    inline std::shared_ptr<Topic> nullTopic() {
-        return std::make_shared<Topic>();
-    }
 }

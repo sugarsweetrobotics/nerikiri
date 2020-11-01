@@ -17,67 +17,20 @@ using namespace nerikiri::logger;
 
 Value ProcessStore::info() const { return process_->info(); }
 
-Value ProcessStore::getContainerInfos() {
-  return {nerikiri::map<Value, std::shared_ptr<ContainerBase>>(containers_, [](auto& ctn) { return ctn->info(); })};
-}
-
-/**
- * Containerの追加．fullNameやinstanceNameの自動割り当ても行う
- */
-Value ProcessStore::addContainer(const std::shared_ptr<ContainerBase>& container) {
-  return add<ContainerBase>(containers_, container, ".ctn");
-}
-
-/**
- * Containerの取得
- */
-std::shared_ptr<ContainerBase> ProcessStore::getContainer(const std::string& fullName) {
-  return get<ContainerBase>(containers_, fullName, nullContainer);
-}
-
-/**
- * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
- */
-Value ProcessStore::addOperation(const std::shared_ptr<Operation>& operation) {
-  auto temp = std::dynamic_pointer_cast<OperationBase>(operation);
-  return add<OperationBase>(operations_, temp, ".ope");
-}
-
-/**
- * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
- */
-Value ProcessStore::addOperation(std::shared_ptr<Operation>&& operation) {
-  return add<OperationBase>(operations_, std::dynamic_pointer_cast<OperationBase>(operation), ".ope");
-}
-
-/**
- * Operationの取得
- */
-std::shared_ptr<OperationBase> ProcessStore::getOperation(const std::string& fullName) {
-  return get<OperationBase>(operations_, fullName, nullOperation);
-}
-
-std::shared_ptr<OperationBase> ProcessStore::getAllOperation(const std::string& fullName) {
-  auto op = getOperation(fullName);
-  if (op->isNull()) {
-    return getContainerOperation(fullName);
-  }
-  return op;
-}
 
 /**
  * ExecutionContextの追加．fullNameやinstanceNameの自動割り当ても行う
  */
-Value ProcessStore::addExecutionContext(const std::shared_ptr<ExecutionContext>& ec) {
-  return add<ExecutionContext>(executionContexts_, ec, ".ec");
-}
+//Value ProcessStore::addExecutionContext(const std::shared_ptr<ExecutionContext>& ec) {
+//  return add<ExecutionContext>(executionContexts_, ec, ".ec");
+//}
 
 /**
  * ExecutionContextの取得
  */
-std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const std::string& fullName) {
-  return get<ExecutionContext>(executionContexts_, fullName, nullExecutionContext);
-}
+//std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const std::string& fullName) {
+//  return get<ExecutionContext>(executionContexts_, fullName, nullExecutionContext);//
+//}
 
 /**
  * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
@@ -127,15 +80,6 @@ std::shared_ptr<ContainerBase> ProcessStore::getContainer(const Value& info) {
   return nullContainer();
 }
 */
-
-Value ProcessStore::getOperationFactoryInfos() {
-  return nerikiri::map<Value, std::shared_ptr<OperationFactory>>(operationFactories_, [](auto& opf) { return Value(opf->typeName()); });
-}
-
-Value ProcessStore::getContainerFactoryInfos() {
-  return nerikiri::map<Value, std::shared_ptr<ContainerFactoryBase>>(containerFactories_, [](auto& opf) { return Value(opf->typeName()); });
-}
-
 /*
 Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
   logger::trace("Process::addOperation({})", op->info());
@@ -156,57 +100,14 @@ Value ProcessStore::addOperation(std::shared_ptr<Operation> op) {
 }
 */
 
-
+/*
 std::shared_ptr<OperationBase> ProcessStore::getContainerOperation(const std::string& fullName) {
   auto [containerName, operationName] = splitContainerAndOperationName(fullName);
   return getContainer(containerName)->getOperation(operationName);
 }
-
-/*
-std::shared_ptr<OperationBase> ProcessStore::getOperation(const Value& oi) {
-  if (oi.isError()) return nullOperation();
-  auto name = oi.at("fullName");
-  if (name.isError()) {
-    // クエリがfullNameを持ってないとき．
-    return nullOperation();
-  }
-  for(auto& op : operations_) {
-    if (op->info().at("fullName") == name) return op;
-  }
-  return this->getContainerOperation(oi);
-}
 */
 
 /*
-Value ProcessStore::addExecutionContext(std::shared_ptr<ExecutionContext> ec) {
-  if (!ec) {
-    return Value::error(logger::error("Process::addExecutionContext failed. Execution Context is null"));
-  }
-  logger::trace("Process::addExecutionContext({})", ec->info());
-  if (ec->getInstanceName() == "") {
-    auto nameSpace = "";
-    auto name = nerikiri::numbering_policy<std::shared_ptr<ExecutionContext>>(executionContexts_, ec->info().at("name").stringValue(), ".ec");
-    ec->setFullName(nameSpace, name);
-  } else if (!getExecutionContext(ec->info())->isNull()) {
-     return Value::error(logger::error("Process::addExecutionContext({}) Error. Process already has the same name ec", ec->info().at("name").stringValue()));
-  }
-  executionContexts_.push_back(ec);
-  return ec->info();
-}
-*/
-
-/*
-std::shared_ptr<ExecutionContext> ProcessStore::getExecutionContext(const Value& info) {
-  for(auto& ec : executionContexts_) {
-    if (ec->info().at("instanceName") == info.at("instanceName")) {
-      return ec;
-    }
-  }
-  return ExecutionContext::null;
-}
-*/
-
-
 std::shared_ptr<OperationBase> ProcessStore::getOperationOrTopic(const std::string& fullName) {
   auto op = getAllOperation(fullName);
   if (!op->isNull()) {
@@ -215,66 +116,8 @@ std::shared_ptr<OperationBase> ProcessStore::getOperationOrTopic(const std::stri
   return getTopic(fullName);
 }
 
+*
 
-std::shared_ptr<OperationFactory> ProcessStore::getOperationFactory(const Value& oi) {
-  for(auto& opf : operationFactories_) {
-    if (opf->typeName() == oi.at("typeName").stringValue()) {
-      return opf;
-    }
-  }
-  return nullptr;
-}
-
-Value ProcessStore::getOperationInfos() {
-  auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_, [](auto& op) { return op->info();});
-  /*
-  for(auto& c : this->containers_) {
-    auto infos = c->getOperationInfos();
-    ops.insert(ops.end(), infos.begin(), infos.end());
-  }*/
-  return ops;
-}
-
-Value ProcessStore::getAllOperationInfos() {
-  auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_, [](auto& op) { return op->info();});
-  for(auto& c : this->containers_) {
-    auto infos = c->getOperationInfos();
-    ops.insert(ops.end(), infos.begin(), infos.end());
-  }
-  return ops;
-}
-
-
-
-Value ProcessStore::getConnectionInfos() const {
-  auto ocons = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_, [](auto& op) -> Value {
-    return op->getOutputConnectionInfos();
-  });
-
-  auto ccons = nerikiri::map<Value, std::shared_ptr<ContainerBase>>(containers_, [](auto& c) -> Value {
-    auto lcons = nerikiri::map<Value, std::shared_ptr<ContainerOperationBase>>(c->getOperations(), [](auto& co) -> Value {
-      return co->getOutputConnectionInfos();
-    });
-    return nerikiri::lift(lcons);
-  });
-
-  return nerikiri::merge(nerikiri::lift(ocons), nerikiri::lift(ccons));
-}
-
-ProcessStore& ProcessStore::addExecutionContextFactory(const std::shared_ptr<ExecutionContextFactory>& ec) {
-  executionContextFactories_.push_back(ec);
-  return *this;
-}
-
-ProcessStore& ProcessStore::addOperationFactory(const std::shared_ptr<OperationFactory>& f) {
-  operationFactories_.push_back(f);
-  return *this;
-}
-
-ProcessStore& ProcessStore::addContainerFactory(const std::shared_ptr<ContainerFactoryBase>& f) {
-  containerFactories_.push_back(f);
-  return *this;
-}
 
 Value ProcessStore::addContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryBase>& cof) {
   auto name = cof->containerTypeName();
@@ -286,37 +129,9 @@ Value ProcessStore::addContainerOperationFactory(const std::shared_ptr<Container
   }
   return Value::error(logger::error("ProcessStore::addContainerOperationFactory({}) can not find appropreate Container Factory.", cof->typeName()));
 }
+*/
 
-
-std::shared_ptr<ContainerFactoryBase> ProcessStore::getContainerFactory(const Value& info) {
-  for(auto f : containerFactories_) {
-      auto tn = f->typeName();
-    if (tn == info.at("typeName").stringValue()) {
-      return f;
-    }
-  }
-  logger::error("ProcessStore::getContainerFactory({}) failed. Can not find appropreate container factory.", info.at("typeName"));
-  return nullptr;
-}
-
-std::shared_ptr<ExecutionContextFactory> ProcessStore::getExecutionContextFactory(const Value& info) {
-  for(auto f : executionContextFactories_) {
-    if (f->typeName() == info.at("typeName").stringValue()) {
-      return f;
-    }
-  }
-  logger::error("getExecutionContext failed. Can not find appropreate execution context factory.");
-  return nullptr;
-}
-
-
-Value ProcessStore::getExecutionContextInfos() {
-  return nerikiri::map<Value, std::shared_ptr<ExecutionContext>>(executionContexts_, [](auto& ec) { return Value(ec->info()); });
-}
-
-Value ProcessStore::getExecutionContextFactoryInfos() {
-  return nerikiri::map<Value, std::shared_ptr<ExecutionContextFactory>>(executionContextFactories_, [](auto& ecf) { return Value(ecf->typeName()); });
-}
+/*
 
 
 Value ProcessStore::addBrokerFactory(const std::shared_ptr<BrokerFactory>& factory) {
@@ -324,7 +139,7 @@ Value ProcessStore::addBrokerFactory(const std::shared_ptr<BrokerFactory>& facto
   brokerFactories_.push_back(factory);
   return {{"typeName", factory->typeName()}};
 }
-
+*/
 
 /*
 Value ProcessStore::addBroker(const std::shared_ptr<Broker> brk) {
@@ -349,11 +164,12 @@ std::shared_ptr<Broker> ProcessStore::getBroker(const Value& info) {
   return Broker::null;
 }
 */
-
+/*
 Value ProcessStore::getBrokerInfos() const {
   return nerikiri::map<Value, std::shared_ptr<Broker>>(brokers_, [](auto& brk) { return brk->info();});
 }
-
+*/
+/*
 
 std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info) {
   for(auto f : brokerFactories_) {
@@ -363,6 +179,7 @@ std::shared_ptr<BrokerFactory> ProcessStore::getBrokerFactory(const Value& info)
   }
   return std::make_shared<BrokerFactory>(); // Null Broker Factory
 }
+*/
 
 Value ProcessStore::addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy) {
   dllproxies_.push_back(dllproxy);
@@ -373,6 +190,7 @@ Value ProcessStore::getCallbacks() const {
   return process_->getCallbacks();
 }
 
+/*
 std::shared_ptr<TopicFactory> ProcessStore::getTopicFactory(const Value& topicInfo) {
   logger::trace("ProcessStore::getTopicFactory({}) called", topicInfo);
   std::string typeName = "TopicFactory";
@@ -385,7 +203,8 @@ std::shared_ptr<TopicFactory> ProcessStore::getTopicFactory(const Value& topicIn
   logger::error("ProcessStore::getTopicFactory failed. TopicInfo({}) was not found.", topicInfo);
   return std::make_shared<NullTopicFactory>();
 }
-
+*/
+/*
 Value ProcessStore::addTopicFactory(const std::shared_ptr<TopicFactory>& tf) {
   if (tf == nullptr) {
     return Value::error(logger::error("ProcessStore::addTopicFactory() failed. TopicFactory is null"));
@@ -463,19 +282,20 @@ std::shared_ptr<FSMFactory> ProcessStore::getFSMFactory(const Value& fsmInfo) {
   }
   return std::make_shared<NullFSMFactory>();
 }
+*/
 
-Value ProcessStore::deleteOperation(const std::string& fullName) {
-  
-}
 
-Value ProcessStore::deleteContainer(const std::string& fullName) {
+std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
+  if (info.hasKey("broker")) {
+    auto f = brokerFactory(Value::string(info.at("broker").at("typeName")));
+    if (!f) {
+      logger::error("ProcessStore::operationProxy({}) failed. Broker (typeName={}) can not be found", info, Value::string(info.at("broker").at("typeName")));
+      return std::make_shared<NullOperation>();
+    }
+    return std::make_shared<OperationProxy>(f->createProxy(info.at("broker")));
+  }
 
-}
-
-Value ProcessStore::deleteExecutionContext(const std::string& fullName) {
-
-}
-
-Value ProcessStore::deleteFSM(const std::string& fullName) {
-
+  auto op = operation(info.at("fullName"));
+  if (op) return op.value();
+  return std::make_shared<NullOperation>();
 }

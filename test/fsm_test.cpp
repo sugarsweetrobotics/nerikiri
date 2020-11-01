@@ -196,16 +196,16 @@ SCENARIO( "FSM test", "[ec]" ) {
         REQUIRE(bindResult.isError() == false);
 
         ec->stop();
-        REQUIRE(ec->getState() == "stopped");
-        state = fsm->setFSMState("running");
-        state = fsm->getFSMState();
+        REQUIRE(ec->getObjectState() == "stopped");
+        state = fsm->setObjectState("running");
+        state = fsm->getObjectState();
         REQUIRE(state.stringValue() == "running");
-        REQUIRE(ec->getState() == "started");
+        REQUIRE(ec->getObjectState() == "started");
 
         state = fsm->setFSMState("stopped");
         state = fsm->getFSMState();
         REQUIRE(state.stringValue() == "stopped");
-        REQUIRE(ec->getState() == "stopped");
+        REQUIRE(ec->getObjectState() == "stopped");
       }
     
     THEN("FSM can be bound from Operation") {

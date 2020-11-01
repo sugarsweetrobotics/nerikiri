@@ -150,7 +150,7 @@ Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& pa
     return coreBroker->registerConsumerConnection(value);
   }
   if (std::regex_match(path, match, std::regex("/process/connections/"))) {
-    return coreBroker->createConnection(value, Value::error("Not Implemented"));
+    return coreBroker->createConnection(value, value);
   }
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
     return coreBroker->registerProviderConnection(value);

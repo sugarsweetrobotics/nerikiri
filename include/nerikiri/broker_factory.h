@@ -5,6 +5,7 @@
 
 namespace nerikiri {
 
+    /*
     class BrokerAPI;
     class Broker;
 
@@ -25,6 +26,5 @@ namespace nerikiri {
 
         virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param);
     };
-
-    std::shared_ptr<BrokerFactory> nullBrokerFactory();
+    */
 }

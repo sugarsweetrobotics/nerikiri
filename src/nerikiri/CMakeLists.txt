@@ -1,5 +1,9 @@
-set(nk_base_srcs process.cpp process_store.cpp 
+set(nk_base_srcs 
+process.cpp 
+process_store.cpp 
 operation.cpp 
+operation_base.cpp
+operation_api.cpp
 #operationinfo.cpp 
 value.cpp 
 ec.cpp

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/value.h"
+#include <nerikiri/nerikiri.h>
+#include <nerikiri/value.h>
 
 namespace nerikiri::logger {
 

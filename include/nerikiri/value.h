@@ -16,8 +16,8 @@
 ///#include <stdlib.h>
 //#include <iostream>
 
-#include "nerikiri/stringutil.h"
-#include "nerikiri/nerikiri.h"
+#include <nerikiri/nerikiri.h>
+#include <nerikiri/stringutil.h>
 
 namespace nerikiri {
 
@@ -42,6 +42,7 @@ namespace nerikiri {
   std::string str(const Value& value);
   Value merge(const Value& v1, const Value& v2);
 
+  static std::shared_ptr<Value> errorMessageValue_;
   /**
    *
    *
@@ -99,6 +100,7 @@ namespace nerikiri {
 
     bool isError() const { return typecode_ == VALUE_TYPE_ERROR; }
   private:
+
     union {
       bool boolvalue_;
       int64_t intvalue_;
@@ -111,7 +113,6 @@ namespace nerikiri {
       std::string* errormessage_;
     };
 
-    std::shared_ptr<Value> errorMessageValue;
 
 
   public:
@@ -459,18 +460,7 @@ namespace nerikiri {
       return listvalue_[key];
     }
 
-    const Value& at(const std::string& key) const {
-      if (isError()) {
-        throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type. (ErrorMessage is " + this->getErrorMessage() +")");
-      }
-      if (!isObjectValue()) {
-        throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But value type is " + this->getTypeString());
-      }
-      if (objectvalue_->count(key) == 0) {
-        throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But key (" + key + ") is not included.");
-      }
-      return objectvalue_->at(key);
-    }
+    const Value& at(const std::string& key) const ;
 
     Value& emplace(std::pair<std::string, Value>&& v) {
       if (typecode_ == VALUE_TYPE_OBJECT) {
@@ -546,6 +536,13 @@ namespace nerikiri {
 #else
     // Value errorMessageValue;
 #endif
+
+
+    static std::string string(const Value& v, const std::string& _default = "") {
+      if (v.isError()) return _default;
+      if (v.isStringValue()) return v.stringValue();
+      return _default;
+    }
   };
 
 /*
@@ -579,7 +576,7 @@ inline nerikiri::Value replaceAll(const nerikiri::Value& value, const std::strin
 
 #endif
 
-
+  
 
   /**
    * 

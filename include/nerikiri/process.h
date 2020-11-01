@@ -11,6 +11,8 @@
 #include "nerikiri/object.h"
 #include "nerikiri/value.h"
 
+#include <nerikiri/process_api.h>
+
 #include "nerikiri/corebroker.h"
 
 #include "nerikiri/systemeditor.h"
@@ -21,7 +23,7 @@ namespace nerikiri {
   /**
    * プロセスクラス
    */
-  class NK_API Process : public Object {
+  class NK_API Process : public ProcessAPI {
   private:
     static Process null;
    
@@ -53,7 +55,7 @@ namespace nerikiri {
     /**
      * デストラクタ
      */
-    ~Process();
+    virtual ~Process();
 
     void parseConfigFile(const std::string& filepath);
   private:

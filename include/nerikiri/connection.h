@@ -5,72 +5,32 @@
 #include <map>
 #include <functional>
 
-#include "nerikiri/value.h"
-#include "nerikiri/brokerapi.h"
-
+#include <nerikiri/connection_api.h>
+#include <nerikiri/brokerapi.h>
 
 namespace nerikiri {
 
     class InvalidBrokerException : public std::exception {};
 
-    using ConnectionInfo = nerikiri::Value;
-
-    class Connection {
+    class Connection : public ConnectionAPI {
     private:
-        ConnectionInfo info_;
-        std::shared_ptr<BrokerAPI> providerBroker_;
-        std::shared_ptr<BrokerAPI> consumerBroker_;
-        std::function<Value()> pull_func_;
-        std::function<Value(const Value& value)> push_func_;
-        bool is_null_;
-        bool is_event_;
+        const std::shared_ptr<OperationInletAPI> inlet_;
+
+        const std::shared_ptr<OperationOutletAPI> outlet_;
     public:
         Connection();
 
-        Connection(const ConnectionInfo& info);
+        Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet) :
+         ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet) {}
+        
+        virtual ~Connection() {}
 
-        Connection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker, std::shared_ptr<BrokerAPI> consumerBroker);
-        ~Connection() {}
+        virtual std::shared_ptr<OperationInletAPI> inlet() const override { return inlet_; }
 
-        Connection(const Connection& c) : info_(c.info_), 
-        providerBroker_(c.providerBroker_), consumerBroker_(c.consumerBroker_), 
-        pull_func_(c.pull_func_), push_func_(c.push_func_),
-        is_null_(c.is_null_), is_event_(c.is_event_) {}
+        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return outlet_; }
 
-        bool isPull() const { if (pull_func_) return true; return false; }
+        virtual Value pull() override;
 
-        Value pull() { return this->pull_func_(); }
-
-        bool isPush() const { return true; }
-
-        Value putToArgumentViaConnection(const Value& value) { return this->push_func_(value); }
-
-        bool isNull() const { return is_null_; }
-
-        bool isEvent() const { return is_event_; }
-
-        static Connection null;
-
-    public:
-        ConnectionInfo info() const { return info_; }
-
-    public:
-        friend Connection providerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> consumerBroker);
-        friend Connection consumerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
-        friend Connection fsmConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
+        virtual Value put(const Value& value) override;
     };
-
-    using Connection_ptr = std::shared_ptr<Connection>;
-
-    using ConnectionList = std::vector<Connection>;
-
-    using ConnectionListDictionary = std::map<std::string, ConnectionList>;
-
-
-    Connection providerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> consumerBroker);
-
-    Connection consumerConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
-
-    Connection fsmConnection(const ConnectionInfo& info, std::shared_ptr<BrokerAPI> providerBroker);
-
 }

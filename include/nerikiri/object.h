@@ -1,17 +1,12 @@
 #pragma once
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/value.h"
-
-#include "nerikiri/logger.h"
+#include <nerikiri/nerikiri.h>
+#include <nerikiri/value.h>
+#include <nerikiri/naming.h>
+#include <nerikiri/logger.h>
 
 namespace nerikiri {
 
-
-  inline std::pair<std::string, std::string> separateNamespaceAndInstanceName(const std::string& fullName) {
-    auto tokens = nerikiri::stringSplit(fullName, ':');
-    return {stringJoin(tokens.begin(), tokens.end()-1, ':'), tokens[tokens.size()-1]};
-  }
 
   /**
    */
@@ -19,15 +14,33 @@ namespace nerikiri {
   private:
     
   public:
+    Object(const std::string& typeName, const std::string& fullName) {
+      auto [nameSpace, instanceName] = separateNamespaceAndInstanceName(fullName);
+      info_ = Value{
+        {"typeName", typeName},
+        {"instanceName", instanceName},
+        {"fullName", fullName}
+      };
+    }
 
     Object(const Value& info) : info_(info){
       info_["state"] = "created";
       if (!info_.hasKey("typeName")) {
-        nerikiri::logger::error("Object::Object(const Value&): Warning. No typeName member is included in the argument 'info'");
+        nerikiri::logger::error("Object::Object(const Value& v={}): Error. No typeName member is included in the argument 'info'", info);
       } else if (!info_.hasKey("instanceName")) {
-        nerikiri::logger::error("Object::Object(const Value&): Warning. No instanceName member is included in the argument 'info'");
+        if (info_.hasKey("fullName")) {
+          nerikiri::logger::warn("Object::Object(const Value& v={}): Warning. No instanceName member is included in the argument 'info', but info has fullName member, so the instanceName of this object is now '{}'", info, info.at("fullName"));
+          info_["instanceName"] = info_["fullName"];
+        } else {
+          nerikiri::logger::error("Object::Object(const Value& v={}): Error. No instanceName member is included in the argument 'info'", info);
+        }
       } else if (!info_.hasKey("fullName")) {
-        nerikiri::logger::error("Object::Object(const Value&): Warning. No fullName member is included in the argument 'info'");
+        if (info_.hasKey("instanceName")) {
+          nerikiri::logger::warn("Object::Object(const Value& v={}): Warning. No fullName member is included in the argument 'info', but info has instanceName member, so the fullName of this object is now '{}'", info, info.at("instanceName"));
+          info_["fullName"] = info_["instanceName"];
+        } else {
+          nerikiri::logger::error("Object::Object(const Value& v={}): Error. No fullName member is included in the argument 'info'", info);
+        }
       }
     }
 
@@ -41,8 +54,6 @@ namespace nerikiri {
     TypeName typeName() const { 
       return info_.at("typeName").stringValue();
     }
-
-
 
     virtual bool isInstanceOf(const TypeName& _typeName) const { 
       return(typeName() == _typeName);
@@ -89,23 +100,33 @@ namespace nerikiri {
     void _setNull() { info_["typeName"] = "null"; }
 
   public:
-    Value info() const { return info_; };
+
+    virtual Value info() const { return {
+        {"fullName", fullName()},
+        {"instanceName", instanceName()},
+        {"typeName", typeName()},
+        {"state", objectState()}
+      }; 
+    }
 
 
 
-    Value setState(const std::string& state) { 
+    Value setObjectState(const std::string& state) { 
       info_["state"] = state;
       return info_;
     }
 
-    std::string getState() const { return state();
+    std::string getObjectState() const { return objectState();
     }
 
-    std::string state() const { 
+    std::string objectState() const { 
       return info_.at("state").stringValue();
     }
 
-
+    /**
+     * Release all resources
+     */
+    virtual void invalidate() {}
 
   };
 }

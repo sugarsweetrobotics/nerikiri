@@ -2,12 +2,12 @@
 
 #include <string>
 #include <vector>
-#include "nerikiri/value.h"
-#include "nerikiri/container_api.h"
 
-#include "nerikiri/containeroperationbase.h"
-#include "nerikiri/containerfactorybase.h"
-#include "nerikiri/containeroperationbase.h"
+
+#include <nerikiri/container_api.h>
+#include <nerikiri/container_operation_base.h>
+#include <nerikiri/container_factory_base.h>
+#include <nerikiri/container_operation_base.h>
 
 namespace nerikiri {
 
@@ -18,22 +18,19 @@ namespace nerikiri {
      */
     class ContainerBase : public ContainerAPI {
     protected:
-        std::string type_;
+        std::string containerTypeName_;
         std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
         ContainerFactoryBase* parentFactory_;
 
     public:
-        std::string type() const { return type_; }
+        std::string cotainerTypeName() const { return containerTypeName_; }
     public:
-        /**
-         * コンストラクタ．Nullコンテナができます
-         */
-        ContainerBase() : ContainerAPI(), parentFactory_(nullptr), type_("NullContainer") {}
 
         /**
          * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
          */
-        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const Value& info) :  parentFactory_(parentFactory), type_(typeName), ContainerAPI(info) {}
+        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const std::string& containerTypeName, const std::string& fullName) :  
+          ContainerAPI(typeName, fullName), containerTypeName_(containerTypeName), parentFactory_(parentFactory) {}
 
         /**
          * デストラクタ
@@ -44,35 +41,21 @@ namespace nerikiri {
          * ContainerにOperationを登録します．登録時にOperationのinstanceNameおよびfullNameを更新します
          * 
          * @param operation
-         */
-        Value addOperation(const std::shared_ptr<ContainerOperationBase>& operation) { 
-            /// もしインスタンス名が設定されていなかったら
-            if (operation->getInstanceName() == "") {
-                auto name = nerikiri::numbering_policy<std::shared_ptr<ContainerOperationBase>>(operations_, operation->info().at("typeName").stringValue(), ".ope");
-                operation->setFullName(getFullName(), name);
-            } else {
-                if (!getOperation(operation->info().at("instanceName").stringValue())->isNull()) {
-                    /// 重複があるようなのでエラーを返す
-                    for(auto& o: operations_) {
-                        if (operation->info().at("instanceName") == o->info().at("instanceName")) {
-                            return Value::error("ContaienrBase::addOperation(" + operation->info().at("instanceName").stringValue() + ") Error. Process already has the same instanceName operation");
-                        }
-                    }
-                } 
-                operation->setFullName(getFullName(), operation->getInstanceName());
-            }
-            operation->setContainer(this);
-            operations_.push_back(operation); 
-            return operation->info();;
+         *
+        virtual Value addOperation(const std::shared_ptr<OperationAPI>& _operation) override { 
+            
+            
+            operations_.push_back(_operation); 
+            return _operation->info();;
         }
 
-        /**
+         **
          * 登録しているOperationを削除します
          * 
          * @param opInfo
          * @returns
-         */
-        Value deleteOperation(const std::string& instanceName) { 
+         *
+        virtual Value deleteOperation(const std::string& instanceName) override { 
             auto it = operations_.begin();
             for(;it != operations_.end();++it) {
                 auto op = *it;
@@ -85,25 +68,9 @@ namespace nerikiri {
             }
             return Value::error("ContainerBase::deleteOperation() failed. Operation not found.");        
         }
+        */
 
-        /**
-         * 登録されている全てのContainerOperationのinfoを取得します
-         * 
-         * @returns
-         */
-        std::vector<Value> getOperationInfos() const {
-            return nerikiri::map<Value, std::shared_ptr<ContainerOperationBase>>(operations_, [](auto op) { 
-                return op->getContainerOperationInfo();
-            });
-        }
-
-        /**
-         * 登録されている全てのContainerOperationへのポインタをvectorで返します
-         */
-        std::vector<std::shared_ptr<ContainerOperationBase>> getOperations() const {
-            return operations_;
-        }
-
+        /*
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { 
             return {operations_.begin(), operations_.end()};
             //return operations_;
@@ -115,21 +82,7 @@ namespace nerikiri {
             return std::make_shared<NullOperation>();
         }
 
-        /**
-         * 登録されているContainerOperationの中から引数のinfoに該当するContainerOperationを取得します
-         * 
-         * @param info
-         * @returns
-         */
-        std::shared_ptr<OperationBase> getOperation(const std::string& instanceName) const {
-            for(auto op: operations_) {
-                if (op->getContainerOperationInfo().at("instanceName").stringValue() == instanceName) {
-                    return op;
-                }
-            }
-            return std::make_shared<OperationBase>(); // new OperationBase();
-        }
-
+        *
         std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info) {
             if (this->isNull()) {
                 //logger::error("ContainerBase::getContainerOperationFactory failed. Container is null.");
@@ -142,7 +95,9 @@ namespace nerikiri {
             }
             return nullptr;
         }
+        */
 
+        /*
         Value createContainerOperation(const Value& info) {
             //logger::trace("ContainerBase::createContainerOperation({})", str(info));
             auto f = getContainerOperationFactory(info);
@@ -152,15 +107,18 @@ namespace nerikiri {
             //logger::info("Creating ContainerOperation({})", str(info));
             return addOperation(f->create(info));
         }
-
-        Value deleteContainerOperation(const std::string& instanceName) {
-            auto f = getOperation(instanceName);
+        */
+        /*
+        Value deleteContainerOperation(const std::string& fullName) {
+            auto f = operation(fullName);
             if (!f) {
                 return Value::error("ContainerBase::deleteContainerOperation failed. Can not find appropreate operation factory.");
             }
-            return deleteOperation(instanceName);
+            return deleteOperation(fullName);
         }
+        */
 
+        /*
         virtual Value setFullName(const std::string& nameSpace, const std::string& name) override  {
             Object::setFullName(nameSpace, name);
             for(auto& op: operations_) {
@@ -169,8 +127,10 @@ namespace nerikiri {
             }
             return this->info();
         }
+        */
     };
 
+    /*
     inline static std::shared_ptr<ContainerBase> nullContainer() {
       return std::make_shared<ContainerBase>();
     }
@@ -184,5 +144,5 @@ namespace nerikiri {
         }
         return true;
     };
-
+    */
 }

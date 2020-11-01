@@ -9,9 +9,10 @@
 
 namespace nerikiri {
 
+  /*
   class ConnectionDictionary {
   private:
-    std::map<std::string, Connection_ptr> dictionary_;
+    std::map<std::string, std::shared_ptr<ConnecitonAPI>> dictionary_;
 
   public:
     void add(Connection_ptr&& connection);
@@ -30,5 +31,5 @@ namespace nerikiri {
       return ts;
     }
   };
-
+  */
 };

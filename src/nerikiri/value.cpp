@@ -2,8 +2,8 @@
 #include <regex>
 #include <sstream>
 
-#include "nerikiri/value.h"
-
+#include <nerikiri/value.h>
+#include <nerikiri/logger.h>
 
 
 using namespace nerikiri;
@@ -58,7 +58,35 @@ const std::vector<Value>& Value::listValue() const {
   throw ValueTypeError(std::string("trying list value acecss. actual ") + getTypeString());
 }
 
+const Value& Value::at(const std::string& key) const {
+  if (isError()) {
+    errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
+      "Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type. (ErrorMessage is " + this->getErrorMessage() +")"
+    );
+    logger::error(errorMessageValue_->getErrorMessage());
+    return *(errorMessageValue_.get());
+    //throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type. (ErrorMessage is " + this->getErrorMessage() +")");
+  }
+  if (!isObjectValue()) {
 
+    errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
+      "Value::at(" + key + ") failed. Program tried to access with key value access. But value type is " + this->getTypeString()
+    );
+    logger::error(errorMessageValue_->getErrorMessage());
+    return *(errorMessageValue_.get());
+    //throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But value type is " + this->getTypeString());
+  }
+  if (objectvalue_->count(key) == 0) {
+    
+    errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
+      "Value::at(" + key + ") failed. Program tried to access with key value access. But key (" + key + ") is not included."
+    );
+    logger::error(errorMessageValue_->getErrorMessage());
+    return *(errorMessageValue_.get());
+    //throw ValueTypeError("Value::at(" + key + ") failed. Program tried to access with key value access. But key (" + key + ") is not included.");
+  }
+  return objectvalue_->at(key);
+}
 
 Value nerikiri::merge(const Value& v1, const Value& v2) {
     if((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_LIST)) {

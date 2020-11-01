@@ -97,16 +97,21 @@ Value CoreBroker::executeAllOperation(const std::string& fullName) {
 
 
 Value CoreBroker::getConnectionInfos() const {
-    return process_->store()->getConnectionInfos();
+    std::vector<std::shared_ptr<ConnectionAPI>> connections;
+    for(auto op : process_->store()->operations()) {
+        auto cons = op->outlet()->connections();
+        connections.insert(connections.end(), cons.begin(), cons.end());
+    }
+    return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections, [](auto c) { return c->info(); });
 }
 
 Value CoreBroker::createConnection(const Value& connectionInfo, const Value& brokerInfo) {
     logger::trace("CoreBroker::registerConsumerConnection({}");
-    return ConnectionBuilder::registerProviderConnection(process_->store(), connectionInfo);
+    return ConnectionBuilder::createConnection(process_->store(), connectionInfo);
 }
 
 
-Value CoreBroker::registerConsumerConnection(const ConnectionInfo& ci) {
+Value CoreBroker::registerConsumerConnection(const Value& ci) {
     logger::trace("CoreBroker::registerConsumerConnection({}", str(ci));
     return ConnectionBuilder::registerConsumerConnection(process_->store(), ci);
 }
@@ -218,7 +223,8 @@ Value CoreBroker::setExecutionContextState(const std::string& fullName, const st
 }
 
 Value CoreBroker::executeContainerOperation(const std::string& fullName) {
-    return process_->store()->getContainerOperation(fullName)->execute();
+    //return process_->store()->getContainerOperation(fullName)->execute();
+    return process_->store()->operation(fullName)->execute();
 }
 
 Value CoreBroker::bindOperationToExecutionContext(const std::string& ecFullName, const std::string& opFullName, const Value& brokerInfo) {
@@ -252,7 +258,10 @@ Value CoreBroker::getExecutionContextInfos() const {
 }
 
 Value CoreBroker::getAllOperationInfo(const std::string& fullName) const {
-    return process_->store()->getAllOperation(fullName)->info();
+    //return process_->store()->getAllOperation(fullName)->info();
+    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(
+        process_->store()->operations(), [](auto op) { return op->info(); });
+    
 }
 
 Value CoreBroker::getExecutionContextInfo(const std::string& fullName) const {
@@ -264,7 +273,7 @@ Value CoreBroker::getTopicConnectionInfos(const std::string& fullName) const {
 }
 
 Value CoreBroker::getExecutionContextState(const std::string& fullName) const {
-    return process_->store()->getExecutionContext(fullName)->getState();
+    return process_->store()->getExecutionContext(fullName)->getObjectState();
 }
 
 Value CoreBroker::getOperationConnectionInfos(const std::string& fullName) const {
@@ -293,29 +302,40 @@ Value CoreBroker::getExecutionContextBoundAllOperationInfos(const std::string& f
 
 
 Value CoreBroker::getFSMInfos() const {
-    return process_->store()->getFSMInfos();
+    logger::trace("CoreBroker::getFSMInfos() called");
+    return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto f) {
+        return f->info();
+    });
 }
 
 Value CoreBroker::getFSMInfo(const std::string& fullName) const {
-    return process_->store()->getFSM(fullName)->info();
+    //return process_->store()->getFSM(fullName)->info();
+    logger::trace("CoreBroker::getFSMInfo({}) called", fullName);
+    return process_->store()->fsm(fullName)->info();
 }
 
 Value CoreBroker::setFSMState(const std::string& fullName, const std::string& state) {
     logger::trace("CoreBroker::setFSMState({}, {})", fullName, state);
-    return process_->store()->getFSM(fullName)->setFSMState(state);
+    ///return process_->store()->getFSM(fullName)->setFSMState(state);
+    return process_->store()->fsm(fullName)->setFSMState(state);
 }
 
 Value CoreBroker::getFSMState(const std::string& fullName) const {
-    return process_->store()->getFSM(fullName)->getFSMState();
+    //return process_->store()->getFSM(fullName)->getFSMState();
+    logger::trace("CoreBroker::getFSMState({})", fullName);
+    return process_->store()->fsm(fullName)->currentFsmState()->info();
 }
 
-Value CoreBroker::getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {
-    auto ops = process_->store()->getFSM(fsmFullName)->getBoundOperations(state);
-    Value v = Value::list();
-    for(auto op : ops) {
-        v.push_back(op->info());
-    }
-    return v;
+Value CoreBroker::getOperationsBoundToFSMState(const std::string& fsmFullName, const std::string& stateName) {
+    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->fsm(fsmFullName)->fsmState(stateName)->boundOperations(), [](auto op) {
+        return op->info();
+    });
+    //auto ops = process_->store()->getFSM(fsmFullName)->getBoundOperations(state);
+    //Value v = Value::list();
+    //for(auto op : ops) {
+    //    v.push_back(op->info());
+    //}
+    //return v;
 }
 
 Value CoreBroker::getECsBoundToFSMState(const std::string& fsmFullName, const std::string& state) {

@@ -10,6 +10,7 @@ namespace nerikiri {
 
     class ConnectionBuilder {
     public:
+        static Value connect(const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const ConnectionAPI::ConnectionType& type);
 
         static Value createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
         static Value deleteConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);

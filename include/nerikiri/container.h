@@ -1,12 +1,8 @@
 #pragma once
 
-#include "nerikiri/value.h"
-#include "nerikiri/object.h"
-#include "nerikiri/naming.h"
-
-#include "nerikiri/containerbase.h"
-#include "nerikiri/operationbase.h"
-#include "nerikiri/containeroperationfactorybase.h"
+#include <nerikiri/container_base.h>
+#include <nerikiri/operation_base.h>
+#include <nerikiri/container_operation_factory_base.h>
 
 namespace nerikiri {
 
@@ -25,12 +21,8 @@ namespace nerikiri {
         std::shared_ptr<T> _ptr;
 
     public:
-        Container(ContainerFactoryBase* parentFactory, const Value& info): ContainerBase(parentFactory, demangle(typeid(T).name()), info), _ptr(std::make_shared<T>()) {
-            if (!containerNameValidator(info.at("typeName").stringValue())) {
-                //is_null_ = true;
-                _setNull();
-            }
-        }
+        Container(ContainerFactoryBase* parentFactory, const std::string& fullName): 
+          ContainerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName), _ptr(std::make_shared<T>()) {}
         virtual ~Container() {}
  
         std::shared_ptr<T>& ptr() { return _ptr; }

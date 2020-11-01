@@ -8,7 +8,7 @@
 
 using namespace nerikiri;
 
-
+/*
 BrokerFactory::BrokerFactory() : Object(), typeName_("NullBroker") {}
 BrokerFactory::BrokerFactory(const Value& value) : Object(value), typeName_(value.at("typeName").stringValue()) {}
 
@@ -27,3 +27,4 @@ std::shared_ptr<BrokerAPI> BrokerFactory::createProxy(const Value& param) {
 std::shared_ptr<BrokerFactory> nerikiri::nullBrokerFactory() { 
     return std::make_shared<BrokerFactory>();
 }
+*/

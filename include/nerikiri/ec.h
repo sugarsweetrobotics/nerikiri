@@ -2,110 +2,35 @@
 
 #include <thread>
 #include <chrono>
+#include <vector>
+#include <memory>
 
-#include "nerikiri/object.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/operationbase.h"
-#include "nerikiri/naming.h"
+#include <nerikiri/object.h>
+#include <nerikiri/logger.h>
+#include <nerikiri/operation_api.h>
+
+#include <nerikiri/ec_api.h>
+#include <nerikiri/functional.h>
+
 
 namespace nerikiri {
 
-#if 0
-    class FSMObject;
-
-    class State : public Object {
+    class ExecutionContextBase : public ExecutionContextAPI {
     private:
-        FSMObject* owner_;
-    public:
-        State(const std::string& name, FSMObject* owner): Object({{"stateName", name}}), owner_(owner) {}
-        virtual ~State() {}
+        std::vector<std::shared_ptr<OperationAPI>> operations_;
 
     public:
-        std::string stateName() const { return info().at("stateName").stringValue(); }
-
-        Value activate() {
-            return owner_->activateState(this);
-        }
-    };
-
-
-    class FSMObject: public Object {
-    private:
-        std::vector<State> states_;
-    public:
-        FSMObject(const Value& info): Object(info) {}
-
-        virtual ~FSMObject() {}
-
-    public:
-        void addState(State& state) {
-            for(auto it = states_.begin(); it != states_.end(); ++it) {
-                if ((*it).stateName() == state.stateName()) {
-                    states_.erase(it);
-                    return;
-                }   
-            }
-
-            states_.push_back(state);
+        ExecutionContextBase(const std::string& typeName, const std::string& fullName) : 
+          ExecutionContextAPI(typeName, fullName) {
         }
 
-        void addDefaultState(State& state) {
-            for(auto it = states_.begin(); it != states_.end(); ++it) {
-                if ((*it).stateName() == state.stateName()) {
-                    states_.erase(it);
-                    return;
-                }   
-            }
-
-            states_.push_back(state);
-        }
-
-        void deleteState(State& state) {
-            for(auto it = states_.begin(); it != states_.end(); ++it) {
-                if ((*it).stateName() == state.stateName()) {
-                    states_.erase(it);
-                    return;
-                }   
-            }
-        }
-    public:
-        Value activateState(const State* state) {
-            for(auto it = states_.begin(); it != states_.end(); ++it) {
-                if ((*it).stateName() == state->stateName()) {
-
-        }
-    };
-
-#endif
-    class ExecutionContext : public Object {
-    private:
-        std::vector<std::shared_ptr<OperationBase>> operations_;
-        std::vector<std::pair<std::string, std::shared_ptr<BrokerAPI>>> operationBrokers_;
-
-    public:
-        ExecutionContext(const Value& info) : Object(info) {
-            info_["state"] = Value("stopped");
-        }
-
-        ExecutionContext() : Object() {}
-        virtual ~ExecutionContext() {
-            operations_.clear();
-            operationBrokers_.clear();
-        }
+        virtual ~ExecutionContextBase() { }
 
 
     public:
+        virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { return operations_; }
 
-        virtual Value setState(const std::string& state) { 
-            if (state == "started") {
-                return start();
-            } else if (state == "stopped") {
-                return stop();
-            } 
-            return Value::error(logger::error("ExecutionContext({})::setState({}) failed. Unknown State.", getInstanceName(), state));
-        }
-
-        virtual Value start() {
+        virtual Value start() override {
             logger::trace("ExecutionContext({})::start() called", getInstanceName());
             if (info_["state"].stringValue() != "started") {
                 onStarting();
@@ -119,7 +44,7 @@ namespace nerikiri {
             return info();
         }
 
-        virtual Value stop() {
+        virtual Value stop() override {
             logger::trace("ExecutionContext({})::stop() called", getInstanceName());
             if (info_["state"].stringValue() != "stopped") {
                 onStopping();
@@ -147,18 +72,9 @@ namespace nerikiri {
                     logger::error("In EC::svc. Exception in ExecutionContext::svc(): {}", ex.what());
                 }
             }
-            for(auto& b : operationBrokers_) {
-                try {
-                    logger::trace("In EC::svc. Broker()::executing Operation({})....", b.first);
-                    auto v = b.second->executeOperation(b.first);
-                    logger::trace("In EC::svc. execution result is {}", v);
-                } catch (std::exception& ex) {
-                    logger::error("In EC::svc. Exception in ExecutionContext::svc(): {}", ex.what());
-                }
-            }
         }
 
-        Value bind(std::shared_ptr<OperationBase> op) {
+        virtual Value bind(const std::shared_ptr<OperationAPI>& op) override {
             if (op->isNull()) {
                 return Value::error(logger::error("ExecutionContext::bind failed. Operation is null"));
             }
@@ -168,32 +84,11 @@ namespace nerikiri {
                     it = operations_.erase(it);
                 }
             }
-            for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it).second->info().at("fullName") == info.at("fullName")) {
-                    it = operationBrokers_.erase(it);
-                } 
-            }
             operations_.push_back(op);
             return op->info();
         }
 
-        Value bind(const std::string& opName, std::shared_ptr<BrokerAPI> br) {
-            /// 存在確認
-            //if (opInfo.at("fullName").stringValue().find(":") >= 0) {
-            //    auto instanceName = opInfo.at("fullName").stringValue();
-            //    auto containerName = instanceName.substr(0, instanceName.find(":"));
-            //    auto operationName = instanceName.substr(instanceName.find(":")+1);
-            //    auto i = br->getContainerOperationInfo({{"fullName", containerName}}, {{"fullName", operationName}});
-            //    if (i.at("fullName").stringValue() == "null") return i;
-            //} else {
-            auto i = br->getOperationInfo(opName);
-            if (i.at("fullName").stringValue() == "null") return i;
-            //}
-            operationBrokers_.push_back({opName, br});
-            return br->info();
-        }
-
-        Value unbind(const std::string& opName) {
+        virtual Value unbind(const std::string& opName) override {
             
             for(auto it = operations_.begin(); it != operations_.end();++it) {
                 if ((*it)->info().at("fullName").stringValue() == opName) {
@@ -201,68 +96,65 @@ namespace nerikiri {
                     return opName;
                 } 
             }
-            
-            for(auto it = operationBrokers_.begin(); it != operationBrokers_.end();++it) {
-                if ((*it).first == opName) {
-                    auto br = it->second->info();
-                    it = operationBrokers_.erase(it);
-                    return br;
-                } 
-            }
             return Value::error(logger::error("ExecutionContext::unbind({}) failed. Not Found.", opName));
         }
 
-        Value getBoundOperationInfos() {
-            auto ops = nerikiri::map<Value, std::shared_ptr<OperationBase>>(operations_,
-              [](auto op) { return op->info(); });
-            for(auto p : operationBrokers_) {
-                Value info = p.second->getOperationInfo(p.first);
-                info["broker"] = p.second->info();
-                ops.push_back(info);
-            }
-            return ops;
-        }
-
-        std::shared_ptr<OperationBase> getBoundOperation(const Value& info) const {
-            for(auto& op : operations_) {
-                if (op->info().at("fullName") == info.at("fullName")) {
-                    return op;
-                }
-            }
-            return nullOperation();
+        std::shared_ptr<OperationAPI> operation(const std::string& fullName) const { 
+            auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
+            if (op) return op.value();
+            return std::make_shared<NullOperation>();
         }
     };
+
+    class ExecutionContextFactoryAPI : public Object {
+    public:
+        ExecutionContextFactoryAPI(const std::string& typeName, const std::string& fullName) :
+          Object(typeName, fullName) {}
+        virtual ~ExecutionContextFactoryAPI() {}
+
+        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) = 0;
+        virtual std::string executionContextTypeFullName() const = 0;
+    };
+
+    class NullExecutionContextFactory : public ExecutionContextFactoryAPI{
+    public:
+        NullExecutionContextFactory() :
+          ExecutionContextFactoryAPI("NullExecutionContextFactory", "null") {}
+        virtual ~NullExecutionContextFactory() {}
+
+        virtual std::string executionContextTypeFullName() const { return "NullExecutionContext"; }
+
+        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) {
+            logger::warn("NullExecutionContextFactory::create() called. ExecutionContextFactory is null.");
+            return std::make_shared<NullExecutionContext>();
+        }
+      
+    };
+
+    class ExecutionContextFactoryBase : public ExecutionContextFactoryAPI {
+    private:
+    private:
+        const std::string executionContextTypeFullName_;
     
-
-    inline std::shared_ptr<ExecutionContext> nullExecutionContext() {
-      return std::make_shared<ExecutionContext>();
-    }
-
-    class ExecutionContextFactory {
     public:
-        virtual ~ExecutionContextFactory() {}
+        ExecutionContextFactoryBase(const std::string& typeName, const std::string& executionContextTypeFullName, const std::string& fullName) :
+          ExecutionContextFactoryAPI(typeName, fullName), executionContextTypeFullName_(executionContextTypeFullName) {}
+        virtual ~ExecutionContextFactoryBase() {}
 
+        virtual std::string executionContextTypeFullName() const { return executionContextTypeFullName_; }
     public:
-        virtual std::shared_ptr<ExecutionContext> create(const Value& arg) const = 0;
-        virtual std::string typeName() const = 0;
     };
 
     template<typename T>
-    class ECFactory : public ExecutionContextFactory {
-    private:
-        const std::string typeName_;
+    class ECFactory : public ExecutionContextFactoryBase {
     public:
-        ECFactory() : typeName_(nerikiri::demangle(typeid(T).name())) {}
+        ECFactory(const std::string& fullName) : ExecutionContextFactoryBase("ECFactory", nerikiri::demangle(typeid(T).name()), fullName) {}
         virtual ~ECFactory() {}
 
     public:
-        virtual std::shared_ptr<ExecutionContext> create(const Value& arg) const {
-            return std::shared_ptr<ExecutionContext>(new T(arg));
+        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const {
+            return std::shared_ptr<ExecutionContextAPI>(new T(fullName));
         };
-
-        virtual std::string typeName() const { 
-            return typeName_;
-        }
     };
 
 

@@ -178,7 +178,7 @@ private:
   std::shared_ptr<BrokerAPI> coreBroker_;
 
 public:
-  CoreBrokerFactory(const std::shared_ptr<BrokerAPI>& coreBroker): BrokerFactory({{"typeName", "CoreBroker"}}), coreBroker_(coreBroker) {}
+  CoreBrokerFactory(const std::shared_ptr<BrokerAPI>& coreBroker): BrokerFactory({{"instanceName", "coreBroker"}, {"typeName", "CoreBroker"}}), coreBroker_(coreBroker) {}
   virtual ~CoreBrokerFactory() {}
 
 public:
