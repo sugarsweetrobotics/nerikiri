@@ -12,7 +12,8 @@ using namespace nerikiri;
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("Process::createOperation({})", (info));
-  return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(Value::string(info.at("fullName"))));
+  auto fullName = Value::string(info.at("fullName"));
+  return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(fullName));
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
@@ -23,6 +24,13 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   });
   return store.addContainer(c);
 }
+
+Value ObjectFactory::createContainerOperation(ProcessStore& store, const std::string& containerFullName, const Value& info) {
+  logger::trace("Process::createContainerOperation({}, {})", containerFullName, info);
+  auto fullName = Value::string(info.at("fullName)"));
+  return store.addOperation(store.containerOperationFactory(Value::string(info.at("typeName")))->create(store.container(containerFullName), fullName));
+}
+
 
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& ci) {
   logger::trace("Process::createBroker({})", (ci));
@@ -56,6 +64,10 @@ Value ObjectFactory::deleteOperation(ProcessStore& store, const std::string& ful
 
 Value ObjectFactory::deleteContainer(ProcessStore& store, const std::string& fullName)  {
   return store.deleteContainer(fullName);
+}
+
+Value ObjectFactory::deleteContainerOperation(ProcessStore& store, const std::string& fullName)  {
+  return store.deleteContainerOperation(fullName);
 }
         
 Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const std::string& fullName) {

@@ -242,6 +242,11 @@ namespace nerikiri {
       return add<ContainerOperationFactoryAPI>(containerOperationFactories_, cf, ".cof");
     }
 
+    Value deleteContainerOperation(const std::string& fullName) {
+      return del<OperationAPI>(operations_, fullName);
+    }
+
+
     /**
      * 
      */
@@ -324,6 +329,11 @@ namespace nerikiri {
       });
       if (f) return f.value();
       return std::make_shared<NullContainerFactory>();
+    }
+
+    std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerOperationTypeFullName) const {
+      auto& [containerTypeFullName, operationTypeFullName] = nerikiri::naming::splitContainerAndOperationName(containerOperationTypeFullName);
+      return containerOperationFactory(containerTypeFullName, operationTypeFullName);
     }
 
     std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const {

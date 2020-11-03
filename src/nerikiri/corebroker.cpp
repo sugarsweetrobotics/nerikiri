@@ -10,6 +10,59 @@
 
 using namespace nerikiri;
 
+
+Value CoreFactoryBroker::createObject(const std::string& className, const Value& info/*={}*/) {
+    logger::trace("CoreBroker::createObject({}, {})", className, info);
+    if (className == "operation") {
+        return ObjectFactory::createOperation(*process_->store(), info);
+    } else if (className == "container") {
+        return ObjectFactory::createContainer(*process_->store(), info);
+    } else if (className == "containerOperation") {
+        return ObjectFactory::createContainerOperation(*process_->store(), info);
+    } else if (className == "ec") {
+        return ObjectFactory::createExecutionContext(*process_->store(), info);
+    } else if (className == "fsm") {
+        return ObjectFactory::createFSM(*process_->store(), info);
+    }
+
+    return Value::error(logger::error("CoreBroker::createObject({}, {}) failed. Class name is invalid.", className, info));
+}
+
+Value CoreFactoryBroker::deleteObject(const std::string& className, const std::string& fullName) {
+    logger::trace("CoreBroker::deleteObject({})", fullName);
+    if (className == "operation") {
+        return ObjectFactory::deleteOperation(*process_->store(), fullName);
+    } else if (className == "container") {
+        return ObjectFactory::deleteContainer(*process_->store(), fullName);
+    } else if (className == "containerOperation") {
+        return ObjectFactory::deleteContainerOpertaion(*process_->store(), fullName);
+    } else if (className == "ec") {
+        return ObjectFactory::deleteExecutionContext(*process_->store(), fullName);
+    } else if (className == "fsm") {
+        return ObjectFactory::deleteFSM(*process_->store(), fullName);
+    }
+
+    return Value::error(logger::error("CoreBroker::deleteObject({}, {}) failed. Class name is invalid.", className, info));
+}
+
+Value CoreProcessStoreBroker::getClassObjectInfos(const std::string& className) const {
+    logger::trace("CoreBroker::getClassObjectInfos({})", className);
+    if (className == "operation") {
+        return nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(process_->store()->operations, [](auto op) { return op->info(); });
+    }
+
+    return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
+}
+  
+Value CoreProcessStoreBroker::getObjectInfo(const std::string& className, const std::string& fullName) const {
+    logger::trace("CoreBroker::getObjectInfo({}, {})", className, fullName);
+    if (className == "operation") {
+        return process_->store()->operation(fullName);
+    }
+
+    return Value::error(logger::error("CoreBroker::getObjectInfo({}, {}) failed. Class name is invalid.", className, fullName));
+}
+
 //std::shared_ptr<BrokerAPI>  Broker::null = std::shared_ptr<BrokerAPI>(nullptr);
 
 Value CoreBroker::getProcessInfo() const{ return process_->info(); }
@@ -154,13 +207,10 @@ Value CoreBroker::getContainerFactoryInfos() const {
 
 
 Value CoreBroker::createOperation(const Value& value) {
-    logger::trace("CoreBroker::createOperation({})", value);
-    return ObjectFactory::createOperation(*process_->store(), value);
 }
 
 Value CoreBroker::createContainer(const Value& value) {
     logger::trace("CoreBroker::createContainer({})", value);
-    return ObjectFactory::createContainer(*process_->store(), value);
 }
 
 

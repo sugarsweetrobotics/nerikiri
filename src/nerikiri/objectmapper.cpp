@@ -1,7 +1,7 @@
 #include <regex>
 
-#include "nerikiri/logger.h"
-#include "nerikiri/objectmapper.h"
+#include <nerikiri/logger.h>
+#include <nerikiri/objectmapper.h>
 #include "nerikiri/process.h"
 #include "nerikiri/process_store.h"
 
@@ -10,37 +10,67 @@
 using namespace nerikiri;
 
 
-Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string& path) {
+Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& _path, const Value& value, BrokerAPI* receiverBroker) {
+  auto path = _path;
+  if (path.at(path.length()-1) != '/') { path = path + '/'; }
+
+  std::smatch match;
+  logger::info("ObjectMapper::createResource({}, {}) called.", path, value);
+
+  if (path == "/process/operations/") { return coreBroker->factory().createObject("operation", value); }
+  if (path == "/process/containers/") { return coreBroker->factory().createObject("container", value); }
+  if (path == "/process/containerOperations/") { return coreBroker->factory().createObject("containerOperation", value); }
+  if (path == "/process/ecs/") { return coreBroker->factory().createObject("ec", value); }
+  if (path == "/process/fsms/") { return coreBroker->factory().createObject("fsm", value); }
+  if (path == "/process/connections/") { return coreBroker->factory().createObject("connection", value); } 
+
+  if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
+    return coreBroker->factory().createObject("containerOperation", Value::merge(value, {"containerFullName", match[1]})));
+  }
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/outlet/connections/"))) {
+    return coreBroker->factory().createObject("outletConnection", Value::merge(value, {"operationFullName", match[1]}));
+  }
+  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/inlets/([^/]*)/connections/"))) {
+    return coreBroker->factory().createObject("inletConnection", Value::merge(value, 
+                              {"operationFullName", match[1]}, {"inletFullName", match[2]}));
+  }
+  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/"))) {
+    return coreBroker->factory().createObject("ecBind", Value::merge(value, {"ecFullName", match[1]}));
+  }
+
+  return Value::error(logger::error("ObjectMapper::createResource({}) failed. This request could not find appropreate callbacks", path));
+}
+
+Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string& _path) {
+    auto path = _path;
+    if (path.at(path.length()-1) != '/') { path = path + '/'; }
+
     logger::debug("ObjectMapper::readResource({})", path);
     std::smatch match;
     
     if (path == "/process/info/") {
         return coreBroker->getProcessInfo();
     }
-    if (path == "/process/operations/") {
-        return coreBroker->getOperationInfos();
-    }
-    if (path == "/process/all_operations/") {
-      return coreBroker->getAllOperationInfos();
-    }
-    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/info/"))) {
-        return coreBroker->getOperationInfo(match[1]);
-    }
-    if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/info/"))) {
-        return coreBroker->getAllOperationInfo(match[1]);
-    }
-    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
-        return coreBroker->invokeAllOperation(match[1]);
-    }
-    if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/"))) {
-        return coreBroker->invokeAllOperation(match[1]);
-    }
+    if (path == "/process/fsms/") { return coreBroker->store()->getClassObjectInfos("fsm"); }
+    if (path == "/process/ecs/") { return coreBroker->store()->getClassObjectInfos("ec"); }
+    if (path == "/process/connections/") { return coreBroker->store()->getClassObjectInfos("connection"); }
 
-    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/connections/"))) {
-        return coreBroker->getOperationConnectionInfos(match[1]);
+    if (path == "/process/operations/") { return coreBroker->store()->getClassObjectInfos("operation"); }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) { return coreBroker->store()->getObjectInfo("operation", match[1]); }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/outlet/connections/"))) { return coreBroker->store()->getChildrenClassObjectInfos(match[1], "outletConnection"); }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/outlet/connections/([^/]*)/"))) { return coreBroker->store()->getObjectInfo("outletConnection", nerikiri::naming::join(match[1], match[2])); }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/inlets/([^/]*)/connections/"))) { return coreBroker->store()->getChildrenClassObjectInfos(nerikiri::naming::join(match[1],match[2]), "inletConnection"); }
+    if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/inlets/([^/]*)/connections/([^/]*)/"))) { return coreBroker->store()->getObjectInfo("inletConnection", nerikiri::naming::join(match[1], match[2], match[３])); }
+
+    if (path == "/process/containers/") { return coreBroker->store()->getClassObjectInfos("container"); }
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/"))) { return coreBroker->store()->getObjectInfo("container", match[1]); }
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) { return coreBroker->store()->getChildrenClassObjectInfos(match[1], "containerOperation"); }
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) { return coreBroker->store()->getObjectInfo("containerOperation", nerikiri::naming::join(match[1], match[2])); }
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/"))) {
+      return coreBroker->store()->getChildrenClassObjectInfos(nerikiri::naming::join(match[1], match[2]), "connection"); }
     }
-    if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/connections/"))) {
-        return coreBroker->getAllOperationConnectionInfos(match[1]);
+    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/([^/]*)/"))) {
+      return coreBroker->store()->getObjectInfo("connection", nerikiri::naming::join(match[1], match[2], match[3])); }
     }
     /*
     if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/connections/"))) {
@@ -60,28 +90,18 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
         return store->getAllOperation({{"fullName", Value(match[1])}})->getOutputConnectionInfo({{"name", Value(match[2])}});
     }
     */
-    if (path == "/process/containers/") {
-      return coreBroker->getContainerInfos();
-    }
-    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/"))) {
-      return coreBroker->getContainerInfo(match[1]);
-    }
-    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
-      return coreBroker->getContainerOperationInfos(match[1]);
-    }
+    
+    
+    
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/info/"))) {
       return coreBroker->getContainerOperationInfos(match[1].str() + ":" + match[2].str());
     }
     if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/"))) {
       return coreBroker->invokeContainerOperation(match[1].str() + ":" + match[2].str());
     }
-    if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/([^/]*)/connections/"))) {
-      return coreBroker->getContainerOperationConnectionInfos(match[1].str() + ":" + match[2].str());
-    }
+    
 
-    if (path == "/process/fsms/") {
-      return coreBroker->getFSMInfos();
-    }
+  
     if (std::regex_match(path, match, std::regex("/process/fsms/([^/]*)/"))) {
       return coreBroker->getFSMInfo(match[1].str());
     }
@@ -143,39 +163,6 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
 }
 
-Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& path, const Value& value, BrokerAPI* receiverBroker) {
-  std::smatch match;
-  logger::info("ObjectMapper::createResource({}, {}) called.", path, str(value));
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/"))) {
-    return coreBroker->registerConsumerConnection(value);
-  }
-  if (std::regex_match(path, match, std::regex("/process/connections/"))) {
-    return coreBroker->createConnection(value, value);
-  }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/output/connections/"))) {
-    return coreBroker->registerProviderConnection(value);
-  }
-
-  if (path == "/process/ecs/") {
-    return coreBroker->createExecutionContext(value);
-  }
-
-  if (path == "/process/operations/") {
-    return coreBroker->createOperation(value);
-  }
-
-  if (path == "/process/containers/") {
-    return coreBroker->createContainer(value);
-  }
-
-
-  if (std::regex_match(path, match, std::regex("/process/ecs/([^/]*)/operations/([^/]*)/"))) {
-    return coreBroker->bindOperationToExecutionContext(match[1], match[2], value);
-    //return coreBroker->bindOperationToExecutionContext(match[1], match[2]);
-  }
-
-  return Value::error(logger::error("ObjectMapper::createResource({}) failed. This request could not find appropreate callbacks", path));
-}
 
 /**
  * 
@@ -240,7 +227,7 @@ Value ObjectMapper::updateResource(CoreBroker* coreBroker, const std::string& pa
  * 
  */
 Value ObjectMapper::deleteResource(CoreBroker* coreBroker, const std::string& path, BrokerAPI* receiverBroker) {
-  logger::debug("ObjectMapper::deleteResource(store, path={}", path);
+  logger::debug("ObjectMapper::deleteResource(path={}", path);
   std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     return coreBroker->removeConsumerConnection(match[1], match[2], match[3]);

@@ -24,6 +24,19 @@ namespace nerikiri {
       const std::string join(const std::string& ns, const std::string& n) {
         return ns + name_separator + n;
       }
+
+      const std::string join(const std::string& ns, const std::string& n, const std::string& n2) {
+        return ns + name_separator + n + name_separator + n2;
+      }
+
+      inline std::pair<std::string, std::string> splitContainerAndOperationName(const std::string& name) {
+        auto i = name.rfind(name_separator);
+        if (i == std::string::npos) {
+            return {name.substr(0, i), ""};
+        }
+        return {name.substr(0, i), name.substr(i+1)};
+      }
+
     }
 
 

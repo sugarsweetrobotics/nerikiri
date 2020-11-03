@@ -19,6 +19,8 @@ namespace nerikiri {
 
         static Value createContainer(ProcessStore& store, const Value& ci);
 
+        static Value createContainerOperation(ProcessStore& store, const std::string& containerFullName, const Value& info);
+
         static Value createBroker(ProcessStore& store, const Value& ci);
 
         static std::shared_ptr<BrokerAPI>  createBrokerProxy(ProcessStore& store, const Value& ci);
@@ -36,6 +38,8 @@ namespace nerikiri {
 
         static Value deleteContainer(ProcessStore& store, const std::string& fullName) ;
         
+        static Value deleteContainerOperation(ProcessStore& store, const std::string& fullName) ;
+
         static Value deleteExecutionContext(ProcessStore& store, const std::string& fullName) ;
 
         static Value deleteFSM(ProcessStore& store, const std::string& fullName) ;

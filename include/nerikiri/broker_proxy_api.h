@@ -7,53 +7,57 @@
 
 namespace nerikiri {
 
-    class CRUDBrokerAPI {
-    public:
-        virtual ~CRUDBrokerAPI () {}
-
-    public:
-
-        virtual Value createObject(const std::string& typeName, const std::string& objectTypeName, const std::string& info) = 0;
-
-        virtual Value deleteObject(const std::string& fullName) = 0;
-
-        virtual Value updateObject(const std::string& fullName, const Value& info) = 0;
-
-        virtual Value readObject(const std::string& fullName) = 0;
-    };
+   
 
     class FactoryBrokerAPI {
     public:
         virtual ~FactoryBrokerAPI() {}
 
     public:
-        virtual createObject(const std::string& className, const std::string& typeName, const Value& info={}) = 0;
+        virtual Value createObject(const std::string& className, const Value& info={}) = 0;
 
-        virtual deleteObject(const sdt::string& fullName) = 0;
+        virtual Value deleteObject(const std::string& className, const std::string& fullName) = 0;
     };
 
-    class ProcessStoreBrokerAPI {
+    class NullFactoryBroker : public FactoryBrokerAPI {
     public:
-        virtual ~ProcessStoreBrokerAPI() {}
+        virtual ~NullFactoryBroker() {}
+    public:
+        virtual Value createObject(const std::string& className, const Value& info={}) override {
+            return Value::error(logger::error("NullFactoryBroker::createObject({}, {}) called. Object is null.", className, info));
+        }
 
-        virtual getClassObjectInfos(const std::string& className) const = 0;
-
-        virtual getObjectInfos(const std::string& className, const std::string& typeName) const = 0;
-
+        virtual Value deleteObject(const std::string& className, const std::string& fullName) override {
+            return Value::error(logger::error("NullFactoryBroker::createObject({}, {}) called. Object is null.", className, fullName));
+        }
     };
 
-    class ObjectBrokerAPI {
+    class StoreBrokerAPI {
     public:
-        virtual ~ObjectBrokerAPI() {}
+        virtual ~StoreBrokerAPI() {}
 
+        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) = 0;
+
+        virtual Value getClassObjectInfos(const std::string& className) = 0;
+
+        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className)  = 0;
+    };
+
+    class NullStoreBroker : public StoreBrokerAPI {
     public:
-        virtual getInfo(const std::string& fullName) const = 0;
+        virtual ~NullStoreBroker() {}
 
-        virtual getInfo(const std::string& className, const std::string& typeName, const std::string& fullName) const = 0;
+        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) override {
+            return Value::error(logger::error("NullStoreBroker::getObjectInfo({}, {}) called. Object is null.", className, fullName));
+        }
 
-        virtual getFullInfo(const std::string& className, const std::string& typeName, const std::string& fullName) const = 0;
+        virtual Value getClassObjectInfos(const std::string& className) override {
+            return Value::error(logger::error("NullStoreBroker::getClassObjectInfos({}) called. Object is null.", className));
+        }
 
-        virtual getFullInfo(const std::string& fullName) const = 0;
+        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) override {
+            return Value::error(logger::error("NullStoreBroker::getCildrenClassObjectInfos({}, {}) called. Object is null.", parentName, className));
+        }
     };
 
     class OperationBrokerAPI {
@@ -154,60 +158,37 @@ namespace nerikiri {
 
     };
 
-    class BrokerProxyAPI : public Object, public OperationBrokerAPI, 
-                public ContainerBrokerAPI, 
-                public ContainerOperationBrokerAPI, 
-                public AllOperationBrokerAPI,
-                public ConnectionBrokerAPI,
-                public ECBrokerAPI,
-                public FSMBrokerAPI
+    class BrokerProxyAPI : public Object
     {
     private:
 
     public:
-        BrokerProxyAPI(): Object() {}
+        BrokerProxyAPI(const std::string& typeName, const std::string& fullName): Object(typeName, fullName) {}
 
         BrokerProxyAPI(const Value& info) : Object(info) {}
 
-        virtual ~BrokerAPI() {}
+        virtual ~BrokerProxyAPI() {}
+    public:
+        virtual std::shared_ptr<FactoryBrokerAPI> factory() = 0;
+        virtual std::shared_ptr<StoreBrokerAPI>   store() = 0;
 
-        virtual Value getBrokerInfo() const = 0; 
+    };
 
-        virtual Value getProcessInfo() const = 0;
+    class NullBrokerProxy : public BrokerProxyAPI
+    {
+    private:
 
+    public:
+        NullBrokerProxy(): BrokerProxyAPI("NullBrokerProxy", "null") {}
+        virtual ~NullBrokerProxy() {}
+    public:
+        virtual std::shared_ptr<FactoryBrokerAPI> factory() override {
+            return std::make_shared<NullFactoryBroker>();
+        }
+        virtual std::shared_ptr<StoreBrokerAPI> store() override {
+            return std::make_shared<NullStoreBroker>();
+        }
 
-        virtual Value createResource(const std::string& path, const Value& value) = 0;
-
-        virtual Value readResource(const std::string& path) const = 0;
-
-        virtual Value updateResource(const std::string& path, const Value& value) = 0;
-
-        virtual Value deleteResource(const std::string& path) = 0;
-
-
-        virtual Value getBrokerInfos() const = 0;
-
-        virtual Value getCallbacks() const = 0;
-
-
-        virtual Value getTopicInfos() const = 0;
-
-        virtual Value invokeTopic(const std::string& fullName) const = 0;
-
-        virtual Value getTopicConnectionInfos(const std::string& fullName) const = 0;
-        /*
-        virtual Value getGenericFSMInfos() = 0;
-
-        virtual Value createGenericFSM(const Value& info) = 0;
-
-        virtual Value deleteGenericFSM(const Value& info) = 0;
-
-        virtual Value getGenericFSMInfo(const Value& fullName) = 0;
-
-        virtual Value getGenericFSMState(const Value& info) = 0;
-
-        virtual Value setGenericFSMState(const Value& info, const std::string& state) = 0;
-        */
     };
 
 
