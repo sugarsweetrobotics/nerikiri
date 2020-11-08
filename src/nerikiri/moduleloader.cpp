@@ -1,9 +1,10 @@
-#include "nerikiri/logger.h"
-#include "nerikiri/dllproxy.h"
+#include <nerikiri/logger.h>
+#include <nerikiri/dllproxy.h>
 
-#include "nerikiri/moduleloader.h"
+#include <nerikiri/moduleloader.h>
 
-#include "nerikiri/operationfactory.h"
+#include <nerikiri/container_operation_factory_base.h>
+#include <nerikiri/operation_factory.h>
 
 
 using namespace nerikiri;
@@ -78,7 +79,7 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
       auto f = dllproxy->functionSymbol("create" + name); 
       if (f) {
         logger::info("ModuleLoader::loadContainerFactory({}, {}) load success.", p, name);
-        store.addContainerFactory(std::shared_ptr<ContainerFactoryBase>(  static_cast<ContainerFactoryBase*>(f())  ) );
+        store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>(  static_cast<ContainerFactoryAPI*>(f())  ) );
         return info;
       } else {
         logger::debug("ModuleLoader::loadContainerFactory failed. Can load DLL but can not find Symbol({})", name);
@@ -106,7 +107,7 @@ Value ModuleLoader::loadExecutionContextFactory(ProcessStore& store, std::vector
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
         logger::info("ModuleLoader::loadExecutionContextFactory({}, {}) load success.", p, name);
-        store.addExecutionContextFactory(std::shared_ptr<ExecutionContextFactory>(  static_cast<ExecutionContextFactory*>(f())  ) );
+        store.addECFactory(std::shared_ptr<ExecutionContextFactoryAPI>(  static_cast<ExecutionContextFactoryAPI*>(f())  ) );
         return info;
       } else {
           logger::debug("ModuleLoader::loadExecutionContextFactory failed. Can load DLL but can not find Symbol({})", "create" + name);
@@ -133,7 +134,7 @@ Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::stri
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
         logger::info("ModuleLoader::loadBrokerFactory({}, {}) load success.", p, name);
-        store.addBrokerFactory(std::shared_ptr<BrokerFactory>(  static_cast<BrokerFactory*>(f())  ) );
+        store.addBrokerFactory(std::shared_ptr<BrokerFactoryAPI>(  static_cast<BrokerFactoryAPI*>(f())  ) );
         return info;
       } else {
         logger::debug("ModuleLoader::loadBrokerFactory failed. Can load DLL but can not find Symbol({})", "create" + name);

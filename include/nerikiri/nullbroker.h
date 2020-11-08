@@ -2,12 +2,12 @@
 
 
 
-#include "nerikiri/brokerapi.h"
+#include "nerikiri/broker_api.h"
 
 
 namespace nerikiri {
 
-
+   /*
     class NullBroker : public BrokerAPI {
     private:
 
@@ -295,4 +295,5 @@ namespace nerikiri {
         }
 
     };
+    */
 }

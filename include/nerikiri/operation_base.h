@@ -60,7 +60,7 @@ namespace nerikiri {
     ConnectionContainer connections_;
   public:
   
-    virtual Value get() const  { return outputBuffer_.pop(); }
+    virtual Value get() const override { return outputBuffer_.pop(); }
 
     virtual Value invoke() { 
       outputBuffer_.push(operation_->invoke());
@@ -119,7 +119,7 @@ namespace nerikiri {
       return operation_->execute();
     }
 
-    virtual Value collectValues() override;
+    virtual Value collectValues();
 
     virtual bool isUpdated() const override { 
       if(argument_updated_) return true;

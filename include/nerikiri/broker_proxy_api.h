@@ -36,26 +36,26 @@ namespace nerikiri {
     public:
         virtual ~StoreBrokerAPI() {}
 
-        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) = 0;
+        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const = 0;
 
-        virtual Value getClassObjectInfos(const std::string& className) = 0;
+        virtual Value getClassObjectInfos(const std::string& className) const = 0;
 
-        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className)  = 0;
+        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const = 0;
     };
 
     class NullStoreBroker : public StoreBrokerAPI {
     public:
         virtual ~NullStoreBroker() {}
 
-        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) override {
+        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
             return Value::error(logger::error("NullStoreBroker::getObjectInfo({}, {}) called. Object is null.", className, fullName));
         }
 
-        virtual Value getClassObjectInfos(const std::string& className) override {
+        virtual Value getClassObjectInfos(const std::string& className) const override {
             return Value::error(logger::error("NullStoreBroker::getClassObjectInfos({}) called. Object is null.", className));
         }
 
-        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) override {
+        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {
             return Value::error(logger::error("NullStoreBroker::getCildrenClassObjectInfos({}, {}) called. Object is null.", parentName, className));
         }
     };
@@ -170,7 +170,9 @@ namespace nerikiri {
         virtual ~BrokerProxyAPI() {}
     public:
         virtual std::shared_ptr<FactoryBrokerAPI> factory() = 0;
+        virtual std::shared_ptr<const FactoryBrokerAPI> factory() const = 0;
         virtual std::shared_ptr<StoreBrokerAPI>   store() = 0;
+        virtual std::shared_ptr<const StoreBrokerAPI>   store() const = 0;
 
     };
 
@@ -185,10 +187,18 @@ namespace nerikiri {
         virtual std::shared_ptr<FactoryBrokerAPI> factory() override {
             return std::make_shared<NullFactoryBroker>();
         }
+
+        virtual std::shared_ptr<const FactoryBrokerAPI> factory() const override{
+            return std::make_shared<NullFactoryBroker>();
+        }
+
         virtual std::shared_ptr<StoreBrokerAPI> store() override {
             return std::make_shared<NullStoreBroker>();
         }
 
+        virtual std::shared_ptr<const StoreBrokerAPI> store() const override {
+            return std::make_shared<NullStoreBroker>();
+        }
     };
 
 

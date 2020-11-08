@@ -1,16 +1,18 @@
 #pragma once
 
-#include <nerikiri/object.h>
+#include <nerikiri/broker_api.h>
+#include <nerikiri/broker_proxy_api.h>
 
 namespace nerikiri {
 
-    class BrokerFactoryAPI : public nerikiri::Object{
+    class BrokerFactoryAPI : public nerikiri::Object {
     private:
     public:
         BrokerFactoryAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName) {}
         virtual ~BrokerFactoryAPI() {}
 
     public:
+        virtual std::string brokerTypeFullName() const = 0;
         virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
 
         virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) = 0;
@@ -22,6 +24,9 @@ namespace nerikiri {
         virtual ~NullBrokerFactory() {}
 
     public:
+        virtual std::string brokerTypeFullName() const override {
+            return "NullBroker";
+        }
 
         virtual std::shared_ptr<BrokerAPI> create(const Value& param) override {
             logger::error("NullBrokerFactory::{}() failed. Object is null.", __func__, param);

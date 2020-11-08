@@ -89,7 +89,7 @@ namespace nerikiri {
     void stop();
     
 
-    Process& loadOperationFactory(const std::shared_ptr<OperationFactory>& opf) {
+    Process& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) {
       store()->addOperationFactory(opf); return *this;
     }
 

@@ -1,17 +1,18 @@
 #pragma once
 
-#include "nerikiri/brokerapi.h"
-#include "nerikiri/naming.h"
+#include <nerikiri/broker_proxy_api.h>
+#include <nerikiri/naming.h>
 
 namespace nerikiri {
 
-
-  class AbstractBrokerProxy : public BrokerAPI {
+  
+  class AbstractBrokerProxy : public BrokerProxyAPI {
   public:
-    AbstractBrokerProxy(const Value& v) : BrokerAPI(v) {}
+    AbstractBrokerProxy(const Value& v) : BrokerProxyAPI(v) {}
     virtual ~AbstractBrokerProxy() {}
 
   public:
+  /*
     virtual Value getBrokerInfo() const override {
       return readResource("/broker/info/");
     }
@@ -290,7 +291,7 @@ namespace nerikiri {
     virtual Value bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& targetFsmState) override  {
       return createResource("/process/fsms/" + fsmFullName + "/state/" + state + "/fsms/", targetFsmState);
     }
-    
+    */
   };
 
 }

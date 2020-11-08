@@ -203,7 +203,7 @@ namespace nerikiri {
       return {brokers_.begin(), brokers_.end()};
     }
 
-    std::vector<std::shared_ptr<BrokerFactoryAPI> brokerFactories() const {
+    std::vector<std::shared_ptr<BrokerFactoryAPI>> brokerFactories() const {
       return {brokerFactories_.begin(), brokerFactories_.end()};
     }
 
@@ -219,7 +219,7 @@ namespace nerikiri {
       return del<OperationAPI>(operations_, fullName);
     }
 
-    Value addOperationFactory(const std::shared_ptr<OperationFactory>& opf) {
+    Value addOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) {
       return add<OperationFactoryAPI>(operationFactories_, opf, ".opf");
     }
 
@@ -332,7 +332,7 @@ namespace nerikiri {
     }
 
     std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerOperationTypeFullName) const {
-      auto& [containerTypeFullName, operationTypeFullName] = nerikiri::naming::splitContainerAndOperationName(containerOperationTypeFullName);
+      const auto& [containerTypeFullName, operationTypeFullName] = nerikiri::naming::splitContainerAndOperationName(containerOperationTypeFullName);
       return containerOperationFactory(containerTypeFullName, operationTypeFullName);
     }
 

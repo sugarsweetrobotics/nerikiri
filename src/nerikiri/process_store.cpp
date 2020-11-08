@@ -8,7 +8,7 @@
 
 #include "nerikiri/process.h"
 
-#include "nerikiri/broker.h"
+#include "nerikiri/broker_api.h"
 #include <iostream>
 
 using namespace nerikiri;
@@ -34,25 +34,27 @@ Value ProcessStore::info() const { return process_->info(); }
 
 /**
  * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
- */
-Value ProcessStore::addBroker(const std::shared_ptr<Broker>& brk) {
+ *
+Value ProcessStore::addBroker(const std::shared_ptr<BrokerAPI>& brk) {
   return add<Broker>(brokers_, brk, ".brk");
 }
+*/
 
 /**
  * Brokerの追加．fullNameやinstanceNameの自動割り当ても行う
- */
-Value ProcessStore::addBroker(std::shared_ptr<Broker>&& brk) {
+ *
+Value ProcessStore::addBroker(std::shared_ptr<BrokerAPI>&& brk) {
   return add<Broker>(brokers_, std::move(brk), ".brk");
 }
+*/
 
 /**
  * Brokerの取得
- */
+ *
 std::shared_ptr<Broker> ProcessStore::getBroker(const std::string& fullName) {
   return get<Broker>(brokers_, fullName, nullBroker);
 }
-
+*/
 
 /*
 Value ProcessStore::addContainer(std::shared_ptr<ContainerBase> container) {
@@ -284,7 +286,7 @@ std::shared_ptr<FSMFactory> ProcessStore::getFSMFactory(const Value& fsmInfo) {
 }
 */
 
-
+/*
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   if (info.hasKey("broker")) {
     auto f = brokerFactory(Value::string(info.at("broker").at("typeName")));
@@ -299,3 +301,5 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   if (op) return op.value();
   return std::make_shared<NullOperation>();
 }
+
+*/

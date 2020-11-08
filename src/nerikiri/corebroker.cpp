@@ -35,29 +35,29 @@ Value CoreFactoryBroker::deleteObject(const std::string& className, const std::s
     } else if (className == "container") {
         return ObjectFactory::deleteContainer(*process_->store(), fullName);
     } else if (className == "containerOperation") {
-        return ObjectFactory::deleteContainerOpertaion(*process_->store(), fullName);
+        return ObjectFactory::deleteContainerOperation(*process_->store(), fullName);
     } else if (className == "ec") {
         return ObjectFactory::deleteExecutionContext(*process_->store(), fullName);
     } else if (className == "fsm") {
         return ObjectFactory::deleteFSM(*process_->store(), fullName);
     }
 
-    return Value::error(logger::error("CoreBroker::deleteObject({}, {}) failed. Class name is invalid.", className, info));
+    return Value::error(logger::error("CoreBroker::deleteObject({}, {}) failed. Class name is invalid.", className, fullName));
 }
 
-Value CoreProcessStoreBroker::getClassObjectInfos(const std::string& className) const {
+Value CoreStoreBroker::getClassObjectInfos(const std::string& className) const {
     logger::trace("CoreBroker::getClassObjectInfos({})", className);
     if (className == "operation") {
-        return nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(process_->store()->operations, [](auto op) { return op->info(); });
+        return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](auto op) { return op->info(); });
     }
 
     return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
 }
   
-Value CoreProcessStoreBroker::getObjectInfo(const std::string& className, const std::string& fullName) const {
+Value CoreStoreBroker::getObjectInfo(const std::string& className, const std::string& fullName) const {
     logger::trace("CoreBroker::getObjectInfo({}, {})", className, fullName);
     if (className == "operation") {
-        return process_->store()->operation(fullName);
+        return process_->store()->operation(fullName)->info();
     }
 
     return Value::error(logger::error("CoreBroker::getObjectInfo({}, {}) failed. Class name is invalid.", className, fullName));
@@ -65,6 +65,7 @@ Value CoreProcessStoreBroker::getObjectInfo(const std::string& className, const 
 
 //std::shared_ptr<BrokerAPI>  Broker::null = std::shared_ptr<BrokerAPI>(nullptr);
 
+/*
 Value CoreBroker::getProcessInfo() const{ return process_->info(); }
 
 Value CoreBroker::getOperationInfos() const {
@@ -415,3 +416,4 @@ Value CoreBroker::bindECStateToFSMState(const std::string& fsmFullName, const st
 Value CoreBroker::bindFSMStateToFSMState(const std::string& fsmFullName, const std::string& state, const Value& fsmState) {
     
 }
+*/

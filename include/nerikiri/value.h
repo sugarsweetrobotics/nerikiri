@@ -543,6 +543,8 @@ namespace nerikiri {
       if (v.isStringValue()) return v.stringValue();
       return _default;
     }
+
+    static Value merge(const Value& v1, const Value& v2);
   };
 
 /*

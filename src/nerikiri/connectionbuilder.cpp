@@ -1,16 +1,25 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
 #include "nerikiri/connectionbuilder.h"
-#include "nerikiri/objectfactory.h"
+#include <nerikiri/objectfactory.h>
 
+
+#include <nerikiri/proxy_builder.h>
 
 
 
 using namespace nerikiri;
 
 Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
-  auto outlet = store->operationProxy(connectionInfo.at("output"))->outlet();
-  auto inlet = store->operationProxy(connectionInfo.at("input"))->inlet(Value::string(connectionInfo.at("input").at("target").at("name")));
+  auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("output"), store)->outlet();
+  //auto outlet = store->operationProxy(connectionInfo.at("output"))->outlet();
+  //auto inlet = store->operationProxy(connectionInfo.at("input"))->inlet(Value::string(connectionInfo.at("input").at("target").at("name")));
+  auto inletOpt  = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(ProxyBuilder::operationProxy(connectionInfo.at("input"), store)->inlets(),
+    [&connectionInfo](auto inlet) { return inlet->name() == Value::string(connectionInfo.at("input").at("target").at("name")); });
+  if (!inletOpt) {
+    return Value::error(logger::error("ConnectionBuilder::createConnection({}) failed. Inlet (name={}) not found", connectionInfo, Value::string(connectionInfo.at("input").at("target").at("name"))));
+  }
+  auto inlet = inletOpt.value();
   auto name = Value::string(connectionInfo.at("name"));
   auto type = Value::string(connectionInfo.at("type"));
 
@@ -22,11 +31,11 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
     return Value::error(logger::error("ConnectionBuilder::createConnection() failed. ConnectionType is unknown. Must be pull|push|event."));
   }
 
-  auto outletV = outlet->addConnection(std::shared_ptr<Connection>(name, connectionType, outlet, inlet));
+  auto outletV = outlet->addConnection(std::make_shared<Connection>(name, connectionType, inlet, outlet));
   if (outletV.isError()) {
     return Value::error(logger::error("ConnectionBuilder::createConnection() failed. OperationOutlet::addConnection failed. {}", outletV.getErrorMessage()));
   }
-  auto inletV = outlet->addConnection(std::shared_ptr<Connection>(name, connectionType, outlet, inlet));
+  auto inletV = inlet->addConnection(std::make_shared<Connection>(name, connectionType, inlet, outlet));
   if (inletV.isError()) {
     outlet->removeConnection(Value::string(outletV.at("fullName")));
     return Value::error(logger::error("ConnectionBuilder::createConnection() failed. OperationInlet::addConnection failed. {}", inletV.getErrorMessage()));
@@ -34,8 +43,8 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
   return connectionInfo;
 }
 
-
-Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+/*
+Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker) {
     logger::trace("ConnectionBuilder::registerOperationProviderConnection({})", (ci));
     try {
         auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
@@ -65,12 +74,15 @@ Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store
         return Value::error(logger::error("ConnectionBuilder::registerOperationProviderConnection(" + str(ci) + ") failed. Exception: " + std::string(ex.what())));
     }
 }
+*/
 
+/*
 Value ConnectionBuilder::connect(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet) {
   logger::trace("Process::registerOperationConsumerConnection({}", (ci));
   inlet->addConnection(std::make_shared<Connection>(name, type, outlet, inlet);
   outlet->addConnection(std::make_shared<Connection>(name, type, outlet, inlet));            
 }
+*/
 
 /**
  * もしConnectionInfoで指定されたBrokerが引数のbrokerでなければ，親プロセスに対して別のブローカーをリクエストする
@@ -84,6 +96,7 @@ Value ConnectionBuilder::connect(const std::string& name, const ConnectionAPI::C
 //  return store->getOperationOrTopic(info.at("fullName").stringValue());
 //}
 
+/*
 Value ConnectionBuilder::_validateOutputConnectionInfo(std::shared_ptr<OperationBase> op, const Value& conInfo) {
   auto ret = conInfo;
   if (op->hasOutputConnectionRoute(ret)) {
@@ -154,14 +167,15 @@ Value ConnectionBuilder::registerOperationConsumerConnection(ProcessStore* store
   return store->getOperationOrTopic(fullName)->addConsumerConnection(consumerConnection(ret,
             ObjectFactory::createBrokerProxy(*store, ci.at("input").at("broker"))));
 }
-
+*/
 
 
 Value ConnectionBuilder::deleteConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
   return Value::error(logger::error("ConnectionBuilder::deleteConnection(" + str(ci) + ") failed."));
 }
 
-Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+/*
+Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker=nullptr) {
     logger::trace("ConnectionBuilder::bindOperationToFSM({})", (ci));
     try {
         auto outputFullName = ci.at("output").at("info").at("fullName").stringValue();
@@ -190,11 +204,11 @@ Value ConnectionBuilder::bindOperationToFSM(ProcessStore* store, const Value& ci
     }
 }
 
-Value ConnectionBuilder::unbindOperationToFSM(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+Value ConnectionBuilder::unbindOperationToFSM(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*) {
 
 }
 
-Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
+Value ConnectionBuilder::registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*) {
   logger::trace("ConnectionBuilder::registerOperationProviderConnection({})", ci);
   return ConnectionBuilder::registerOperationProviderConnection(store, ci, receiverBroker);
 }
@@ -308,3 +322,4 @@ Value ConnectionBuilder::registerTopicSubscriber(ProcessStore* store, const Valu
   }
   return Value::error(logger::error("Register Topic Subscriber failed: {}", topicInfo));
 }
+*/

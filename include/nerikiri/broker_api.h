@@ -27,6 +27,7 @@ namespace nerikiri {
 
     public:
         BrokerAPI(const std::string& typeName, const std::string& fullName): Object(typeName, fullName) {}
+        
         virtual ~BrokerAPI() {}
 
         virtual bool run(Process* process) = 0;

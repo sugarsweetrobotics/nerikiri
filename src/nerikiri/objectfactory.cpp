@@ -25,22 +25,23 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   return store.addContainer(c);
 }
 
-Value ObjectFactory::createContainerOperation(ProcessStore& store, const std::string& containerFullName, const Value& info) {
-  logger::trace("Process::createContainerOperation({}, {})", containerFullName, info);
+Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& info) {
+  logger::trace("Process::createContainerOperation({})", info);
+  const std::string& containerFullName = Value::string(info.at("containerFullName"));
   auto fullName = Value::string(info.at("fullName)"));
   return store.addOperation(store.containerOperationFactory(Value::string(info.at("typeName")))->create(store.container(containerFullName), fullName));
 }
 
 
-Value ObjectFactory::createBroker(ProcessStore& store, const Value& ci) {
-  logger::trace("Process::createBroker({})", (ci));
-
-  return store.addBroker(store.getBrokerFactory(ci)->create(ci));
+Value ObjectFactory::createBroker(ProcessStore& store, const Value& info) {
+  logger::trace("Process::createBroker({})", info);
+  auto fullName = Value::string(info.at("fullName)"));
+  return store.addBroker(store.brokerFactory(Value::string(info.at("typeName")))->create(fullName));
 }
 
-std::shared_ptr<BrokerAPI>  ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
-  logger::trace("ObjectFactory::createBrokerProxy({})", (bi));
-  return store.getBrokerFactory(bi)->createProxy(bi);
+std::shared_ptr<BrokerProxyAPI>  ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
+  logger::trace("ObjectFactory::createBrokerProxy({})", bi);
+  return store.brokerFactory(Value::string(bi.at("typeName")))->createProxy(Value::string(bi.at("fullName")));
 }
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {

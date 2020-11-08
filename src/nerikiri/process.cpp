@@ -52,7 +52,7 @@ Process::Process(const std::string& name) : ProcessAPI("Process", name), store_(
   }
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
-  coreBroker_ = std::make_shared<CoreBroker>(this, Value({{"typeName", "CoreBroker"}, {"instanceName", "coreBroker0"}, {"fullName", "coreBroker0"}}));
+  coreBroker_ = std::make_shared<CoreBroker>(this, "coreBroker0");
   try {
     store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
     store_.addTopicFactory(std::make_shared<TopicFactory>("topicFactory"));
@@ -376,7 +376,7 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   return *this;
 }
 
-static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, Process* process, std::shared_ptr<Broker> brk) {
+static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, Process* process, std::shared_ptr<BrokerAPI> brk) {
   logger::trace("Creating a thread for broker {}", brk->info());
   std::promise<bool> prms;
   auto ftr = prms.get_future();
@@ -417,7 +417,7 @@ void Process::startAsync() {
   _preloadBrokers();
   _preStartFSMs();
   _preStartExecutionContexts();
-  auto broker_futures = nerikiri::map<std::future<bool>, std::shared_ptr<Broker>>(store_.brokers_, [this](auto& brk) -> std::future<bool> {
+  auto broker_futures = nerikiri::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store()->brokers(), [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, this, brk);
 								 });
   
@@ -458,7 +458,7 @@ int32_t Process::wait() {
 void Process::stop() {
   logger::trace("Process::shutdown()");
   setObjectState("stopping");
-  nerikiri::foreach<std::shared_ptr<Broker> >(store_.brokers_, [this](auto& brk) {
+  nerikiri::foreach<std::shared_ptr<BrokerAPI> >(store_.brokers_, [this](auto& brk) {
 			      brk->shutdown(this);
 			    });
   nerikiri::foreach<std::string, SystemEditor_ptr>(systemEditors_, [this](auto& name, auto& se) {

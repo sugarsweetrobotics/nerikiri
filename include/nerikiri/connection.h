@@ -6,7 +6,7 @@
 #include <functional>
 
 #include <nerikiri/connection_api.h>
-#include <nerikiri/brokerapi.h>
+#include <nerikiri/broker_api.h>
 
 namespace nerikiri {
 

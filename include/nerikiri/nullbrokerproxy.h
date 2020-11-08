@@ -3,7 +3,7 @@
 #include "nerikiri/abstractbrokerproxy.h"
 
 namespace nerikiri {
-
+    /*
     class NullBrokerProxy : public AbstractBrokerProxy {
     public:
 
@@ -33,4 +33,5 @@ namespace nerikiri {
     };
 
     inline std::shared_ptr<BrokerAPI> nullBrokerProxy() { return std::make_shared<NullBrokerProxy>(); }
+    */
 }

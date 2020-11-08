@@ -15,13 +15,16 @@ namespace nerikiri::json {
 
     class JSONConstructError : public std::exception {
     private:
-        std::string msg;
+        std::string msg_;
     public:
-        JSONConstructError(const std::string&msg) : msg(msg) {}
-        const char* what() throw() { 
+        JSONConstructError(const std::string&msg) {
             std::stringstream ss;
             ss << "JSONConstructError(msg=" << msg << ")"; 
-            return ss.str().c_str();
+            msg_= ss.str();
+        }
+
+        const char* what() throw() { 
+            return msg_.c_str();
         }
     };
 

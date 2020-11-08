@@ -20,6 +20,10 @@ Value Value::object() {
   return Value{std::map<std::string, Value>{}};
 }
 
+Value Value::merge(const Value& v1, const Value& v2) {
+  return nerikiri::merge(v1, v2);
+}
+
 
 bool Value::boolValue() const {
   if (isBoolValue()) return boolvalue_;

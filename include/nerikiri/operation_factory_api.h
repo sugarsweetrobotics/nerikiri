@@ -1,6 +1,8 @@
 #pragma once
 
 #include <nerikiri/operation_api.h>
+#include <nerikiri/operation.h>
+
 
 namespace nerikiri {
 
@@ -26,7 +28,7 @@ namespace nerikiri {
     }
   };
 
-
+  /*
   class OperationFactory : public OperationFactoryAPI{
   private:
     const Value defaultArgs_;
@@ -43,6 +45,7 @@ namespace nerikiri {
       return std::make_shared<Operation>(operationTypeFullName(), _fullName, defaultArgs_, function_); 
     }
   };
+  */
 
   //inline void* operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(info, func); }
 }

@@ -1,7 +1,7 @@
 
 
-#include "nerikiri/broker.h"
-#include "nerikiri/brokerfactory.h"
+#include "nerikiri/broker_api.h"
+#include "nerikiri/broker_factory.h"
 
 #include "nerikiri/nullbroker.h"
 #include "nerikiri/nullbrokerproxy.h"

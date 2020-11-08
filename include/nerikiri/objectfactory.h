@@ -2,7 +2,8 @@
 
 #include <memory>
 
-#include "nerikiri/brokerapi.h"
+#include "nerikiri/broker_api.h"
+#include "nerikiri/broker_proxy_api.h"
 #include "nerikiri/value.h"
 #include "nerikiri/process_store.h"
 
@@ -19,11 +20,11 @@ namespace nerikiri {
 
         static Value createContainer(ProcessStore& store, const Value& ci);
 
-        static Value createContainerOperation(ProcessStore& store, const std::string& containerFullName, const Value& info);
+        static Value createContainerOperation(ProcessStore& store, const Value& info);
 
         static Value createBroker(ProcessStore& store, const Value& ci);
 
-        static std::shared_ptr<BrokerAPI>  createBrokerProxy(ProcessStore& store, const Value& ci);
+        static std::shared_ptr<BrokerProxyAPI>  createBrokerProxy(ProcessStore& store, const Value& ci);
 
         static Value createExecutionContext(ProcessStore& store, const Value& value);
 

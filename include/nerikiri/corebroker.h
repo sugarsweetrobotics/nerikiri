@@ -29,11 +29,11 @@ public:
   CoreStoreBroker(Process* proc) : process_(proc) {}
   virtual ~CoreStoreBroker() {}
 
-  virtual Value getClassObjectInfos(const std::string& className) override;
+  virtual Value getClassObjectInfos(const std::string& className) const override;
 
-  virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) override;
+  virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override;
 
-  virtual Value getObjectInfo(const std::string& className, const std::string& fullName) override;
+  virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override;
 };
 
 class CoreBroker : public BrokerProxyAPI {
@@ -46,12 +46,15 @@ public:
 
   virtual std::shared_ptr<FactoryBrokerAPI> factory() override { return factory_; }
   virtual std::shared_ptr<StoreBrokerAPI>  store() override { return store_; }
+  virtual std::shared_ptr<const FactoryBrokerAPI> factory() const override{ return factory_; }
+  virtual std::shared_ptr<const StoreBrokerAPI> store() const override{ return store_; }
+
 public:
 
   /**
    * 
    */
-  CoreBroker(Process* process, const std::string& typeName, const std::string& fullName): BrokerProxyAPI(typeName, fullName), process_(process),
+  CoreBroker(Process* process, const std::string& fullName): BrokerProxyAPI("CoreBroker", fullName), process_(process),
    factory_(std::make_shared<CoreFactoryBroker>(process)), 
    store_(std::make_shared<CoreStoreBroker>(process)) {}
 
@@ -204,16 +207,24 @@ public:
 
 class CoreBrokerFactory : public nerikiri::BrokerFactoryAPI {
 private:
-  std::shared_ptr<BrokerAPI> coreBroker_;
+  std::shared_ptr<CoreBroker> coreBroker_;
 
 public:
-  CoreBrokerFactory(const std::shared_ptr<BrokerAPI>& coreBroker):
-   BrokerFactoryAPI({{"instanceName", "coreBroker"}, {"typeName", "CoreBroker"}}), coreBroker_(coreBroker) {}
+  virtual std::string brokerTypeFullName() const override {
+      return "CoreBroker";
+  }
+
+
+  CoreBrokerFactory(const std::shared_ptr<CoreBroker>& coreBroker):
+   BrokerFactoryAPI("CoreBrokerFactory", "coreBrokerFactory"), coreBroker_(coreBroker) {}
   virtual ~CoreBrokerFactory() {}
 
 public:
-  virtual std::shared_ptr<BrokerAPI> create(const Value& param) { return nullptr; }
-  virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) {
+  virtual std::shared_ptr<BrokerAPI> create(const Value& param) override { 
+    return std::make_shared<NullBroker>(); 
+  }
+
+  virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) override {
       return coreBroker_;
   }
 };
