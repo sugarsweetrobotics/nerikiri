@@ -4,6 +4,7 @@ process_store.cpp
 operation.cpp 
 operation_base.cpp
 operation_api.cpp
+proxy_builder.cpp
 #operationinfo.cpp 
 value.cpp 
 ec.cpp
@@ -16,6 +17,7 @@ brokerfactory.cpp
 fsm.cpp
 dllproxy.cpp 
 corebroker.cpp
+crud_broker.cpp
 broker.cpp
 moduleloader.cpp
 processconfigparser.cpp

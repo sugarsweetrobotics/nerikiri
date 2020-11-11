@@ -37,30 +37,31 @@ namespace nerikiri {
          */
         virtual ~ContainerBase() {}
 
+
         /**
          * ContainerにOperationを登録します．登録時にOperationのinstanceNameおよびfullNameを更新します
          * 
          * @param operation
-         *
+         */
         virtual Value addOperation(const std::shared_ptr<OperationAPI>& _operation) override { 
-            
-            
-            operations_.push_back(_operation); 
+            operations_.push_back(std::dynamic_pointer_cast<ContainerOperationBase>(_operation)); 
             return _operation->info();;
         }
 
-         **
+        
+
+        /**
          * 登録しているOperationを削除します
          * 
          * @param opInfo
          * @returns
-         *
-        virtual Value deleteOperation(const std::string& instanceName) override { 
+         */
+        virtual Value deleteOperation(const std::string& fullName) override { 
             auto it = operations_.begin();
             for(;it != operations_.end();++it) {
                 auto op = *it;
                 
-                if (op->info().at("fullName").stringValue() == instanceName) {
+                if (op->info().at("fullName").stringValue() == fullName) {
                     // match operation
                     it = operations_.erase(it);
                     return op->info();
@@ -68,9 +69,9 @@ namespace nerikiri {
             }
             return Value::error("ContainerBase::deleteOperation() failed. Operation not found.");        
         }
-        */
+        
 
-        /*
+        
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { 
             return {operations_.begin(), operations_.end()};
             //return operations_;
@@ -82,7 +83,7 @@ namespace nerikiri {
             return std::make_shared<NullOperation>();
         }
 
-        *
+        /*
         std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info) {
             if (this->isNull()) {
                 //logger::error("ContainerBase::getContainerOperationFactory failed. Container is null.");

@@ -3,10 +3,12 @@
 //#include <nerikiri/connection_api.h>
 
 #include <nerikiri/logger.h>
+#include <nerikiri/operation_api.h>
 
 namespace nerikiri {
 
   class ConnectionAPI;
+  class OperationAPI;
 
   class OperationInletAPI {
   public:
@@ -19,6 +21,8 @@ namespace nerikiri {
     virtual Value get() const = 0;
 
     virtual Value put(const Value& value) = 0;
+
+    virtual OperationAPI* owner() = 0;
 
     // virtual Value execute(const Value& value) = 0;
 
@@ -42,6 +46,8 @@ namespace nerikiri {
   };
 
   class NullOperationInlet : public OperationInletAPI {
+  private:
+    NullOperation owner_;
   public:
     virtual ~NullOperationInlet() {}
 
@@ -91,5 +97,9 @@ namespace nerikiri {
       return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
     }
 
+    virtual OperationAPI* owner() override {
+      logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__);
+      return &owner_;
+    }
   };
 }

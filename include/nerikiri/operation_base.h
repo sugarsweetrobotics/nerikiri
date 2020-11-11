@@ -59,6 +59,7 @@ namespace nerikiri {
     NewestValueBuffer outputBuffer_;
     ConnectionContainer connections_;
   public:
+    virtual OperationAPI* owner() override { return operation_; }
   
     virtual Value get() const override { return outputBuffer_.pop(); }
 
@@ -97,6 +98,8 @@ namespace nerikiri {
     std::mutex argument_mutex_;
 
   public:
+    virtual OperationAPI* owner() override { return operation_; }
+
     virtual std::string name() const override { return name_; }
 
     virtual Value defaultValue() const override { return default_; }
@@ -107,10 +110,12 @@ namespace nerikiri {
 
     virtual Value put(const Value& value) override {
       std::lock_guard<std::mutex> lock(argument_mutex_);
-      if (!value.isError()) {
-        buffer_->push(value);
-        argument_updated_ = true;
+      if (value.isError()) {
+        logger::error("OperationInletBase::{} failed. Argument is error({})", __func__, value.getErrorMessage());
+        return value;
       }
+      buffer_->push(value);
+      argument_updated_ = true;
       return value;
     }
 

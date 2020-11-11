@@ -112,7 +112,7 @@ namespace nerikiri {
           Object(typeName, fullName) {}
         virtual ~ExecutionContextFactoryAPI() {}
 
-        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) = 0;
+        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const = 0;
         virtual std::string executionContextTypeFullName() const = 0;
     };
 
@@ -122,9 +122,9 @@ namespace nerikiri {
           ExecutionContextFactoryAPI("NullExecutionContextFactory", "null") {}
         virtual ~NullExecutionContextFactory() {}
 
-        virtual std::string executionContextTypeFullName() const { return "NullExecutionContext"; }
+        virtual std::string executionContextTypeFullName() const override  { return "NullExecutionContext"; }
 
-        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) {
+        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const override{
             logger::warn("NullExecutionContextFactory::create() called. ExecutionContextFactory is null.");
             return std::make_shared<NullExecutionContext>();
         }
@@ -152,7 +152,7 @@ namespace nerikiri {
         virtual ~ECFactory() {}
 
     public:
-        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const {
+        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const override {
             return std::shared_ptr<ExecutionContextAPI>(new T(fullName));
         };
     };

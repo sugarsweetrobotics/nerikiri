@@ -3,6 +3,7 @@
 
 using namespace nerikiri;
 
+/*
 void ConnectionDictionary::add(Connection_ptr&& connection) {
   logger::trace("ConnectionDictionary::add({})", connection->info().at("name").stringValue());
   dictionary_.emplace(connection->info().at("name").stringValue(), std::move(connection));
@@ -18,4 +19,4 @@ void ConnectionDictionary::foreach(std::function<void(Connection_ptr&)> func) {
   logger::trace("ConnectionDictionary::foreach ends");
 }
     
-
+*/

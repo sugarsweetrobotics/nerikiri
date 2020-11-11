@@ -1,5 +1,5 @@
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/operationfactory.h"
+#include "nerikiri/operation_factory.h"
 #include <opencv2/opencv.hpp>
 
 using namespace nerikiri;

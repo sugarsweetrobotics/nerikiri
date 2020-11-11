@@ -3,8 +3,10 @@
 #include <nerikiri/value.h>
 #include <nerikiri/connection_api.h>
 
+
 namespace nerikiri {
 
+  class OperationAPI;
   class ConnectionAPI;
     
   class OperationOutletAPI {
@@ -18,6 +20,8 @@ namespace nerikiri {
     virtual Value invoke() = 0;
     */
 
+    virtual OperationAPI* owner() = 0;
+
     virtual Value get() const = 0;
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const = 0;
@@ -30,7 +34,8 @@ namespace nerikiri {
   };
 
   class NullOperationOutlet : public OperationOutletAPI {
-
+  private:
+    NullOperation owner_;
   public:
     virtual ~NullOperationOutlet() {}
     /*
@@ -59,6 +64,11 @@ namespace nerikiri {
     
     virtual Value removeConnection(const std::string& _fullName) override {
       return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__));
+    }
+
+    virtual OperationAPI* owner() override {
+      logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__);
+      return &owner_;
     }
   };
 }

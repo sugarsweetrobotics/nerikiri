@@ -7,14 +7,15 @@ using namespace nerikiri;
 
 Value Connection::pull() {
   if (this->isPull()) {
-    return outlet_->invoke();
+    return outlet_->owner()->invoke();
   }
   return outlet_->get();
 }
 
 Value Connection::put(const Value& value) {
+  auto v = inlet_->put(value);
   if (this->isPush() || this->isEvent()) {
-      return inlet_->execute(value);
+    return inlet_->owner()->execute();
   }
-  return inlet_->put(value);
+  return v;
 }

@@ -7,9 +7,9 @@ extern "C" {
 };
 
 
-class OneShotEC : public ExecutionContext {
+class OneShotEC : public ExecutionContextBase {
 public:
-    OneShotEC(const Value& info) : ExecutionContext(info) {}
+    OneShotEC(const Value& info) : ExecutionContextBase("OneShotEC", Value::string(info.at("fullName"))) {}
 
 public:
     virtual bool onStarted() override {
@@ -19,5 +19,5 @@ public:
 };
 
 void* createOneShotEC() {
-    return new ECFactory<OneShotEC>();
+    return new ECFactory<OneShotEC>("OneShotECFactory");
 }

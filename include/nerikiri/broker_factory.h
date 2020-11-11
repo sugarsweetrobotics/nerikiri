@@ -1,30 +1,26 @@
 #pragma once
 
 #include <memory>
-#include "nerikiri/value.h"
+
+#include <nerikiri/broker_factory_api.h>
 
 namespace nerikiri {
 
-    /*
+    
     class BrokerAPI;
     class Broker;
 
-    class BrokerFactory : public Object{
+/*
+    class BrokerFactoryBase : public BrokerFactoryAPI {
     private:
-        const std::string typeName_;
     public:
-        BrokerFactory();
-        BrokerFactory(const Value& value);
-
-        virtual ~BrokerFactory();
+        BrokerFactoryBase(const std::string& typeName, const std::string& fullName) : BrokerFactoryAPI(typeName, fullName) {}
+        virtual ~BrokerFactoryBase() {}
 
     public:
-        const std::string& typeName();
-      
-    public:
-        virtual std::shared_ptr<Broker> create(const Value& param);
+        virtual std::shared_ptr<Broker> create(const Value& param) = 0;
 
-        virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param);
+        virtual std::shared_ptr<BrokerAPI> createProxy(const Value& param) = 0;
     };
     */
 }

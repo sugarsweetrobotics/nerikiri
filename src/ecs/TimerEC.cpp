@@ -7,13 +7,13 @@ extern "C" {
 };
 
 
-class TimerEC : public ExecutionContext {
+class TimerEC : public ExecutionContextBase {
 private:
     double rate_;
     bool flag_;
     std::thread* thread_;
 public:
-    TimerEC(const Value& info) : ExecutionContext(info) {
+    TimerEC(const Value& info) : ExecutionContextBase("TimerEC", Value::string(info.at("fullName"))) {
         if (info.at("rate").isDoubleValue()) {
             rate_ = (info.at("rate").doubleValue());
         } else if (info.at("rate").isIntValue()) {
@@ -50,12 +50,13 @@ public:
     }
 };
 
-class TimerECFactory : public ExecutionContextFactory {
+/*
+class TimerECFactory : public ExecutionContextFactoryBase {
 public:
     TimerECFactory() {}
     virtual ~TimerECFactory() {}
 public:
-    virtual std::shared_ptr<ExecutionContext> create(const Value& arg) const {
+    virtual std::shared_ptr<ExecutionContextAPI> create(const Value& arg) const {
         return std::shared_ptr<ExecutionContext>(new TimerEC(arg));
     };
 
@@ -64,8 +65,10 @@ public:
     }
 };
 
+*/
 
 
 void* createTimerEC() {
-    return new TimerECFactory();
+    new ECFactory<TimerEC>("TimerECFactory");
+   // return new TimerECFactory();
 }

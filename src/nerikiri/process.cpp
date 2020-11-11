@@ -298,7 +298,8 @@ void Process::_preloadBrokers() {
 void Process::_preloadConnections() {
   logger::trace("Process::_preloadConnections() called.");
   config_.at("connections").const_list_for_each([this](auto& value) {
-    ConnectionBuilder::registerProviderConnection(store(), value);
+   // ConnectionBuilder::registerProviderConnection(store(), value);
+    ConnectionBuilder::createConnection(store(), value);
   });
 }
 
@@ -309,8 +310,8 @@ void Process::_preloadTopics() {
     auto operationCallback = [this](const Value& opInfo) -> void {
       logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
       getListValue(opInfo, "publish").const_list_for_each([this, &opInfo](auto v) {
-        ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
-         {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+       // ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
+       //  {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
       });
       /*
       opInfo.at("publish").const_list_for_each([this, &opInfo](auto v) {
@@ -320,8 +321,8 @@ void Process::_preloadTopics() {
       */
       getObjectValue(opInfo, "subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
         v.list_for_each([this, &opInfo, key](auto sv) {
-          ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
-           {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+         // ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
+         //  {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
         });
       });
       /*

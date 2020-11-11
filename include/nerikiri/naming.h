@@ -21,11 +21,11 @@ namespace nerikiri {
     static const auto name_separator = ':';
 
     namespace naming {
-      const std::string join(const std::string& ns, const std::string& n) {
+      inline const std::string join(const std::string& ns, const std::string& n) {
         return ns + name_separator + n;
       }
 
-      const std::string join(const std::string& ns, const std::string& n, const std::string& n2) {
+      inline const std::string join(const std::string& ns, const std::string& n, const std::string& n2) {
         return ns + name_separator + n + name_separator + n2;
       }
 

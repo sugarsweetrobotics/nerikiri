@@ -1,11 +1,14 @@
 #pragma once
 
 #include <string>
-#include <nerikiri/value.h>
-#include <nerikiri/operation_inlet_api.h>
-#include <nerikiri/operation_outlet_api.h>
+#include <nerikiri/object.h>
+//#include <nerikiri/operation_inlet_api.h>
+//#include <nerikiri/operation_outlet_api.h>
 
 namespace nerikiri {
+
+    class OperationOutletAPI;
+    class OperationInletAPI;
 
     class OperationAPI : public Object {
     public:
@@ -56,15 +59,9 @@ namespace nerikiri {
             return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__));
         }
         
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { 
-            logger::error("NullOperation::{}() failed. Operation is null.", __func__);
-            return std::make_shared<NullOperationOutlet>();
-        }
+        virtual std::shared_ptr<OperationOutletAPI> outlet() const override;
 
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override {
-            logger::error("NullOperation::{}() failed. Operation is null.", __func__);
-            return {};
-        }
+        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override;
     };
 
 }

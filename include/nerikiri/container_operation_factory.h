@@ -23,5 +23,5 @@ namespace nerikiri {
     };
 
     template<typename T>
-    void* containerOperationFactory(const Value& info, std::function<Value(T&,Value&&)>&& func) { return new ContainerOperationFactory<T>(info, std::move(func)); }
+    void* containerOperationFactory(const Value& info, std::function<Value(T&,Value&&)>&& func) { return new ContainerOperationFactory<T>(Value::string(info.at("typeName")), Value::string(info.at("fullName")), info.at("defaultArgs"), func); }
 }

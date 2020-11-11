@@ -23,5 +23,5 @@ namespace nerikiri {
     }
   };
 
-  //inline void* operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(info, func); }
+  inline void* operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(Value::string(info.at("typeName")), info.at("defaultArgs"), func); }
 }

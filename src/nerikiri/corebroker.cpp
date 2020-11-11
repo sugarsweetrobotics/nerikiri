@@ -53,7 +53,11 @@ Value CoreStoreBroker::getClassObjectInfos(const std::string& className) const {
 
     return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
 }
-  
+
+Value CoreStoreBroker::getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const {
+
+}
+
 Value CoreStoreBroker::getObjectInfo(const std::string& className, const std::string& fullName) const {
     logger::trace("CoreBroker::getObjectInfo({}, {})", className, fullName);
     if (className == "operation") {

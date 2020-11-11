@@ -36,8 +36,8 @@ namespace nerikiri {
             //auto i = info;
             //i["typeName"] = demangle(typeid(T).name());
             //auto c = std::shared_ptr<ContainerBase>(new Container<T>(this, i)); 
-            auto c = std::make_shared<Container<T>>(this, fullName);
-            return c;
+            return std::make_shared<Container<T>>(this, fullName);
+//            return c;
         }
     };
 
@@ -45,6 +45,6 @@ namespace nerikiri {
      * ContainerFactoryの生成．ユーザはこの関数を使ってContainerFactoryを定義，アクセスできる
      */
     template<typename T>
-    void* containerFactory() { return new ContainerFactory<T>(); }
+    void* containerFactory() { return new ContainerFactory<T>("containerFactory" + demangle(typeid(T).name())); }
 
 }

@@ -1,30 +1,40 @@
 #pragma once
 
-#include <nerikiri/broker_proxy_api.h>
+#include <nerikiri/json.h>
+#include <nerikiri/broker_api.h>
 
 namespace nerikiri {
 
-    class CRUDBrokerAPI {
+    class Process;
+
+
+    class CRUDBrokerBase : public BrokerAPI {
+    private:
     public:
-        virtual ~CRUDBrokerAPI () {}
+        CRUDBrokerBase(const std::string& typeName, const std::string& fullName) : BrokerAPI(typeName, fullName) {}
+        virtual ~CRUDBrokerBase() {}
 
     public:
 
-        virtual Value createObject(const std::string& fullpath, const std::string& info) = 0;
+        virtual bool run(Process* process);
+        
+        virtual void shutdown(Process* process);
 
-        virtual Value deleteObject(const std::string& fullName) = 0;
+        virtual bool isRunning() const;
 
-        virtual Value updateObject(const std::string& fullName, const Value& info) = 0;
-
-        virtual Value readObject(const std::string& fullName) = 0;
+        Value onCreate(Process* process, const std::string& fullPath, const Value& value) {}
+        Value onRead(Process* process, const std::string& fullPath) {}
+        Value onUpdate(Process* process, const std::string& fullPath, const Value& value) {}
+        Value onDelete(Process* process, const std::string& fullPath) {}
     };
 
+    /*
     class CRUDFactoryBroker : public FactoryBrokerAPI {
     private:
         const std::shared_ptr<CRUDBrokerAPI> crudBroker_;
     public:
         CRUDFactoryBroker(const std::shared_ptr<CRUDBrokerAPI>& crudBroker) : FactoryBrokerAPI(), crudBroker_(crudBroker) {}
-        virtual ~CRUDFactoryBrokerAPI() {}
+        virtual ~CRUDFactoryBroker() {}
 
     public:
         virtual Value createObject(const std::string& className, const Value& info={}) override {
@@ -35,6 +45,6 @@ namespace nerikiri {
             return crudBroker_->deleteObject("/process/" + className + "s/" + fullName);
         }
     };
-
+    */
 
 }
