@@ -11,7 +11,7 @@ namespace nerikiri {
     virtual std::string containerTypeFullName() const = 0;
     virtual std::string operationTypeFullName() const = 0;
   public:
-    ContainerOperationFactoryAPI(const std::string& typeName, const std::string& fullName): Object(typeName, fullName) {}
+    ContainerOperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName): Object(className, typeName, fullName) {}
     virtual ~ContainerOperationFactoryAPI() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& _fullName) const = 0;
@@ -22,7 +22,7 @@ namespace nerikiri {
     virtual std::string containerTypeFullName() const override { return "NullContainer"; }
     virtual std::string operationTypeFullName() const override { return "NullOperation"; }
   public:
-    NullContainerOperationFactory() : ContainerOperationFactoryAPI("NullOperationFactory", "null") {}
+    NullContainerOperationFactory() : ContainerOperationFactoryAPI("NullContainerOperationFactory", "NullOperation", "null") {}
     virtual ~NullContainerOperationFactory() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& _fullName) const override {

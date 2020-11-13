@@ -19,13 +19,26 @@ SCENARIO( "Container test", "[container]" ) {
     "load_paths": ["test", "build/test", "../build/lib", "../build/example"],
     "preload": [
       { 
-        "typeName": "MyStruct"
+        "typeName": "MyStruct",
+        "operations": [
+          "addInt", "intGetter"
+        ]
       }
     ],
     "precreate": [
       {
         "typeName": "MyStruct",
-        "instanceName": "MyStruct0.ctn"
+        "instanceName": "MyStruct0.ctn",
+        "operations": [
+          {
+            "typeName": "addInt",
+            "instanceName": "addInt0.ope"
+          },
+          {
+            "typeName": "intGetter",
+            "instanceName": "intGetter0.ope"
+          }
+        ]
       }
     ]
   }
@@ -46,6 +59,7 @@ SCENARIO( "Container test", "[container]" ) {
       auto c = p.store()->container("MyStruct0.ctn");
       REQUIRE(!c->isNull());
       REQUIRE(c->instanceName() == "MyStruct0.ctn");
+
       /*
       AND_THEN("Container operation test") {
         auto ops = c->getOperationInfos();

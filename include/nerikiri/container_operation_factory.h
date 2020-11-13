@@ -11,7 +11,7 @@ namespace nerikiri {
     template<typename T>
     class ContainerOperationFactory : public ContainerOperationFactoryBase {
     private:
-        std::function<Value(T&,Value&&)> function_;
+        const std::function<Value(T&,Value&&)> function_;
     public:
         ContainerOperationFactory(const std::string& operationTypeFullName, const std::string& fullName, const Value& defaultArgs, std::function<Value(T&,Value&&)> func):
           ContainerOperationFactoryBase("ContainerOperationFactory", nerikiri::demangle(typeid(T).name()), operationTypeFullName, fullName, defaultArgs), function_(func) {}
@@ -23,5 +23,7 @@ namespace nerikiri {
     };
 
     template<typename T>
-    void* containerOperationFactory(const Value& info, std::function<Value(T&,Value&&)>&& func) { return new ContainerOperationFactory<T>(Value::string(info.at("typeName")), Value::string(info.at("fullName")), info.at("defaultArg"), func); }
+    void* containerOperationFactory(const Value& info, std::function<Value(T&,Value&&)>&& func) { 
+        return new ContainerOperationFactory<T>(Value::string(info.at("typeName")), Value::string(info.at("fullName")), info.at("defaultArg"), func);
+    }
 }
