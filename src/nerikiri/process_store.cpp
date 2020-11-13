@@ -48,14 +48,16 @@ std::shared_ptr<OperationFactoryAPI> ProcessStore::operationFactory(const std::s
 }
 
 std::shared_ptr<ContainerAPI> ProcessStore::container(const std::string& fullName) const { 
-  auto op = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containers(), [&fullName](auto op) { return op->fullName() == fullName; });
+  auto op = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containers(), [&fullName](auto op) { 
+    return op->fullName() == fullName; 
+  });
   if (op) return op.value();;
   return std::make_shared<NullContainer>();
 }
 
 std::shared_ptr<ContainerFactoryAPI> ProcessStore::containerFactory(const std::string& containerTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<ContainerFactoryAPI>>(containerFactories(), [&containerTypeFullName] (auto f) {
-    return f->containerTypeFullName() == containerTypeFullName;
+    return f->typeName() == containerTypeFullName;
   });
   if (f) return f.value();
   return std::make_shared<NullContainerFactory>();

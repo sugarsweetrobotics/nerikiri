@@ -1,5 +1,6 @@
+
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/containers/containeroperationfactory.h"
+#include "nerikiri/container_operation_factory.h"
 
 #include "MyStruct.h"
 
@@ -7,15 +8,15 @@ using namespace nerikiri;
 
 extern "C" {
 
-    NK_OPERATION  void* MyStruct_intGetter() {
+    NK_OPERATION  void* MyStruct_addInt() {
         return containerOperationFactory<MyStruct>(
             {
-              {"name", "intGetter"},
-              {"defaultArg", {}},
+              {"name", "addInt"},
+              {"defaultArg", {{"data", 1}}}
             },
             [](auto& container, auto arg) {
+                container.intValue += arg.at("data").intValue();
                 return Value(container.intValue);
             });
     }
-
 }

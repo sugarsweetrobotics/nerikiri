@@ -192,15 +192,17 @@ void Process::_preloadOperations() {
 
 void Process::_preloadContainers() {
   logger::trace("Process::_preloadContainers() entry");
-  config_.at("containers").at("preload").const_object_for_each([this](auto& key, auto& value) {
+  config_.at("containers").at("preload").const_list_for_each([this](auto value) {
     ModuleLoader::loadContainerFactory(store_, {"./", path_}, {
-      {"typeName", key}, {"load_paths", config_.at("containers").at("load_paths")}
+      {"typeName", value.at("typeName")}, {"load_paths", config_.at("containers").at("load_paths")}
     });
-    value.const_list_for_each([this, &key](auto& v) {
-      ModuleLoader::loadContainerOperationFactory(store_, {"./", path_}, {
-        {"typeName", v}, {"container_name", key}, {"load_paths", config_.at("containers").hasKey("load_paths")}
+    if (value.hasKey("operations")) {
+      value.at("operations").const_list_for_each([this, &value](auto& v) {
+        ModuleLoader::loadContainerOperationFactory(store_, {"./", path_}, {
+          {"typeName", v}, {"container_name", value.at("typeName")}, {"load_paths", config_.at("containers").hasKey("load_paths")}
+        });
       });
-    });
+    }
   });
   
   config_.at("containers").at("precreate").const_list_for_each([this](auto& value) {

@@ -18,19 +18,15 @@ namespace nerikiri {
      */
     class ContainerBase : public ContainerAPI {
     protected:
-        std::string containerTypeName_;
         std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
         ContainerFactoryBase* parentFactory_;
-
-    public:
-        std::string cotainerTypeName() const { return containerTypeName_; }
     public:
 
         /**
          * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
          */
-        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& typeName, const std::string& containerTypeName, const std::string& fullName) :  
-          ContainerAPI(typeName, fullName), containerTypeName_(containerTypeName), parentFactory_(parentFactory) {}
+        ContainerBase(ContainerFactoryBase* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) :  
+          ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory) {}
 
         /**
          * デストラクタ

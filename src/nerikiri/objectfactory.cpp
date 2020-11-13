@@ -30,16 +30,19 @@ std::string loadFullName(const std::vector<T>& ts, const Value& info) {
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createOperation({})", (info));
-  auto fullName = loadFullName(store.brokers(), info);
+  auto fullName = loadFullName(store.operations(), info);
   return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(fullName));
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainer({})", (info));
-  auto c = store.containerFactory(Value::string(info.at("typeName")))->create(Value::string(info.at("fullName")));
-  info.at("operations").const_list_for_each([&store, &c](auto& value) {
-    store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, Value::string(value.at("fullName"))));
-  });
+  auto fullName = loadFullName(store.containers(), info);
+  auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
+  if (info.hasKey("operations")) {
+    info.at("operations").const_list_for_each([&store, &c](auto& value) {
+      store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, Value::string(value.at("fullName"))));
+    });
+  }
   return store.addContainer(c);
 }
 

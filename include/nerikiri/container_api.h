@@ -14,7 +14,7 @@ namespace nerikiri {
 
     class ContainerAPI : public Object {
     public:
-        ContainerAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName) {}
+        ContainerAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
 
         virtual ~ContainerAPI() {}
 
@@ -32,7 +32,7 @@ namespace nerikiri {
     class NullContainer : public ContainerAPI {
     public:
 
-        NullContainer() : ContainerAPI("NullContainer", "null") {}
+        NullContainer() : ContainerAPI("NullContainer", "NullContainer", "null") {}
         
         virtual ~NullContainer() {}
 

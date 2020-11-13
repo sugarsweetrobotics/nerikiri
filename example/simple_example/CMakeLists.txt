@@ -43,4 +43,9 @@ add_operation(increment)
 add_operation(decrement)
 add_operation(add)
 add_operation(zero)
+
+add_container(MyStruct)
+add_container(MyStruct_addInt)
+add_container(MyStruct_intGetter)
+
 endif (BUILD_SIMPLE_EXAMPLE)

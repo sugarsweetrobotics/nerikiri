@@ -14,13 +14,10 @@ namespace nerikiri {
 
     class ContainerFactoryBase : public ContainerFactoryAPI {
     private:
-      const std::string containerTypeName_;
-//      std::vector<std::shared_ptr<ContainerOperationFactoryBase>> operationFactories_;
     public:
-      ContainerFactoryBase(const std::string& typeName, const std::string& containerTypeName, const std::string& fullName) : ContainerFactoryAPI(typeName, fullName), containerTypeName_(containerTypeName) {}
+      ContainerFactoryBase(const std::string& className, const std::string& typeName, const std::string& fullName) : ContainerFactoryAPI(className, typeName, fullName) {}
       virtual ~ContainerFactoryBase() {}
     public:
-      virtual std::string containerTypeFullName() const { return containerTypeName_; }
 
       friend class ContainerBase;
     };

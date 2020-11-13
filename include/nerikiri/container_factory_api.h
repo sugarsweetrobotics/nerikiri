@@ -7,10 +7,8 @@ namespace nerikiri {
 
     class ContainerFactoryAPI : public Object {
     public:
-      ContainerFactoryAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName) {}
+      ContainerFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
       virtual ~ContainerFactoryAPI() {}
-
-      virtual std::string containerTypeFullName() const = 0;
 
       virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) = 0;
 
@@ -19,10 +17,8 @@ namespace nerikiri {
 
     class NullContainerFactory : public ContainerFactoryAPI {
     public:
-      NullContainerFactory() : ContainerFactoryAPI("NullContainerFactory", "null") {}
+      NullContainerFactory() : ContainerFactoryAPI("NullContainerFactory", "NullContainer", "null") {}
       virtual ~NullContainerFactory() {}
-
-      virtual std::string containerTypeFullName() const { return "NullContainer"; }
 
       virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) {
         return std::make_shared<NullContainer>();
