@@ -12,8 +12,12 @@ namespace nerikiri {
     private:
     
     public:
-        ProcessAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName) {}
+        ProcessAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
         virtual ~ProcessAPI() {}
+
+
+    public:
+        virtual Value fullInfo() const = 0;
 
     };
 

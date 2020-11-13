@@ -12,15 +12,13 @@ namespace nerikiri {
 
     class OperationAPI : public Object {
     public:
-        OperationAPI() {}
 
-        OperationAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName) {}
+        OperationAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
 
         virtual ~OperationAPI() {}
 
     public:
-
-        virtual std::string operationTypeName() const = 0;
+        virtual Value fullInfo() const = 0;
 
         virtual Value call(const Value& value) = 0;
 
@@ -40,13 +38,14 @@ namespace nerikiri {
     
     class NullOperation : public OperationAPI {
     public:
-        NullOperation() {}
+        NullOperation() : OperationAPI("NullOperation", "NullOperation", "null") {}
 
         virtual ~NullOperation() {}
 
-
-        virtual std::string operationTypeName() const override { return "NullOperation"; }
-
+        virtual Value fullInfo() const override { 
+            return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__));
+        }
+        
         virtual Value call(const Value& value) override { 
             return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__, value));
         }

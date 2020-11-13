@@ -8,9 +8,7 @@ namespace nerikiri {
 
   class OperationFactoryAPI : public Object {
   public:
-    virtual std::string operationTypeFullName() const = 0;
-  public:
-    OperationFactoryAPI(const std::string& typeName, const std::string& fullName): Object(typeName, fullName) {}
+    OperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName): Object(className, typeName, fullName) {}
     virtual ~OperationFactoryAPI() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName) const = 0;
@@ -18,9 +16,7 @@ namespace nerikiri {
 
   class NullOperationFactory : public OperationFactoryAPI {
   public:
-    virtual std::string operationTypeFullName() const override { return "NullOperation"; }
-  public:
-    NullOperationFactory() : OperationFactoryAPI("NullOperationFactory", "null") {}
+    NullOperationFactory() : OperationFactoryAPI("NullOperationFactory", "NullOperation", "null") {}
     virtual ~NullOperationFactory() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName) const override {

@@ -65,7 +65,7 @@ const std::vector<Value>& Value::listValue() const {
 const Value& Value::at(const std::string& key) const {
   if (isError()) {
     errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
-      "Value::at(" + key + ") failed. Program tried to access with key value access. But value is ERROR type. (ErrorMessage is " + this->getErrorMessage() +")"
+      "Value::at(\"" + key + "\") failed. Program tried to access with key value access. But value is ERROR type. (ErrorMessage is \"" + this->getErrorMessage() +"\")"
     );
     logger::error(errorMessageValue_->getErrorMessage());
     return *(errorMessageValue_.get());
@@ -74,7 +74,7 @@ const Value& Value::at(const std::string& key) const {
   if (!isObjectValue()) {
 
     errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
-      "Value::at(" + key + ") failed. Program tried to access with key value access. But value type is " + this->getTypeString()
+      "Value::at(\"" + key + "\") failed. Program tried to access with key value access. But value type is " + this->getTypeString()
     );
     logger::error(errorMessageValue_->getErrorMessage());
     return *(errorMessageValue_.get());
@@ -83,7 +83,7 @@ const Value& Value::at(const std::string& key) const {
   if (objectvalue_->count(key) == 0) {
     
     errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
-      "Value::at(" + key + ") failed. Program tried to access with key value access. But key (" + key + ") is not included."
+      "Value::at(\"" + key + "\") failed. Program tried to access with key value access. But key (\"" + key + "\") is not included."
     );
     logger::error(errorMessageValue_->getErrorMessage());
     return *(errorMessageValue_.get());

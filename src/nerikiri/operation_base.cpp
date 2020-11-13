@@ -14,6 +14,23 @@ Value OperationOutletBase::put(Value&& v) {
   return std::forward<Value>(v);
 }
 
+OperationInletBase::OperationInletBase(const std::string& name, OperationAPI* operation, const Value& defaultValue) 
+: name_(name), operation_(operation), default_(defaultValue), argument_updated_(false), 
+     buffer_(std::make_shared<NewestValueBuffer>(defaultValue))
+{
+  
+}
+Value OperationInletBase::info() const {
+  return {
+      {"name", name()},
+      {"value", get()},
+      {"defaultValue", defaultValue()},
+      {"connections", {
+          nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
+      }}
+  };
+}
+
 Value OperationInletBase::collectValues() {
   for (auto& con : connections_.connections()) {
     if (con->isPull()) { 
@@ -29,6 +46,16 @@ Value OperationInletBase::collectValues() {
   return buffer_->pop();
 }
 
+Value OperationInletBase::put(const Value& value) {
+  std::lock_guard<std::mutex> lock(argument_mutex_);
+  if (value.isError()) {
+    logger::error("OperationInletBase::{} failed. Argument is error({})", __func__, value.getErrorMessage());
+    return value;
+  }
+  buffer_->push(value);
+  argument_updated_ = true;
+  return value;
+}
 /**
  * コネクションに対してデータの要求を行っていく．
  * リスト内のpull型の最初のコネクションのデータのみを使う．それ以降はpull型であってもexecuteしない
@@ -47,14 +74,24 @@ Value OperationInputBase::collectValues() {
 
 //OperationBase::OperationBase(const OperationBase& op): OperationAPI() {}
 
-OperationBase::OperationBase(const std::string& typeName, const std::string& operationTypeName, const std::string& fullName, const Value& defaultArgs /*= {}*/):
-  OperationAPI(typeName, fullName), operationTypeName_(operationTypeName), outlet_(std::make_shared<OperationOutletBase>(this)) {
+OperationBase::OperationBase(const std::string& className, const std::string& typeName, const std::string& fullName, const Value& defaultArgs /*= {}*/):
+  OperationAPI(className, typeName, fullName), outlet_(std::make_shared<OperationOutletBase>(this)) {
   defaultArgs.const_object_for_each([this](const std::string& key, const Value& value) {
     inlets_.emplace_back(std::make_shared<OperationInletBase>(key, this, value));
   });
 }
 
 OperationBase::~OperationBase() {}
+
+
+Value OperationBase::fullInfo() const {
+  auto i = info();
+  i["outlet"] = outlet()->info();
+  i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(inlets(), [](auto inlet) { return inlet->info(); });
+  return i;
+}
+    
+
 
 Value OperationBase::invoke() {
   try {

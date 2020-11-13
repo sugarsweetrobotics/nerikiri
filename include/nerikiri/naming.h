@@ -4,7 +4,7 @@
 #include <vector>
 #include <typeinfo>
 
-#include "nerikiri/stringutil.h"
+#include <nerikiri/stringutil.h>
 #ifdef __APPLE__
 #include <cxxabi.h>
 #elif WIN32
@@ -15,6 +15,8 @@
 #include <cxxabi.h>
 
 #endif
+
+#include <nerikiri/value.h>
 
 namespace nerikiri {
 
@@ -76,10 +78,7 @@ namespace nerikiri {
     }
 
 
-  inline std::pair<std::string, std::string> separateNamespaceAndInstanceName(const std::string& fullName) {
-    auto tokens = nerikiri::stringSplit(fullName, name_separator);
-    return {stringJoin(tokens.begin(), tokens.end()-1, name_separator), tokens[tokens.size()-1]};
-  }
+    std::pair<std::string, std::string> separateNamespaceAndInstanceName(const std::string& fullName);
 
 
     template<typename T>
@@ -112,13 +111,7 @@ namespace nerikiri {
     return true;
   };
 
-  inline bool operationValidator(const Value& opinfo) {
-    if (!nameValidator(opinfo.at("typeName").stringValue())) {
-      return false;
-    }
-    return true;
-  }
-  
+  bool operationValidator(const Value& opinfo);
 
 
 }

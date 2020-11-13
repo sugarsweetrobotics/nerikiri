@@ -119,29 +119,36 @@ Value ModuleLoader::loadExecutionContextFactory(ProcessStore& store, std::vector
   return Value::error(logger::error("ModuleLoader::loadExecutionContextFactory failed. Can not load DLL ({})", str(info)));
 }
 
-Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::string> search_paths, const Value& info) {
-  logger::trace("ModuleLoader::loadBrokerFactory({})", (info));
-  auto name = info.at("typeName").stringValue(); 
-  if (info.hasKey("load_paths")) {
-    info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
-      search_paths.push_back(value.stringValue());
-    });
-  }
-  for(auto& p : search_paths) {
+Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::string> search_paths, const Value& info_) {
+  
+  logger::trace("ModuleLoader::loadBrokerFactory({}) entry", (info_));
+  auto name = Value::string(info_.at("typeName"));
+  info_.at("load_paths").const_list_for_each([&search_paths](auto& value) {
+    search_paths.push_back(value.stringValue());
+  });
+  for(auto p : search_paths) {
+    logger::trace(" - for search path: {}", p);
+
     auto dllproxy = createDLLProxy(p, name);
-    if (!dllproxy->isNull()) {
-      store.addDLLProxy(dllproxy);
-      auto f = dllproxy->functionSymbol("create" + name);
-      if (f) {
-        logger::info("ModuleLoader::loadBrokerFactory({}, {}) load success.", p, name);
-        store.addBrokerFactory(std::shared_ptr<BrokerFactoryAPI>(  static_cast<BrokerFactoryAPI*>(f())  ) );
-        return info;
-      } else {
-        logger::debug("ModuleLoader::loadBrokerFactory failed. Can load DLL but can not find Symbol({})", "create" + name);
-      }
-    } else {
-      logger::debug("ModuleLoader::loadBrokerFactory failed. Can not load DLL ({})", info);
+    if (dllproxy->isNull()) {
+      logger::debug("ModuleLoader::loadBrokerFactory failed. Can not load DLL ({})", info_);
+      continue;
     }
+    
+    auto f = dllproxy->functionSymbol("create" + name);
+    if (f) {
+      logger::info("ModuleLoader::loadBrokerFactory({}, {}) load success. Function symbol({}) can be acquired.", p, name, "create" + name);
+      store.addDLLProxy(dllproxy);
+      store.addBrokerFactory(std::shared_ptr<BrokerFactoryAPI>(  static_cast<BrokerFactoryAPI*>(f())  ) );
+      logger::trace("ModuleLoader::loadBrokerFactory({}) exit", (info_));
+      return info_;
+    } else {
+      logger::debug("ModuleLoader::loadBrokerFactory failed. Can load DLL but can not find Symbol({})", "create" + name);
+    }
+    
   }
-  return Value::error(logger::error("ModuleLoader::loadBrokerFactory failed. Can not load DLL ({})", str(info)));
+
+  auto info = Value::error(logger::error("ModuleLoader::loadBrokerFactory failed. Can not load DLL ({})", str(info_)));
+  logger::trace("ModuleLoader::loadBrokerFactory({}) exit", (info));
+  return info;
 }

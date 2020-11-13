@@ -3,7 +3,6 @@
 #include <nerikiri/broker_api.h>
 #include <nerikiri/operation.h>
 #include <nerikiri/connection.h>
-#include <nerikiri/objectmapper.h>
 
 using namespace nerikiri;
 

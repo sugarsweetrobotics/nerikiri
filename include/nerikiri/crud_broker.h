@@ -16,16 +16,16 @@ namespace nerikiri {
 
     public:
 
-        virtual bool run(Process* process);
+        virtual bool run(Process* process) override;
         
-        virtual void shutdown(Process* process);
+        virtual void shutdown(Process* process) override;
 
-        virtual bool isRunning() const;
+        virtual bool isRunning() const override;
 
-        Value onCreate(Process* process, const std::string& fullPath, const Value& value) {}
-        Value onRead(Process* process, const std::string& fullPath) {}
-        Value onUpdate(Process* process, const std::string& fullPath, const Value& value) {}
-        Value onDelete(Process* process, const std::string& fullPath) {}
+        Value onCreate(Process* process, const std::string& fullPath, const Value& value) ;
+        Value onRead(Process* process, const std::string& fullPath) ;
+        Value onUpdate(Process* process, const std::string& fullPath, const Value& value) ;
+        Value onDelete(Process* process, const std::string& fullPath) ;
     };
 
     /*

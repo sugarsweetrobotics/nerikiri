@@ -14,6 +14,7 @@ OPTION(TEST_CONTAINER "Container Test" OFF)
 OPTION(TEST_EC "ExecutionContext Test" OFF)
 OPTION(TEST_FSM "FSM Test" ON)
 OPTION(TEST_CONNECTION "Connection Test" ON)
+OPTION(TEST_HTTPBROKER "HTTP Broker Test" ON)
 
 set(EXAMPLE_LIBS nerikiri)
 
@@ -62,5 +63,6 @@ endif ()
 if (${TEST_OPTION})
   declare_test(option)
 endif ()
+
 
 endif (BUILD_TEST)

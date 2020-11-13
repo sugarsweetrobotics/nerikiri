@@ -73,6 +73,8 @@ namespace nerikiri {
     void _setupLogger();
   public:
     ProcessStore* store() { return &store_; }
+    const ProcessStore* store() const { return &store_; }
+    
     void setExecutablePath(const std::string& path) { path_ = path; }
 
     std::shared_ptr<CoreBroker> coreBroker() { return coreBroker_; }
@@ -82,6 +84,8 @@ namespace nerikiri {
   public:
 
     Process& addSystemEditor(SystemEditor_ptr&& se);
+
+    virtual Value fullInfo() const override;
     
     int32_t start();
     void startAsync();

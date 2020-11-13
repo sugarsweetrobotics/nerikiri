@@ -18,7 +18,11 @@ namespace nerikiri {
     for(const auto& [k, v] : req.headers) {
       ret.push_back(Header(k, v));
     }
-    return nerikiri::Request(req.method, req.body, ret, req.matches);
+    auto r = nerikiri::Request(req.method, req.body, ret, req.matches);
+    for(auto p : req.params) {
+      r.params[p.first] = p.second;
+    }
+    return r;
   }
 
   inline void apply(httplib::Response &response, nerikiri::Response &&r) {

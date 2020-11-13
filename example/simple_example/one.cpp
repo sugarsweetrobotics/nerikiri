@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/operationfactory.h"
+#include "nerikiri/operation_factory.h"
 
 using namespace nerikiri;
 

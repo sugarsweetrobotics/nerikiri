@@ -60,10 +60,11 @@ public:
 
   virtual ~CoreBroker() {}
 
+    virtual Value getProcessInfo() const override;
+    virtual Value getProcessFullInfo() const override;
   /*
     virtual Value getBrokerInfo() const override { return info_; }
 
-    virtual Value getProcessInfo() const override;
 
 
     virtual Value getOperationInfos() const override;
@@ -210,13 +211,13 @@ private:
   std::shared_ptr<CoreBroker> coreBroker_;
 
 public:
-  virtual std::string brokerTypeFullName() const override {
-      return "CoreBroker";
-  }
+  //virtual std::string brokerTypeFullName() const override {
+  //    return "CoreBroker";
+  //}
 
 
   CoreBrokerFactory(const std::shared_ptr<CoreBroker>& coreBroker):
-   BrokerFactoryAPI("CoreBrokerFactory", "coreBrokerFactory"), coreBroker_(coreBroker) {}
+   BrokerFactoryAPI("CoreBrokerFactory", "CoreBroker", "coreBrokerFactory"), coreBroker_(coreBroker) {}
   virtual ~CoreBrokerFactory() {}
 
 public:

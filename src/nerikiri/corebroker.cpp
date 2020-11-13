@@ -4,12 +4,15 @@
 #include "nerikiri/corebroker.h"
 #include "nerikiri/operation.h"
 #include "nerikiri/connection.h"
-#include "nerikiri/objectmapper.h"
+#include "nerikiri/object_mapper.h"
 #include "nerikiri/objectfactory.h"
 #include "nerikiri/connectionbuilder.h"
 
 using namespace nerikiri;
 
+Value CoreBroker::getProcessInfo() const{ return process_->info(); }
+
+Value CoreBroker::getProcessFullInfo() const { return process_->fullInfo(); }
 
 Value CoreFactoryBroker::createObject(const std::string& className, const Value& info/*={}*/) {
     logger::trace("CoreBroker::createObject({}, {})", className, info);
@@ -49,8 +52,27 @@ Value CoreStoreBroker::getClassObjectInfos(const std::string& className) const {
     logger::trace("CoreBroker::getClassObjectInfos({})", className);
     if (className == "operation") {
         return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](auto op) { return op->info(); });
+    } else if (className == "operationFactory") {
+        return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->operationFactories(), [](auto op) { return op->info(); });
+    } else if (className == "container") {
+        return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->containers(), [](auto o) { return o->info(); });
+    } else if (className == "containerFactory") {
+        return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->containerFactories(), [](auto o) { return o->info(); });
+    } else if (className == "ec") {
+        return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
+    } else if (className == "topic") {
+        return nerikiri::functional::map<Value, std::shared_ptr<TopicBase>>(process_->store()->topics(), [](auto o) { return o->info(); });
+    } else if (className == "ecFactory") {
+        return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
+    } else if (className == "fsm") {
+        return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
+    } else if (className == "fsmFactory") {
+        return nerikiri::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
+    } else if (className == "broker") {
+        return nerikiri::functional::map<Value, std::shared_ptr<BrokerAPI>>(process_->store()->brokers(), [](auto o) { return o->info(); });
+    } else if (className == "brokerFactory") {
+        return nerikiri::functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(process_->store()->brokerFactories(), [](auto o) { return o->info(); });
     }
-
     return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
 }
 
@@ -61,7 +83,9 @@ Value CoreStoreBroker::getChildrenClassObjectInfos(const std::string& parentName
 Value CoreStoreBroker::getObjectInfo(const std::string& className, const std::string& fullName) const {
     logger::trace("CoreBroker::getObjectInfo({}, {})", className, fullName);
     if (className == "operation") {
-        return process_->store()->operation(fullName)->info();
+        return process_->store()->operation(fullName)->fullInfo();
+    } else if (className == "container") {
+        return process_->store()->container(fullName)->info();
     }
 
     return Value::error(logger::error("CoreBroker::getObjectInfo({}, {}) failed. Class name is invalid.", className, fullName));
@@ -70,7 +94,6 @@ Value CoreStoreBroker::getObjectInfo(const std::string& className, const std::st
 //std::shared_ptr<BrokerAPI>  Broker::null = std::shared_ptr<BrokerAPI>(nullptr);
 
 /*
-Value CoreBroker::getProcessInfo() const{ return process_->info(); }
 
 Value CoreBroker::getOperationInfos() const {
     return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](const auto& op) -> Value { return op->info(); });

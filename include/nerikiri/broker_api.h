@@ -28,7 +28,9 @@ namespace nerikiri {
     public:
         BrokerAPI(const std::string& typeName, const std::string& fullName): Object(typeName, fullName) {}
         
-        virtual ~BrokerAPI() {}
+        virtual ~BrokerAPI() {}        
+        virtual Value fullInfo() const = 0;
+
 
         virtual bool run(Process* process) = 0;
         
@@ -44,6 +46,10 @@ namespace nerikiri {
     public:
         NullBroker(): BrokerAPI("NullBroker", "null") {}
         virtual ~NullBroker() {}
+
+        virtual Value fullInfo() const override {
+            return Value::error(logger::error("NullBroker::{}() failed. Object is null.", __func__));
+        }
 
         virtual bool run(Process* process) override {
             logger::error("NullBroker::{}() failed. Object is null.", __func__);

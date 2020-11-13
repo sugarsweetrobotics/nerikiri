@@ -27,7 +27,7 @@ nullbroker.h
 nullbrokerproxy.h 
 object.h 
 objectfactory.h 
-objectmapper.h 
+object_mapper.h 
 operation.h 
 operation_base.h 
 operationfactory.h 

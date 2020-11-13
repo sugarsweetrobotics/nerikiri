@@ -15,11 +15,11 @@ namespace nerikiri {
 
     public:
         virtual Value createObject(const std::string& className, const Value& info={}) {
-            return broker_->createResource("/process/" + className + "s/", info);
+            return broker_->createResource("/" + className + "s/", info);
         }
 
         virtual Value deleteObject(const std::string& className, const std::string& fullName) {
-            return broker_->deleteResource("/process/" + className + "s/" + fullName);
+            return broker_->deleteResource("/" + className + "s/" + fullName);
         }
     };
 
@@ -31,11 +31,11 @@ namespace nerikiri {
         virtual ~CRUDStoreBroker() {}
 
         virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const {
-            return broker_->readResource("/process/" + className + "s/" + fullName);
+            return broker_->readResource("/" + className + "s/" + fullName);
         }
 
         virtual Value getClassObjectInfos(const std::string& className) const {
-            return broker_->readResource("/process/" + className + "s/");
+            return broker_->readResource("/" + className + "s/");
         }
 
         virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const {
@@ -55,6 +55,14 @@ namespace nerikiri {
         virtual ~CRUDBrokerProxyBase() {}
 
     public:
+
+        virtual Value getProcessInfo() const override {
+            return readResource("/info");            
+        }
+
+        virtual Value getProcessFullInfo() const override {
+            return readResource("/fullInfo");            
+        }
 
         virtual std::shared_ptr<FactoryBrokerAPI> factory() {
 

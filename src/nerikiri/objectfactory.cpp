@@ -8,16 +8,34 @@
 
 using namespace nerikiri;
 
+template<class T>
+std::string numberingPolicy(const std::vector<T>& ts, const Value& info) {
+  if (!info.hasKey("typeName")) return "0";
+  int count = 0;
+  const auto typeName = info.at("typeName").stringValue();
+  for(auto t : ts) {
+    if (t->typeName() == typeName) count++;
+  }
+  return std::to_string(count);
+}
+
+template<class T>
+std::string loadFullName(const std::vector<T>& ts, const Value& info) {
+  if (info.hasKey("instanceName")) return info.at("instanceName").stringValue();
+  if (info.hasKey("fullName")) return info.at("fullName").stringValue();
+  if (info.hasKey("typeName")) return info.at("typeName").stringValue() + numberingPolicy(ts, info);;
+  return "object";
+}
 
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
-  logger::trace("Process::createOperation({})", (info));
-  auto fullName = Value::string(info.at("fullName"));
+  logger::trace("ObjectFactory::createOperation({})", (info));
+  auto fullName = loadFullName(store.brokers(), info);
   return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(fullName));
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
-  logger::trace("Process::createContainer({})", (info));
+  logger::trace("ObjectFactory::createContainer({})", (info));
   auto c = store.containerFactory(Value::string(info.at("typeName")))->create(Value::string(info.at("fullName")));
   info.at("operations").const_list_for_each([&store, &c](auto& value) {
     store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, Value::string(value.at("fullName"))));
@@ -26,7 +44,7 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
 }
 
 Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& info) {
-  logger::trace("Process::createContainerOperation({})", info);
+  logger::trace("ObjectFactory::createContainerOperation({})", info);
   const std::string& containerFullName = Value::string(info.at("containerFullName"));
   auto fullName = Value::string(info.at("fullName)"));
   return store.addOperation(store.containerOperationFactory(Value::string(info.at("typeName")))->create(store.container(containerFullName), fullName));
@@ -34,12 +52,13 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
 
 
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& info) {
-  logger::trace("Process::createBroker({})", info);
-  auto fullName = Value::string(info.at("fullName)"));
-  return store.addBroker(store.brokerFactory(Value::string(info.at("typeName")))->create(fullName));
+  logger::trace("ObjectFactory::createBroker({})", info);
+  //auto fullName = Value::string(info.at("fullName)"));
+  auto fullName = loadFullName(store.brokers(), info);
+  return store.addBroker(store.brokerFactory(Value::string(info.at("typeName")))->create(info));
 }
 
-std::shared_ptr<BrokerProxyAPI>  ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
+std::shared_ptr<BrokerProxyAPI> ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
   logger::trace("ObjectFactory::createBrokerProxy({})", bi);
   return store.brokerFactory(Value::string(bi.at("typeName")))->createProxy(Value::string(bi.at("fullName")));
 }

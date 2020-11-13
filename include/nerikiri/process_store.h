@@ -115,9 +115,8 @@ namespace nerikiri {
      */
     template<class T>
     Value add(std::vector<std::shared_ptr<T>>& collection, const std::shared_ptr<T>& obj, const std::string& ext) {
-      logger::trace("Process::add({})", obj->info());
       /// まずはNULLオブジェクトならエラーを返す
-      if (obj->isNull()) { return Value::error(logger::error("ProcessStore::add{} failed. Object is null.", typeid(T).name())); }
+      if (obj->isNull()) { return Value::error(logger::error("ProcessStore::add<>({}) failed. Object is null.", typeid(T).name())); }
 
       auto info = updateFullName(collection, obj, ext);
       if (!info.isError()) {
@@ -131,7 +130,6 @@ namespace nerikiri {
      */
     template<class T>
     Value del(std::vector<std::shared_ptr<T>>& collection, const std::string& fullName) {
-      logger::trace("Process::del({})", fullName);
       auto c = nerikiri::functional::find<std::shared_ptr<T>>(collection, [&fullName](auto c) { return c->fullName() == fullName; });
       if (!c) {
         return Value::error(logger::error("ProcessStore::delete<>({}) failed. Not found.", fullName));
@@ -149,14 +147,7 @@ namespace nerikiri {
      * Get Operations (includes ContainerOperations)
      */
     std::vector<std::shared_ptr<OperationAPI>> operations() const {
-      std::vector<std::shared_ptr<OperationAPI>> ops(operations_.begin(), operations_.end());
-      /*
-      for(auto& c : containers_) { 
-        auto cops = c->operations();
-        std::copy(cops.begin(), cops.end(), std::back_inserter(ops));
-      }
-      */
-      return ops;
+      return {operations_.begin(), operations_.end()};
     }
 
     std::vector<std::shared_ptr<OperationFactoryAPI>> operationFactories() const {
@@ -214,13 +205,16 @@ namespace nerikiri {
       return add<OperationAPI>(operations_, operation, ".ope");
     }
 
-
     Value deleteOperation(const std::string& fullName) {
       return del<OperationAPI>(operations_, fullName);
     }
 
     Value addOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) {
       return add<OperationFactoryAPI>(operationFactories_, opf, ".opf");
+    }
+
+    Value deleteOperationFactory(const std::string& fullName) {
+      return del<OperationFactoryAPI>(operationFactories_, fullName);
     }
 
     /**
@@ -291,112 +285,42 @@ namespace nerikiri {
     /**
      * 
      */
-    Value addBroker(const std::shared_ptr<BrokerAPI>& b) {
-      return add<BrokerAPI>(brokers_, b, ".brk");
-    }
+    Value addBroker(const std::shared_ptr<BrokerAPI>& b);
+    Value deleteBroker(const std::string& fullName);
 
-    Value deleteBroker(const std::string& fullName) {
-      return del<BrokerAPI>(brokers_, fullName);
-    }
+    Value addBrokerFactory(const std::shared_ptr<BrokerFactoryAPI>& bf);
+    Value deleteBrokerFactory(const std::string& fullName);
 
-    Value addBrokerFactory(const std::shared_ptr<BrokerFactoryAPI>& bf) {
-      return add<BrokerFactoryAPI>(brokerFactories_, bf, ".bf");
-    }
 
     //-------- getter ---------
 
-    std::shared_ptr<OperationAPI> operation(const std::string& fullName) const { 
-      auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
-      if (op) return op.value();;
-      return std::make_shared<NullOperation>();
-    }
+    std::shared_ptr<OperationAPI> operation(const std::string& fullName) const;
 
-    std::shared_ptr<OperationFactoryAPI> operationFactory(const std::string& operationTypeFullName) {
-      auto f = nerikiri::functional::find<std::shared_ptr<OperationFactoryAPI>>(operationFactories(), [&operationTypeFullName](auto f) { return f->operationTypeFullName() == operationTypeFullName; });
-      if (f) return f.value();
-      return std::make_shared<NullOperationFactory>();
-    }
+    std::shared_ptr<OperationFactoryAPI> operationFactory(const std::string& operationTypeFullName) const;
 
-    std::shared_ptr<ContainerAPI> container(const std::string& fullName) const { 
-      auto op = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containers(), [&fullName](auto op) { return op->fullName() == fullName; });
-      if (op) return op.value();;
-      return std::make_shared<NullContainer>();
-    }
+    std::shared_ptr<ContainerAPI> container(const std::string& fullName) const;
 
-    std::shared_ptr<ContainerFactoryAPI> containerFactory(const std::string& containerTypeFullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<ContainerFactoryAPI>>(containerFactories(), [&containerTypeFullName] (auto f) {
-        return f->containerTypeFullName() == containerTypeFullName;
-      });
-      if (f) return f.value();
-      return std::make_shared<NullContainerFactory>();
-    }
+    std::shared_ptr<ContainerFactoryAPI> containerFactory(const std::string& containerTypeFullName) const;
 
-    std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerOperationTypeFullName) const {
-      const auto& [containerTypeFullName, operationTypeFullName] = nerikiri::naming::splitContainerAndOperationName(containerOperationTypeFullName);
-      return containerOperationFactory(containerTypeFullName, operationTypeFullName);
-    }
+    std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerOperationTypeFullName) const;
 
-    std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<ContainerOperationFactoryAPI>>(containerOperationFactories(), [&containerTypeFullName, &operationTypeFullName] (auto f) {
-        return f->containerTypeFullName() == containerTypeFullName && f->operationTypeFullName() == operationTypeFullName;
-      });
-      if (f) return f.value();
-      return std::make_shared<NullContainerOperationFactory>();
-    }
+    std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const;
 
-    std::shared_ptr<FSMAPI> fsm(const std::string& fullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsms(), [&fullName](auto fsm) { return fsm->fullName() == fullName; });
-      if (f) return f.value();;
-      return std::make_shared<NullFSM>();
-    }
+    std::shared_ptr<FSMAPI> fsm(const std::string& fullName) const;
 
-    std::shared_ptr<FSMFactoryAPI> fsmFactory(const std::string& fsmTypeFullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<FSMFactoryAPI>>(fsmFactories(), [&fsmTypeFullName] (auto f) {
-        return f->fsmTypeFullName() == fsmTypeFullName;
-      });
-      if (f) return f.value();
-      return std::make_shared<NullFSMFactory>();
-    }
+    std::shared_ptr<FSMFactoryAPI> fsmFactory(const std::string& fsmTypeFullName) const;
 
-    std::shared_ptr<TopicBase> topic(const std::string& fullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<TopicBase>>(topics(), [&fullName](auto t) { return t->fullName() == fullName; });
-      if (f) return f.value();;
-      return std::make_shared<NullTopic>();
-    }
+    std::shared_ptr<TopicBase> topic(const std::string& fullName) const;
 
-    std::shared_ptr<TopicFactoryAPI> topicFactory(const std::string& topicTypeFullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<TopicFactoryAPI>>(topicFactories(), [&topicTypeFullName] (auto f) {
-        return f->topicTypeFullName() == topicTypeFullName;
-      });
-      if (f) return f.value();
-      return std::make_shared<NullTopicFactory>();
-    }
+    std::shared_ptr<TopicFactoryAPI> topicFactory(const std::string& topicTypeFullName) const;
 
-    std::shared_ptr<ExecutionContextAPI> executionContext(const std::string& fullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextAPI>>(executionContexts(), [&fullName](auto ec) { return ec->fullName() == fullName; });
-      if (f) return f.value();;
-      return std::make_shared<NullExecutionContext>();
-    }
+    std::shared_ptr<ExecutionContextAPI> executionContext(const std::string& fullName) const;
 
-    std::shared_ptr<ExecutionContextFactoryAPI> executionContextFactory(const std::string& ecTypeFullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextFactoryAPI>>(executionContextFactories(), [&ecTypeFullName] (auto f) {
-        return f->executionContextTypeFullName() == ecTypeFullName;
-      });
-      if (f) return f.value();
-      return std::make_shared<NullExecutionContextFactory>();
-    }
+    std::shared_ptr<ExecutionContextFactoryAPI> executionContextFactory(const std::string& ecTypeFullName) const;
     
-    std::shared_ptr<BrokerAPI> broker(const std::string& fullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<BrokerAPI>>(brokers(), [&fullName](auto b) { return b->fullName() == fullName; });
-      if (f) return f.value();;
-      return std::make_shared<NullBroker>();
-    }
+    std::shared_ptr<BrokerAPI> broker(const std::string& fullName) const;
 
-    std::shared_ptr<BrokerFactoryAPI> brokerFactory(const std::string& fullName) const {
-      auto f = nerikiri::functional::find<std::shared_ptr<BrokerFactoryAPI>>(brokerFactories(), [&fullName](auto f) { return f->fullName() == fullName; });
-      if (f) return f.value();;
-      return std::make_shared<NullBrokerFactory>();
-    }
+    std::shared_ptr<BrokerFactoryAPI> brokerFactory(const std::string& fullName) const;
 
     Value addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy);
 

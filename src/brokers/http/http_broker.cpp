@@ -30,11 +30,12 @@ private:
   std::condition_variable cond_;
   std::mutex mutex_;
   std::map<std::string, std::string> route_;
+  std::string endpoint_;
 public:
 
   HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")): 
     CRUDBrokerBase("HTTPBroker", "httpBroker"),
-    server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir)
+    server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir), endpoint_("httpBroker")
   {
     logger::trace("HTTPBroker::HTTPBroker()");
 
@@ -70,13 +71,23 @@ public:
   nerikiri::Value toValue(const std::string& body) {
     return nerikiri::json::toValue(body);
   }
+  
+  virtual Value fullInfo() const override {
+    auto i = info();
+    i["port"] = port_;
+    i["address"] = address_;
+    i["baseDirectory"] = baseDirectory_;
+    return i;
+  }
 
-  bool run(Process* process) override {
+  virtual bool run(Process* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
     logger::trace("HTTPBroker::run()");
 
     server_->baseDirectory(baseDirectory_);
 
+
+    const std::string endpoint = "/" + endpoint_ + "/(.*)";
     /*
     server_->response("/broker/info/", "GET", "text/html", [this](const nerikiri::Request& req) -> nerikiri::Response {
       return response([this, &req](){
@@ -102,24 +113,25 @@ public:
     });
     */
 
-    server_->response("/process/.*", "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return toResponse(onRead(process, req.matches[0]));
+    server_->response(endpoint, "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      const std::string path = req.matches[1];
+      return toResponse(onRead(process, req.matches[1]));
     });
 
-    server_->response("/process/.*", "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return toResponse(onUpdate(process, req.matches[0], toValue(req.body)));
+    server_->response(endpoint, "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      return toResponse(onCreate(process, req.matches[1], toValue(req.body)));
     });
 
-    server_->response("/process/.*", "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return toResponse(onDelete(process, req.matches[0]));
+    server_->response(endpoint, "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      return toResponse(onDelete(process, req.matches[1]));
     });
 
-    server_->response("/process/.*", "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[0]);
-      return toResponse(onUpdate(process, req.matches[0], toValue(req.body)));
+    server_->response(endpoint, "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
+      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      return toResponse(onUpdate(process, req.matches[1], toValue(req.body)));
     });
 
 
@@ -148,16 +160,23 @@ public:
 
 
 std::shared_ptr<BrokerAPI> HTTPBrokerFactory::create(const Value& value) {
-  auto address = value.at("host").stringValue();
-  auto port = value.at("port").intValue();
+  if (!value.hasKey("host")) {
+    logger::error("HTTPBrokerFactory::create({}) failed. There is no 'host' value.", value);
+    return std::make_shared<NullBroker>();
+  }
+  if (!value.hasKey("port")) {
+    logger::error("HTTPBrokerFactory::create({}) failed. There is no 'port' value.", value);
+    return std::make_shared<NullBroker>();
+  }
+
   std::string base_dir = ".";
   if (value.hasKey("baseDir")) {
     base_dir = value.at("baseDir").stringValue();
   }
-  return std::make_shared<HTTPBroker>(address, port, base_dir, value.at("route"));
+  return std::make_shared<HTTPBroker>(value.at("host").stringValue(), value.at("port").intValue(), Value::string(value.at("baseDir"), "."), value.at("route"));
 }
 
 
 void* createHTTPBroker() {
-    return new HTTPBrokerFactory();
+    return new HTTPBrokerFactory("httpBroker");
 }

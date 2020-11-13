@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <map>
 #include <regex>
 
 
@@ -20,6 +21,7 @@ namespace nerikiri {
     std::string body;
     std::string contentType;
     std::smatch matches;
+    std::map<std::string, std::string> params;
     void* _privateData;
     Request(const std::string &m, const std::string &b, const std::string &ct) : method(m), body(b), _privateData(nullptr), contentType(ct) {}
     Request(std::string &&m, std::string &&b, std::string& ct) : method(m), body(b), _privateData(nullptr), contentType(ct) {}

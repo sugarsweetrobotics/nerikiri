@@ -11,11 +11,11 @@
     
 
         {
-            "name": "Debug example01",
+            "name": "Debug nkd",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/example/example01",
-            "args": [],
+            "program": "${workspaceFolder}/build/bin/nkd",
+            "args": ["nkd.nkproj"],
             "cwd": "${workspaceFolder}/example"
         },
         {
@@ -113,6 +113,15 @@
             "program": "${workspaceFolder}/build/test/http_test",
             "args": [],
             "cwd": "${workspaceFolder}/"
+
+        },
+        {
+            "name": "Debug httpbroker_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/httpbroker_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
 
         },
         {

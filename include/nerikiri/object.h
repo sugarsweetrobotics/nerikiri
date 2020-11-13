@@ -14,42 +14,21 @@ namespace nerikiri {
   private:
     
   public:
-    Object(const std::string& typeName, const std::string& fullName) {
-      auto [nameSpace, instanceName] = separateNamespaceAndInstanceName(fullName);
-      info_ = Value{
-        {"typeName", typeName},
-        {"instanceName", instanceName},
-        {"fullName", fullName}
-      };
-    }
+    Object(const std::string& typeName, const std::string& fullName);
 
-    Object(const Value& info) : info_(info){
-      info_["state"] = "created";
-      if (!info_.hasKey("typeName")) {
-        nerikiri::logger::error("Object::Object(const Value& v={}): Error. No typeName member is included in the argument 'info'", info);
-      } else if (!info_.hasKey("instanceName")) {
-        if (info_.hasKey("fullName")) {
-          nerikiri::logger::warn("Object::Object(const Value& v={}): Warning. No instanceName member is included in the argument 'info', but info has fullName member, so the instanceName of this object is now '{}'", info, info.at("fullName"));
-          info_["instanceName"] = info_["fullName"];
-        } else {
-          nerikiri::logger::error("Object::Object(const Value& v={}): Error. No instanceName member is included in the argument 'info'", info);
-        }
-      } else if (!info_.hasKey("fullName")) {
-        if (info_.hasKey("instanceName")) {
-          nerikiri::logger::warn("Object::Object(const Value& v={}): Warning. No fullName member is included in the argument 'info', but info has instanceName member, so the fullName of this object is now '{}'", info, info.at("instanceName"));
-          info_["fullName"] = info_["instanceName"];
-        } else {
-          nerikiri::logger::error("Object::Object(const Value& v={}): Error. No fullName member is included in the argument 'info'", info);
-        }
-      }
-    }
+    Object(const std::string& className, const std::string& typeName, const std::string& fullName);
 
-    Object(): Object({{"typeName", "null"}, {"instanceName", "null"}, {"fullName", "null"}, {"state", "created"}}) {}
+    Object(const Value& info);
 
+    Object();
 
-    virtual ~Object() {}
+    virtual ~Object();
 
   public:
+
+    ClassName className() const { 
+      return info_.at("className").stringValue();
+    }
 
     TypeName typeName() const { 
       return info_.at("typeName").stringValue();
@@ -59,39 +38,20 @@ namespace nerikiri {
       return(typeName() == _typeName);
     }
     
-    bool isNull() const { return typeName() == "null"; }
+    bool isNull() const { return fullName() == "null"; }
 
 
-    std::string fullName() const { 
-      if (info_.objectValue().count("fullName") == 0) { return ""; }
-      else if (!info_.at("fullName").isStringValue()) { 
-        return ""; 
-      }
-      return info_.at("fullName").stringValue();
-    }
+    std::string fullName() const;
 
-    std::string getFullName() const { return fullName(); }
+    std::string getFullName() const;
 
-    virtual Value setFullName(const std::string& nameSpace, const std::string& name) {
-      info_["instanceName"] = name;
-      if (nameSpace.length() == 0) info_["fullName"] = name;
-      else info_["fullName"] = nameSpace + ":" + name;
-      return info_;
-    }
+    virtual Value setFullName(const std::string& nameSpace, const std::string& name);
 
-    virtual Value setFullName(const std::string& fullName) {
-      auto [nameSpace, instanceName] = separateNamespaceAndInstanceName(fullName);
-      info_["instanceName"] = instanceName;
-      info_["fullName"] = fullName;
-      return info_;
-    }  
+    virtual Value setFullName(const std::string& fullName);
     
-    std::string instanceName() const { 
-      return info_.at("instanceName").stringValue();
-    }
+    std::string instanceName() const;
 
-    std::string getInstanceName() const { return instanceName();
-    }
+    std::string getInstanceName() const;
 
   protected:
     Value info_;
@@ -101,15 +61,7 @@ namespace nerikiri {
 
   public:
 
-    virtual Value info() const { return {
-        {"fullName", fullName()},
-        {"instanceName", instanceName()},
-        {"typeName", typeName()},
-        {"state", objectState()}
-      }; 
-    }
-
-
+    virtual Value info() const;
 
     Value setObjectState(const std::string& state) { 
       info_["state"] = state;

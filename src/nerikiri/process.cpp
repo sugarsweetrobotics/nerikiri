@@ -25,27 +25,41 @@ Value defaultProcessConfig({
     {"logLevel", "OFF"}
   }},
   {"operations", {
+    {"precreate", Value::list()},
     {"preload", Value::list()}
   }},
   {"containers", {
+    {"precreate", Value::list()},
     {"preload", Value::list()}
   }},
   {"containerOperations", {
+    {"precreate", Value::list()},
     {"preload", Value::list()}
+  }},
+  {"fsms", {
+    {"precreate", Value::list()},
+    {"preload", Value::list()},
+    {"bind", { 
+      {"operations", Value::list()},
+      {"ecs", Value::list()}
+    }}
   }},
   {"ecs", {
-    {"preload", Value::list()}
+    {"precreate", Value::list()},
+    {"preload", Value::list()},
+    {"bind", Value::list()}
   }},
   {"brokers", {
+    {"precreate", Value::list()},
     {"preload", Value::list()}
   }},
-
+  {"connections", {}},
   {"callbacks", Value::list()}
 });
 
 Process Process::null("");
 
-Process::Process(const std::string& name) : ProcessAPI("Process", name), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
+Process::Process(const std::string& name) : ProcessAPI("Process", "Process", name), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
     fullpath = nerikiri::getCwd() + "/" + fullpath;
@@ -124,7 +138,7 @@ void Process::_setupLogger() {
 }
 
 void Process::parseConfigFile(const std::string& filepath) {
-  logger::trace("Process::parseConfigFile({})", filepath);
+  logger::trace("Process::parseConfigFile({}) entry", filepath);
 
   /// まず読み込んでみてロガーの設定を確認します
   auto fp = fopen(filepath.c_str(), "r");
@@ -152,27 +166,32 @@ void Process::parseConfigFile(const std::string& filepath) {
   /// ここで環境変数の辞書の適用
   config_ = replaceAndCopy(config_, env_dictionary_);
   logger::info("Process::parseConfigFile -> {}", config_);
+
+  logger::trace("Process::parseConfigFile({}) exit", filepath);
 }
 
 /**
  * OperationFactoryの読み込み
  */
 void Process::_preloadOperations() {
-  logger::trace("Process::_preloadOperations()");
+  logger::trace("Process::_preloadOperations() entry");
   config_.at("operations").at("preload").const_list_for_each([this](auto value) {
     ModuleLoader::loadOperationFactory(store_, {"./", path_}, {
-      {"typeName", value}, {"load_paths", config_.at("operation").at("load_paths")}
+      {"typeName", value}, {"load_paths", config_.at("operations").at("load_paths")}
     });
   });
 
   config_.at("operations").at("precreate").const_list_for_each([this](auto& oinfo) {
     ObjectFactory::createOperation(store_, oinfo);
   });
+
+
+  logger::trace("Process::_preloadOperations() exit");
 }
 
 
 void Process::_preloadContainers() {
-  logger::trace("Process::_preloadContainers()");
+  logger::trace("Process::_preloadContainers() entry");
   config_.at("containers").at("preload").const_object_for_each([this](auto& key, auto& value) {
     ModuleLoader::loadContainerFactory(store_, {"./", path_}, {
       {"typeName", key}, {"load_paths", config_.at("containers").at("load_paths")}
@@ -187,18 +206,21 @@ void Process::_preloadContainers() {
   config_.at("containers").at("precreate").const_list_for_each([this](auto& value) {
     ObjectFactory::createContainer(store_, value);
   });
+
+  logger::trace("Process::_preloadContainers() exit");
 }
 
 void Process::_preloadFSMs() {
-  logger::trace("Process::_preloadFSMs()");
+  logger::trace("Process::_preloadFSMs() entry");
   config_.at("fsms").at("precreate").const_list_for_each([this](auto& value) {
     ObjectFactory::createFSM(store_, value);
   });
+  logger::trace("Process::_preloadFSMs() exit");
 }
 
 
 void Process::_preloadExecutionContexts() {
-  logger::trace("Process::_preloadExecutionContexts()");
+  logger::trace("Process::_preloadExecutionContexts() entry");
   config_.at("ecs").at("preload").const_list_for_each([this](auto& value) {
     ModuleLoader::loadExecutionContextFactory(store_, {"./", path_}, {
       {"typeName", value}, {"load_paths", config_.at("ecs").at("load_paths")}
@@ -215,13 +237,14 @@ void Process::_preloadExecutionContexts() {
     });
   });
   
+  logger::trace("Process::_preloadExecutionContexts() exit");
 }
 
 /**
  * 
  */
 void Process::_preStartFSMs() {
-  logger::trace("Process::_preloadFSMs()");
+  logger::trace("Process::_preStartFSMs() entry");
   
     config_.at("fsms").at("bind").at("operations").const_list_for_each([this](auto& bindInfo) {
       auto fsmInfo = bindInfo.at("fsm");
@@ -266,11 +289,12 @@ void Process::_preStartFSMs() {
   //} catch (nerikiri::ValueTypeError& e) {
   //  logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
   //}
+
+  logger::trace("Process::_preStartFSMs() exit");
 }
 
 void Process::_preStartExecutionContexts() {
-
-  logger::trace("Process::_preStartExecutionContexts()");
+  logger::trace("Process::_preStartExecutionContexts() entry");
   nerikiri::getListValue(config_, "ecs.start").const_list_for_each([this](const auto& value) {
     this->store()->executionContext(value.stringValue())->start();
   });
@@ -280,11 +304,11 @@ void Process::_preStartExecutionContexts() {
       this->store()->getExecutionContext(value.stringValue())->start();
     });
     */
-   
+  logger::trace("Process::_preStartExecutionContexts() exit");
 }
 
 void Process::_preloadBrokers() {
-  logger::trace("Process::_preloadBrokers()");
+  logger::trace("Process::_preloadBrokers() entry");
   config_.at("brokers").at("preload").const_list_for_each([this](auto& value) {
     ModuleLoader::loadBrokerFactory(store_, {"./", path_}, {
       {"typeName", value}, {"load_paths", config_.at("brokers").at("load_paths")}
@@ -293,19 +317,22 @@ void Process::_preloadBrokers() {
   config_.at("brokers").at("precreate").const_list_for_each([this](auto& value) {
     ObjectFactory::createBroker(store_, value);
   });
+
+  logger::trace("Process::_preloadBrokers() exit");
 }
 
 void Process::_preloadConnections() {
-  logger::trace("Process::_preloadConnections() called.");
+  logger::trace("Process::_preloadConnections() entry");
   config_.at("connections").const_list_for_each([this](auto& value) {
    // ConnectionBuilder::registerProviderConnection(store(), value);
     ConnectionBuilder::createConnection(store(), value);
   });
+  logger::trace("Process::_preloadConnections() exit");
 }
 
 
 void Process::_preloadTopics() {
-  logger::trace("Process::_preloadTopics() called");
+  logger::trace("Process::_preloadTopics() entry");
   try {
     auto operationCallback = [this](const Value& opInfo) -> void {
       logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
@@ -429,6 +456,8 @@ void Process::startAsync() {
 
   for(auto& b : store_.brokers_) {
     while(true) {
+      if (b->isNull()) break;
+
       if (b->isRunning()) { 
         break;
       }
@@ -444,7 +473,7 @@ void Process::startAsync() {
   if (on_started_) on_started_(this);
 
 
-  system("open -a 'Google Chrome' http://localhost:3000/");
+  // system("open -a 'Google Chrome' http://localhost:8080/process/fullInfo");
 }
   
 int32_t Process::wait() {
@@ -490,4 +519,15 @@ Value Process::getCallbacks() const {
   auto v = this->config_.at("callbacks");
   if (v.isError()) return Value({});
   return v;
+}
+
+
+Value Process::fullInfo() const {
+  auto inf = info();
+  inf["operations"] = functional::map<Value, std::shared_ptr<OperationAPI>>(store()->operations(), [](auto op) { return op->info(); });
+  inf["operationFactories"] = functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(store()->operationFactories(), [](auto op) { return op->info(); });
+  inf["brokers"] = functional::map<Value, std::shared_ptr<BrokerAPI>>(store()->brokers(), [](auto o) { return o->fullInfo(); });  
+  inf["brokerFactories"] = functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(store()->brokerFactories(), [](auto op) { return op->info(); });
+
+  return inf;
 }

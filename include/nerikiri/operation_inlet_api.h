@@ -24,6 +24,8 @@ namespace nerikiri {
 
     virtual OperationAPI* owner() = 0;
 
+    virtual Value info() const = 0;
+
     // virtual Value execute(const Value& value) = 0;
 
     /**
@@ -60,6 +62,10 @@ namespace nerikiri {
       return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
     }
     
+    virtual Value info() const override {
+      return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
+    }
+
     virtual Value get() const override {
       return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
     }

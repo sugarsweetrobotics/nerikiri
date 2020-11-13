@@ -38,9 +38,11 @@ using namespace nerikiri;
 class HTTPBrokerProxy : public nerikiri::CRUDBrokerProxyBase {
 private:
   nerikiri::HttpClient_ptr client_;
+  const std::string endpoint_;
 public:
   HTTPBrokerProxy(const std::string& addr, const int64_t port) : CRUDBrokerProxyBase("HTTPBrokerProxy", "httpBrokerProxy"), 
-    client_(nerikiri::client(addr, port)) {
+    client_(nerikiri::client(addr, port)), endpoint_("httpBroker")
+  {
     client_->setTimeout(0.5);
   }
 
@@ -68,22 +70,22 @@ public:
 
     virtual Value createResource(const std::string& path, const Value& value) override {
       logger::debug("HTTPBrokerProxyImpl::createResource({})", path);
-      return toValue(client_->request(path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
+      return toValue(client_->request("/" + endpoint_ + "/" + path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
-    virtual Value readResource(const std::string& path) override {
+    virtual Value readResource(const std::string& path) const override {
       logger::debug("HTTPBrokerProxyImpl::readResource({})", path);
-      return toValue(client_->request(path, "GET"));
+      return toValue(client_->request("/" + endpoint_ + "/" + path, "GET"));
     }
 
     virtual Value updateResource(const std::string& path, const Value& value) override {
       logger::debug("HTTPBrokerProxyImpl::updateResource({})", path);
-      return toValue(client_->request(path, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+      return toValue(client_->request("/" + endpoint_ + "/" + path, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value deleteResource(const std::string& path) override {
       logger::debug("HTTPBrokerProxyImpl::deleteResource({})", path);
-      return toValue(client_->request(path, "DELETE"));
+      return toValue(client_->request("/" + endpoint_ + "/" + path, "DELETE"));
     }
 };
 

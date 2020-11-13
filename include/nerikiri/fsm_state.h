@@ -14,21 +14,22 @@ namespace nerikiri {
         const Value argument_;
         const std::shared_ptr<OperationAPI> operation_;
     public:
-        OperationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v) : operation_(op), argument_(v) {}
+        OperationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v) : OperationAPI("OperationWithArgument", op->typeName(), op->fullName()), operation_(op), argument_(v) {}
         virtual ~OperationWithArgument() {}
 
     public:
 
         virtual Value info() const override {
-            auto v = Object::info();
+            auto v = operation_->info();
             v["argument"] = argument_;
             return v;
         }
 
-        virtual std::string operationTypeName() const  override {
-            return operation_->operationTypeName();
+        virtual Value fullInfo() const override {
+            auto v = operation_->fullInfo();
+            v["argument"] = argument_;
+            return v;
         }
-
 
         virtual Value call(const Value& value) override { return operation_->call(value); }
 

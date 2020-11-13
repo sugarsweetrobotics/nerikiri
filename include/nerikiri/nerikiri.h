@@ -21,6 +21,7 @@
 #endif
 
 #include <string>
+using ClassName = std::string;
 using TypeName = std::string;
 
 //#include "nerikiri/process.h"

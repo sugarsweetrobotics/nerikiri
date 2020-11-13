@@ -13,7 +13,7 @@ namespace nerikiri {
 
         virtual Value createResource(const std::string& fullpath, const Value& info) = 0;
 
-        virtual Value readResource(const std::string& fullName) = 0;
+        virtual Value readResource(const std::string& fullName) const = 0;
 
         virtual Value updateResource(const std::string& fullName, const Value& info) = 0;
 

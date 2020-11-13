@@ -1,0 +1,75 @@
+#pragma once
+
+
+#include <map>
+#include <functional>
+#include <thread>
+#include <mutex>
+
+#include "nerikiri/nerikiri.h"
+#include "nerikiri/object.h"
+#include "nerikiri/operation_api.h"
+
+#include "nerikiri/connection.h"
+#include "nerikiri/functional.h"
+
+#include "nerikiri/newest_value_buffer.h"
+#include <nerikiri/connection_container.h>
+#include "operation_base.h"
+
+namespace nerikiri {
+
+  class OperationInletBase : public OperationInletAPI {
+  public:
+    OperationInletBase(const std::string& name, OperationAPI* operation, const Value& defaultValue);
+    virtual ~OperationInletBase() {}
+  private:
+    const std::string name_;
+    const Value default_;
+    OperationAPI* operation_;
+    bool argument_updated_;
+
+    ConnectionContainer connections_;
+    std::shared_ptr<NewestValueBuffer> buffer_;
+    std::mutex argument_mutex_;
+
+  public:
+    virtual OperationAPI* owner() override { return operation_; }
+
+    virtual std::string name() const override { return name_; }
+
+    virtual Value defaultValue() const override { return default_; }
+
+    virtual Value get() const override {
+      return buffer_->pop();
+    }
+
+    virtual Value info() const override;
+
+    virtual Value put(const Value& value) override;
+
+    virtual Value execute(const Value& value){
+      put(value);
+      return operation_->execute();
+    }
+
+    virtual Value collectValues();
+
+    virtual bool isUpdated() const override { 
+      if(argument_updated_) return true;
+      // どの接続もPull型でないならupdateしない
+      return nerikiri::functional::for_all<std::shared_ptr<ConnectionAPI>>(connections(), [](auto c) { return !c->isPull(); }); 
+    }
+
+    virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
+
+    virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) override {
+      return connections_.addConnection(con);
+    }
+    
+    virtual Value removeConnection(const std::string& _fullName) override {
+      return connections_.removeConnection(_fullName);
+    }
+  };
+
+}

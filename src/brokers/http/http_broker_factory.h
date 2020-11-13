@@ -9,10 +9,10 @@
 class HTTPBrokerFactory : public nerikiri::BrokerFactoryAPI {
 public:
 
-  HTTPBrokerFactory(): BrokerFactoryAPI ("HTTPBrokerFactory", "httpBroker") {}
+  HTTPBrokerFactory(const std::string& fullName): BrokerFactoryAPI ("HTTPBrokerFactory", "HTTPBroker", fullName) {}
   virtual ~HTTPBrokerFactory() {}
 
-  virtual std::string brokerTypeFullName() const override { return "HTTPBroker"; }
+  //virtual std::string brokerTypeFullName() const override { return "HTTPBroker"; }
 
 public:
   virtual std::shared_ptr<nerikiri::BrokerAPI> create(const nerikiri::Value& value) override;

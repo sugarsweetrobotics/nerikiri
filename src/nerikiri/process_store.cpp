@@ -17,6 +17,117 @@ using namespace nerikiri::logger;
 
 Value ProcessStore::info() const { return process_->info(); }
 
+Value ProcessStore::addBroker(const std::shared_ptr<BrokerAPI>& b) {
+  return add<BrokerAPI>(brokers_, b, ".brk");
+}
+
+Value ProcessStore::deleteBroker(const std::string& fullName) {
+  return del<BrokerAPI>(brokers_, fullName);
+}
+
+Value ProcessStore::addBrokerFactory(const std::shared_ptr<BrokerFactoryAPI>& bf) {
+  return add<BrokerFactoryAPI>(brokerFactories_, bf, ".bf");
+}
+
+Value ProcessStore::deleteBrokerFactory(const std::string& fullName) {
+  return del<BrokerFactoryAPI>(brokerFactories_, fullName);
+}
+
+
+
+std::shared_ptr<OperationAPI> ProcessStore::operation(const std::string& fullName) const { 
+  auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
+  if (op) return op.value();;
+  return std::make_shared<NullOperation>();
+}
+
+std::shared_ptr<OperationFactoryAPI> ProcessStore::operationFactory(const std::string& operationTypeFullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<OperationFactoryAPI>>(operationFactories(), [&operationTypeFullName](auto f) { return f->typeName() == operationTypeFullName; });
+  if (f) return f.value();
+  return std::make_shared<NullOperationFactory>();
+}
+
+std::shared_ptr<ContainerAPI> ProcessStore::container(const std::string& fullName) const { 
+  auto op = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containers(), [&fullName](auto op) { return op->fullName() == fullName; });
+  if (op) return op.value();;
+  return std::make_shared<NullContainer>();
+}
+
+std::shared_ptr<ContainerFactoryAPI> ProcessStore::containerFactory(const std::string& containerTypeFullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<ContainerFactoryAPI>>(containerFactories(), [&containerTypeFullName] (auto f) {
+    return f->containerTypeFullName() == containerTypeFullName;
+  });
+  if (f) return f.value();
+  return std::make_shared<NullContainerFactory>();
+}
+
+std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFactory(const std::string& containerOperationTypeFullName) const {
+  const auto& [containerTypeFullName, operationTypeFullName] = nerikiri::naming::splitContainerAndOperationName(containerOperationTypeFullName);
+  return containerOperationFactory(containerTypeFullName, operationTypeFullName);
+}
+
+std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<ContainerOperationFactoryAPI>>(containerOperationFactories(), [&containerTypeFullName, &operationTypeFullName] (auto f) {
+    return f->containerTypeFullName() == containerTypeFullName && f->operationTypeFullName() == operationTypeFullName;
+  });
+  if (f) return f.value();
+  return std::make_shared<NullContainerOperationFactory>();
+}
+
+std::shared_ptr<FSMAPI> ProcessStore::fsm(const std::string& fullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsms(), [&fullName](auto fsm) { return fsm->fullName() == fullName; });
+  if (f) return f.value();;
+  return std::make_shared<NullFSM>();
+}
+
+std::shared_ptr<FSMFactoryAPI> ProcessStore::fsmFactory(const std::string& fsmTypeFullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<FSMFactoryAPI>>(fsmFactories(), [&fsmTypeFullName] (auto f) {
+    return f->fsmTypeFullName() == fsmTypeFullName;
+  });
+  if (f) return f.value();
+  return std::make_shared<NullFSMFactory>();
+}
+
+std::shared_ptr<TopicBase> ProcessStore::topic(const std::string& fullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<TopicBase>>(topics(), [&fullName](auto t) { return t->fullName() == fullName; });
+  if (f) return f.value();;
+  return std::make_shared<NullTopic>();
+}
+
+std::shared_ptr<TopicFactoryAPI> ProcessStore::topicFactory(const std::string& topicTypeFullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<TopicFactoryAPI>>(topicFactories(), [&topicTypeFullName] (auto f) {
+    return f->topicTypeFullName() == topicTypeFullName;
+  });
+  if (f) return f.value();
+  return std::make_shared<NullTopicFactory>();
+}
+
+std::shared_ptr<ExecutionContextAPI> ProcessStore::executionContext(const std::string& fullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextAPI>>(executionContexts(), [&fullName](auto ec) { return ec->fullName() == fullName; });
+  if (f) return f.value();;
+  return std::make_shared<NullExecutionContext>();
+}
+
+std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactory(const std::string& ecTypeFullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextFactoryAPI>>(executionContextFactories(), [&ecTypeFullName] (auto f) {
+    return f->executionContextTypeFullName() == ecTypeFullName;
+  });
+  if (f) return f.value();
+  return std::make_shared<NullExecutionContextFactory>();
+}
+
+std::shared_ptr<BrokerAPI> ProcessStore::broker(const std::string& fullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<BrokerAPI>>(brokers(), [&fullName](auto b) { return b->fullName() == fullName; });
+  if (f) return f.value();;
+  return std::make_shared<NullBroker>();
+}
+
+std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string& fullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<BrokerFactoryAPI>>(brokerFactories(), [&fullName](auto f) { return f->typeName() == fullName; });
+  if (f) return f.value();;
+  return std::make_shared<NullBrokerFactory>();
+}
+
 
 /**
  * ExecutionContextの追加．fullNameやinstanceNameの自動割り当ても行う

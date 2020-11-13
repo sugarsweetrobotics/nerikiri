@@ -174,6 +174,9 @@ namespace nerikiri {
         virtual std::shared_ptr<StoreBrokerAPI>   store() = 0;
         virtual std::shared_ptr<const StoreBrokerAPI>   store() const = 0;
 
+        virtual Value getProcessInfo() const = 0;
+
+        virtual Value getProcessFullInfo() const = 0;
     };
 
     class NullBrokerProxy : public BrokerProxyAPI
@@ -184,6 +187,17 @@ namespace nerikiri {
         NullBrokerProxy(): BrokerProxyAPI("NullBrokerProxy", "null") {}
         virtual ~NullBrokerProxy() {}
     public:
+
+        virtual Value getProcessInfo() const override {
+            return Value::error(logger::error("NullBrokerProxy::{} failed. Object is null.", __func__));
+            
+        }
+
+        virtual Value getProcessFullInfo() const override {
+            return Value::error(logger::error("NullBrokerProxy::{} failed. Object is null.", __func__));
+            
+        }
+
         virtual std::shared_ptr<FactoryBrokerAPI> factory() override {
             return std::make_shared<NullFactoryBroker>();
         }
