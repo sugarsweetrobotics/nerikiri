@@ -49,7 +49,8 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
 Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainerOperation({})", info);
   const std::string& containerFullName = Value::string(info.at("containerFullName"));
-  auto fullName = Value::string(info.at("fullName)"));
+  //auto fullName = Value::string(info.at("fullName)"));
+  auto fullName = loadFullName(store.operations(), info);
   return store.addOperation(store.containerOperationFactory(Value::string(info.at("typeName")))->create(store.container(containerFullName), fullName));
 }
 

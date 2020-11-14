@@ -60,9 +60,11 @@ SCENARIO( "Container test", "[container]" ) {
       REQUIRE(!c->isNull());
       REQUIRE(c->instanceName() == "MyStruct0.ctn");
 
-      /*
       AND_THEN("Container operation test") {
-        auto ops = c->getOperationInfos();
+        auto cops = p.store()->operations();
+        REQUIRE(cops.size() == 2);
+
+      /*
         REQUIRE(ops.size() == 2);
 
         auto addInt = c->getOperation({{"instanceName", "addInt0.ope"}});
@@ -74,6 +76,7 @@ SCENARIO( "Container test", "[container]" ) {
         REQUIRE(v.intValue() == 25);
       }
       */
+      }
     }
     p.stop();
   }

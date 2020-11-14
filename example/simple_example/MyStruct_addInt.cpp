@@ -11,7 +11,8 @@ extern "C" {
     NK_OPERATION  void* MyStruct_addInt() {
         return containerOperationFactory<MyStruct>(
             {
-              {"name", "addInt"},
+                
+              {"typeName", "addInt"},
               {"defaultArg", {{"data", 1}}}
             },
             [](auto& container, auto arg) {

@@ -10,7 +10,7 @@ extern "C" {
     NK_OPERATION  void* MyStruct_intGetter() {
         return containerOperationFactory<MyStruct>(
             {
-              {"name", "intGetter"},
+              {"typeName", "intGetter"},
               {"defaultArg", {}},
             },
             [](auto& container, auto arg) {
