@@ -30,14 +30,14 @@ namespace nerikiri {
     
     virtual Value removeConnection(const std::string& _fullName) = 0;
 
-    
     virtual Value info() const = 0;
   };
 
   class NullOperationOutlet : public OperationOutletAPI {
   private:
-    NullOperation owner_;
+    std::shared_ptr<OperationAPI> owner_;
   public:
+    NullOperationOutlet() : owner_(nullOperation()) {}
     virtual ~NullOperationOutlet() {}
     /*
 
@@ -69,7 +69,7 @@ namespace nerikiri {
 
     virtual OperationAPI* owner() override {
       logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__);
-      return &owner_;
+      return owner_.get();
     }
 
 

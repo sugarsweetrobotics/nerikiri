@@ -24,7 +24,9 @@ crud_broker_base.cpp
 broker.cpp
 moduleloader.cpp
 processconfigparser.cpp
+process_builder.cpp
 #brokerinfo.cpp brokerdictionary.cpp
+container_api.cpp
 connectionbuilder.cpp
 signal.cpp connection.cpp connectiondictionary.cpp container.cpp json.cpp base64.c)
 set(nk_http_srcs brokers/http/httpbroker.cpp ) 

@@ -38,7 +38,7 @@ Value ProcessStore::deleteBrokerFactory(const std::string& fullName) {
 std::shared_ptr<OperationAPI> ProcessStore::operation(const std::string& fullName) const { 
   auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
   if (op) return op.value();;
-  return std::make_shared<NullOperation>();
+  return nullOperation();
 }
 
 std::shared_ptr<OperationFactoryAPI> ProcessStore::operationFactory(const std::string& operationTypeFullName) const {
@@ -52,7 +52,7 @@ std::shared_ptr<ContainerAPI> ProcessStore::container(const std::string& fullNam
     return op->fullName() == fullName; 
   });
   if (op) return op.value();;
-  return std::make_shared<NullContainer>();
+  return nullContainer();
 }
 
 std::shared_ptr<ContainerFactoryAPI> ProcessStore::containerFactory(const std::string& containerTypeFullName) const {

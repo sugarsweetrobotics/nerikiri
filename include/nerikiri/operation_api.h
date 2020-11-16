@@ -35,32 +35,7 @@ namespace nerikiri {
         virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const = 0;
     };
 
+    std::shared_ptr<OperationAPI> nullOperation();
     
-    class NullOperation : public OperationAPI {
-    public:
-        NullOperation() : OperationAPI("NullOperation", "NullOperation", "null") {}
-
-        virtual ~NullOperation() {}
-
-        virtual Value fullInfo() const override { 
-            return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__));
-        }
-        
-        virtual Value call(const Value& value) override { 
-            return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__, value));
-        }
-
-        virtual Value invoke() override { 
-            return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__));
-        }
-
-        virtual Value execute() override { 
-            return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__));
-        }
-        
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const override;
-
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override;
-    };
 
 }

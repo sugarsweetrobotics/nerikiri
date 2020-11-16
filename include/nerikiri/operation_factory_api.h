@@ -20,7 +20,7 @@ namespace nerikiri {
     virtual ~NullOperationFactory() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName) const override {
-      return std::make_shared<NullOperation>();
+      return nullOperation();
     }
   };
 

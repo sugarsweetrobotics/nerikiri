@@ -8,15 +8,12 @@
 
 #include "nerikiri/nerikiri.h"
 
-#include "nerikiri/object.h"
-#include "nerikiri/value.h"
-
 #include <nerikiri/process_api.h>
-
 #include "nerikiri/corebroker.h"
-
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/process_store.h"
+
+#include <nerikiri/process_builder.h>
 
 namespace nerikiri {
   

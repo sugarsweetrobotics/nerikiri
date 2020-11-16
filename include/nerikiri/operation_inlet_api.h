@@ -49,8 +49,9 @@ namespace nerikiri {
 
   class NullOperationInlet : public OperationInletAPI {
   private:
-    NullOperation owner_;
+    std::shared_ptr<OperationAPI> owner_;
   public:
+    NullOperationInlet() : owner_(nullOperation()) {}
     virtual ~NullOperationInlet() {}
 
     virtual std::string name() const override {
@@ -105,7 +106,7 @@ namespace nerikiri {
 
     virtual OperationAPI* owner() override {
       logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__);
-      return &owner_;
+      return owner_.get();
     }
   };
 }

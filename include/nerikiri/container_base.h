@@ -76,7 +76,7 @@ namespace nerikiri {
         virtual std::shared_ptr<OperationAPI> operation(const std::string& fullName) const override {
             auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
             if (op) return op.value();;
-            return std::make_shared<NullOperation>();
+            return nullOperation();
         }
 
         /*

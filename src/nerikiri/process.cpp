@@ -13,6 +13,7 @@
 #include "nerikiri/objectfactory.h"
 #include "nerikiri/connectionbuilder.h"
 #include "nerikiri/moduleloader.h"
+#include <nerikiri/process_builder.h>
 
 using namespace nerikiri;
 using namespace nerikiri::logger;
@@ -174,229 +175,46 @@ void Process::parseConfigFile(const std::string& filepath) {
  * OperationFactoryの読み込み
  */
 void Process::_preloadOperations() {
-  logger::trace("Process::_preloadOperations() entry");
-  config_.at("operations").at("preload").const_list_for_each([this](auto value) {
-    ModuleLoader::loadOperationFactory(store_, {"./", path_}, {
-      {"typeName", value}, {"load_paths", config_.at("operations").at("load_paths")}
-    });
-  });
-
-  config_.at("operations").at("precreate").const_list_for_each([this](auto& oinfo) {
-    ObjectFactory::createOperation(store_, oinfo);
-  });
-
-
-  logger::trace("Process::_preloadOperations() exit");
+  ProcessBuilder::preloadOperations(store_, config_, path_);
 }
 
 
 void Process::_preloadContainers() {
-  logger::trace("Process::_preloadContainers() entry");
-  config_.at("containers").at("preload").const_list_for_each([this](auto value) {
-    ModuleLoader::loadContainerFactory(store_, {"./", path_}, {
-      {"typeName", value.at("typeName")}, {"load_paths", config_.at("containers").at("load_paths")}
-    });
-    if (value.hasKey("operations")) {
-      value.at("operations").const_list_for_each([this, &value](auto& v) {
-        ModuleLoader::loadContainerOperationFactory(store_, {"./", path_}, {
-          {"typeName", v}, {"container_name", value.at("typeName")}, {"load_paths", config_.at("containers").hasKey("load_paths")}
-        });
-      });
-    }
-  });
-  
-  config_.at("containers").at("precreate").const_list_for_each([this](auto& value) {
-    ObjectFactory::createContainer(store_, value);
-  });
-
-  logger::trace("Process::_preloadContainers() exit");
+  ProcessBuilder::preloadContainers(store_, config_, path_);
 }
 
 void Process::_preloadFSMs() {
-  logger::trace("Process::_preloadFSMs() entry");
-  config_.at("fsms").at("precreate").const_list_for_each([this](auto& value) {
-    ObjectFactory::createFSM(store_, value);
-  });
-  logger::trace("Process::_preloadFSMs() exit");
+  ProcessBuilder::preloadFSMs(store_, config_, path_);
 }
 
 
 void Process::_preloadExecutionContexts() {
-  logger::trace("Process::_preloadExecutionContexts() entry");
-  config_.at("ecs").at("preload").const_list_for_each([this](auto& value) {
-    ModuleLoader::loadExecutionContextFactory(store_, {"./", path_}, {
-      {"typeName", value}, {"load_paths", config_.at("ecs").at("load_paths")}
-    });
-  });
-  
-  config_.at("ecs").at("precreate").const_list_for_each([this](auto& value) {
-    ObjectFactory::createExecutionContext(store_, value);
-  });
-
-  config_.at("ecs").at("bind").const_object_for_each([this](auto key, auto value) {
-    value.const_list_for_each([this, &key](auto& v) {
-      store()->executionContext(key)->bind(store()->operation(Value::string(v.at("fullName"))));
-    });
-  });
-  
-  logger::trace("Process::_preloadExecutionContexts() exit");
+  ProcessBuilder::preloadExecutionContexts(store_, config_, path_);
 }
 
-/**
- * 
- */
 void Process::_preStartFSMs() {
-  logger::trace("Process::_preStartFSMs() entry");
-  
-    config_.at("fsms").at("bind").at("operations").const_list_for_each([this](auto& bindInfo) {
-      auto fsmInfo = bindInfo.at("fsm");
-      auto opInfo = bindInfo.at("operation");
-      store()->fsm(Value::string(fsmInfo.at("fullName")))->fsmState(Value::string(fsmInfo.at("state")))->bind(
-        store()->operation(Value::string(opInfo.at("fullName"))),
-        opInfo.at("argument")
-      );
-      /*
-      if (opInfo.hasKey("argument")) {
-        this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
-          this->store()->getAllOperation(opInfo), opInfo.at("argument")
-        );
-      } else {
-        this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
-          this->store()->getAllOperation(opInfo)
-        );
-      }
-      */
-    });
-    auto c = config_.at("fsms").at("bind");
-    auto ecs = c.at("ecs");
-    /*
-    ecs.list_for_each([this](auto& value) {
-      // TODO: ECへのバインド
-      //store()->fsm(Value::string(value.at("fsm").at("fullName")))
-      
-      auto fsmInfo = value.at("fsm");
-      auto ecInfo = value.at("ec");
-      if (ecInfo.at("state").stringValue() == "started") {
-        this->store()->getFSM(fsmInfo)->bindStateToECStart(fsmInfo.at("state").stringValue(), 
-          this->store()->getExecutionContext(ecInfo)
-        );
-      } else if (ecInfo.at("state").stringValue() == "stopped") {
-        this->store()->getFSM(fsmInfo)->bindStateToECStop(fsmInfo.at("state").stringValue(), 
-          this->store()->getExecutionContext(ecInfo)
-        );
-      }
-      
-    });
-    */
-  //} catch (nerikiri::ValueTypeError& e) {
-  //  logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
-  //}
-
-  logger::trace("Process::_preStartFSMs() exit");
+  ProcessBuilder::preStartFSMs(store_, config_, path_);
 }
 
 void Process::_preStartExecutionContexts() {
-  logger::trace("Process::_preStartExecutionContexts() entry");
-  nerikiri::getListValue(config_, "ecs.start").const_list_for_each([this](const auto& value) {
-    this->store()->executionContext(value.stringValue())->start();
-  });
-    /*
-    auto c = config_.at("ecs").at("start");
-    c.list_for_each([this](auto& value) {
-      this->store()->getExecutionContext(value.stringValue())->start();
-    });
-    */
-  logger::trace("Process::_preStartExecutionContexts() exit");
+  ProcessBuilder::preStartExecutionContexts(store_, config_, path_);
 }
 
 void Process::_preloadBrokers() {
-  logger::trace("Process::_preloadBrokers() entry");
-  config_.at("brokers").at("preload").const_list_for_each([this](auto& value) {
-    ModuleLoader::loadBrokerFactory(store_, {"./", path_}, {
-      {"typeName", value}, {"load_paths", config_.at("brokers").at("load_paths")}
-    });
-  });
-  config_.at("brokers").at("precreate").const_list_for_each([this](auto& value) {
-    ObjectFactory::createBroker(store_, value);
-  });
-
-  logger::trace("Process::_preloadBrokers() exit");
+  ProcessBuilder::preloadBrokers(store_, config_, path_);
 }
 
 void Process::_preloadConnections() {
-  logger::trace("Process::_preloadConnections() entry");
-  config_.at("connections").const_list_for_each([this](auto& value) {
-   // ConnectionBuilder::registerProviderConnection(store(), value);
-    ConnectionBuilder::createConnection(store(), value);
-  });
-  logger::trace("Process::_preloadConnections() exit");
+  ProcessBuilder::preloadConnections(store_, config_, path_);
 }
 
 
 void Process::_preloadTopics() {
-  logger::trace("Process::_preloadTopics() entry");
-  try {
-    auto operationCallback = [this](const Value& opInfo) -> void {
-      logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
-      getListValue(opInfo, "publish").const_list_for_each([this, &opInfo](auto v) {
-       // ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
-       //  {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-      });
-      /*
-      opInfo.at("publish").const_list_for_each([this, &opInfo](auto v) {
-        ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
-         {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-      });
-      */
-      getObjectValue(opInfo, "subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
-        v.list_for_each([this, &opInfo, key](auto sv) {
-         // ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
-         //  {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-        });
-      });
-      /*
-      opInfo.at("subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
-        v.list_for_each([this, &opInfo, key](auto sv) {
-          ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
-           {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-        });
-      });
-      */
-    };
-    nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(store()->operations(), [operationCallback](auto op) {
-      operationCallback(op->info());
-    });
-    
-    //store()->getOperationInfos().const_list_for_each(operationCallback);
-    //for(auto pc : store()->getContainers()) {
-    //  for(auto opInfo : pc->getOperationInfos()) {
-    //    operationCallback(opInfo);
-    //  }
-    //}
-
-  } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadTopics(). ValueTypeException:{}", e.what());
-  } 
-  logger::trace("Process::_preloadTopics() exit");
-
+  ProcessBuilder::preloadTopics(store_, config_, path_);
 }
 
 void Process::_preloadCallbacksOnStarted() {
-  try {
-    auto c = config_.at("callbacks");
-    c.const_list_for_each([this](auto& value) {
-      // TODO: コールバックね
-      if (value.at("name").stringValue() == "on_started") {
-        value.at("target").const_list_for_each([this](auto& v) {
-          auto opName = v.at("fullName").stringValue();
-          auto argument = v.at("argument");
-          store()->operation(opName)->call(argument);
-        });
-      }
-    });
-  } catch (ValueTypeError& ex) {
-    logger::error("Process::_preloadCallbacksOnStarted failed. Exception: {}", ex.what());
-  }
+  ProcessBuilder::preloadCallbacksOnStarted(store_, config_, path_);
 }
 
 
