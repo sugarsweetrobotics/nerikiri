@@ -83,7 +83,7 @@ const Value& Value::at(const std::string& key) const {
   if (objectvalue_->count(key) == 0) {
     
     errorMessageValue_ = std::make_shared<Value>(VALUE_TYPE_ERROR,
-      "Value::at(\"" + key + "\") failed. Program tried to access with key value access. But key (\"" + key + "\") is not included."
+      "Value::at(\"" + key + "\") failed. Program tried to access with key value access. But key (\"" + key + "\") is not included. Value is " + str(*this) + "."
     );
     logger::error(errorMessageValue_->getErrorMessage());
     return *(errorMessageValue_.get());
