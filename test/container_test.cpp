@@ -64,6 +64,17 @@ SCENARIO( "Container test", "[container]" ) {
         auto cops = p.store()->operations();
         REQUIRE(cops.size() == 2);
 
+        auto getter = p.store()->operation("MyStruct0.ctn:intGetter0.ope");
+        REQUIRE(getter->isNull() != true);
+        auto addInt = p.store()->operation("MyStruct0.ctn:addInt0.ope");
+        REQUIRE(addInt->isNull() != true);
+
+        auto v = getter->call({});
+        REQUIRE(Value::intValue(v) == 0);
+        auto v2 = addInt->call({{"data", 11}});
+
+        auto v3 = getter->call({});
+        REQUIRE(Value::intValue(v3) == 11);
       /*
         REQUIRE(ops.size() == 2);
 

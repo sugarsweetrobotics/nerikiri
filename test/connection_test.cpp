@@ -4,8 +4,8 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/process.h"
-#include "nerikiri/operationfactory.h"
-#include "nerikiri/connectionbuilder.h"
+#include "nerikiri/operation_factory.h"
+#include "nerikiri/connection_builder.h"
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch.hpp>
@@ -17,96 +17,91 @@ bool operationIsCalled = false;
 
 SCENARIO( "Connection test", "[ec]" ) {
   GIVEN("Connection basic behavior") {
-  const std::string jsonStr = R"({
-    "logger": { "logLevel": "OFF" },
+    const std::string jsonStr = R"({
+      "logger": { "logLevel": "OFF" },
 
-    "operations": {
-      "precreate": [
-        {"typeName": "inc", "instanceName": "inc0.ope"},
-        {"typeName": "zero", "instanceName": "zero0.ope"}
-      ]
-    }
-  })";
+      "operations": {
+        "precreate": [
+          {"typeName": "inc", "instanceName": "inc0.ope"},
+          {"typeName": "zero", "instanceName": "zero0.ope"}
+        ]
+      }
+    })";
 
-  Process p("ec_tset", jsonStr);
+    Process p("ec_tset", jsonStr);
 
-  auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
-    { {"typeName", "inc"},
-      {"defaultArg", {
-        {"arg01", 0}
-      }}
-    },
-    [](const Value& arg) -> Value {
-      operationIsCalled = true;
-      return Value(arg.at("arg01").intValue()+1);
-    }
-  });
-
-  auto opf2 = std::shared_ptr<OperationFactory>( new OperationFactory{
-    { {"typeName", "zero"},
-      {"defaultArg", { }}
-    },
-    [](const Value& arg) -> Value {
-      operationIsCalled = true;
-      return Value(0);
-    }
-  });
-
-
-  p.loadOperationFactory(opf1);
-  p.loadOperationFactory(opf2);
-
-  THEN("Operation is stanby") {
-      p.startAsync();
-      auto ope1 = p.store()->getOperation("zero0.ope");
-      REQUIRE(ope1->isNull() == false);
-
-      auto ope2 = p.store()->getOperation("inc0.ope");
-      REQUIRE(ope2->isNull() == false);
-
-  }
-
-  THEN("Operation can connected") {
-
-      p.startAsync();
-      auto ope1 = p.store()->getOperation("zero0.ope");
-      REQUIRE(ope1->isNull() == false);
-
-      auto ope2 = p.store()->getOperation("inc0.ope");
-      REQUIRE(ope2->isNull() == false);
-
-    
-      Value conInfo{
-        {"name", "con0"},
-        {"type", "event"},
-        {"broker", "CoreBroker"},
-        {"input", {
-          {"info", {
-            {"fullName", "inc0.ope"}
-          }},
-          {"broker", {
-            {"typeName", "CoreBroker"}
-          }},
-          {"target", {
-            {"name", "arg01"}
-          }}
-        }},
-        {"output", {
-          {"info", {
-            {"fullName", "zero0.ope"}
-          }},
-          {"broker", {
-            {"typeName", "CoreBroker"}
-          }}
+    auto opf1 = std::make_shared<OperationFactory>(
+      "inc", 
+      Value{ 
+        {"typeName", "inc"},
+        {"defaultArg", {
+          {"arg01", 0}
         }}
-      };
-      ConnectionBuilder::createConnection(p.store(), conInfo);
-      
-      auto conInfo1 = ope1->getConnectionInfos();
-      REQUIRE(conInfo1.at("output").listValue().size() == 1);
+      },
+      [](const Value& arg) -> Value {
+        operationIsCalled = true;
+        return Value(arg.at("arg01").intValue()+1);
+      }
+    );
 
-      auto conInfo2 = ope2->getConnectionInfos();
-      REQUIRE(conInfo2.at("input").at("arg01").listValue().size() == 1);
+    auto opf2 = std::make_shared<OperationFactory>(
+      "zero",
+      Value{ 
+        {"typeName", "zero"},
+        {"defaultArg", { }}
+      },
+      [](const Value& arg) -> Value {
+        operationIsCalled = true;
+        return Value(0);
+      }
+    );
+    p.loadOperationFactory(opf1);
+    p.loadOperationFactory(opf2);
+
+    WHEN("Operation is stanby") {
+      p.startAsync();
+      auto ope1 = p.store()->operation("zero0.ope");
+      REQUIRE(ope1->isNull() == false);
+
+      auto ope2 = p.store()->operation("inc0.ope");
+      REQUIRE(ope2->isNull() == false);
+
+      THEN("Operation can connected") {
+
+        p.startAsync();
+
+      
+        Value conInfo{
+          {"name", "con0"},
+          {"type", "event"},
+          {"broker", "CoreBroker"},
+          {"inlet", {
+            {"name", "arg01"}, 
+            {"operation", {
+              {"fullName", "inc0.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
+            }}
+          }},
+          {"outlet", {
+            {"operation", {
+              {"fullName", "zero0.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
+            }}
+          }}
+        };
+        auto v =ConnectionBuilder::createConnection(p.store(), conInfo);
+        REQUIRE(v.isError() == false);
+        //auto conInfo1 = ope1->getConnectionInfos();
+        //REQUIRE(conInfo1.at("output").listValue().size() == 1);
+
+        //auto conInfo2 = ope2->getConnectionInfos();
+        //REQUIRE(conInfo2.at("input").at("arg01").listValue().size() == 1);
+      }
+      
     }
   }
 }

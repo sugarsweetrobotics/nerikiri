@@ -26,14 +26,6 @@ namespace nerikiri {
 
     virtual Value info() const = 0;
 
-    // virtual Value execute(const Value& value) = 0;
-
-    /**
-     * いまの使用は，pull型接続があると，それを優先してデータを取得するが，
-     * そうでなければバッファーの値を使う．バッファーは入力側から書き込まれるので，早い者勝ちになる
-     */
-    // virtual Value collectValues() = 0;
-
     virtual bool isUpdated() const = 0;
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const = 0;
@@ -41,10 +33,6 @@ namespace nerikiri {
     virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) = 0;
     
     virtual Value removeConnection(const std::string& _fullName) = 0;
-
-    //virtual Value invokeOperation() = 0;
-
-   // virtual std::shared_ptr<OperationAPI> owner() const = 0;
   };
 
   class NullOperationInlet : public OperationInletAPI {

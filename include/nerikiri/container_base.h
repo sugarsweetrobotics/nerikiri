@@ -10,6 +10,7 @@
 #include <nerikiri/container_operation_base.h>
 
 namespace nerikiri {
+    class ContainerFactoryBase;
 
     /**
      * ContainerBaseクラス

@@ -544,6 +544,12 @@ namespace nerikiri {
       return _default;
     }
 
+    static int64_t intValue(const Value& v, const int64_t _default=0) {
+      if (v.isError()) return _default;
+      if (v.isIntValue()) return v.intValue();
+      return _default;
+    }
+
     static Value merge(const Value& v1, const Value& v2);
   };
 

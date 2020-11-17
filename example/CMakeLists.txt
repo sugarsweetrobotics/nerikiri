@@ -1,11 +1,11 @@
 
 
-if (BUILD_EXAMPLE)
+option(BUILD_SIMPLE_EXAMPLE "Build Simple Operation Examples. This is used in tests" ON)
 
-option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" ON)
-option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" ON)
-option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" ON)
-option(BUILD_SIMPLE_EXAMPLE "Build Simple Operation Examples" ON)
+# if (BUILD_NK_EXAMPLE)
+option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" OFF)
+option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" OFF)
+option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" OFF)
 
 set(example01_src example01.cpp)
 set(example02_src example02.cpp)
@@ -104,4 +104,4 @@ set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
 INSTALL(FILES ${EXAMPLES} DESTINATION share/nerikiri/example/)
 
 
-endif(BUILD_EXAMPLE)
+# endif(BUILD_EXAMPLE)

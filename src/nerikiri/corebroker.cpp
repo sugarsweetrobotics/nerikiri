@@ -6,7 +6,7 @@
 #include "nerikiri/connection.h"
 #include "nerikiri/object_mapper.h"
 #include "nerikiri/objectfactory.h"
-#include "nerikiri/connectionbuilder.h"
+// #include "nerikiri/connection_builder.h"
 
 using namespace nerikiri;
 

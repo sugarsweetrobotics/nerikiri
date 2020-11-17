@@ -15,11 +15,9 @@ namespace nerikiri {
     class ContainerFactoryBase : public ContainerFactoryAPI {
     private:
     public:
-      ContainerFactoryBase(const std::string& className, const std::string& typeName, const std::string& fullName) : ContainerFactoryAPI(className, typeName, fullName) {}
-      virtual ~ContainerFactoryBase() {}
+      ContainerFactoryBase(const std::string& className, const std::string& typeName, const std::string& fullName);
+      virtual ~ContainerFactoryBase();
     public:
-
-      friend class ContainerBase;
     };
 
 }

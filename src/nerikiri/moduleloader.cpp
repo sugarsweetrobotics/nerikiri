@@ -78,8 +78,9 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
       store.addDLLProxy(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name); 
       if (f) {
-        logger::info("ModuleLoader::loadContainerFactory({}, {}) load success.", p, name);
-        store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>(  static_cast<ContainerFactoryAPI*>(f())  ) );
+        logger::info("ModuleLoader::loadContainerFactory({}, {}). function(\"create{}\") is successfully loaded.", p, name, name);
+        auto cf = static_cast<ContainerFactoryAPI*>(f());
+        store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>( cf ) );
         return info;
       } else {
         logger::debug("ModuleLoader::loadContainerFactory failed. Can load DLL but can not find Symbol({})", name);

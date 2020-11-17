@@ -1,6 +1,6 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/logger.h"
-#include "nerikiri/connectionbuilder.h"
+#include "nerikiri/connection_builder.h"
 #include <nerikiri/objectfactory.h>
 
 
@@ -11,11 +11,11 @@
 using namespace nerikiri;
 
 Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
-  auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("output"), store)->outlet();
+  auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet"), store)->outlet();
   //auto outlet = store->operationProxy(connectionInfo.at("output"))->outlet();
   //auto inlet = store->operationProxy(connectionInfo.at("input"))->inlet(Value::string(connectionInfo.at("input").at("target").at("name")));
   auto inletOpt  = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(ProxyBuilder::operationProxy(connectionInfo.at("input"), store)->inlets(),
-    [&connectionInfo](auto inlet) { return inlet->name() == Value::string(connectionInfo.at("input").at("target").at("name")); });
+    [&connectionInfo](auto inlet) { return inlet->name() == Value::string(connectionInfo.at("inlet").at("name")); });
   if (!inletOpt) {
     return Value::error(logger::error("ConnectionBuilder::createConnection({}) failed. Inlet (name={}) not found", connectionInfo, Value::string(connectionInfo.at("input").at("target").at("name"))));
   }

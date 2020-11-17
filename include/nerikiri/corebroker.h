@@ -36,18 +36,83 @@ public:
   virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override;
 };
 
+class CoreOperationBroker : public OperationBrokerAPI {
+private:
+  Process* process_;
+public:
+  CoreOperationBroker(Process* proc) : process_(proc) {}
+  virtual ~CoreOperationBroker() {}
+
+  virtual Value fullInfo(const std::string& fullName) const override;
+
+  virtual Value call(const std::string& fullName, const Value& value) override;
+
+  virtual Value invoke(const std::string& fullName) override;
+
+  virtual Value execute(const std::string& fullName) override;
+
+  virtual Value inlets(const std::string& fullName) const override;
+
+};
+
+
+class CoreOperationOutletBroker : public OperationOutletBrokerAPI {
+public:
+  CoreOperationOutletBroker() {}
+  virtual ~CoreOperationOutletBroker() {}
+
+  virtual Value get(const std::string& fullName) const override;
+
+  virtual Value connections(const std::string& fullName) const override;
+
+  virtual Value addConnection(const std::string& fullName, const Value& c) override;
+  
+  virtual Value removeConnection(const std::string& fullName, const std::string& name) override;
+};
+
+class CoreOperationInletBroker : public OperationInletBrokerAPI {
+public:
+  CoreOperationInletBroker() {}
+  virtual ~CoreOperationInletBroker() {}
+
+  virtual Value name(const std::string& fullName, const std::string& targetName) const override;
+  
+  virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override;
+
+  virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override;
+
+  virtual Value get(const std::string& fullName, const std::string& targetName) const override;
+
+  virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override;
+
+  virtual Value connections(const std::string& fullName, const std::string& targetName) const override;
+
+  virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override;
+  
+  virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override;
+};
+
 class CoreBroker : public BrokerProxyAPI {
 protected:
   Process* process_;
 public:
   std::shared_ptr<CoreFactoryBroker> factory_;
   std::shared_ptr<CoreStoreBroker> store_;
+  std::shared_ptr<CoreOperationBroker> operation_;
+  std::shared_ptr<CoreOperationOutletBroker> operationOutlet_;
+  std::shared_ptr<CoreOperationInletBroker> operationInlet_;
 public:
 
   virtual std::shared_ptr<FactoryBrokerAPI> factory() override { return factory_; }
   virtual std::shared_ptr<StoreBrokerAPI>  store() override { return store_; }
   virtual std::shared_ptr<const FactoryBrokerAPI> factory() const override{ return factory_; }
   virtual std::shared_ptr<const StoreBrokerAPI> store() const override{ return store_; }
+  virtual std::shared_ptr<OperationBrokerAPI>   operation() override { return operation_; }
+  virtual std::shared_ptr<const OperationBrokerAPI>   operation() const override { return operation_; }
+  virtual std::shared_ptr<OperationOutletBrokerAPI>   operationOutlet() override { return operationOutlet_; }
+  virtual std::shared_ptr<const OperationOutletBrokerAPI>   operationOutlet() const override { return operationOutlet_; }
+  virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() override { return operationInlet_; }
+  virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const override { return operationInlet_; }
 
 public:
 

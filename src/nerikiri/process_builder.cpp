@@ -2,7 +2,7 @@
 #include <nerikiri/process_builder.h>
 #include <nerikiri/moduleloader.h>
 #include <nerikiri/objectfactory.h>
-#include <nerikiri/connectionbuilder.h>
+#include <nerikiri/connection_builder.h>
 using namespace nerikiri;
 /**
  * OperationFactoryの読み込み

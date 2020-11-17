@@ -17,7 +17,7 @@ project(nerikiri LANGUAGES CXX C VERSION ${NERIKIRI_VERSION})
 
 enable_testing()
 option(BUILD_EXAMPLE "Build Example" OFF)
-option(BUILD_TEST "Build Test" OFF)
+option(BUILD_NK_TEST "Build Nerikiri's Test" OFF)
 
 set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)

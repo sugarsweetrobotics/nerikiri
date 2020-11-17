@@ -19,18 +19,6 @@ namespace nerikiri {
         virtual Value deleteObject(const std::string& className, const std::string& fullName) = 0;
     };
 
-    class NullFactoryBroker : public FactoryBrokerAPI {
-    public:
-        virtual ~NullFactoryBroker() {}
-    public:
-        virtual Value createObject(const std::string& className, const Value& info={}) override {
-            return Value::error(logger::error("NullFactoryBroker::createObject({}, {}) called. Object is null.", className, info));
-        }
-
-        virtual Value deleteObject(const std::string& className, const std::string& fullName) override {
-            return Value::error(logger::error("NullFactoryBroker::createObject({}, {}) called. Object is null.", className, fullName));
-        }
-    };
 
     class StoreBrokerAPI {
     public:
@@ -43,32 +31,21 @@ namespace nerikiri {
         virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const = 0;
     };
 
-    class NullStoreBroker : public StoreBrokerAPI {
-    public:
-        virtual ~NullStoreBroker() {}
-
-        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
-            return Value::error(logger::error("NullStoreBroker::getObjectInfo({}, {}) called. Object is null.", className, fullName));
-        }
-
-        virtual Value getClassObjectInfos(const std::string& className) const override {
-            return Value::error(logger::error("NullStoreBroker::getClassObjectInfos({}) called. Object is null.", className));
-        }
-
-        virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {
-            return Value::error(logger::error("NullStoreBroker::getCildrenClassObjectInfos({}, {}) called. Object is null.", parentName, className));
-        }
-    };
 
     class OperationBrokerAPI {
     public:
+        OperationBrokerAPI()  {}
         virtual ~OperationBrokerAPI() {}
 
-        virtual Value invokeOperation(const std::string& fullName) const = 0;
+        virtual Value fullInfo(const std::string& fullName) const = 0;
 
-        virtual Value callOperation(const std::string& fullName, const Value& value) = 0;
+        virtual Value call(const std::string& fullName, const Value& value) = 0;
 
-        virtual Value executeOperation(const std::string& fullName) = 0;
+        virtual Value invoke(const std::string& fullName) = 0;
+
+        virtual Value execute(const std::string& fullName) = 0;
+        // collect informations of inlets ex., names.
+        virtual Value inlets(const std::string& fullName) const = 0;
     };
 
     class OperationOutletBrokerAPI {
@@ -82,6 +59,8 @@ namespace nerikiri {
         virtual Value addConnection(const std::string& fullName, const Value& c) = 0;
         
         virtual Value removeConnection(const std::string& fullName, const std::string& name) = 0;
+
+        virtual Value info(const std::string& fullName) const = 0; 
     };
 
     class OperationInletBrokerAPI {
@@ -173,47 +152,19 @@ namespace nerikiri {
         virtual std::shared_ptr<const FactoryBrokerAPI> factory() const = 0;
         virtual std::shared_ptr<StoreBrokerAPI>   store() = 0;
         virtual std::shared_ptr<const StoreBrokerAPI>   store() const = 0;
+        virtual std::shared_ptr<OperationBrokerAPI>   operation() = 0;
+        virtual std::shared_ptr<const OperationBrokerAPI>   operation() const = 0;
+        virtual std::shared_ptr<OperationOutletBrokerAPI>   operationOutlet() = 0;
+        virtual std::shared_ptr<const OperationOutletBrokerAPI>   operationOutlet() const = 0;
+        virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() = 0;
+        virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const = 0;
 
         virtual Value getProcessInfo() const = 0;
 
         virtual Value getProcessFullInfo() const = 0;
     };
 
-    class NullBrokerProxy : public BrokerProxyAPI
-    {
-    private:
-
-    public:
-        NullBrokerProxy(): BrokerProxyAPI("NullBrokerProxy", "null") {}
-        virtual ~NullBrokerProxy() {}
-    public:
-
-        virtual Value getProcessInfo() const override {
-            return Value::error(logger::error("NullBrokerProxy::{} failed. Object is null.", __func__));
-            
-        }
-
-        virtual Value getProcessFullInfo() const override {
-            return Value::error(logger::error("NullBrokerProxy::{} failed. Object is null.", __func__));
-            
-        }
-
-        virtual std::shared_ptr<FactoryBrokerAPI> factory() override {
-            return std::make_shared<NullFactoryBroker>();
-        }
-
-        virtual std::shared_ptr<const FactoryBrokerAPI> factory() const override{
-            return std::make_shared<NullFactoryBroker>();
-        }
-
-        virtual std::shared_ptr<StoreBrokerAPI> store() override {
-            return std::make_shared<NullStoreBroker>();
-        }
-
-        virtual std::shared_ptr<const StoreBrokerAPI> store() const override {
-            return std::make_shared<NullStoreBroker>();
-        }
-    };
+    std::shared_ptr<BrokerProxyAPI> nullBrokerProxy();
 
 
 }

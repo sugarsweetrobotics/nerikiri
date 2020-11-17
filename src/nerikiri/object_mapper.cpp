@@ -5,7 +5,7 @@
 #include "nerikiri/process.h"
 #include "nerikiri/process_store.h"
 
-#include "nerikiri/connectionbuilder.h"
+// #include "nerikiri/connection_builder.h"
 
 using namespace nerikiri;
 

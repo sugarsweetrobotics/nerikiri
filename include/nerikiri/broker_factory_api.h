@@ -35,7 +35,7 @@ namespace nerikiri {
 
         virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) override {
             logger::error("NullBrokerFactory::{}() failed. Object is null.", __func__, param);
-            return std::make_shared<NullBrokerProxy>();
+            return nullBrokerProxy();
         }
     
     };

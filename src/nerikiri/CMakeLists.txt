@@ -19,16 +19,24 @@ brokerfactory.cpp
 fsm.cpp
 dllproxy.cpp 
 corebroker.cpp
+broker_proxy_api.cpp
+operation_proxy.cpp
 crud_broker.cpp
 crud_broker_base.cpp
 broker.cpp
 moduleloader.cpp
 processconfigparser.cpp
 process_builder.cpp
+container_factory_base.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 container_api.cpp
-connectionbuilder.cpp
-signal.cpp connection.cpp connectiondictionary.cpp container.cpp json.cpp base64.c)
+connection_builder.cpp
+signal.cpp 
+connection.cpp 
+connectiondictionary.cpp 
+container.cpp 
+json.cpp 
+base64.c)
 set(nk_http_srcs brokers/http/httpbroker.cpp ) 
 set(nk_se_srcs systemeditor/systemeditor.cpp)
 set(nk_srcs ${nk_base_srcs} )

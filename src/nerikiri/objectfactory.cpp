@@ -40,7 +40,8 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
   if (info.hasKey("operations")) {
     info.at("operations").const_list_for_each([&store, &c](auto& value) {
-      store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, Value::string(value.at("fullName"))));
+      auto fullName = loadFullName(store.operations(), value);
+      store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, fullName));
     });
   }
   return store.addContainer(c);
@@ -56,7 +57,6 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
 
 
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& info) {
-  logger::trace("ObjectFactory::createBroker({})", info);
   //auto fullName = Value::string(info.at("fullName)"));
   auto fullName = loadFullName(store.brokers(), info);
   return store.addBroker(store.brokerFactory(Value::string(info.at("typeName")))->create(info));

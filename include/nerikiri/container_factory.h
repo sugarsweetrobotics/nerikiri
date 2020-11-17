@@ -45,6 +45,9 @@ namespace nerikiri {
      * ContainerFactoryの生成．ユーザはこの関数を使ってContainerFactoryを定義，アクセスできる
      */
     template<typename T>
-    void* containerFactory() { return new ContainerFactory<T>("containerFactory" + demangle(typeid(T).name())); }
+    void* containerFactory() {
+        logger::info("nerikiri::containerFactory<{}> called.", demangle(typeid(T).name()));
+        return new ContainerFactory<T>("containerFactory" + demangle(typeid(T).name())); 
+    }
 
 }
