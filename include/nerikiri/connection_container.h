@@ -34,6 +34,7 @@ namespace nerikiri {
           return Value::error(logger::error("ConnectionContainer::addConnection({}) failed. Outlet already has the same name connection.", con->fullName()));
         }
       }
+      connections_.push_back(con);
       return con->info();
     }
 

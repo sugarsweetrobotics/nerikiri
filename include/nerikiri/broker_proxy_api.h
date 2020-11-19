@@ -75,6 +75,8 @@ namespace nerikiri {
 
         virtual Value get(const std::string& fullName, const std::string& targetName) const = 0;
 
+        virtual Value info(const std::string& fullName, const std::string& targetName) const = 0; 
+
         virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const = 0;
 
         virtual Value connections(const std::string& fullName, const std::string& targetName) const = 0;

@@ -10,97 +10,17 @@ namespace nerikiri {
 
 class Process;
 
-class CoreFactoryBroker : public FactoryBrokerAPI {
-private:
-  Process* process_;
-public:
-  CoreFactoryBroker(Process* proc) : process_(proc) {}
-  virtual ~CoreFactoryBroker() {}
 
-  virtual Value createObject(const std::string& className, const Value& info={}) override;
-
-  virtual Value deleteObject(const std::string& className, const std::string& fullName) override;
-};
-
-class CoreStoreBroker : public StoreBrokerAPI {
-private:
-  Process* process_;
-public:
-  CoreStoreBroker(Process* proc) : process_(proc) {}
-  virtual ~CoreStoreBroker() {}
-
-  virtual Value getClassObjectInfos(const std::string& className) const override;
-
-  virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override;
-
-  virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override;
-};
-
-class CoreOperationBroker : public OperationBrokerAPI {
-private:
-  Process* process_;
-public:
-  CoreOperationBroker(Process* proc) : process_(proc) {}
-  virtual ~CoreOperationBroker() {}
-
-  virtual Value fullInfo(const std::string& fullName) const override;
-
-  virtual Value call(const std::string& fullName, const Value& value) override;
-
-  virtual Value invoke(const std::string& fullName) override;
-
-  virtual Value execute(const std::string& fullName) override;
-
-  virtual Value inlets(const std::string& fullName) const override;
-
-};
-
-
-class CoreOperationOutletBroker : public OperationOutletBrokerAPI {
-public:
-  CoreOperationOutletBroker() {}
-  virtual ~CoreOperationOutletBroker() {}
-
-  virtual Value get(const std::string& fullName) const override;
-
-  virtual Value connections(const std::string& fullName) const override;
-
-  virtual Value addConnection(const std::string& fullName, const Value& c) override;
-  
-  virtual Value removeConnection(const std::string& fullName, const std::string& name) override;
-};
-
-class CoreOperationInletBroker : public OperationInletBrokerAPI {
-public:
-  CoreOperationInletBroker() {}
-  virtual ~CoreOperationInletBroker() {}
-
-  virtual Value name(const std::string& fullName, const std::string& targetName) const override;
-  
-  virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override;
-
-  virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override;
-
-  virtual Value get(const std::string& fullName, const std::string& targetName) const override;
-
-  virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override;
-
-  virtual Value connections(const std::string& fullName, const std::string& targetName) const override;
-
-  virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override;
-  
-  virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override;
-};
 
 class CoreBroker : public BrokerProxyAPI {
 protected:
   Process* process_;
 public:
-  std::shared_ptr<CoreFactoryBroker> factory_;
-  std::shared_ptr<CoreStoreBroker> store_;
-  std::shared_ptr<CoreOperationBroker> operation_;
-  std::shared_ptr<CoreOperationOutletBroker> operationOutlet_;
-  std::shared_ptr<CoreOperationInletBroker> operationInlet_;
+  std::shared_ptr<FactoryBrokerAPI> factory_;
+  std::shared_ptr<StoreBrokerAPI> store_;
+  std::shared_ptr<OperationBrokerAPI> operation_;
+  std::shared_ptr<OperationOutletBrokerAPI> operationOutlet_;
+  std::shared_ptr<OperationInletBrokerAPI> operationInlet_;
 public:
 
   virtual std::shared_ptr<FactoryBrokerAPI> factory() override { return factory_; }
@@ -119,11 +39,9 @@ public:
   /**
    * 
    */
-  CoreBroker(Process* process, const std::string& fullName): BrokerProxyAPI("CoreBroker", fullName), process_(process),
-   factory_(std::make_shared<CoreFactoryBroker>(process)), 
-   store_(std::make_shared<CoreStoreBroker>(process)) {}
+  CoreBroker(Process* process, const std::string& fullName);
 
-  virtual ~CoreBroker() {}
+  virtual ~CoreBroker();
 
     virtual Value getProcessInfo() const override;
     virtual Value getProcessFullInfo() const override;

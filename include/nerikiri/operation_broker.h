@@ -12,6 +12,7 @@ namespace nerikiri {
 
     public:
         OperationOutletCRUDBroker(const std::string& fullName, const std::shared_ptr<CRUBRokerAPI>>& crudBroker): OperationOutletAPI("OperationOutletCRUDBroker", fullName), crudBroker_(crudBroker) {}
+       
         virtual ~OperationOutletCRUDBroker() {}
 
     public:

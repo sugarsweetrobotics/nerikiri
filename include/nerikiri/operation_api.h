@@ -32,6 +32,8 @@ namespace nerikiri {
 
         virtual std::shared_ptr<OperationOutletAPI> outlet() const = 0;
 
+        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const = 0;
+    
         virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const = 0;
     };
 

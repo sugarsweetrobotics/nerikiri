@@ -12,12 +12,13 @@ namespace nerikiri {
     const std::string operationTypeFullName_;
     const std::function<Value(const Value&)> function_;
   public:
+    OperationFactory(const Value& info, const std::function<Value(const Value&)>& func) : OperationFactory(Value::string(info.at("typeName")), info.at("defaultArg"), func){}
     OperationFactory(const std::string& operationTypeFullName, const Value& defaultArgs, const std::function<Value(const Value&)>& func):
       OperationFactoryAPI("OperationFactory", operationTypeFullName, operationTypeFullName + "0"), defaultArgs_(defaultArgs), operationTypeFullName_(operationTypeFullName), function_(func) {}
     virtual ~OperationFactory() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName) const {
-      return std::make_shared<Operation>(typeName(), _fullName, defaultArgs_, function_); 
+      return createOperation(typeName(), _fullName, defaultArgs_, function_); 
     }
   };
 

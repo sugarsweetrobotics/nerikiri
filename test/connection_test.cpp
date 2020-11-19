@@ -31,7 +31,6 @@ SCENARIO( "Connection test", "[ec]" ) {
     Process p("ec_tset", jsonStr);
 
     auto opf1 = std::make_shared<OperationFactory>(
-      "inc", 
       Value{ 
         {"typeName", "inc"},
         {"defaultArg", {
@@ -45,7 +44,6 @@ SCENARIO( "Connection test", "[ec]" ) {
     );
 
     auto opf2 = std::make_shared<OperationFactory>(
-      "zero",
       Value{ 
         {"typeName", "zero"},
         {"defaultArg", { }}
@@ -95,11 +93,12 @@ SCENARIO( "Connection test", "[ec]" ) {
         };
         auto v =ConnectionBuilder::createConnection(p.store(), conInfo);
         REQUIRE(v.isError() == false);
-        //auto conInfo1 = ope1->getConnectionInfos();
-        //REQUIRE(conInfo1.at("output").listValue().size() == 1);
 
-        //auto conInfo2 = ope2->getConnectionInfos();
-        //REQUIRE(conInfo2.at("input").at("arg01").listValue().size() == 1);
+        auto con1 = ope1->outlet()->connections();
+        REQUIRE(con1.size() == 1);
+
+        auto con2 = ope2->inlet("arg01")->connections();
+        REQUIRE(con2.size() == 1);
       }
       
     }

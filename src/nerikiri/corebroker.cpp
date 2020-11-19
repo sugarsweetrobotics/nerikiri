@@ -8,88 +8,271 @@
 #include "nerikiri/objectfactory.h"
 // #include "nerikiri/connection_builder.h"
 
+#include <nerikiri/proxy_builder.h>
+
 using namespace nerikiri;
+
+class CoreFactoryBroker : public FactoryBrokerAPI {
+private:
+  Process* process_;
+public:
+  CoreFactoryBroker(Process* proc) : process_(proc) {}
+  virtual ~CoreFactoryBroker() {}
+
+  virtual Value createObject(const std::string& className, const Value& info={}) override {
+        logger::trace("CoreBroker::createObject({}, {})", className, info);
+        if (className == "operation") {
+            return ObjectFactory::createOperation(*process_->store(), info);
+        } else if (className == "container") {
+            return ObjectFactory::createContainer(*process_->store(), info);
+        } else if (className == "containerOperation") {
+            return ObjectFactory::createContainerOperation(*process_->store(), info);
+        } else if (className == "ec") {
+            return ObjectFactory::createExecutionContext(*process_->store(), info);
+        } else if (className == "fsm") {
+            return ObjectFactory::createFSM(*process_->store(), info);
+        }
+
+        return Value::error(logger::error("CoreBroker::createObject({}, {}) failed. Class name is invalid.", className, info));
+    }
+
+
+  virtual Value deleteObject(const std::string& className, const std::string& fullName) override {
+        logger::trace("CoreBroker::deleteObject({})", fullName);
+        if (className == "operation") {
+            return ObjectFactory::deleteOperation(*process_->store(), fullName);
+        } else if (className == "container") {
+            return ObjectFactory::deleteContainer(*process_->store(), fullName);
+        } else if (className == "containerOperation") {
+            return ObjectFactory::deleteContainerOperation(*process_->store(), fullName);
+        } else if (className == "ec") {
+            return ObjectFactory::deleteExecutionContext(*process_->store(), fullName);
+        } else if (className == "fsm") {
+            return ObjectFactory::deleteFSM(*process_->store(), fullName);
+        }
+
+        return Value::error(logger::error("CoreBroker::deleteObject({}, {}) failed. Class name is invalid.", className, fullName));
+    }
+};
+
+class CoreStoreBroker : public StoreBrokerAPI {
+private:
+  Process* process_;
+public:
+  CoreStoreBroker(Process* proc) : process_(proc) {}
+  virtual ~CoreStoreBroker() {}
+
+  virtual Value getClassObjectInfos(const std::string& className) const override {
+        logger::trace("CoreBroker::getClassObjectInfos({})", className);
+        if (className == "operation") {
+            return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](auto op) { return op->info(); });
+        } else if (className == "operationFactory") {
+            return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->operationFactories(), [](auto op) { return op->info(); });
+        } else if (className == "container") {
+            return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->containers(), [](auto o) { return o->info(); });
+        } else if (className == "containerFactory") {
+            return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->containerFactories(), [](auto o) { return o->info(); });
+        } else if (className == "ec") {
+            return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
+        } else if (className == "topic") {
+            return nerikiri::functional::map<Value, std::shared_ptr<TopicBase>>(process_->store()->topics(), [](auto o) { return o->info(); });
+        } else if (className == "ecFactory") {
+            return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
+        } else if (className == "fsm") {
+            return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
+        } else if (className == "fsmFactory") {
+            return nerikiri::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
+        } else if (className == "broker") {
+            return nerikiri::functional::map<Value, std::shared_ptr<BrokerAPI>>(process_->store()->brokers(), [](auto o) { return o->info(); });
+        } else if (className == "brokerFactory") {
+            return nerikiri::functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(process_->store()->brokerFactories(), [](auto o) { return o->info(); });
+        }
+        return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
+    }
+
+
+  virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {}
+
+  virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {}
+};
+
+
+class CoreOperationBroker : public OperationBrokerAPI {
+private:
+  Process* process_;
+public:
+  CoreOperationBroker(Process* proc) : process_(proc) {}
+  virtual ~CoreOperationBroker() {}
+
+  virtual Value fullInfo(const std::string& fullName) const override {
+      return process_->store()->operation(fullName)->fullInfo();
+  }
+
+  virtual Value call(const std::string& fullName, const Value& value) override {
+      return process_->store()->operation(fullName)->call(value);
+  }
+
+  virtual Value invoke(const std::string& fullName) override {
+      return process_->store()->operation(fullName)->invoke();
+  }
+
+  virtual Value execute(const std::string& fullName) override {
+      return process_->store()->operation(fullName)->execute();
+  }
+
+  virtual Value inlets(const std::string& fullName) const override {
+      return nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [](auto il) {
+          return il->info();
+      });
+  }
+
+};
+
+
+class CoreOperationOutletBroker : public OperationOutletBrokerAPI {
+private:
+  Process* process_;
+public:
+  CoreOperationOutletBroker(Process* proc) : process_(proc) {}
+  virtual ~CoreOperationOutletBroker() {}
+
+  virtual Value info(const std::string& fullName) const override {
+      return process_->store()->operation(fullName)->outlet()->info();
+  }
+
+  virtual Value get(const std::string& fullName) const override {
+      return process_->store()->operation(fullName)->outlet()->get();
+  }
+
+  virtual Value connections(const std::string& fullName) const override {
+      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->operation(fullName)->outlet()->connections(), [](auto c) {
+          return c->info();
+      });
+  }
+
+  virtual Value addConnection(const std::string& fullName, const Value& c) override {
+      return process_->store()->operation(fullName)->outlet()->addConnection(ProxyBuilder::outgoingConnectionProxy(c, process_->store()));
+  }
+  
+  virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
+      return process_->store()->operation(fullName)->outlet()->removeConnection(name);
+  }
+};
+
+class CoreOperationInletBroker : public OperationInletBrokerAPI {
+private:
+  Process* process_;
+public:
+  CoreOperationInletBroker(Process* proc) : process_(proc) {}
+  virtual ~CoreOperationInletBroker() {}
+
+  virtual Value name(const std::string& fullName, const std::string& targetName) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->name(); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+  virtual Value info(const std::string& fullName, const std::string& targetName) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->info(); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+
+  virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->defaultValue(); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+
+  virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->put(value); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+
+  virtual Value get(const std::string& fullName, const std::string& targetName) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->get(); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+
+  virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->isUpdated(); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+
+  virtual Value connections(const std::string& fullName, const std::string& targetName) const override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { 
+          return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(inlet.value()->connections(), [](auto c) {
+              return c->info();
+          });
+      }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+
+  virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { 
+          return inlet.value()->addConnection(ProxyBuilder::incomingConnectionProxy(c, process_->store()));
+      }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+  
+  virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+          return i->name() == targetName;
+      });
+      if (inlet) { return inlet.value()->removeConnection(name); }
+      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  }
+  
+};
+
+
+
+/**
+ * 
+ */
+CoreBroker::CoreBroker(Process* process, const std::string& fullName): BrokerProxyAPI("CoreBroker", fullName), process_(process),
+factory_(std::make_shared<CoreFactoryBroker>(process)), 
+store_(std::make_shared<CoreStoreBroker>(process)),
+operation_(std::make_shared<CoreOperationBroker>(process)),
+operationInlet_(std::make_shared<CoreOperationInletBroker>(process)),
+operationOutlet_(std::make_shared<CoreOperationOutletBroker>(process))
+{}
+
+CoreBroker::~CoreBroker() {}
+
 
 Value CoreBroker::getProcessInfo() const{ return process_->info(); }
 
 Value CoreBroker::getProcessFullInfo() const { return process_->fullInfo(); }
 
-Value CoreFactoryBroker::createObject(const std::string& className, const Value& info/*={}*/) {
-    logger::trace("CoreBroker::createObject({}, {})", className, info);
-    if (className == "operation") {
-        return ObjectFactory::createOperation(*process_->store(), info);
-    } else if (className == "container") {
-        return ObjectFactory::createContainer(*process_->store(), info);
-    } else if (className == "containerOperation") {
-        return ObjectFactory::createContainerOperation(*process_->store(), info);
-    } else if (className == "ec") {
-        return ObjectFactory::createExecutionContext(*process_->store(), info);
-    } else if (className == "fsm") {
-        return ObjectFactory::createFSM(*process_->store(), info);
-    }
-
-    return Value::error(logger::error("CoreBroker::createObject({}, {}) failed. Class name is invalid.", className, info));
-}
-
-Value CoreFactoryBroker::deleteObject(const std::string& className, const std::string& fullName) {
-    logger::trace("CoreBroker::deleteObject({})", fullName);
-    if (className == "operation") {
-        return ObjectFactory::deleteOperation(*process_->store(), fullName);
-    } else if (className == "container") {
-        return ObjectFactory::deleteContainer(*process_->store(), fullName);
-    } else if (className == "containerOperation") {
-        return ObjectFactory::deleteContainerOperation(*process_->store(), fullName);
-    } else if (className == "ec") {
-        return ObjectFactory::deleteExecutionContext(*process_->store(), fullName);
-    } else if (className == "fsm") {
-        return ObjectFactory::deleteFSM(*process_->store(), fullName);
-    }
-
-    return Value::error(logger::error("CoreBroker::deleteObject({}, {}) failed. Class name is invalid.", className, fullName));
-}
-
-Value CoreStoreBroker::getClassObjectInfos(const std::string& className) const {
-    logger::trace("CoreBroker::getClassObjectInfos({})", className);
-    if (className == "operation") {
-        return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](auto op) { return op->info(); });
-    } else if (className == "operationFactory") {
-        return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->operationFactories(), [](auto op) { return op->info(); });
-    } else if (className == "container") {
-        return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->containers(), [](auto o) { return o->info(); });
-    } else if (className == "containerFactory") {
-        return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->containerFactories(), [](auto o) { return o->info(); });
-    } else if (className == "ec") {
-        return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
-    } else if (className == "topic") {
-        return nerikiri::functional::map<Value, std::shared_ptr<TopicBase>>(process_->store()->topics(), [](auto o) { return o->info(); });
-    } else if (className == "ecFactory") {
-        return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
-    } else if (className == "fsm") {
-        return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
-    } else if (className == "fsmFactory") {
-        return nerikiri::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
-    } else if (className == "broker") {
-        return nerikiri::functional::map<Value, std::shared_ptr<BrokerAPI>>(process_->store()->brokers(), [](auto o) { return o->info(); });
-    } else if (className == "brokerFactory") {
-        return nerikiri::functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(process_->store()->brokerFactories(), [](auto o) { return o->info(); });
-    }
-    return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
-}
-
-Value CoreStoreBroker::getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const {
-
-}
-
-Value CoreStoreBroker::getObjectInfo(const std::string& className, const std::string& fullName) const {
-    logger::trace("CoreBroker::getObjectInfo({}, {})", className, fullName);
-    if (className == "operation") {
-        return process_->store()->operation(fullName)->fullInfo();
-    } else if (className == "container") {
-        return process_->store()->container(fullName)->info();
-    }
-
-    return Value::error(logger::error("CoreBroker::getObjectInfo({}, {}) failed. Class name is invalid.", className, fullName));
-}
 
 //std::shared_ptr<BrokerAPI>  Broker::null = std::shared_ptr<BrokerAPI>(nullptr);
 

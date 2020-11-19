@@ -23,48 +23,7 @@ namespace nerikiri {
   using Process_ptr = Process*;
 
 
-  class OperationOutletBase  : public OperationOutletAPI {
-  public:
-    OperationOutletBase(OperationAPI* operation): operation_(operation) {}
-    virtual ~OperationOutletBase() {}
-
-  public:
-    OperationAPI* operation_;
-
-    NewestValueBuffer outputBuffer_;
-    ConnectionContainer connections_;
-  public:
-    virtual OperationAPI* owner() override { return operation_; }
-  
-
-    virtual Value get() const override { return outputBuffer_.pop(); }
-
-    virtual Value invoke() { 
-      outputBuffer_.push(operation_->invoke());
-      return outputBuffer_.pop(); 
-    }
-
-    virtual Value info() const override {
-        return {
-            {"connections", {
-                nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
-            }}
-        };
-    }
-
-    virtual Value put(Value&& v);
-
-    virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
-
-    virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) override {
-      return connections_.addConnection(con);
-    }
-    
-    virtual Value removeConnection(const std::string& _fullName) override {
-      return connections_.removeConnection(_fullName);
-    }
-  };
-
+  class OperationOutletBase;
 
   class OperationBase : public OperationAPI {
   protected:
@@ -75,8 +34,14 @@ namespace nerikiri {
 
     virtual Value fullInfo() const override;
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return outlet_; }
+    virtual std::shared_ptr<OperationOutletAPI> outlet() const override;
 
+    virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
+      auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+      if (i) return i.value();
+      return nullOperationInlet();
+    }
+    
     virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return {inlets_.begin(), inlets_.end()}; }
       
   public:

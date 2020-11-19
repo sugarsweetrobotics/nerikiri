@@ -4,6 +4,7 @@
 #include "object.h"
 #include "value.h"
 #include "operation_api.h"
+#include <nerikiri/functional.h>
 
 #include <nerikiri/fsm_state_api.h>
 
@@ -53,6 +54,11 @@ namespace nerikiri {
         
         virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return operation_->outlet(); }
 
+        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
+            auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+            if (i) return i.value();
+            return nullOperationInlet();
+        }
 
         virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return operation_->inlets(); }
 

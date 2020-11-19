@@ -109,6 +109,10 @@ public:
         return Value::error(logger::error("NullOperationInletBroker::{}({}, {}) called. Object is null.", __func__, fullName, targetName));
     }
 
+    virtual Value info(const std::string& fullName, const std::string& targetName) const override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}, {}) called. Object is null.", __func__, fullName, targetName));
+    }
+
     virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override {
         return Value::error(logger::error("NullOperationInletBroker::{}({}, {}) called. Object is null.", __func__, fullName, targetName));
     }
@@ -177,6 +181,7 @@ public:
     virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() override {
         return std::make_shared<NullOperationInletBroker>();
     }
+
     virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const override {
         return std::make_shared<NullOperationInletBroker>();
     }

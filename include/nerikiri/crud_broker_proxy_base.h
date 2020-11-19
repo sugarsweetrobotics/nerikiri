@@ -43,10 +43,24 @@ namespace nerikiri {
         }
     };
 
+
+    class CRUDOperationBroker : public OperationBrokerAPI {
+    private:
+        CRUDBrokerProxyAPI* broker_;
+    public:
+        CRUDOperationBroker (CRUDBrokerProxyAPI* broker) : OperationBrokerAPI(), broker_(broker) {}
+        virtual ~CRUDOperationBroker() {}
+
+        
+    };
+
     class CRUDBrokerProxyBase : public CRUDBrokerProxyAPI, public BrokerProxyAPI {
     private:
         std::shared_ptr<StoreBrokerAPI> store_;
         std::shared_ptr<FactoryBrokerAPI> factory_;
+        std::shared_ptr<OperationBrokerAPI> operation_;
+        std::shared_ptr<OperationOutletBrokerAPI> operationOutlet_;
+        std::shared_ptr<OperationInletBrokerAPI> operationInlet_;
     public:
         CRUDBrokerProxyBase(const std::string& typeName, const std::string& fullName) : CRUDBrokerProxyAPI(), BrokerProxyAPI(typeName, fullName), 
           store_(std::make_shared<CRUDStoreBroker>(this)),
@@ -64,17 +78,16 @@ namespace nerikiri {
             return readResource("/fullInfo");            
         }
 
-        virtual std::shared_ptr<FactoryBrokerAPI> factory() {
-
-        }
-
-        virtual std::shared_ptr<const FactoryBrokerAPI> factory() const {
-
-        }
-
+        virtual std::shared_ptr<FactoryBrokerAPI> factory() { return factory_; }
+        virtual std::shared_ptr<const FactoryBrokerAPI> factory() const { return factory_; }
         virtual std::shared_ptr<StoreBrokerAPI>   store() { return store_; }
-
         virtual std::shared_ptr<const StoreBrokerAPI>   store() const { return store_; }
+        virtual std::shared_ptr<OperationBrokerAPI>   operation() override { return operation_; }
+        virtual std::shared_ptr<const OperationBrokerAPI>   operation() const override { return operation_; }
+        virtual std::shared_ptr<OperationOutletBrokerAPI>   operationOutlet() override { return operationOutlet_; }
+        virtual std::shared_ptr<const OperationOutletBrokerAPI>   operationOutlet() const override { return operationOutlet_; }
+        virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() override { return operationInlet_; }
+        virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const override { return operationInlet_; }
         
     };
 }

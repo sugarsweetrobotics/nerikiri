@@ -17,8 +17,9 @@ namespace nerikiri {
 
 
     public:
+        virtual int32_t start() = 0;
         virtual Value fullInfo() const = 0;
-
+        virtual void stop() = 0;
     };
 
 }

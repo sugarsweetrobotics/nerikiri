@@ -11,10 +11,19 @@
 using namespace nerikiri;
 
 Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
-  auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet"), store)->outlet();
+  //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
+  auto value = connectionInfo.at("inlet").at("operation");
+  auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker").at("param"));
+  inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+
+  value = connectionInfo.at("outlet").at("operation");
+  auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker").at("param"));
+  return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
+
+  /*
   //auto outlet = store->operationProxy(connectionInfo.at("output"))->outlet();
   //auto inlet = store->operationProxy(connectionInfo.at("input"))->inlet(Value::string(connectionInfo.at("input").at("target").at("name")));
-  auto inletOpt  = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(ProxyBuilder::operationProxy(connectionInfo.at("input"), store)->inlets(),
+  auto inletOpt  = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(ProxyBuilder::operationProxy(connectionInfo.at("inlet").at("operation"), store)->inlets(),
     [&connectionInfo](auto inlet) { return inlet->name() == Value::string(connectionInfo.at("inlet").at("name")); });
   if (!inletOpt) {
     return Value::error(logger::error("ConnectionBuilder::createConnection({}) failed. Inlet (name={}) not found", connectionInfo, Value::string(connectionInfo.at("input").at("target").at("name"))));
@@ -31,16 +40,17 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
     return Value::error(logger::error("ConnectionBuilder::createConnection() failed. ConnectionType is unknown. Must be pull|push|event."));
   }
 
-  auto outletV = outlet->addConnection(std::make_shared<Connection>(name, connectionType, inlet, outlet));
+  auto outletV = outlet->addConnection(nerikiri::createConnection(name, connectionType, inlet, outlet));
   if (outletV.isError()) {
     return Value::error(logger::error("ConnectionBuilder::createConnection() failed. OperationOutlet::addConnection failed. {}", outletV.getErrorMessage()));
   }
-  auto inletV = inlet->addConnection(std::make_shared<Connection>(name, connectionType, inlet, outlet));
+  auto inletV = inlet->addConnection(nerikiri::createConnection(name, connectionType, inlet, outlet));
   if (inletV.isError()) {
     outlet->removeConnection(Value::string(outletV.at("fullName")));
     return Value::error(logger::error("ConnectionBuilder::createConnection() failed. OperationInlet::addConnection failed. {}", inletV.getErrorMessage()));
   }
   return connectionInfo;
+  */
 }
 
 /*

@@ -98,5 +98,5 @@ std::shared_ptr<BrokerProxyAPI> HTTPBrokerFactory::createProxy(const Value& valu
       return std::make_shared<HTTPBrokerProxy>(address, port);
   }
   logger::error("HTTPBrokerFactory::createProxy({}). Failed. Argument value does not have 'host' or 'port' value.");
-  return std::make_shared<NullBrokerProxy>();
+  return nullBrokerProxy();
 }
