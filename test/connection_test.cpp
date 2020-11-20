@@ -34,7 +34,7 @@ SCENARIO( "Connection test", "[ec]" ) {
       Value{ 
         {"typeName", "inc"},
         {"defaultArg", {
-          {"arg01", 0}
+          {"arg01", 1}
         }}
       },
       [](const Value& arg) -> Value {
@@ -60,9 +60,11 @@ SCENARIO( "Connection test", "[ec]" ) {
       p.startAsync();
       auto ope1 = p.store()->operation("zero0.ope");
       REQUIRE(ope1->isNull() == false);
+      REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
       auto ope2 = p.store()->operation("inc0.ope");
       REQUIRE(ope2->isNull() == false);
+      REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
       THEN("Operation can connected") {
 
@@ -99,6 +101,12 @@ SCENARIO( "Connection test", "[ec]" ) {
 
         auto con2 = ope2->inlet("arg01")->connections();
         REQUIRE(con2.size() == 1);
+
+        REQUIRE(Value::intValue(ope2->execute(), -1) == 2);
+
+        ope1->execute();
+
+        REQUIRE(Value::intValue(ope2->execute(), -1) == 1);
       }
       
     }
