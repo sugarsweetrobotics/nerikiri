@@ -49,6 +49,8 @@ Value ObjectMapper::createResource(CoreBroker* coreBroker, const std::string& _p
 
 Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string& _path, const std::map<std::string, std::string>& params) {
     auto path = _path;
+    if (path.length() == 0) 
+      return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
     if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
 
     logger::debug("ObjectMapper::readResource({})", path);

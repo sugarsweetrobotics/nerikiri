@@ -7,12 +7,13 @@
 #include "nerikiri/operation_factory.h"
 #include "nerikiri/connection_builder.h"
 
+#include "operations_for_tests.h"
+
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch.hpp>
 using namespace nerikiri;
 
 
-bool operationIsCalled = false;
 
 
 SCENARIO( "Connection test", "[ec]" ) {
@@ -30,29 +31,7 @@ SCENARIO( "Connection test", "[ec]" ) {
 
     Process p("ec_tset", jsonStr);
 
-    auto opf1 = std::make_shared<OperationFactory>(
-      Value{ 
-        {"typeName", "inc"},
-        {"defaultArg", {
-          {"arg01", 1}
-        }}
-      },
-      [](const Value& arg) -> Value {
-        operationIsCalled = true;
-        return Value(arg.at("arg01").intValue()+1);
-      }
-    );
-
-    auto opf2 = std::make_shared<OperationFactory>(
-      Value{ 
-        {"typeName", "zero"},
-        {"defaultArg", { }}
-      },
-      [](const Value& arg) -> Value {
-        operationIsCalled = true;
-        return Value(0);
-      }
-    );
+    
     p.loadOperationFactory(opf1);
     p.loadOperationFactory(opf2);
 

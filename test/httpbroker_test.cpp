@@ -7,6 +7,9 @@
 #include <catch.hpp>
 using namespace nerikiri;
 
+#include "operations_for_tests.h"
+
+
 SCENARIO( "Broker test", "[broker]" ) {
 
   GIVEN("HTTPBroker basic behavior") {
@@ -14,6 +17,13 @@ SCENARIO( "Broker test", "[broker]" ) {
     {
         "logger": { 
           "logLevel": "ERROR"
+        },
+
+        "operations": {
+          "precreate": [
+            {"typeName": "inc", "instanceName": "inc0.ope"},
+            {"typeName": "zero", "instanceName": "zero0.ope"}
+          ]
         },
 
         "brokers": {
@@ -32,6 +42,10 @@ SCENARIO( "Broker test", "[broker]" ) {
     )";
 
     Process p("httpbroker_test", jsonStr);
+
+    p.loadOperationFactory(opf1);
+    p.loadOperationFactory(opf2);
+
     p.startAsync();
     REQUIRE(p.isRunning() == true);
     WHEN("HTTPBroker is running") {
@@ -45,6 +59,12 @@ SCENARIO( "Broker test", "[broker]" ) {
 
 
       THEN("Process Info includes broker") {
+        auto pInfo = proxy->getProcessInfo();
+        REQUIRE(i.isError() == false);
+        REQUIRE(Value::string(i.at("fullName")) == "httpbroker_test");
+      }
+
+      THEN("") {
 
       }
     }
