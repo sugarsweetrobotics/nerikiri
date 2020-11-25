@@ -64,7 +64,56 @@ SCENARIO( "Broker test", "[broker]" ) {
         REQUIRE(Value::string(i.at("fullName")) == "httpbroker_test");
       }
 
-      THEN("") {
+      THEN("HTTPBroker Operation") {
+        auto ope1 = p.store()->operation("zero0.ope");
+        REQUIRE(ope1->isNull() == false);
+        REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
+
+        auto ope2 = p.store()->operation("inc0.ope");
+        REQUIRE(ope2->isNull() == false);
+        REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
+      }
+
+      THEN("HTTPBroker Connection") {
+        auto ope1 = p.store()->operation("zero0.ope");
+        REQUIRE(ope1->isNull() == false);
+        REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
+
+        auto ope2 = p.store()->operation("inc0.ope");
+        REQUIRE(ope2->isNull() == false);
+        REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
+
+        Value conInfo{
+          {"name", "con0"},
+          {"type", "event"},
+          {"broker", "HTTPBroker"},
+          {"inlet", {
+            {"name", "arg01"}, 
+            {"operation", {
+              {"fullName", "inc0.ope"},
+              {"broker", {
+                {"typeName", "HTTPBroker"}
+              }}
+            }}
+          }},
+          {"outlet", {
+            {"operation", {
+              {"fullName", "zero0.ope"},
+              {"broker", {
+                {"typeName", "HTTPBroker"}
+              }}
+            }}
+          }}
+        };
+
+        proxy->connection()->createConnection(conInfo);
+
+
+        auto con1 = ope1->outlet()->connections();
+        REQUIRE(con1.size() == 1);
+
+        auto con2 = ope2->inlet("arg01")->connections();
+        REQUIRE(con2.size() == 1);
 
       }
     }

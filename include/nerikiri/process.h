@@ -26,7 +26,7 @@ namespace nerikiri {
    
     Value config_;
 
-    std::shared_ptr<CoreBroker> coreBroker_;
+    std::shared_ptr<BrokerProxyAPI> coreBroker_;
     ProcessStore store_;
    
     std::map<std::string, SystemEditor_ptr> systemEditors_;
@@ -74,7 +74,7 @@ namespace nerikiri {
     
     void setExecutablePath(const std::string& path) { path_ = path; }
 
-    std::shared_ptr<CoreBroker> coreBroker() { return coreBroker_; }
+    std::shared_ptr<BrokerProxyAPI> coreBroker() { return coreBroker_; }
     
     Value getCallbacks() const;
 

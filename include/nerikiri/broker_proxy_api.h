@@ -86,6 +86,16 @@ namespace nerikiri {
         virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) = 0;
     };
 
+
+    class ConnectionBrokerAPI {
+    public:
+        virtual ~ConnectionBrokerAPI() {}
+    public:
+        virtual Value createConnection(const Value& connectionInfo) = 0;
+        virtual Value deleteConnection(const std::string& fullName) = 0;
+   };
+
+
     class ContainerBrokerAPI {  
     public:
         virtual ~ContainerBrokerAPI() {}
@@ -97,11 +107,6 @@ namespace nerikiri {
     };
 
 
-    class ConnectionBrokerAPI {
-    public:
-        virtual ~ConnectionBrokerAPI() {}
-    public:
-   };
 
 
     class ECBrokerAPI {
@@ -160,6 +165,8 @@ namespace nerikiri {
         virtual std::shared_ptr<const OperationOutletBrokerAPI>   operationOutlet() const = 0;
         virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() = 0;
         virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const = 0;
+        virtual std::shared_ptr<ConnectionBrokerAPI>   connection() = 0;
+        virtual std::shared_ptr<const ConnectionBrokerAPI>   connection() const = 0;
 
         virtual Value getProcessInfo() const = 0;
 

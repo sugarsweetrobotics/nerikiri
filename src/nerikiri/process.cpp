@@ -67,9 +67,11 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
   }
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
-  coreBroker_ = std::make_shared<CoreBroker>(this, "coreBroker0");
+  auto cf = coreBrokerFactory(this, "coreBroker0");
+  coreBroker_ = cf->createProxy({});
+  //coreBroker_ = std::make_shared<CoreBroker>(this, "coreBroker0");
   try {
-    store_.addBrokerFactory(std::make_shared<CoreBrokerFactory>(coreBroker_));
+    store_.addBrokerFactory(cf);
     store_.addTopicFactory(std::make_shared<TopicFactory>("topicFactory"));
     store_.addFSMFactory(std::make_shared<FSMFactory>("fsmFactory"));
     setExecutablePath(getExecutablePath(name));

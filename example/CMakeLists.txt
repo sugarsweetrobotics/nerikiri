@@ -1,31 +1,5 @@
 
 
-option(BUILD_SIMPLE_EXAMPLE "Build Simple Operation Examples. This is used in tests" ON)
-
-# if (BUILD_NK_EXAMPLE)
-option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" OFF)
-option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" OFF)
-option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" OFF)
-
-set(example01_src example01.cpp)
-set(example02_src example02.cpp)
-set(example03_src example03.cpp)
-set(example04_src example04.cpp)
-set(example05_src example05.cpp)
-set(example06_src example06.cpp)
-set(example07_src example07.cpp)
-set(example08_src example08.cpp)
-set(example09_src example09.cpp)
-set(example10_src example10.cpp)
-
-
-find_package(Threads REQUIRED)
-
-set(EXAMPLE_LIBS nerikiri)
-set(EXTRA_MODULES one)
-
-set(EXAMPLES)
-
 
 set(OPERATIONS)
 function(add_operation NAME)
@@ -80,23 +54,51 @@ function(add_example NAME)
   add_dependencies(${NAME} ${OPERATIONS})
 endfunction(add_example)
 
+find_package(Threads REQUIRED)
+
+
+
+
+option(BUILD_SIMPLE_EXAMPLE "Build Simple Operation Examples. This is used in tests" ON)
+option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" OFF)
+option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" OFF)
+option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" OFF)
+
+set(example01_src example01.cpp)
+set(example02_src example02.cpp)
+set(example03_src example03.cpp)
+set(example04_src example04.cpp)
+set(example05_src example05.cpp)
+set(example06_src example06.cpp)
+set(example07_src example07.cpp)
+set(example08_src example08.cpp)
+set(example09_src example09.cpp)
+set(example10_src example10.cpp)
+
+
+set(EXAMPLE_LIBS nerikiri)
+set(EXTRA_MODULES one)
+
+set(EXAMPLES  )
+
 if (BUILD_SIMPLE_EXAMPLE)
-add_subdirectory(simple_example)
+  add_subdirectory(simple_example)
 endif (BUILD_SIMPLE_EXAMPLE)
 
+
 if (BUILD_TURTLESIM_EXAMPLE)
-add_subdirectory(turtlesim)
-list(APPEND EXAMPLES turtlesim.nkproj)
+  add_subdirectory(turtlesim)
+  list(APPEND EXAMPLES turtlesim.nkproj)
 endif (BUILD_TURTLESIM_EXAMPLE)
 
 if (BUILD_JOY_EXAMPLE)
-add_subdirectory(joy)
-list(APPEND EXAMPLES keyjoy.nkproj)
+  add_subdirectory(joy)
+  list(APPEND EXAMPLES keyjoy.nkproj)
 endif (BUILD_JOY_EXAMPLE)
 
 if (BUILD_OPENCV_EXAMPLE)
-add_subdirectory(opencv)
-list(APPEND EXAMPLES opencv.nkproj)
+  add_subdirectory(opencv)
+  list(APPEND EXAMPLES opencv.nkproj)
 endif (BUILD_OPENCV_EXAMPLE)
 
 set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
@@ -104,4 +106,3 @@ set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
 INSTALL(FILES ${EXAMPLES} DESTINATION share/nerikiri/example/)
 
 
-# endif(BUILD_EXAMPLE)

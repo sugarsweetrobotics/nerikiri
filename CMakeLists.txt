@@ -16,13 +16,16 @@ endif()
 project(nerikiri LANGUAGES CXX C VERSION ${NERIKIRI_VERSION})
 
 enable_testing()
-option(BUILD_EXAMPLE "Build Example" OFF)
+
+option(BUILD_NK_EXAMPLE "Build Example" OFF)
 option(BUILD_NK_TEST "Build Nerikiri's Test" OFF)
 
-set(CMAKE_USE_RELATIVE_PATHS True)
 set(CMAKE_CXX_STANDARD 17)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+
+set(CMAKE_USE_RELATIVE_PATHS True)
 add_subdirectory(thirdparty)
 
 add_subdirectory(include)
@@ -32,19 +35,15 @@ add_subdirectory(apps)
 add_subdirectory(test)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${nk_public_headers}")
-
 set(INCLUDE_INSTALL_DIR include/ )
 set(RUNTIME_INSTALL_DIR bin/ )
 set(LIB_INSTALL_DIR lib/ )
 set(SYSCONFIG_INSTALL_DIR etc/${PROJECT_NAME}/ )
 
-
-
 INSTALL(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR}
         LIBRARY DESTINATION ${LIB_INSTALL_DIR}
         PUBLIC_HEADER DESTINATION include/${PROJECT_NAME})
-
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/${PROJECT_NAME}Config.cmake.in
@@ -60,9 +59,6 @@ write_basic_package_version_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION ${LIB_INSTALL_DIR}/${PROJECT_NAME}/cmake )
-
-
-
 
 set(CPACK_GENERATOR WIX)
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})

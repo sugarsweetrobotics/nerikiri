@@ -15,9 +15,9 @@ namespace nerikiri {
     private:
 
     public:
-        static Value createResource(CoreBroker* coreBroker, const std::string& path, const Value& value, const std::map<std::string, std::string>& params={}, BrokerAPI* receiverBroker = nullptr);
-        static Value readResource(const CoreBroker* coreBroker, const std::string& path, const std::map<std::string, std::string>& params={});
-        static Value updateResource(CoreBroker* coreBroker, const std::string& path, const Value& value, const std::map<std::string, std::string>& params={}, BrokerAPI* receiverBroker = nullptr);
-        static Value deleteResource(CoreBroker* coreBroker, const std::string& path, const std::map<std::string, std::string>& params={}, BrokerAPI* receiverBroker = nullptr);
+        static Value createResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& value, const std::map<std::string, std::string>& params={}, BrokerAPI* receiverBroker = nullptr);
+        static Value readResource(const BrokerProxyAPI* coreBroker, const std::string& path, const std::map<std::string, std::string>& params={});
+        static Value updateResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& value, const std::map<std::string, std::string>& params={}, BrokerAPI* receiverBroker = nullptr);
+        static Value deleteResource(BrokerProxyAPI* coreBroker, const std::string& path, const std::map<std::string, std::string>& params={}, BrokerAPI* receiverBroker = nullptr);
     };
 }

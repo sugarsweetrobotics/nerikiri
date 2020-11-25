@@ -130,6 +130,21 @@ public:
     }
 };
 
+
+class NullConnectionBroker : public ConnectionBrokerAPI {
+public:
+    virtual ~NullConnectionBroker() {}
+
+    virtual Value createConnection(const Value& connectionInfo) override {
+        return Value::error(logger::error("NullConnectionBroker::{}({}) called. Object is null.", __func__));
+    }
+
+    virtual Value deleteConnection(const std::string& fullName) override {
+        return Value::error(logger::error("NullConnectionBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
+
+};
+
 class NullBrokerProxy : public BrokerProxyAPI
 {
 private:
@@ -184,6 +199,14 @@ public:
 
     virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const override {
         return std::make_shared<NullOperationInletBroker>();
+    }
+
+    virtual std::shared_ptr<ConnectionBrokerAPI>  connection() override {
+        return std::make_shared<NullConnectionBroker>();
+    }
+
+    virtual std::shared_ptr<const ConnectionBrokerAPI>  connection() const override {
+        return std::make_shared<NullConnectionBroker>();
     }
 };
 
