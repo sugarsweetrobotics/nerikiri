@@ -115,7 +115,7 @@ public:
 
     server_->response(endpoint, "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
-      const std::string path = req.matches[1];
+      const std::string path = req.matches[0];
       return toResponse(onRead(process, req.matches[1]));
     });
 
@@ -173,7 +173,11 @@ std::shared_ptr<BrokerAPI> HTTPBrokerFactory::create(const Value& value) {
   if (value.hasKey("baseDir")) {
     base_dir = value.at("baseDir").stringValue();
   }
-  return std::make_shared<HTTPBroker>(value.at("host").stringValue(), value.at("port").intValue(), Value::string(value.at("baseDir"), "."), value.at("route"));
+  Value routeInfo = {};
+  if (value.hasKey("route")) {
+    routeInfo = value.at("route");
+  }
+  return std::make_shared<HTTPBroker>(value.at("host").stringValue(), value.at("port").intValue(), base_dir, routeInfo);
 }
 
 

@@ -60,8 +60,8 @@ SCENARIO( "Broker test", "[broker]" ) {
 
       THEN("Process Info includes broker") {
         auto pInfo = proxy->getProcessInfo();
-        REQUIRE(i.isError() == false);
-        REQUIRE(Value::string(i.at("fullName")) == "httpbroker_test");
+        REQUIRE(pInfo.isError() == false);
+        REQUIRE(Value::string(pInfo.at("fullName")) == "httpbroker_test");
       }
 
       THEN("") {

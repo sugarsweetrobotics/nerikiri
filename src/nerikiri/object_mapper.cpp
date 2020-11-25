@@ -183,7 +183,7 @@ Value ObjectMapper::readResource(const CoreBroker* coreBroker, const std::string
       return coreBroker->getTopicConnectionInfos(match[1]);
     }
     */
-    return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
+    return Value::error(logger::error("ObjectMapper::readResource({}) failed.", path));
 }
 
 
