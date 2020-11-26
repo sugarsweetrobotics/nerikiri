@@ -10,14 +10,28 @@
 
 using namespace nerikiri;
 
+Value ConnectionBuilder::createInletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& inletBroker/*=nullptr*/) {
+  auto value = connectionInfo.at("inlet").at("operation");
+  //auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  return inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+}
+
+Value ConnectionBuilder::createOutletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& outletBroker/*=nullptr*/) {
+  //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
+ 
+  auto value = connectionInfo.at("outlet").at("operation");
+  //auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
+}
+
 Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
   auto value = connectionInfo.at("inlet").at("operation");
-  auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker").at("param"));
+  auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
   inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
 
   value = connectionInfo.at("outlet").at("operation");
-  auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker").at("param"));
+  auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
   return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
 
   /*

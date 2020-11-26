@@ -16,7 +16,7 @@ SCENARIO( "Broker test", "[broker]" ) {
     const std::string jsonStr = R"(
     {
         "logger": { 
-          "logLevel": "ERROR"
+          "logLevel": "TRACE"
         },
 
         "operations": {
@@ -60,8 +60,8 @@ SCENARIO( "Broker test", "[broker]" ) {
 
       THEN("Process Info includes broker") {
         auto pInfo = proxy->getProcessInfo();
-        REQUIRE(i.isError() == false);
-        REQUIRE(Value::string(i.at("fullName")) == "httpbroker_test");
+        REQUIRE(pInfo.isError() == false);
+        REQUIRE(Value::string(pInfo.at("fullName")) == "httpbroker_test");
       }
 
       THEN("HTTPBroker Operation") {
@@ -86,13 +86,20 @@ SCENARIO( "Broker test", "[broker]" ) {
         Value conInfo{
           {"name", "con0"},
           {"type", "event"},
-          {"broker", "HTTPBroker"},
+          {"broker", {
+              {"typeName", "HTTPBroker"},
+              {"host", "127.0.0.1"},
+              {"port", "8080"}
+            }
+          },
           {"inlet", {
             {"name", "arg01"}, 
             {"operation", {
               {"fullName", "inc0.ope"},
               {"broker", {
-                {"typeName", "HTTPBroker"}
+                {"typeName", "HTTPBroker"},
+                {"host", "127.0.0.1"},
+                {"port", 8080}
               }}
             }}
           }},
@@ -100,7 +107,9 @@ SCENARIO( "Broker test", "[broker]" ) {
             {"operation", {
               {"fullName", "zero0.ope"},
               {"broker", {
-                {"typeName", "HTTPBroker"}
+                {"typeName", "HTTPBroker"},
+                {"host", "127.0.0.1"},
+                {"port", 8080}
               }}
             }}
           }}
@@ -114,6 +123,13 @@ SCENARIO( "Broker test", "[broker]" ) {
 
         auto con2 = ope2->inlet("arg01")->connections();
         REQUIRE(con2.size() == 1);
+
+
+        REQUIRE(Value::intValue(ope2->execute(), -1) == 2);
+
+        ope1->execute();
+
+        REQUIRE(Value::intValue(ope2->execute(), -1) == 1);
 
       }
     }

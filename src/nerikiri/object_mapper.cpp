@@ -33,10 +33,10 @@ Value ObjectMapper::createResource(BrokerProxyAPI* coreBroker, const std::string
   if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
     return coreBroker->factory()->createObject("containerOperation", Value::merge(value, {{"containerFullName", match[1].str()}} ));
   }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/outlet/connections/"))) {
+  if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet/connections"))) {
     return coreBroker->factory()->createObject("outletConnection", Value::merge(value, {{"operationFullName", match[1].str()}} ));
   }
-  if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/inlets/([^/]*)/connections/"))) {
+  if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)/connections"))) {
     return coreBroker->factory()->createObject("inletConnection", Value::merge(value, 
                               {{"operationFullName", match[1].str()}, {"inletFullName", match[2].str()} } ));
   }
@@ -73,6 +73,12 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
       return coreBroker->store()->getObjectInfo(match[1].str()+"y", match[2]);
     } else if (std::regex_match(path, match, std::regex("([^/]*)s/([^/]*)$"))) {
       return coreBroker->store()->getObjectInfo(match[1], match[2]);
+    }
+
+    if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets$"))) {
+      return coreBroker->operation()->inlets(match[1]);
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet$"))) {
+      return coreBroker->operationOutlet()->info(match[1]);
     }
 
     /*
@@ -183,7 +189,7 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
       return coreBroker->getTopicConnectionInfos(match[1]);
     }
     */
-    return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
+    return Value::error(logger::error("ObjectMapper::readResource({}) failed.", path));
 }
 
 
@@ -195,6 +201,11 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
 Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& value, const std::map<std::string, std::string>& params, BrokerAPI* receiverBroker) {
   logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
   std::smatch match;
+
+  if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)"))) {
+    return coreBroker->operationInlet()->put(match[1], match[2], value);
+  }
+
 
   /*
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
@@ -214,9 +225,7 @@ Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string
     return coreBroker->executeAllOperation(match[1]);
   }
 
-  if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/input/arguments/([^/]*)/"))) {
-    return coreBroker->putToArgument(match[1], match[2], value);
-  }
+  
   if (std::regex_match(path, match, std::regex("/process/all_operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     if (value.isError()) {
       logger::error("ObjectMapper::updateResource() error. ({})", value);

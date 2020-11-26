@@ -15,11 +15,11 @@ namespace nerikiri {
 
     public:
         virtual Value createObject(const std::string& className, const Value& info={}) {
-            return broker_->createResource("/" + className + "s/", info);
+            return broker_->createResource(className + "s/", info);
         }
 
         virtual Value deleteObject(const std::string& className, const std::string& fullName) {
-            return broker_->deleteResource("/" + className + "s/" + fullName);
+            return broker_->deleteResource(className + "s/" + fullName);
         }
     };
 
@@ -30,12 +30,12 @@ namespace nerikiri {
         CRUDStoreBroker (CRUDBrokerProxyAPI* broker) : StoreBrokerAPI(), broker_(broker) {}
         virtual ~CRUDStoreBroker() {}
 
-        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
-            return broker_->readResource("/" + className + "s/" + fullName);
+        virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const {
+            return broker_->readResource(className + "s/" + fullName);
         }
 
         virtual Value getClassObjectInfos(const std::string& className) const {
-            return broker_->readResource("/" + className + "s/");
+            return broker_->readResource(className + "s/");
         }
 
         virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const {
@@ -53,23 +53,23 @@ namespace nerikiri {
 
         
         virtual Value fullInfo(const std::string& fullName) const override {
-            return broker_->readResource("/operations/" + fullName + "/fullInfo");
+            return broker_->readResource("operations/" + fullName + "/fullInfo");
         }
 
         virtual Value call(const std::string& fullName, const Value& value) override {
-            return broker_->updateResource("/operations/" + fullName + "/call", value);
+            return broker_->updateResource("operations/" + fullName + "/call", value);
         }
 
         virtual Value invoke(const std::string& fullName) override {
-            return broker_->updateResource("/operations/" + fullName + "/invoke", {});
+            return broker_->updateResource("operations/" + fullName + "/invoke", {});
         }
 
         virtual Value execute(const std::string& fullName) override {
-            return broker_->updateResource("/operations/" + fullName + "/execute", {});
+            return broker_->updateResource("operations/" + fullName + "/execute", {});
         }
         // collect informations of inlets ex., names.
         virtual Value inlets(const std::string& fullName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets");
+            return broker_->readResource("operations/" + fullName + "/inlets");
         }
     };
 
@@ -80,23 +80,23 @@ namespace nerikiri {
         virtual ~CRUDOperationOutletBroker() {}
 
         virtual Value get(const std::string& fullName) const override {
-            return broker_->readResource("/operations/" + fullName + "/outlet");
+            return broker_->readResource("operations/" + fullName + "/outlet");
         }
 
         virtual Value connections(const std::string& fullName) const override {
-            return broker_->readResource("/operations/" + fullName + "/outlet/connections");
+            return broker_->readResource("operations/" + fullName + "/outlet/connections");
         }
 
         virtual Value addConnection(const std::string& fullName, const Value& c) override {
-            return broker_->createResource("/operations/" + fullName + "/outlet/connections", c);
+            return broker_->createResource("operations/" + fullName + "/outlet/connections", c);
         }
         
         virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
-            return broker_->deleteResource("/operations/" + fullName + "/outlet/connections/" + name);
+            return broker_->deleteResource("operations/" + fullName + "/outlet/connections/" + name);
         }
 
         virtual Value info(const std::string& fullName) const override {
-            return broker_->readResource("/operations/" + fullName + "/outlet/info");
+            return broker_->readResource("operations/" + fullName + "/outlet/info");
         }
     };
 
@@ -107,39 +107,39 @@ namespace nerikiri {
         virtual ~CRUDOperationInletBroker() {}
 
         virtual Value name(const std::string& fullName, const std::string& targetName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets/" + targetName + "/name");
+            return broker_->readResource("operations/" + fullName + "/inlets/" + targetName + "/name");
         }
         
         virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets/" + targetName + "/defaultValue");
+            return broker_->readResource("operations/" + fullName + "/inlets/" + targetName + "/defaultValue");
         }
 
         virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override {
-            return broker_->updateResource("/operations/" + fullName + "/inlets/" + targetName, value);
+            return broker_->updateResource("operations/" + fullName + "/inlets/" + targetName, value);
         }
 
         virtual Value get(const std::string& fullName, const std::string& targetName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets/" + targetName);
+            return broker_->readResource("operations/" + fullName + "/inlets/" + targetName);
         }
 
         virtual Value info(const std::string& fullName, const std::string& targetName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets/" + targetName + "/info");
+            return broker_->readResource("operations/" + fullName + "/inlets/" + targetName + "/info");
         }
 
         virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets/" + targetName + "/isUpdated");
+            return broker_->readResource("operations/" + fullName + "/inlets/" + targetName + "/isUpdated");
         }
 
         virtual Value connections(const std::string& fullName, const std::string& targetName) const override {
-            return broker_->readResource("/operations/" + fullName + "/inlets/" + targetName + "/connections");
+            return broker_->readResource("operations/" + fullName + "/inlets/" + targetName + "/connections");
         }
 
         virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
-            return broker_->createResource("/operations/" + fullName + "/inlets/" + targetName + "/connections", c);
+            return broker_->createResource("operations/" + fullName + "/inlets/" + targetName + "/connections", c);
         }
         
         virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
-            return broker_->deleteResource("/operations/" + fullName + "/inlets/" + targetName + "/connections/" + name);
+            return broker_->deleteResource("operations/" + fullName + "/inlets/" + targetName + "/connections/" + name);
         }
     };
     class CRUDConnectionBroker : public ConnectionBrokerAPI {
@@ -149,10 +149,10 @@ namespace nerikiri {
         virtual ~CRUDConnectionBroker() {}
     public:
         virtual Value createConnection(const Value& connectionInfo) override {
-            return broker_->createResource("/connections/", connectionInfo);
+            return broker_->createResource("connections/", connectionInfo);
         }
         virtual Value deleteConnection(const std::string& fullName) override {
-            return broker_->readResource("/connections/" + fullName);
+            return broker_->readResource("connections/" + fullName);
         }
     };
 
@@ -179,11 +179,11 @@ namespace nerikiri {
     public:
 
         virtual Value getProcessInfo() const override {
-            return readResource("/info");            
+            return readResource("info");            
         }
 
         virtual Value getProcessFullInfo() const override {
-            return readResource("/fullInfo");            
+            return readResource("fullInfo");            
         }
 
         virtual std::shared_ptr<FactoryBrokerAPI> factory() override { return factory_; }

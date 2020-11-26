@@ -233,7 +233,7 @@ public:
   virtual ~CoreFactoryBroker() {}
 
   virtual Value createObject(const std::string& className, const Value& info={}) override {
-        logger::trace("CoreBroker::createObject({}, {})", className, info);
+        logger::trace("CoreBroker::CoreFactoryBroker::createObject({}, {})", className, info);
         if (className == "operation") {
             return ObjectFactory::createOperation(*process_->store(), info);
         } else if (className == "container") {
@@ -244,14 +244,21 @@ public:
             return ObjectFactory::createExecutionContext(*process_->store(), info);
         } else if (className == "fsm") {
             return ObjectFactory::createFSM(*process_->store(), info);
+        } else if (className == "connection") {
+            return ConnectionBuilder::createConnection(process_->store(), info);
+        } else if (className == "outletConnection") {
+            return ConnectionBuilder::createOutletConnection(process_->store(), info, process_->coreBroker());
+        } else if (className == "inletConnection") {
+            return ConnectionBuilder::createInletConnection(process_->store(), info, process_->coreBroker());
         }
+
 
         return Value::error(logger::error("CoreBroker::createObject({}, {}) failed. Class name is invalid.", className, info));
     }
 
 
   virtual Value deleteObject(const std::string& className, const std::string& fullName) override {
-        logger::trace("CoreBroker::deleteObject({})", fullName);
+        logger::trace("CoreBroker::CoreFactoryBroker::deleteObject({})", fullName);
         if (className == "operation") {
             return ObjectFactory::deleteOperation(*process_->store(), fullName);
         } else if (className == "container") {
