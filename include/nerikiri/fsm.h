@@ -6,7 +6,7 @@
 
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/object.h"
-#include <nerikiri/operation_base.h>
+//#include <nerikiri/operation_base.h>
 #include "nerikiri/ec.h"
 
 #include "nerikiri/fsm_state.h"

@@ -59,6 +59,7 @@ namespace {
             }
             ps.push_back(std::pair<std::string, nerikiri::Value>(e.name.GetString(), construct(e.value)));
         }
+        if (ps.size() == 0) { return {}; }
         return nerikiri::Value(std::move(ps));
 
     }

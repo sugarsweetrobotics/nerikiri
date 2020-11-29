@@ -11,6 +11,7 @@ namespace nerikiri {
     class ProxyBuilder {
     public:
     static std::shared_ptr<OperationAPI> operationProxy(const Value& info, ProcessStore* store);
+    static std::shared_ptr<OperationAPI> operationProxy(const Value& info, const std::shared_ptr<BrokerProxyAPI>& brokerProxy);
     static std::shared_ptr<ConnectionAPI> outgoingConnectionProxy(const Value& info, ProcessStore* store);
     static std::shared_ptr<ConnectionAPI> incomingConnectionProxy(const Value& value, ProcessStore* store);
     };

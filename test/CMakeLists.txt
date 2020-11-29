@@ -65,4 +65,4 @@ if (${BUILD_NK_TEST_OPTION})
 endif ()
 
 
-endif (BUILD_TEST)
+endif (BUILD_MK_TEST)

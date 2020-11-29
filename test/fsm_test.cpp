@@ -4,61 +4,14 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/process.h"
-#include "nerikiri/operationfactory.h"
-#include "nerikiri/connectionbuilder.h"
+#include "nerikiri/operation_factory.h"
+#include "nerikiri/connection_builder.h"
+
+#include "operations_for_tests.h"
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch.hpp>
 using namespace nerikiri;
-
-
-bool operationIsCalled = false;
-
-class OneShotEC : public ExecutionContext {
-public:
-    OneShotEC(const Value& info) : ExecutionContext(info) {}
-
-public:
-    virtual bool onStarted() override {
-        svc();
-        return true;
-    }
-};
-
-auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
-  { {"typeName", "add"},
-    {"defaultArg", {
-      {"arg01", 0},
-      {"arg02", 0}
-    }}
-  },
-  [](const Value& arg) -> Value {
-    operationIsCalled = true;
-    return Value(arg.at("arg01").intValue() + arg.at("arg02").intValue());
-  }
-});
-
-auto opf2 = std::shared_ptr<OperationFactory>( new OperationFactory{
-  { {"typeName", "inc"},
-    {"defaultArg", {
-      {"arg01", 0}
-    }}
-  },
-  [](const Value& arg) -> Value {
-    operationIsCalled = true;
-    return Value(arg.at("arg01").intValue()+1);
-  }
-});
-
-auto opf3 = std::shared_ptr<OperationFactory>( new OperationFactory{
-  { {"typeName", "zero"},
-    {"defaultArg", {}}
-  },
-  [](const Value& arg) -> Value {
-    operationIsCalled = true;
-    return Value(0);
-  }
-});
 
 
 SCENARIO( "FSM test", "[ec]" ) {
@@ -127,72 +80,71 @@ SCENARIO( "FSM test", "[ec]" ) {
     p.loadOperationFactory(opf1);
     p.loadOperationFactory(opf2);
     p.loadOperationFactory(opf3);
+    p.loadECFactory(ecf1);
 
-    auto ecf1 = std::shared_ptr<ExecutionContextFactory>( static_cast<ExecutionContextFactory*>(new ECFactory<OneShotEC>()) );
-    p.store()->addExecutionContextFactory(ecf1);
 
     THEN("FSM is stanby") {
         p.startAsync();
-        auto infos = p.store()->getFSMInfos();
-        REQUIRE(infos.listValue().size() == 1);
+        auto fsms = p.store()->fsms();
+        REQUIRE(fsms.size() == 1);
 
-        auto fsm = p.store()->getFSM(std::string("FSM0.fsm"));
+        auto fsm = p.store()->fsm(std::string("FSM0.fsm"));
         REQUIRE(fsm->isNull() == false);
 
-        auto state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "created");
+        auto state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "created");
 
-        state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v = fsm->setFSMState("stopped");
+        state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "stopped");
 
 
-        state = fsm->setFSMState("hoge");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        v = fsm->setFSMState("hoge");
+        state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "stopped");
 
-        state = fsm->setFSMState("created");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        v = fsm->setFSMState("created");
+        state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "stopped");
     }
 
     THEN("FSM can bind operation from state") {
         p.startAsync();
-        auto ope = p.store()->getOperation(std::string("add0.ope"));
+        auto ope = p.store()->operation(std::string("add0.ope"));
         REQUIRE(ope->isNull() == false);
 
-        auto fsm = p.store()->getFSM(std::string("FSM0.fsm"));
+        auto fsm = p.store()->fsm(std::string("FSM0.fsm"));
         REQUIRE(fsm->isNull() == false);
 
-        auto state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v = fsm->setFSMState("stopped");
+        auto state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "stopped");
 
-        auto bindResult = fsm->bindStateToOperation("running", ope);
+        auto bindResult = fsm->fsmState("runngin")->bind(ope);
         REQUIRE(bindResult.isError() == false);
 
         operationIsCalled = false;
-        state = fsm->setFSMState("running");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "running");
+        v = fsm->setFSMState("running");
+        state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "running");
         REQUIRE(operationIsCalled == true);
       }
 
     THEN("FSM can bind EC from state") {
         p.startAsync();
-        auto ec = p.store()->getExecutionContext("OneShotEC0.ec");
+        auto ec = p.store()->executionContext("OneShotEC0.ec");
         REQUIRE(ec->isNull() == false);
 
-        auto fsm = p.store()->getFSM("FSM0.fsm");
+        auto fsm = p.store()->fsm("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
-        auto state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v = fsm->setFSMState("stopped");
+        auto state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "stopped");
 
-        auto bindResult = fsm->bindStateToECStart("running", ec);
+        auto bindResult = fsm->fsmState("running")->bind(ec->startedState());
         REQUIRE(bindResult.isError() == false);
-        bindResult = fsm->bindStateToECStop("stopped", ec);
+        bindResult = fsm->fsmState("stopped")->bind(ec->stoppedState());
         REQUIRE(bindResult.isError() == false);
 
         ec->stop();

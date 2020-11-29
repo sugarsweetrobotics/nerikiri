@@ -206,7 +206,17 @@ Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string
     return coreBroker->operationInlet()->put(match[1], match[2], value);
   }
 
+  if (std::regex_match(path, match, std::regex("operations/([^/]*)/call"))) {
+    return coreBroker->operation()->call(match[1].str(), (value));
+  }
 
+  if (std::regex_match(path, match, std::regex("operations/([^/]*)/invoke"))) {
+    return coreBroker->operation()->invoke(match[1].str());
+  }
+
+  if (std::regex_match(path, match, std::regex("operations/([^/]*)/execute"))) {
+    return coreBroker->operation()->execute(match[1].str());
+  }
   /*
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
     return coreBroker->callOperation(match[1].str(), (value));

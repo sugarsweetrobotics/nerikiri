@@ -11,7 +11,7 @@
 #include <nerikiri/container_operation_factory_api.h>
 #include <nerikiri/ec_api.h>
 #include "nerikiri/connection.h"
-#include "nerikiri/connectiondictionary.h"
+//#include "nerikiri/connectiondictionary.h"
 
 #include "nerikiri/broker_api.h"
 #include "nerikiri/broker_factory_api.h"
@@ -45,7 +45,7 @@ namespace nerikiri {
     std::vector<std::shared_ptr<BrokerAPI>> brokers_;
     std::vector<std::shared_ptr<BrokerFactoryAPI>> brokerFactories_;
 
-    std::vector<std::shared_ptr<TopicBase>> topics_;
+    std::vector<std::shared_ptr<TopicAPI>> topics_;
     std::vector<std::shared_ptr<TopicFactoryAPI>> topicFactories_;
 
     std::vector<std::shared_ptr<FSMAPI>> fsms_;
@@ -174,7 +174,7 @@ namespace nerikiri {
       return {fsmFactories_.begin(), fsmFactories_.end()};
     }
 
-    std::vector<std::shared_ptr<TopicBase>> topics() const {
+    std::vector<std::shared_ptr<TopicAPI>> topics() const {
       return {topics_.begin(), topics_.end()};
     }
 
@@ -259,8 +259,8 @@ namespace nerikiri {
     /**
      * 
      */
-    Value addTopic(const std::shared_ptr<TopicBase>& t) {
-      return add<TopicBase>(topics_, t, ".topic");
+    Value addTopic(const std::shared_ptr<TopicAPI>& t) {
+      return add<TopicAPI>(topics_, t, ".topic");
     }
 
     Value addTopicFactory(const std::shared_ptr<TopicFactoryAPI>& f) {
@@ -310,7 +310,7 @@ namespace nerikiri {
 
     std::shared_ptr<FSMFactoryAPI> fsmFactory(const std::string& fsmTypeFullName) const;
 
-    std::shared_ptr<TopicBase> topic(const std::string& fullName) const;
+    std::shared_ptr<TopicAPI> topic(const std::string& fullName) const;
 
     std::shared_ptr<TopicFactoryAPI> topicFactory(const std::string& topicTypeFullName) const;
 
@@ -326,7 +326,7 @@ namespace nerikiri {
 
     Value getCallbacks() const;
 
-    std::shared_ptr<OperationBase> getOperationOrTopic(const std::string& fullName);
+    std::shared_ptr<OperationAPI> getOperationOrTopic(const std::string& fullName);
 
 
   };

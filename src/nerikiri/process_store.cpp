@@ -9,6 +9,7 @@
 #include "nerikiri/process.h"
 
 #include "nerikiri/broker_api.h"
+#include <nerikiri/proxy_builder.h>
 #include <iostream>
 
 using namespace nerikiri;
@@ -44,7 +45,7 @@ std::shared_ptr<OperationAPI> ProcessStore::operation(const std::string& fullNam
 std::shared_ptr<OperationFactoryAPI> ProcessStore::operationFactory(const std::string& operationTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<OperationFactoryAPI>>(operationFactories(), [&operationTypeFullName](auto f) { return f->typeName() == operationTypeFullName; });
   if (f) return f.value();
-  return std::make_shared<NullOperationFactory>();
+  return nullOperationFactory();
 }
 
 std::shared_ptr<ContainerAPI> ProcessStore::container(const std::string& fullName) const { 
@@ -60,7 +61,7 @@ std::shared_ptr<ContainerFactoryAPI> ProcessStore::containerFactory(const std::s
     return f->typeName() == containerTypeFullName;
   });
   if (f) return f.value();
-  return std::make_shared<NullContainerFactory>();
+  return nullContainerFactory();
 }
 
 std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFactory(const std::string& containerOperationTypeFullName) const {
@@ -73,7 +74,7 @@ std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFa
     return f->containerTypeFullName() == containerTypeFullName && f->operationTypeFullName() == operationTypeFullName;
   });
   if (f) return f.value();
-  return std::make_shared<NullContainerOperationFactory>();
+  return nullContainerOperationFactory();
 }
 
 std::shared_ptr<FSMAPI> ProcessStore::fsm(const std::string& fullName) const {
@@ -90,10 +91,10 @@ std::shared_ptr<FSMFactoryAPI> ProcessStore::fsmFactory(const std::string& fsmTy
   return std::make_shared<NullFSMFactory>();
 }
 
-std::shared_ptr<TopicBase> ProcessStore::topic(const std::string& fullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<TopicBase>>(topics(), [&fullName](auto t) { return t->fullName() == fullName; });
+std::shared_ptr<TopicAPI> ProcessStore::topic(const std::string& fullName) const {
+  auto f = nerikiri::functional::find<std::shared_ptr<TopicAPI>>(topics(), [&fullName](auto t) { return t->fullName() == fullName; });
   if (f) return f.value();;
-  return std::make_shared<NullTopic>();
+  return nullTopic();
 }
 
 std::shared_ptr<TopicFactoryAPI> ProcessStore::topicFactory(const std::string& topicTypeFullName) const {
@@ -101,13 +102,13 @@ std::shared_ptr<TopicFactoryAPI> ProcessStore::topicFactory(const std::string& t
     return f->topicTypeFullName() == topicTypeFullName;
   });
   if (f) return f.value();
-  return std::make_shared<NullTopicFactory>();
+  return nullTopicFactory();
 }
 
 std::shared_ptr<ExecutionContextAPI> ProcessStore::executionContext(const std::string& fullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextAPI>>(executionContexts(), [&fullName](auto ec) { return ec->fullName() == fullName; });
   if (f) return f.value();;
-  return std::make_shared<NullExecutionContext>();
+  return nullEC();
 }
 
 std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactory(const std::string& ecTypeFullName) const {
@@ -115,7 +116,7 @@ std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactor
     return f->executionContextTypeFullName() == ecTypeFullName;
   });
   if (f) return f.value();
-  return std::make_shared<NullExecutionContextFactory>();
+  return nullECFactory();
 }
 
 std::shared_ptr<BrokerAPI> ProcessStore::broker(const std::string& fullName) const {
@@ -128,6 +129,13 @@ std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string&
   auto f = nerikiri::functional::find<std::shared_ptr<BrokerFactoryAPI>>(brokerFactories(), [&fullName](auto f) { return f->typeName() == fullName; });
   if (f) return f.value();;
   return std::make_shared<NullBrokerFactory>();
+}
+
+std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
+  if (info.hasKey("broker")) {
+    return ProxyBuilder::operationProxy(info, this);
+  }
+  return operation(Value::string(info.at("fullName")));
 }
 
 

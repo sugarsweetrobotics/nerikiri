@@ -3,122 +3,77 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/ec.h"
-#include "nerikiri/operationfactory.h"
+#include "nerikiri/operation_factory.h"
 #include "nerikiri/process.h"
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include <catch.hpp>
+
 using namespace nerikiri;
 
+#include "operations_for_tests.h"
 
-class OneShotEC : public ExecutionContext {
-public:
-    OneShotEC(const Value& info) : ExecutionContext(info) {}
-
-public:
-    virtual bool onStarted() override {
-        svc();
-        return true;
-    }
-};
-
-bool operationIsCalled = false;
-
-auto opf1 = std::shared_ptr<OperationFactory>( new OperationFactory{
-  { {"typeName", "add"},
-    {"defaultArg", {
-      {"arg01", 0},
-      {"arg02", 0}
-    }}
-  },
-  [](const Value& arg) -> Value {
-    operationIsCalled = true;
-    return Value(arg.at("arg01").intValue() + arg.at("arg02").intValue());
-  }
-});
-
-auto opf2 = std::shared_ptr<OperationFactory>( new OperationFactory{
-  { {"typeName", "inc"},
-    {"defaultArg", {
-      {"arg01", 0}
-    }}
-  },
-  [](const Value& arg) -> Value {
-    operationIsCalled = true;
-    return Value(arg.at("arg01").intValue()+1);
-  }
-});
-
-auto opf3 = std::shared_ptr<OperationFactory>( new OperationFactory{
-  { {"typeName", "zero"},
-    {"defaultArg", {}}
-  },
-  [](const Value& arg) -> Value {
-    operationIsCalled = true;
-    return Value(0);
-  }
-});
 
 SCENARIO( "ExecutionContext test", "[ec]" ) {
   GIVEN("ExecutionContext basic behavior") {
-  const std::string jsonStr = R"({
-    "logger": { "logLevel": "OFF" },
+    const std::string jsonStr = R"({
+      "logger": { "logLevel": "OFF" },
 
-    "operations": {
-        "precreate": [
+      "operations": {
+          "precreate": [
+              {
+                  "typeName": "zero",
+                  "instanceName": "zero0.ope"
+              }, 
+              {
+                  "typeName": "inc",
+                  "instanceName": "inc0.ope"
+              }
+          ]
+      },
+
+      "ecs": {
+          "precreate": [
             {
-                "typeName": "zero",
-                "instanceName": "zero0.ope"
-            }, 
-            {
-                "typeName": "inc",
-                "instanceName": "inc0.ope"
+              "typeName": "OneShotEC",
+              "instanceName": "OneShotEC0.ec"
             }
-        ]
-    },
+          ],
+          "bind": {},
+          "start": []
+      }
+      })";
 
-    "ecs": {
-        "precreate": [
-          {
-            "typeName": "OneShotEC",
-            "instanceName": "OneShotEC0.ec"
-          }
-        ],
-        "bind": {},
-        "start": []
+    Process p("ec_tset", jsonStr);
+    
+    p.loadOperationFactory(opf1);
+    p.loadOperationFactory(opf2);
+    p.loadOperationFactory(opf3);
+    p.loadECFactory(ecf1);
+
+    THEN("ExcutionContext is stanby") {
+      p.startAsync();
+      auto ecInfos = p.store()->executionContexts();
+      REQUIRE(ecInfos.size() == 1);
     }
-    })";
 
-  Process p("ec_tset", jsonStr);
-  
-  p.loadOperationFactory(opf1);
-  p.loadOperationFactory(opf2);
-  p.loadOperationFactory(opf3);
+    THEN("ExecutionContext can bind to operation") {
+      p.startAsync();
+      auto ec = p.store()->executionContext("OneShotEC0.ec");
+      REQUIRE(ec->isNull() == false);
 
-  auto ecf1 = std::shared_ptr<ExecutionContextFactory>( static_cast<ExecutionContextFactory*>(new ECFactory<OneShotEC>()) );
-  p.store()->addExecutionContextFactory(ecf1);
+      auto op = p.store()->operation("zero0.ope");
+      //auto broker = p.store()->brokerFactory("CoreBroker")->createProxy({{"fullName", "coreBrokerProxy"}});
+      //auto res = ec->bind("zero0.ope", broker);
+      auto result = ec->bind(op);
+      REQUIRE(result.isError() == false);
 
-  THEN("ExcutionContext is stanby") {
-    p.startAsync();
-    auto ecInfos = p.store()->getExecutionContextInfos();
-    REQUIRE(ecInfos.listValue().size() == 1);
-  }
+      operationIsCalled = false;
+      REQUIRE(operationIsCalled == false);
+      ec->start();
+      REQUIRE(operationIsCalled == true);
 
-  THEN("ExecutionContext can bind to operation") {
-    p.startAsync();
-    auto ec = p.store()->getExecutionContext("OneShotEC0.ec");
-    REQUIRE(ec->isNull() == false);
-
-    auto broker = p.store()->getBrokerFactory({{"typeName", "CoreBroker"}})->createProxy({{"typeName", "CoreBroker"}});
-    auto res = ec->bind("zero0.ope", broker);
-    REQUIRE(res.isError() == false);
-
-    operationIsCalled = false;
-    REQUIRE(operationIsCalled == false);
-    ec->start();
-    REQUIRE(operationIsCalled == true);
-
-  }
+    }
   }
 }
       /*

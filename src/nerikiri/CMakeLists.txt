@@ -1,39 +1,54 @@
 set(nk_base_srcs 
 
 base64.c
-brokerfactory.cpp
-broker_proxy_api.cpp
-broker.cpp
-container_factory_base.cpp
-connection_proxy.cpp
-container_api.cpp
-connection_builder.cpp
-connection.cpp 
-connectiondictionary.cpp 
-container.cpp 
-crud_broker.cpp
-crud_broker_base.cpp
-corebroker.cpp
+
+broker/brokerfactory.cpp
+broker/broker_proxy_api.cpp
+broker/broker.cpp
+broker/crud_broker.cpp
+broker/crud_broker_base.cpp
+broker/corebroker.cpp
+
+container/container_base.cpp
+container/container_operation_base.cpp
+container/container_factory_base.cpp
+container/container_api.cpp
+container/container.cpp 
+container/container_factory_api.cpp
+container/container_operation_factory_api.cpp
+container/container_operation_factory_base.cpp
+
+
+connection/connection_proxy.cpp
+connection/connection_builder.cpp
+connection/connection.cpp 
+
 dllproxy.cpp 
 
-ec.cpp
-fsm.cpp
+ec/ec.cpp
+ec/ec_api.cpp
+ec/ec_factory_api.cpp
+
+fsm/fsm.cpp
 
 json.cpp 
 logger.cpp 
 moduleloader.cpp
 naming.cpp
 
-operation.cpp 
 os.cpp
-operation_base.cpp
-operation_api.cpp
-operation_outlet_api.cpp
-operation_inlet_api.cpp
+operation/operation.cpp 
+operation/operation_base.cpp
+operation/operation_api.cpp
+operation/operation_factory_api.cpp
+operation/operation_factory.cpp
+operation/operation_outlet_api.cpp
+operation/operation_inlet_api.cpp
+operation/operation_with_argument.cpp
+operation/operation_proxy.cpp
 object.cpp
 object_mapper.cpp 
 objectfactory.cpp
-operation_proxy.cpp
 
 proxy_builder.cpp
 process.cpp 
@@ -45,6 +60,8 @@ process_builder.cpp
 signal.cpp 
 
 value.cpp 
+
+topic/topic_api.cpp
 #broker.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 )
@@ -53,6 +70,7 @@ set(nk_se_srcs systemeditor/systemeditor.cpp)
 set(nk_srcs ${nk_base_srcs} )
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/cpp-httplib)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/rapidjson/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/spdlog/include)

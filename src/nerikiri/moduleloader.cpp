@@ -3,7 +3,7 @@
 
 #include <nerikiri/moduleloader.h>
 
-#include <nerikiri/container_operation_factory_base.h>
+#include <nerikiri/container_operation_factory_api.h>
 #include <nerikiri/operation_factory.h>
 
 
@@ -25,7 +25,7 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
       auto f = dllproxy->functionSymbol(info.at("typeName").stringValue());
       if (f) {
         logger::info("ModuleLoader::loadOperationFactory({}, {}) load success.", p, name);
-        store.addOperationFactory(std::shared_ptr<OperationFactory>(  static_cast<OperationFactory*>(f())  ) );
+        store.addOperationFactory(std::shared_ptr<OperationFactoryAPI>(  static_cast<OperationFactoryAPI*>(f())  ) );
         return info;
       } else {
         logger::debug("ModuleLoader:loadOperationFactory failed. Can load DLL but can not find Symbol({})", name);
@@ -52,7 +52,7 @@ Value ModuleLoader::loadContainerOperationFactory(ProcessStore& store, std::vect
       auto f = dllproxy->functionSymbol(name);
       if (f) {
         logger::info("ModuleLoader::loadContainerOperationFactory({}, {}) load success.", p, name);
-        store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryBase>(  static_cast<ContainerOperationFactoryBase*>(f())  ) );
+        store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(  static_cast<ContainerOperationFactoryAPI*>(f())  ) );
         return info;
       } else {
         logger::debug("ModuleLoader::loadContainerOperationFactory failed. Can load DLL but can not find Symbol({})", name);

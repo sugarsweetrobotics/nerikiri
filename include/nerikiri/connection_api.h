@@ -1,8 +1,7 @@
 #pragma once 
 
 #include <nerikiri/object.h>
-#include <nerikiri/operation_inlet_api.h>
-#include <nerikiri/operation_outlet_api.h>
+#include <nerikiri/operation_api.h>
 
 namespace nerikiri {
 

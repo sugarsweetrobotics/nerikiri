@@ -1,6 +1,6 @@
- #include <sstream>
+#include <sstream>
 #include <iostream>
-
+#include <future>
 
 #include "nerikiri/process.h"
 
@@ -72,7 +72,7 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
   //coreBroker_ = std::make_shared<CoreBroker>(this, "coreBroker0");
   try {
     store_.addBrokerFactory(cf);
-    store_.addTopicFactory(std::make_shared<TopicFactory>("topicFactory"));
+    store_.addTopicFactory(topicFactory("topicFactory"));
     store_.addFSMFactory(std::make_shared<FSMFactory>("fsmFactory"));
     setExecutablePath(getExecutablePath(name));
 

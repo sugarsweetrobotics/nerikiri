@@ -45,6 +45,7 @@ SCENARIO( "Broker test", "[broker]" ) {
 
     p.loadOperationFactory(opf1);
     p.loadOperationFactory(opf2);
+    p.loadECFactory(ecf1);
 
     p.startAsync();
     REQUIRE(p.isRunning() == true);
@@ -64,7 +65,7 @@ SCENARIO( "Broker test", "[broker]" ) {
         REQUIRE(Value::string(pInfo.at("fullName")) == "httpbroker_test");
       }
 
-      THEN("HTTPBroker Operation") {
+      THEN("Simple Operation Call") {
         auto ope1 = p.store()->operation("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
@@ -72,7 +73,34 @@ SCENARIO( "Broker test", "[broker]" ) {
         auto ope2 = p.store()->operation("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
+
+        AND_THEN("HTTP Broker call") {
+          auto opp1 = p.store()->operationProxy({{"fullName", "zero0.ope"}, {"broker", {
+            {"typeName", "HTTPBroker"}, {"port", 8080}, {"host", "localhost"}
+          }}});
+          REQUIRE(opp1->isNull() == false);
+          REQUIRE(Value::intValue(opp1->call({}), -9999) == 0);
+
+          auto opp2 = p.store()->operationProxy({{"fullName", "inc0.ope"}, {"broker", {
+            {"typeName", "HTTPBroker"}, {"port", 8080}, {"host", "localhost"}
+          }}});
+          REQUIRE(opp2->isNull() == false);
+          REQUIRE(Value::intValue(opp2->call({{"arg01", 3}}), -1) == 4);
+        }
       }
+
+      THEN("HTTPBroker EC and Operation") {
+        auto ope1 = p.store()->operation("zero0.ope");
+        REQUIRE(ope1->isNull() == false);
+        REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
+
+        auto ope2 = p.store()->operation("inc0.ope");
+        REQUIRE(ope2->isNull() == false);
+        REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
+
+         
+      }
+
 
       THEN("HTTPBroker Connection") {
         auto ope1 = p.store()->operation("zero0.ope");
@@ -131,7 +159,7 @@ SCENARIO( "Broker test", "[broker]" ) {
 
         REQUIRE(Value::intValue(ope2->execute(), -1) == 1);
 
-      }
+      } // Connection test
     }
     p.stop();
   }

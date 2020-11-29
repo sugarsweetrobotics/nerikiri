@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include <nerikiri/operation_api.h>
+#include <nerikiri/ec_state_api.h>
 
 namespace nerikiri {
 

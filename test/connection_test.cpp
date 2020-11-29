@@ -5,7 +5,7 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/process.h"
 #include "nerikiri/operation_factory.h"
-#include "nerikiri/connection_builder.h"
+//#include "nerikiri/connection_builder.h"
 
 #include "operations_for_tests.h"
 
@@ -72,7 +72,8 @@ SCENARIO( "Connection test", "[ec]" ) {
             }}
           }}
         };
-        auto v =ConnectionBuilder::createConnection(p.store(), conInfo);
+        auto v = p.coreBroker()->connection()->createConnection(conInfo);
+        //auto v =ConnectionBuilder::createConnection(p.store(), conInfo);
         REQUIRE(v.isError() == false);
 
         auto con1 = ope1->outlet()->connections();

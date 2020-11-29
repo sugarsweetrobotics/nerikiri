@@ -3,7 +3,8 @@
 #include <vector>
 #include <memory>
 #include <string>
-#include "nerikiri/container.h"
+#include <nerikiri/container.h>
+#include <nerikiri/container_factory_api.h>
 
 namespace nerikiri {
 
@@ -12,13 +13,13 @@ namespace nerikiri {
      * ContainerFactoryテンプレートクラス
      */
     template<typename T>
-    class ContainerFactory : public ContainerFactoryBase {
+    class ContainerFactory : public ContainerFactoryAPI {
     public:
 
         /**
          * コンストラクタ
          */
-        ContainerFactory(const std::string& fullName): ContainerFactoryBase("ContainerFactory", demangle(typeid(T).name()), fullName) {}
+        ContainerFactory(const std::string& fullName): ContainerFactoryAPI("ContainerFactory", demangle(typeid(T).name()), fullName) {}
 
 
         /**
@@ -33,11 +34,7 @@ namespace nerikiri {
          * 
          */
         virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) override { 
-            //auto i = info;
-            //i["typeName"] = demangle(typeid(T).name());
-            //auto c = std::shared_ptr<ContainerBase>(new Container<T>(this, i)); 
             return std::make_shared<Container<T>>(this, fullName);
-//            return c;
         }
     };
 

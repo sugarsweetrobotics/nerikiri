@@ -1,7 +1,6 @@
 
 #include "nerikiri/logger.h"
 #include "nerikiri/abstractbrokerproxy.h"
-#include "nerikiri/nullbrokerproxy.h"
 #include "nerikiri/objectfactory.h"
 
 
