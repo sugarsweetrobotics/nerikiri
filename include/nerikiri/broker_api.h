@@ -13,11 +13,12 @@
 #include "nerikiri/value.h"
 #include "nerikiri/object.h"
 
+#include <nerikiri/process_api.h>
+
 namespace nerikiri {
     
-
-    class Process;
-
+    class ProcessAPI;
+    
     /**
      * Brokerの基本クラス
      */
@@ -32,9 +33,9 @@ namespace nerikiri {
         virtual Value fullInfo() const = 0;
 
 
-        virtual bool run(Process* process) = 0;
+        virtual bool run(ProcessAPI* process) = 0;
         
-        virtual void shutdown(Process* process) = 0;
+        virtual void shutdown(ProcessAPI* process) = 0;
 
         virtual bool isRunning() const = 0;
     };
@@ -51,12 +52,12 @@ namespace nerikiri {
             return Value::error(logger::error("NullBroker::{}() failed. Object is null.", __func__));
         }
 
-        virtual bool run(Process* process) override {
+        virtual bool run(ProcessAPI* process) override {
             logger::error("NullBroker::{}() failed. Object is null.", __func__);
             return false;
         }
         
-        virtual void shutdown(Process* process) override {
+        virtual void shutdown(ProcessAPI* process) override {
             logger::error("NullBroker::{}() failed. Object is null.", __func__);
             return;
         }

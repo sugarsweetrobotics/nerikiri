@@ -1,8 +1,9 @@
 #include <regex>
 
 #include <nerikiri/logger.h>
-#include <nerikiri/object_mapper.h>
-#include "nerikiri/process.h"
+#include "object_mapper.h"
+//#include "../process/process_impl.h"
+#include <nerikiri/process_api.h>
 #include "nerikiri/process_store.h"
 
 // #include "nerikiri/connection_builder.h"

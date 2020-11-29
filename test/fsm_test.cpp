@@ -75,20 +75,20 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
     })";
 
-    Process p("fsm_test", jsonStr);
+    auto p = nerikiri::process("fsm_test", jsonStr);
 
-    p.loadOperationFactory(opf1);
-    p.loadOperationFactory(opf2);
-    p.loadOperationFactory(opf3);
-    p.loadECFactory(ecf1);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
+    p->loadOperationFactory(opf3);
+    p->loadECFactory(ecf1);
 
 
     THEN("FSM is stanby") {
-        p.startAsync();
-        auto fsms = p.store()->fsms();
+        p->startAsync();
+        auto fsms = p->store()->fsms();
         REQUIRE(fsms.size() == 1);
 
-        auto fsm = p.store()->fsm(std::string("FSM0.fsm"));
+        auto fsm = p->store()->fsm(std::string("FSM0.fsm"));
         REQUIRE(fsm->isNull() == false);
 
         auto state = fsm->currentFsmState();
@@ -109,11 +109,11 @@ SCENARIO( "FSM test", "[ec]" ) {
     }
 
     THEN("FSM can bind operation from state") {
-        p.startAsync();
-        auto ope = p.store()->operation(std::string("add0.ope"));
+        p->startAsync();
+        auto ope = p->store()->operation(std::string("add0.ope"));
         REQUIRE(ope->isNull() == false);
 
-        auto fsm = p.store()->fsm(std::string("FSM0.fsm"));
+        auto fsm = p->store()->fsm(std::string("FSM0.fsm"));
         REQUIRE(fsm->isNull() == false);
 
         auto v = fsm->setFSMState("stopped");
@@ -131,11 +131,11 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
 
     THEN("FSM can bind EC from state") {
-        p.startAsync();
-        auto ec = p.store()->executionContext("OneShotEC0.ec");
+        p->startAsync();
+        auto ec = p->store()->executionContext("OneShotEC0.ec");
         REQUIRE(ec->isNull() == false);
 
-        auto fsm = p.store()->fsm("FSM0.fsm");
+        auto fsm = p->store()->fsm("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
         auto v = fsm->setFSMState("stopped");
@@ -161,11 +161,11 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
     
     THEN("FSM can be bound from Operation") {
-        p.startAsync();
-        auto ope = p.store()->getOperation("add0.ope");
+        p->startAsync();
+        auto ope = p->store()->getOperation("add0.ope");
         REQUIRE(ope->isNull() == false);
 
-        auto fsm = p.store()->getFSM("FSM0.fsm");
+        auto fsm = p->store()->getFSM("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
         auto state = fsm->setFSMState("stopped");
@@ -196,7 +196,7 @@ SCENARIO( "FSM test", "[ec]" ) {
             }}
           }}
         };
-        ConnectionBuilder::createConnection(p.store(), conInfo);
+        ConnectionBuilder::createConnection(p->store(), conInfo);
 
         state = fsm->getFSMState();
         REQUIRE(state.stringValue() == "stopped");
@@ -209,13 +209,13 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
 
     THEN("FSM connection name duplication change name") {
-        p.startAsync();
-        auto ope = p.store()->getOperation("add0.ope");
+        p->startAsync();
+        auto ope = p->store()->getOperation("add0.ope");
         REQUIRE(ope->isNull() == false);
-        auto ope2 = p.store()->getOperation("zero0.ope");
+        auto ope2 = p->store()->getOperation("zero0.ope");
         REQUIRE(ope2->isNull() == false);
 
-        auto fsm = p.store()->getFSM("FSM0.fsm");
+        auto fsm = p->store()->getFSM("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
         auto state = fsm->setFSMState("stopped");
@@ -246,7 +246,7 @@ SCENARIO( "FSM test", "[ec]" ) {
             }}
           }}
         };
-        ConnectionBuilder::createConnection(p.store(), conInfo);
+        ConnectionBuilder::createConnection(p->store(), conInfo);
 
         Value conInfo2{
           {"name", "con0"},
@@ -273,19 +273,19 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
 
-        auto ret = ConnectionBuilder::createConnection(p.store(), conInfo2);
+        auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
         REQUIRE(ret.at("name").stringValue() != "con0");
 
       }
 
     THEN("FSM connection route duplication will fail") {
-        p.startAsync();
-        auto ope = p.store()->getOperation("add0.ope");
+        p->startAsync();
+        auto ope = p->store()->getOperation("add0.ope");
         REQUIRE(ope->isNull() == false);
-        auto ope2 = p.store()->getOperation("zero0.ope");
+        auto ope2 = p->store()->getOperation("zero0.ope");
         REQUIRE(ope2->isNull() == false);
 
-        auto fsm = p.store()->getFSM("FSM0.fsm");
+        auto fsm = p->store()->getFSM("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
         auto state = fsm->setFSMState("stopped");
@@ -316,7 +316,7 @@ SCENARIO( "FSM test", "[ec]" ) {
             }}
           }}
         };
-        ConnectionBuilder::createConnection(p.store(), conInfo);
+        ConnectionBuilder::createConnection(p->store(), conInfo);
 
         Value conInfo2{
           {"name", "con0"},
@@ -343,16 +343,16 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
 
-        auto ret = ConnectionBuilder::createConnection(p.store(), conInfo2);
+        auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
         REQUIRE(ret.isError() == true);
 
       }
 
     THEN("Broker is running") {
-      p.startAsync();
-      REQUIRE(p.isRunning() == true);
+      p->startAsync();
+      REQUIRE(p->isRunning() == true);
 
-      auto factory = p.store()->getBrokerFactory({{"typeName", "HTTPBroker"}, {"instanceName", "HTTPBroker0.brk"}});
+      auto factory = p->store()->getBrokerFactory({{"typeName", "HTTPBroker"}, {"instanceName", "HTTPBroker0.brk"}});
       REQUIRE(factory!= nullptr);
       REQUIRE(factory->isNull() == false);
       auto proxy = factory->createProxy({{"typeName", "HTTPBroker"}, {"host", "localhost"}, {"port", 8080}});
@@ -437,18 +437,18 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
     })";
 
-    Process p("fsm_test", jsonStr);
+    auto p = nerikiri::process("fsm_test", jsonStr);
 
-    p.loadOperationFactory(opf1);
-    p.loadOperationFactory(opf2);
-    p.loadOperationFactory(opf3);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
+    p->loadOperationFactory(opf3);
 
     THEN("FSM automatically bound to operation") {
-        p.startAsync();
-        auto ope = p.store()->getOperation(std::string("add0.ope"));
+        p->startAsync();
+        auto ope = p->store()->getOperation(std::string("add0.ope"));
         REQUIRE(ope->isNull() == false);
 
-        auto fsm = p.store()->getFSM(std::string("FSM0.fsm"));
+        auto fsm = p->store()->getFSM(std::string("FSM0.fsm"));
         REQUIRE(fsm->isNull() == false);
 
         auto opes = fsm->getBoundOperations("running");

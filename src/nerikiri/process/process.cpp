@@ -2,23 +2,45 @@
 #include <iostream>
 #include <future>
 
-#include "nerikiri/process.h"
-
+#include "process_impl.h"
+#include <nerikiri/process.h>
 
 #include "nerikiri/argparse.h"
 #include "nerikiri/os.h"
 #include "nerikiri/signal.h"
 
-#include "nerikiri/processconfigparser.h"
+#include "processconfigparser.h"
 #include "nerikiri/objectfactory.h"
 //#include "nerikiri/connection_builder.h"
-#include "nerikiri/moduleloader.h"
-#include <nerikiri/process_builder.h>
+#include "moduleloader.h"
+#include "process_builder.h"
+
+#include <nerikiri/fsm.h>
 
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
 
+
+
+std::shared_ptr<ProcessAPI> nerikiri::process(const std::string& name) {
+  return std::make_shared<Process>(name);
+}
+
+std::shared_ptr<ProcessAPI> nerikiri::process(const int argc, const char** argv) {
+  return std::make_shared<Process>(argc, argv);
+}
+
+std::shared_ptr<ProcessAPI> nerikiri::process(const std::string& name, const Value& config) {
+  return std::make_shared<Process>(name, config);
+}
+
+std::shared_ptr<ProcessAPI> nerikiri::process(const std::string& name, const std::string& jsonStr) {
+  return std::make_shared<Process>(name, jsonStr);
+}
+
+
+  
 std::map<std::string, std::string> env_dictionary_default{};
 
 Value defaultProcessConfig({
@@ -73,7 +95,7 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
   try {
     store_.addBrokerFactory(cf);
     store_.addTopicFactory(topicFactory("topicFactory"));
-    store_.addFSMFactory(std::make_shared<FSMFactory>("fsmFactory"));
+    store_.addFSMFactory(fsmFactory("fsmFactory"));
     setExecutablePath(getExecutablePath(name));
 
     env_dictionary_["${ExecutableDirectory}"] = path_.substr(0, path_.rfind('/'));

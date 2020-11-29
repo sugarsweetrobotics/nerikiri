@@ -1,6 +1,6 @@
 
 
-#include "nerikiri/processconfigparser.h"
+#include "processconfigparser.h"
 
 using namespace nerikiri;
 

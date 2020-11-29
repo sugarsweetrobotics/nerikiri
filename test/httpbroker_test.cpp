@@ -41,21 +41,21 @@ SCENARIO( "Broker test", "[broker]" ) {
     }  
     )";
 
-    Process p("httpbroker_test", jsonStr);
+    auto p = nerikiri::process("httpbroker_test", jsonStr);
 
-    p.loadOperationFactory(opf1);
-    p.loadOperationFactory(opf2);
-    p.loadECFactory(ecf1);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
+    p->loadECFactory(ecf1);
 
-    p.startAsync();
-    REQUIRE(p.isRunning() == true);
+    p->startAsync();
+    REQUIRE(p->isRunning() == true);
     WHEN("HTTPBroker is running") {
-      auto i = p.fullInfo();
+      auto i = p->fullInfo();
       REQUIRE(i.isError() == false);
 
       REQUIRE(i.at("brokers").listValue().size() == 1);
 
-      auto proxy = p.store()->brokerFactory("HTTPBroker")->createProxy({{"host", "localhost"}, {"port", 8080}});
+      auto proxy = p->store()->brokerFactory("HTTPBroker")->createProxy({{"host", "localhost"}, {"port", 8080}});
       REQUIRE(proxy->isNull() == false);
 
 
@@ -66,22 +66,22 @@ SCENARIO( "Broker test", "[broker]" ) {
       }
 
       THEN("Simple Operation Call") {
-        auto ope1 = p.store()->operation("zero0.ope");
+        auto ope1 = p->store()->operation("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-        auto ope2 = p.store()->operation("inc0.ope");
+        auto ope2 = p->store()->operation("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
         AND_THEN("HTTP Broker call") {
-          auto opp1 = p.store()->operationProxy({{"fullName", "zero0.ope"}, {"broker", {
+          auto opp1 = p->store()->operationProxy({{"fullName", "zero0.ope"}, {"broker", {
             {"typeName", "HTTPBroker"}, {"port", 8080}, {"host", "localhost"}
           }}});
           REQUIRE(opp1->isNull() == false);
           REQUIRE(Value::intValue(opp1->call({}), -9999) == 0);
 
-          auto opp2 = p.store()->operationProxy({{"fullName", "inc0.ope"}, {"broker", {
+          auto opp2 = p->store()->operationProxy({{"fullName", "inc0.ope"}, {"broker", {
             {"typeName", "HTTPBroker"}, {"port", 8080}, {"host", "localhost"}
           }}});
           REQUIRE(opp2->isNull() == false);
@@ -90,11 +90,11 @@ SCENARIO( "Broker test", "[broker]" ) {
       }
 
       THEN("HTTPBroker EC and Operation") {
-        auto ope1 = p.store()->operation("zero0.ope");
+        auto ope1 = p->store()->operation("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-        auto ope2 = p.store()->operation("inc0.ope");
+        auto ope2 = p->store()->operation("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
@@ -103,11 +103,11 @@ SCENARIO( "Broker test", "[broker]" ) {
 
 
       THEN("HTTPBroker Connection") {
-        auto ope1 = p.store()->operation("zero0.ope");
+        auto ope1 = p->store()->operation("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-        auto ope2 = p.store()->operation("inc0.ope");
+        auto ope2 = p->store()->operation("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
@@ -161,6 +161,6 @@ SCENARIO( "Broker test", "[broker]" ) {
 
       } // Connection test
     }
-    p.stop();
+    p->stop();
   }
 }

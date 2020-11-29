@@ -1,9 +1,8 @@
 #pragma once
 
-#include "nerikiri.h"
-#include "object.h"
-#include "value.h"
-#include "operation_api.h"
+#include <nerikiri/nerikiri.h>// 
+#include <nerikiri/object.h>
+#include <nerikiri/operation_api.h>
 #include <nerikiri/functional.h>
 #include <nerikiri/operation_api.h>
 #include <nerikiri/fsm_state_api.h>

@@ -31,18 +31,18 @@ SCENARIO( "Operation test", "[operaion]" ) {
     }
 }  
 )";
-    Process p("operation_test", jsonStr);
+    auto p = nerikiri::process("operation_test", jsonStr);
     THEN("Operation is stanby") {
-      p.startAsync();
-      auto op = p.store()->operation("one0.ope");
+      p->startAsync();
+      auto op = p->store()->operation("one0.ope");
       auto v = op->invoke();
       REQUIRE(v.isIntValue() == true);
       REQUIRE(v.intValue() == 1);
     }
 
     THEN("Operation is connected and event invoke targeted operation.") {
-      p.startAsync();
-      auto iop = p.store()->operation("increment0.ope");
+      p->startAsync();
+      auto iop = p->store()->operation("increment0.ope");
       auto iv = iop->call({{"data", 1}});
       REQUIRE(iv.isIntValue() == true);
       REQUIRE(iv.intValue() == 2);
@@ -50,8 +50,8 @@ SCENARIO( "Operation test", "[operaion]" ) {
 
 
     WHEN("Operation inlet is changed.") {
-      p.startAsync();
-      auto iop = p.store()->operation("increment0.ope");
+      p->startAsync();
+      auto iop = p->store()->operation("increment0.ope");
       auto v = iop->invoke();
       REQUIRE(v.isIntValue() == true);
       REQUIRE(v.intValue() == 1);

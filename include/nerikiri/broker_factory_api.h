@@ -5,6 +5,8 @@
 
 namespace nerikiri {
 
+    class BrokerAPI;
+
     class BrokerFactoryAPI : public nerikiri::Object {
     private:
     public:
@@ -18,25 +20,6 @@ namespace nerikiri {
         virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) = 0;
     };
 
-    class NullBrokerFactory : public BrokerFactoryAPI {
-    public:
-        NullBrokerFactory() : BrokerFactoryAPI("NullBrokerFactory", "NullBroker", "null") {}
-        virtual ~NullBrokerFactory() {}
 
-    public:
-        //virtual std::string brokerTypeFullName() const override {
-        //    return "NullBroker";
-        //}
-
-        virtual std::shared_ptr<BrokerAPI> create(const Value& param) override {
-            logger::error("NullBrokerFactory::{}() failed. Object is null.", __func__, param);
-            return std::make_shared<NullBroker>();
-        }
-
-        virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) override {
-            logger::error("NullBrokerFactory::{}() failed. Object is null.", __func__, param);
-            return nullBrokerProxy();
-        }
-    
-    };
+    std::shared_ptr<BrokerFactoryAPI> nullBrokerFactory();
 }

@@ -4,7 +4,7 @@ base64.c
 
 broker/brokerfactory.cpp
 broker/broker_proxy_api.cpp
-broker/broker.cpp
+broker/broker_factory_api.cpp
 broker/crud_broker.cpp
 broker/crud_broker_base.cpp
 broker/corebroker.cpp
@@ -33,7 +33,6 @@ fsm/fsm.cpp
 
 json.cpp 
 logger.cpp 
-moduleloader.cpp
 naming.cpp
 
 os.cpp
@@ -47,14 +46,15 @@ operation/operation_inlet_api.cpp
 operation/operation_with_argument.cpp
 operation/operation_proxy.cpp
 object.cpp
-object_mapper.cpp 
 objectfactory.cpp
 
 proxy_builder.cpp
-process.cpp 
-process_store.cpp 
-processconfigparser.cpp
-process_builder.cpp
+process/process.cpp 
+process/process_store.cpp 
+process/processconfigparser.cpp
+process/process_builder.cpp
+broker/object_mapper.cpp 
+process/moduleloader.cpp
 #operationinfo.cpp 
 
 signal.cpp 

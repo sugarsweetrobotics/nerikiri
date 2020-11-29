@@ -29,25 +29,25 @@ SCENARIO( "Connection test", "[ec]" ) {
       }
     })";
 
-    Process p("ec_tset", jsonStr);
+    auto p = nerikiri::process("ec_tset", jsonStr);
 
     
-    p.loadOperationFactory(opf1);
-    p.loadOperationFactory(opf2);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
 
     WHEN("Operation is stanby") {
-      p.startAsync();
-      auto ope1 = p.store()->operation("zero0.ope");
+      p->startAsync();
+      auto ope1 = p->store()->operation("zero0.ope");
       REQUIRE(ope1->isNull() == false);
       REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-      auto ope2 = p.store()->operation("inc0.ope");
+      auto ope2 = p->store()->operation("inc0.ope");
       REQUIRE(ope2->isNull() == false);
       REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
       THEN("Operation can connected") {
 
-        p.startAsync();
+        p->startAsync();
 
       
         Value conInfo{
@@ -72,7 +72,7 @@ SCENARIO( "Connection test", "[ec]" ) {
             }}
           }}
         };
-        auto v = p.coreBroker()->connection()->createConnection(conInfo);
+        auto v = p->coreBroker()->connection()->createConnection(conInfo);
         //auto v =ConnectionBuilder::createConnection(p.store(), conInfo);
         REQUIRE(v.isError() == false);
 

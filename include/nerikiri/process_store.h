@@ -1,28 +1,33 @@
 #pragma once
 #include <vector>
+
+
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/dllproxy.h"
-
-
 #include <nerikiri/operation_api.h>
 #include <nerikiri/operation_factory_api.h>
 #include <nerikiri/container_api.h>
 #include <nerikiri/container_factory_api.h>
 #include <nerikiri/container_operation_factory_api.h>
 #include <nerikiri/ec_api.h>
-#include "nerikiri/connection.h"
-//#include "nerikiri/connectiondictionary.h"
-
+#include <nerikiri/ec_factory_api.h>
 #include "nerikiri/broker_api.h"
 #include "nerikiri/broker_factory_api.h"
 
+#include "nerikiri/connection.h"
+//#include "nerikiri/connectiondictionary.h"
+
+
 #include "nerikiri/topic.h"
-#include "nerikiri/fsm.h"
+#include "nerikiri/fsm_api.h"
+#include "nerikiri/fsm_factory_api.h"
 
 namespace nerikiri {
 
 
   class Process;
+  class BrokerAPI;
+  class BrokerFactoryAPI;
 
   class NK_API ProcessStore {
   private:

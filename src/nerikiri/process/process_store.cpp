@@ -6,7 +6,7 @@
 #include "nerikiri/signal.h"
 #include "nerikiri/naming.h"
 
-#include "nerikiri/process.h"
+#include "process_impl.h"
 
 #include "nerikiri/broker_api.h"
 #include <nerikiri/proxy_builder.h>
@@ -128,7 +128,7 @@ std::shared_ptr<BrokerAPI> ProcessStore::broker(const std::string& fullName) con
 std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string& fullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<BrokerFactoryAPI>>(brokerFactories(), [&fullName](auto f) { return f->typeName() == fullName; });
   if (f) return f.value();;
-  return std::make_shared<NullBrokerFactory>();
+  return nullBrokerFactory();
 }
 
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {

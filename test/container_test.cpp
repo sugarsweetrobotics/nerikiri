@@ -53,20 +53,20 @@ SCENARIO( "Container test", "[container]" ) {
                 }
             }
             */
-    Process p("container_test", jsonStr);
-    p.startAsync();
+    auto p = nerikiri::process("container_test", jsonStr);
+    p->startAsync();
     THEN("Container is stanby") {
-      auto c = p.store()->container("MyStruct0.ctn");
+      auto c = p->store()->container("MyStruct0.ctn");
       REQUIRE(!c->isNull());
       REQUIRE(c->instanceName() == "MyStruct0.ctn");
 
       AND_THEN("Container operation test") {
-        auto cops = p.store()->operations();
+        auto cops = p->store()->operations();
         REQUIRE(cops.size() == 2);
 
-        auto getter = p.store()->operation("MyStruct0.ctn:intGetter0.ope");
+        auto getter = p->store()->operation("MyStruct0.ctn:intGetter0.ope");
         REQUIRE(getter->isNull() != true);
-        auto addInt = p.store()->operation("MyStruct0.ctn:addInt0.ope");
+        auto addInt = p->store()->operation("MyStruct0.ctn:addInt0.ope");
         REQUIRE(addInt->isNull() != true);
 
         auto v = getter->call({});
@@ -89,6 +89,6 @@ SCENARIO( "Container test", "[container]" ) {
       */
       }
     }
-    p.stop();
+    p->stop();
   }
 }

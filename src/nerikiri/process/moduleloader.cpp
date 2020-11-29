@@ -1,7 +1,7 @@
 #include <nerikiri/logger.h>
 #include <nerikiri/dllproxy.h>
 
-#include <nerikiri/moduleloader.h>
+#include "moduleloader.h"
 
 #include <nerikiri/container_operation_factory_api.h>
 #include <nerikiri/operation_factory.h>

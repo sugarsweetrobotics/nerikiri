@@ -44,25 +44,25 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
       }
       })";
 
-    Process p("ec_tset", jsonStr);
+    auto p = nerikiri::process("ec_tset", jsonStr);
     
-    p.loadOperationFactory(opf1);
-    p.loadOperationFactory(opf2);
-    p.loadOperationFactory(opf3);
-    p.loadECFactory(ecf1);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
+    p->loadOperationFactory(opf3);
+    p->loadECFactory(ecf1);
 
     THEN("ExcutionContext is stanby") {
-      p.startAsync();
-      auto ecInfos = p.store()->executionContexts();
+      p->startAsync();
+      auto ecInfos = p->store()->executionContexts();
       REQUIRE(ecInfos.size() == 1);
     }
 
     THEN("ExecutionContext can bind to operation") {
-      p.startAsync();
-      auto ec = p.store()->executionContext("OneShotEC0.ec");
+      p->startAsync();
+      auto ec = p->store()->executionContext("OneShotEC0.ec");
       REQUIRE(ec->isNull() == false);
 
-      auto op = p.store()->operation("zero0.ope");
+      auto op = p->store()->operation("zero0.ope");
       //auto broker = p.store()->brokerFactory("CoreBroker")->createProxy({{"fullName", "coreBrokerProxy"}});
       //auto res = ec->bind("zero0.ope", broker);
       auto result = ec->bind(op);

@@ -43,7 +43,7 @@ namespace nerikiri {
     private:
         static Value _validateOutputConnectionInfo(std::shared_ptr<OperationAPI> op, const Value& conInfo);
         static Value _validateInputConnectionInfo(std::shared_ptr<OperationAPI> op, const Value& conInfo);
-        static Value _validateConnectionInfo(std::shared_ptr<FSM> fsm, const Value& conInfo);
-        static Value _validateInputConnectionInfo(std::shared_ptr<FSM> fsm, const Value& conInfo);
+        static Value _validateConnectionInfo(std::shared_ptr<FSMAPI> fsm, const Value& conInfo);
+        static Value _validateInputConnectionInfo(std::shared_ptr<FSMAPI> fsm, const Value& conInfo);
     };
 }

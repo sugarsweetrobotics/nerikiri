@@ -1,10 +1,10 @@
 #include <utility>
 
-#include "nerikiri/process.h"
+#include "nerikiri/process_api.h"
 #include "nerikiri/corebroker.h"
 #include "nerikiri/operation.h"
 #include "nerikiri/connection.h"
-#include "nerikiri/object_mapper.h"
+//#include "nerikiri/object_mapper.h"
 #include "nerikiri/objectfactory.h"
 #include "nerikiri/connection/connection_builder.h"
 
@@ -17,7 +17,7 @@ using namespace nerikiri;
 
 class CoreBroker : public BrokerProxyAPI {
 protected:
-  Process* process_;
+  ProcessAPI* process_;
 public:
   std::shared_ptr<FactoryBrokerAPI> factory_;
   std::shared_ptr<StoreBrokerAPI> store_;
@@ -45,7 +45,7 @@ public:
   /**
    * 
    */
-  CoreBroker(Process* process, const std::string& fullName);
+  CoreBroker(ProcessAPI* process, const std::string& fullName);
 
   virtual ~CoreBroker();
 
@@ -221,15 +221,15 @@ public:
 
 
 
-std::shared_ptr<BrokerFactoryAPI> nerikiri::coreBrokerFactory(Process* process, const std::string& fullName) {
+std::shared_ptr<BrokerFactoryAPI> nerikiri::coreBrokerFactory(ProcessAPI* process, const std::string& fullName) {
     return std::make_shared<CoreBrokerFactory>(std::make_shared<CoreBroker>(process, fullName));
 }
 
 class CoreFactoryBroker : public FactoryBrokerAPI {
 private:
-  Process* process_;
+  ProcessAPI* process_;
 public:
-  CoreFactoryBroker(Process* proc) : process_(proc) {}
+  CoreFactoryBroker(ProcessAPI* proc) : process_(proc) {}
   virtual ~CoreFactoryBroker() {}
 
   virtual Value createObject(const std::string& className, const Value& info={}) override {
@@ -277,9 +277,9 @@ public:
 
 class CoreStoreBroker : public StoreBrokerAPI {
 private:
-  Process* process_;
+  ProcessAPI* process_;
 public:
-  CoreStoreBroker(Process* proc) : process_(proc) {}
+  CoreStoreBroker(ProcessAPI* proc) : process_(proc) {}
   virtual ~CoreStoreBroker() {}
 
   virtual Value getClassObjectInfos(const std::string& className) const override {
@@ -319,9 +319,9 @@ public:
 
 class CoreOperationBroker : public OperationBrokerAPI {
 private:
-  Process* process_;
+  ProcessAPI* process_;
 public:
-  CoreOperationBroker(Process* proc) : process_(proc) {}
+  CoreOperationBroker(ProcessAPI* proc) : process_(proc) {}
   virtual ~CoreOperationBroker() {}
 
   virtual Value fullInfo(const std::string& fullName) const override {
@@ -351,9 +351,9 @@ public:
 
 class CoreOperationOutletBroker : public OperationOutletBrokerAPI {
 private:
-  Process* process_;
+  ProcessAPI* process_;
 public:
-  CoreOperationOutletBroker(Process* proc) : process_(proc) {}
+  CoreOperationOutletBroker(ProcessAPI* proc) : process_(proc) {}
   virtual ~CoreOperationOutletBroker() {}
 
   virtual Value info(const std::string& fullName) const override {
@@ -381,9 +381,9 @@ public:
 
 class CoreOperationInletBroker : public OperationInletBrokerAPI {
 private:
-  Process* process_;
+  ProcessAPI* process_;
 public:
-  CoreOperationInletBroker(Process* proc) : process_(proc) {}
+  CoreOperationInletBroker(ProcessAPI* proc) : process_(proc) {}
   virtual ~CoreOperationInletBroker() {}
 
   virtual Value name(const std::string& fullName, const std::string& targetName) const override {
@@ -476,9 +476,9 @@ public:
 
 class CoreConnectionBroker : public ConnectionBrokerAPI {
 private:
-  Process* process_;
+  ProcessAPI* process_;
 public:
-  CoreConnectionBroker(Process* proc) : process_(proc) {}
+  CoreConnectionBroker(ProcessAPI* proc) : process_(proc) {}
   virtual ~CoreConnectionBroker() {}
 
     virtual Value createConnection(const Value& connectionInfo) override {
@@ -493,7 +493,7 @@ public:
 /**
  * 
  */
-CoreBroker::CoreBroker(Process* process, const std::string& fullName): BrokerProxyAPI("CoreBroker", fullName), process_(process),
+CoreBroker::CoreBroker(ProcessAPI* process, const std::string& fullName): BrokerProxyAPI("CoreBroker", fullName), process_(process),
 factory_(std::make_shared<CoreFactoryBroker>(process)), 
 store_(std::make_shared<CoreStoreBroker>(process)),
 operation_(std::make_shared<CoreOperationBroker>(process)),

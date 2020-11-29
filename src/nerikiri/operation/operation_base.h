@@ -12,7 +12,7 @@
 #include "nerikiri/connection.h"
 #include "nerikiri/functional.h"
 
-#include "nerikiri/newest_value_buffer.h"
+#include "newest_value_buffer.h"
 
 #include "operation_inlet_base.h"
 

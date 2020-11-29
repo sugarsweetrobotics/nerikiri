@@ -80,7 +80,7 @@ public:
     return i;
   }
 
-  virtual bool run(Process* process) override {
+  virtual bool run(ProcessAPI* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
     logger::trace("HTTPBroker::run()");
 
@@ -151,7 +151,7 @@ public:
     return true;
   }
 
-  void shutdown(Process* proc) override {
+  virtual void shutdown(ProcessAPI* proc) override {
     CRUDBrokerBase::shutdown(proc);
     cond_.notify_all();
   }

@@ -2,114 +2,18 @@
 
 #include <string>
 #include <memory>
-#include <map>
-#include <vector>
-#include <functional>
 
-#include "nerikiri/nerikiri.h"
-
+#include <nerikiri/nerikiri.h>
+#include <nerikiri/value.h>
 #include <nerikiri/process_api.h>
-#include "nerikiri/corebroker.h"
-#include "nerikiri/systemeditor.h"
-#include "nerikiri/process_store.h"
-
-#include <nerikiri/process_builder.h>
 
 namespace nerikiri {
   
-  /**
-   * プロセスクラス
-   */
-  class NK_API Process : public ProcessAPI {
-  private:
-    static Process null;
-   
-    Value config_;
+  std::shared_ptr<ProcessAPI> process(const std::string& name);
 
-    std::shared_ptr<BrokerProxyAPI> coreBroker_;
-    ProcessStore store_;
-   
-    std::map<std::string, SystemEditor_ptr> systemEditors_;
-    std::vector<std::shared_ptr<std::thread>> threads_;
-    bool started_;
-    std::string path_;
-    std::function<void(Process*)> on_starting_;
-    std::function<void(Process*)> on_started_;
+  std::shared_ptr<ProcessAPI> process(const int argc, const char** argv);
 
-    std::map<std::string, std::string> env_dictionary_;
-  public:
-    /**
-     * コンストラクタ
-     * @param name
-     */
-    Process(const std::string& name);
+  std::shared_ptr<ProcessAPI> process(const std::string& name, const Value& config);
 
-    Process(const int argc, const char** argv);
-
-    Process(const std::string& name, const Value& config);
-
-    Process(const std::string& name, const std::string& jsonStr);
-    /**
-     * デストラクタ
-     */
-    virtual ~Process();
-
-    void parseConfigFile(const std::string& filepath);
-  private:
-    void _preloadOperations();
-    void _preloadContainers();
-    void _preloadExecutionContexts();
-    void _preStartExecutionContexts();
-    void _preloadBrokers();
-    void _preloadConnections();
-    void _preloadCallbacksOnStarted();
-    void _preloadTopics();
-    void _preloadFSMs();
-    void _preStartFSMs();
-
-    void _setupLogger();
-  public:
-    ProcessStore* store() { return &store_; }
-    const ProcessStore* store() const { return &store_; }
-    
-    void setExecutablePath(const std::string& path) { path_ = path; }
-
-    std::shared_ptr<BrokerProxyAPI> coreBroker() { return coreBroker_; }
-    
-    Value getCallbacks() const;
-
-  public:
-
-    Process& addSystemEditor(SystemEditor_ptr&& se);
-
-    virtual Value fullInfo() const override;
-    
-    virtual int32_t start() override;
-    virtual void startAsync() override;
-    virtual int32_t wait() override;
-    virtual void stop() override;
-    
-    virtual ProcessAPI& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) override {
-      store()->addOperationFactory(opf); return *this;
-    }
-
-    virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) override {
-      store()->addECFactory(ef); return *this;
-    }
-
-    
-  public:
-    bool isRunning() { return started_; }
-
-  public:
-    Process& setOnStarting(std::function<void(Process*)> f) {
-      on_starting_ = f;
-      return *this;
-    }
-    Process& setOnStarted(std::function<void(Process*)> f) {
-      on_started_ = f;
-      return *this;
-    }
-  };
-
+  std::shared_ptr<ProcessAPI> process(const std::string& name, const std::string& jsonStr);
 }
