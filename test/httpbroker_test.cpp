@@ -79,12 +79,16 @@ SCENARIO( "Broker test", "[broker]" ) {
             {"typeName", "HTTPBroker"}, {"port", 8080}, {"host", "localhost"}
           }}});
           REQUIRE(opp1->isNull() == false);
+          REQUIRE(opp1->fullName() == "zero0.ope");
+          REQUIRE(Value::string(opp1->fullInfo().at("broker").at("host")) == "localhost");
+          REQUIRE(Value::intValue(opp1->fullInfo().at("broker").at("port")) == 8080);
           REQUIRE(Value::intValue(opp1->call({}), -9999) == 0);
 
           auto opp2 = p->store()->operationProxy({{"fullName", "inc0.ope"}, {"broker", {
             {"typeName", "HTTPBroker"}, {"port", 8080}, {"host", "localhost"}
           }}});
           REQUIRE(opp2->isNull() == false);
+          REQUIRE(opp2->fullName() == "inc0.ope");
           REQUIRE(Value::intValue(opp2->call({{"arg01", 3}}), -1) == 4);
         }
       }

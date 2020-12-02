@@ -75,9 +75,31 @@ public:
   virtual Value fullInfo() const override {
     auto i = info();
     i["port"] = port_;
-    i["address"] = address_;
+    i["host"] = address_;
     i["baseDirectory"] = baseDirectory_;
     return i;
+  }
+
+  Value headerParam(const nerikiri::Request& req) {
+    auto param = Value::object();
+    for(auto h : req.headers) {
+      param[h.first] = h.second;
+    }
+    return param;
+  }
+  
+  Value hostInfo(const nerikiri::Request& req) {
+    auto info = this->fullInfo();
+    auto param = Value::object();
+    for(auto h : req.headers) {
+      param[h.first] = h.second;
+    }
+    auto host = Value::string(param["Host"]);
+    if (host.find(':') != std::string::npos) {
+      host = host.substr(0, host.find(':'));
+    }
+    info["host"] = host;
+    return info;
   }
 
   virtual bool run(ProcessAPI* process) override {
@@ -115,8 +137,7 @@ public:
 
     server_->response(endpoint, "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
-      const std::string path = req.matches[0];
-      return toResponse(onRead(process, req.matches[1]));
+      return toResponse(onRead(process, req.matches[1], headerParam(req), this->hostInfo(req)));
     });
 
     server_->response(endpoint, "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {

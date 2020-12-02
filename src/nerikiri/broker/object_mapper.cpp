@@ -11,7 +11,7 @@
 using namespace nerikiri;
 
 
-Value ObjectMapper::createResource(BrokerProxyAPI* coreBroker, const std::string& _path, const Value& value, const std::map<std::string, std::string>& params, BrokerAPI* receiverBroker) {
+Value ObjectMapper::createResource(BrokerProxyAPI* coreBroker, const std::string& _path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
   auto path = _path;
     if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
 
@@ -48,7 +48,7 @@ Value ObjectMapper::createResource(BrokerProxyAPI* coreBroker, const std::string
   return Value::error(logger::error("ObjectMapper::createResource({}) failed. This request could not find appropreate callbacks", path));
 }
 
-Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::string& _path, const std::map<std::string, std::string>& params) {
+Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::string& _path, const Value& params, const Value& receiverBrokerInfo) {
     auto path = _path;
     if (path.length() == 0) 
       return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
@@ -80,6 +80,10 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
       return coreBroker->operation()->inlets(match[1]);
     } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet$"))) {
       return coreBroker->operationOutlet()->info(match[1]);
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/fullInfo$"))) {
+      auto v = coreBroker->operation()->fullInfo(match[1]);
+      if (!receiverBrokerInfo.isNull()) v["broker"] = receiverBrokerInfo;
+      return v;
     }
 
     /*
@@ -199,7 +203,7 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
  * 
  * 
  */
-Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& value, const std::map<std::string, std::string>& params, BrokerAPI* receiverBroker) {
+Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
   logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
   std::smatch match;
 
@@ -270,7 +274,7 @@ Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string
  * 
  * 
  */
-Value ObjectMapper::deleteResource(BrokerProxyAPI* coreBroker, const std::string& path, const std::map<std::string, std::string>& params, BrokerAPI* receiverBroker) {
+Value ObjectMapper::deleteResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& params, BrokerAPI* receiverBroker) {
   logger::debug("ObjectMapper::deleteResource(path={}", path);
   /*
   std::smatch match;

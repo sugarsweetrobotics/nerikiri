@@ -22,10 +22,10 @@ namespace nerikiri {
 
         virtual bool isRunning() const override;
 
-        Value onCreate(ProcessAPI* process, const std::string& fullPath, const Value& value) ;
-        Value onRead(ProcessAPI* process, const std::string& fullPath) ;
-        Value onUpdate(ProcessAPI* process, const std::string& fullPath, const Value& value) ;
-        Value onDelete(ProcessAPI* process, const std::string& fullPath) ;
+        Value onCreate(ProcessAPI* process, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
+        Value onRead(ProcessAPI* process, const std::string& fullPath, const Value& ancillaryInfo={}, const Value& brokerInfo={}) ;
+        Value onUpdate(ProcessAPI* process, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
+        Value onDelete(ProcessAPI* process, const std::string& fullPath, const Value& ancillaryInfo={}) ;
     };
 
 
