@@ -18,8 +18,9 @@ class OperationOutletBase  : public OperationOutletAPI {
     NewestValueBuffer outputBuffer_;
     ConnectionContainer connections_;
   public:
-    virtual OperationAPI* owner() override { return operation_; }
+    //virtual OperationAPI* owner() override { return operation_; }
   
+    virtual Value invokeOwner() override { return operation_->invoke(); }
 
     virtual Value get() const override { return outputBuffer_.pop(); }
 

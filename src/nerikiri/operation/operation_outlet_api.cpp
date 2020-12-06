@@ -40,9 +40,8 @@ using namespace nerikiri;
       return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__));
     }
 
-    virtual OperationAPI* owner() override {
-      logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__);
-      return owner_.get();
+    virtual Value invokeOwner() override {
+      return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__));
     }
 
 

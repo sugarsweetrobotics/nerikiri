@@ -372,6 +372,6 @@ Value Process::fullInfo() const {
   inf["operationFactories"] = functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(store()->operationFactories(), [](auto op) { return op->info(); });
   inf["brokers"] = functional::map<Value, std::shared_ptr<BrokerAPI>>(store()->brokers(), [](auto o) { return o->fullInfo(); });  
   inf["brokerFactories"] = functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(store()->brokerFactories(), [](auto op) { return op->info(); });
-
+  inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->containers(), [](auto c) { return c->info(); });  
   return inf;
 }

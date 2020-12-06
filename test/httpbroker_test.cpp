@@ -65,6 +65,30 @@ SCENARIO( "Broker test", "[broker]" ) {
         REQUIRE(Value::string(pInfo.at("fullName")) == "httpbroker_test");
       }
 
+      THEN("Broker is running") {
+        p->startAsync();
+        REQUIRE(p->isRunning() == true);
+
+        auto factory = p->store()->brokerFactory("HTTPBroker");
+        REQUIRE(factory!= nullptr);
+        REQUIRE(factory->isNull() == false);
+        auto proxy = factory->createProxy({{"typeName", "HTTPBroker"}, {"host", "localhost"}, {"port", 8080}});
+        REQUIRE(proxy != nullptr);
+        REQUIRE(proxy->isNull() == false);
+
+        auto pInfo = proxy->getProcessInfo();
+
+        REQUIRE(pInfo["instanceName"].stringValue() == "fsm_test");
+
+        AND_THEN("fsm") {
+          auto fsmInfos = proxy->store()->getClassObjectInfos("fsm");
+          REQUIRE(fsmInfos.isListValue());
+          REQUIRE(fsmInfos.listValue().size() == 1);
+          REQUIRE(fsmInfos[0]["instanceName"].stringValue() == "FSM0.fsm");
+        }
+      }
+
+
       THEN("Simple Operation Call") {
         auto ope1 = p->store()->operation("zero0.ope");
         REQUIRE(ope1->isNull() == false);

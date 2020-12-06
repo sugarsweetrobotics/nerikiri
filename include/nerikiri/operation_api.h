@@ -19,7 +19,9 @@ namespace nerikiri {
 
     public:
 
-        virtual OperationAPI* owner() = 0;
+        // virtual OperationAPI* owner() = 0;
+
+        virtual Value invokeOwner() = 0;
 
         virtual Value get() const = 0;
 
@@ -42,6 +44,9 @@ namespace nerikiri {
     public:
         virtual ~OperationInletAPI() {}
     public:
+
+        virtual bool isNull() const = 0;
+        
         virtual std::string name() const = 0;
 
         virtual Value defaultValue() const = 0;
@@ -50,7 +55,9 @@ namespace nerikiri {
 
         virtual Value put(const Value& value) = 0;
 
-        virtual OperationAPI* owner() = 0;
+        //virtual OperationAPI* owner() = 0;
+
+        virtual Value executeOwner() = 0;
 
         virtual Value info() const = 0;
 

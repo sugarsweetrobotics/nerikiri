@@ -24,9 +24,9 @@ namespace nerikiri {
 
         bool isStarted() const { return state_ == STARTED; }
 
-        virtual Value start() = 0;
+        virtual Value start() { state_ = STARTED; return info(); }
 
-        virtual Value stop() = 0;
+        virtual Value stop() { state_ = STOPPED; return info(); }
 
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const = 0;
 
@@ -34,9 +34,9 @@ namespace nerikiri {
 
         virtual Value unbind(const std::string& fullName) = 0;
 
-        virtual std::shared_ptr<ECStateAPI> startedState() = 0;
+        virtual std::shared_ptr<ECStateAPI> startedState() const = 0;
 
-        virtual std::shared_ptr<ECStateAPI> stoppedState() = 0;
+        virtual std::shared_ptr<ECStateAPI> stoppedState() const = 0;
     };
 
     std::shared_ptr<ExecutionContextAPI> nullEC();

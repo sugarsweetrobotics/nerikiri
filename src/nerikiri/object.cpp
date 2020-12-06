@@ -81,14 +81,22 @@ Value Object::setFullName(const std::string& nameSpace, const std::string& name)
 
 Value Object::setFullName(const std::string& fullName) {
     auto [nameSpace, instanceName] = separateNamespaceAndInstanceName(fullName);
+    if (instanceName.length() == 0) {
+        instanceName = nameSpace;
+        nameSpace = "";
+    }
     info_["instanceName"] = instanceName;
     info_["fullName"] = fullName;
     return info_;
 }  
 
 std::string Object::instanceName() const { 
-      return info_.at("instanceName").stringValue();
-    }
+    if (info_.hasKey("instanceName")) {
+        return info_.at("instanceName").stringValue();
+    } 
+    logger::error("Object({})::instanceName() object do not have instanceName property. this is wrong case.", info_);
+    return info_.at("fullName").stringValue();
+}
 
     std::string Object::getInstanceName() const { 
       return instanceName();

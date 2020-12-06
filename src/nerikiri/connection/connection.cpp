@@ -35,7 +35,8 @@ std::shared_ptr<ConnectionAPI> nerikiri::createConnection(const std::string& nam
 
 Value Connection::pull() {
   if (this->isPull()) {
-    return outlet_->owner()->invoke();
+    //return outlet_->owner()->invoke();
+    return outlet_->invokeOwner();
   }
   return outlet_->get();
 }
@@ -43,7 +44,7 @@ Value Connection::pull() {
 Value Connection::put(const Value& value) {
   auto v = inlet_->put(value);
   if (this->isPush() || this->isEvent()) {
-    return inlet_->owner()->execute();
+    return inlet_->executeOwner(); //owner()->execute();
   }
   return v;
 }

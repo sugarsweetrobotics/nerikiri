@@ -7,16 +7,13 @@ using namespace nerikiri;
 
 class FSMFactory : public FSMFactoryAPI {
 public:
-    FSMFactory(const std::string& fullName) : FSMFactoryAPI("FSMFactory", fullName) {} // For Null
+    FSMFactory(const std::string& fullName) : FSMFactoryAPI("FSMFactory", "GenericFSM", fullName) {} // For Null
 public:
     virtual ~FSMFactory() {}
-    virtual std::string fsmTypeFullName() const override {
-        return "FSM";
-    }
 
 public:
-    virtual std::shared_ptr<FSMAPI> create(const std::string& _fullName) const override {
-        return fsm(_fullName);
+    virtual std::shared_ptr<FSMAPI> create(const std::string& _fullName, const Value& extInfo) const override {
+        return fsm(_fullName, extInfo);
     }
 };
 
@@ -50,16 +47,17 @@ public:
         auto s = nerikiri::functional::find<std::shared_ptr<FSMStateAPI>>(states_, [&stateName](auto s) {
             return s->fullName() == stateName;
         });
-        if (s) s.value();
-        return std::shared_ptr<NullFSMState>();
+        if (s) return s.value();
+        logger::error("FSM({})::fsmState({}) failed. State not found.", fullName(), stateName);
+        return nullFSMState();
     }
 
     virtual std::shared_ptr<FSMStateAPI> currentFsmState() const override {
         auto s = nerikiri::functional::find<std::shared_ptr<FSMStateAPI>>(states_, [](auto s) {
             return s->isActive();
         });
-        if (s) s.value();
-        return std::shared_ptr<NullFSMState>();
+        if (s) return s.value();
+        return nullFSMState();
     }
 
     Value addFSMState(const std::string& name) {
@@ -81,7 +79,7 @@ public:
     }
 
 public:
-    FSM(const Value& info);
+    FSM(const std::string& fullName, const Value& info);
 
     FSM();
 
@@ -145,7 +143,8 @@ private:
 
 
 
-FSM::FSM(const Value& info) : FSMAPI(info) {
+FSM::FSM(const std::string& fullName, const Value& info) : FSMAPI("GenericFSM", "GenericFSM", fullName) {
+    logger::trace("FSM::{} called", __func__);
     if (!_setupStates(info) ) {
         _setNull();
         return;
@@ -158,9 +157,15 @@ FSM::FSM(const Value& info) : FSMAPI(info) {
     }
     auto currentState = fsmState(info.at("defaultState").stringValue());
 
-    setFsmStateActive(currentState);
+    //currentState->activate();
+    // setFsmStateActive(currentState);
 
     if (currentState->isNull()) {
+        logger::warn("FSM::FSM(info) failed. FSM default state is not included in the given states.");
+        _setNull();
+        return;
+    } 
+    if (!currentState->isActive()) {
         logger::warn("FSM::FSM(info) failed. FSM default state is not included in the given states.");
         _setNull();
         return;
@@ -169,28 +174,40 @@ FSM::FSM(const Value& info) : FSMAPI(info) {
 }
 
 bool FSM::_setupStates(const Value& info) {
+    logger::trace("FSM::{}(info={}) called", __func__, info);
+
+    if (info.at("defaultState").isError()) {
+        logger::warn("FSM::FSM(info) failed. FSM default state is not specified.");
+        logger::trace("FSM::{} exit", __func__);
+        return false;
+    }
+    auto defaultStateName = Value::string(info.at("defaultState"));
 
     if (info.at("states").isError()) {
         logger::warn("FSM::FSM(info) failed. FSM states are not specified.");
+        logger::trace("FSM::{} exit", __func__);
         return false;
     }
     if (!info.at("states").isListValue()) {
         logger::warn("FSM::FSM(info) failed. FSM states must be list style.");
+        logger::trace("FSM::{} exit", __func__);
         return false;
     }
-    this->states_ = info.at("states").const_list_map<std::shared_ptr<FSMStateAPI>>([this](auto stateInfo) -> std::shared_ptr<FSMStateAPI> {
+    this->states_ = info.at("states").const_list_map<std::shared_ptr<FSMStateAPI>>([this, defaultStateName](auto stateInfo) -> std::shared_ptr<FSMStateAPI> {
         if (!stateInfo.hasKey("name")) {
-            logger::error("FSM::FSM(info) failed. Each FSM state info must have 'name' string type member to specify the name of the state");
-            return std::make_shared<NullFSMState>();
+            logger::error("FSM creating FSMState in FSM::_setupStates(info) failed. Each FSM state info must have 'name' string type member to specify the name of the state");
+            return nullFSMState();
         }
-        if (!stateInfo.hasKey("transit") || stateInfo.at("transit").isListValue()) {
-            logger::error("FSM::FSM(info) failed. Each FSM state info must have 'transit' list type member to specify the transitions of the state");
-            return std::make_shared<NullFSMState>();
+        if (!stateInfo.hasKey("transit") || !stateInfo.at("transit").isListValue()) {
+            logger::error("FSM creating FSMState in FSM::_setupStates(info) failed. Each FSM state info must have 'transit' LIST type member to specify the transitions of the state");
+            return nullFSMState();
         }
-        return std::make_shared<FSMState>(stateInfo.at("name").stringValue(), stateInfo.at("transit").template const_list_map<std::string>([](auto t) {
+        logger::trace("FSM({}) create FSMState({}, {})", fullName(), stateInfo.at("name"), stateInfo.at("transit"));
+        return std::make_shared<FSMState>(stateInfo.at("name").stringValue(), stateInfo.at("transit").template const_list_map<std::string>([this](auto t) {
             return t.stringValue();
-        }));
+        }), stateInfo.at("name").stringValue() == defaultStateName);
     });
+    logger::trace("FSM::{} exit", __func__);
     return true;
 }
 
@@ -294,8 +311,8 @@ bool FSM::_isTransitable(const std::string& current, const std::string& next) {
 
 
 
-std::shared_ptr<FSMAPI> nerikiri::fsm(const Value& info) {
-    return std::make_shared<FSM>(info);
+std::shared_ptr<FSMAPI> nerikiri::fsm(const std::string& fullname, const Value& info) {
+    return std::make_shared<FSM>(fullname, info);
 }
 
 

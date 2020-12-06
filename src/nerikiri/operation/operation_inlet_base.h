@@ -34,8 +34,13 @@ namespace nerikiri {
     std::mutex argument_mutex_;
 
   public:
-    virtual OperationAPI* owner() override { return operation_; }
+    //virtual OperationAPI* owner() override { return operation_; }
+    virtual Value executeOwner() override { return operation_->execute(); }
 
+    virtual bool isNull() const override {
+        return false;
+    }
+    
     virtual std::string name() const override { return name_; }
 
     virtual Value defaultValue() const override { return default_; }

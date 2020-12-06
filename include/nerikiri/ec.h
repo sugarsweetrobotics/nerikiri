@@ -49,9 +49,9 @@ namespace nerikiri {
         std::shared_ptr<OperationAPI> operation(const std::string& fullName) const;
 
 
-        virtual std::shared_ptr<ECStateAPI> startedState() override { return startedState_; }
+        virtual std::shared_ptr<ECStateAPI> startedState() const override { return startedState_; }
 
-        virtual std::shared_ptr<ECStateAPI> stoppedState() override { return stoppedState_; }
+        virtual std::shared_ptr<ECStateAPI> stoppedState() const override { return stoppedState_; }
     };
 
     

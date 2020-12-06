@@ -5,7 +5,7 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/process.h"
 #include "nerikiri/operation_factory.h"
-#include "nerikiri/connection_builder.h"
+// #include "nerikiri/connection_builder.h"
 
 #include "operations_for_tests.h"
 
@@ -17,7 +17,7 @@ using namespace nerikiri;
 SCENARIO( "FSM test", "[ec]" ) {
   GIVEN("FSM basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "OFF" },
+      "logger": { "logLevel": "INFO" },
 
       "operations": {
         "precreate": [
@@ -120,7 +120,7 @@ SCENARIO( "FSM test", "[ec]" ) {
         auto state = fsm->currentFsmState();
         REQUIRE(state->fullName() == "stopped");
 
-        auto bindResult = fsm->fsmState("runngin")->bind(ope);
+        auto bindResult = fsm->fsmState("running")->bind(ope);
         REQUIRE(bindResult.isError() == false);
 
         operationIsCalled = false;
@@ -148,79 +148,80 @@ SCENARIO( "FSM test", "[ec]" ) {
         REQUIRE(bindResult.isError() == false);
 
         ec->stop();
-        REQUIRE(ec->getObjectState() == "stopped");
-        state = fsm->setObjectState("running");
-        state = fsm->getObjectState();
-        REQUIRE(state.stringValue() == "running");
-        REQUIRE(ec->getObjectState() == "started");
+        REQUIRE(ec->isStopped());
+        auto v2 = fsm->setFSMState("running");
+        state = fsm->currentFsmState();
+        REQUIRE(state->fullName()  == "running");
+        REQUIRE(ec->isStarted());
 
-        state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
-        REQUIRE(ec->getObjectState() == "stopped");
+        auto v3 = fsm->setFSMState("stopped");
+        state = fsm->currentFsmState();
+        REQUIRE(state->fullName() == "stopped");
+        REQUIRE(ec->isStopped());
       }
     
     THEN("FSM can be bound from Operation") {
         p->startAsync();
-        auto ope = p->store()->getOperation("add0.ope");
+        auto ope = p->store()->operation("add0.ope");
         REQUIRE(ope->isNull() == false);
 
-        auto fsm = p->store()->getFSM("FSM0.fsm");
+        auto fsm = p->store()->fsm("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
-        auto state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v1 = fsm->setFSMState("stopped");
+        auto s1 = fsm->currentFsmState();
+        REQUIRE(s1->fullName() == "stopped");
 
         Value conInfo{
           {"name", "con0"},
           {"type", "stateBind"},
           {"broker", "CoreBroker"},
-          {"input", {
-            {"info", {
-              {"fullName", "FSM0.fsm"}
-            }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }},
-            {"target", {
-              {"name", "running"}
+          {"inlet", {
+            {"name", "running"},
+            {"fsm", {
+              {"fullName", "FSM0.fsm"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
             }}
           }},
-          {"output", {
-            {"info", {
-              {"fullName", "add0.ope"}
+          {"outlet", {
+            {"operation", {
+              {"fullName", "add0.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
             }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }}
+            
           }}
         };
-        ConnectionBuilder::createConnection(p->store(), conInfo);
 
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        //p->coreBroker()->createConnection(p->store(), conInfo);
+
+        auto state2 = fsm->currentFsmState();
+        REQUIRE(state2->fullName() == "stopped");
 
         ope->execute();
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "running");
+        auto state3 = fsm->currentFsmState();
+        REQUIRE(state3->fullName() == "running");
 
 
       }
 
     THEN("FSM connection name duplication change name") {
         p->startAsync();
-        auto ope = p->store()->getOperation("add0.ope");
+        auto ope = p->store()->operation("add0.ope");
         REQUIRE(ope->isNull() == false);
-        auto ope2 = p->store()->getOperation("zero0.ope");
+        auto ope2 = p->store()->operation("zero0.ope");
         REQUIRE(ope2->isNull() == false);
 
-        auto fsm = p->store()->getFSM("FSM0.fsm");
+        auto fsm = p->store()->fsm("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
-        auto state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v = fsm->setFSMState("stopped");
+        auto state2 = fsm->currentFsmState();
+        REQUIRE(state2->fullName() == "stopped");
 
         Value conInfo{
           {"name", "con0"},
@@ -246,7 +247,9 @@ SCENARIO( "FSM test", "[ec]" ) {
             }}
           }}
         };
-        ConnectionBuilder::createConnection(p->store(), conInfo);
+
+        auto v3 = p->coreBroker()->connection()->createConnection(conInfo);
+//        ConnectionBuilder::createConnection(p->store(), conInfo);
 
         Value conInfo2{
           {"name", "con0"},
@@ -273,24 +276,25 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
 
-        auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
+        auto ret = p->coreBroker()->connection()->createConnection(conInfo);
+        // auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
         REQUIRE(ret.at("name").stringValue() != "con0");
 
       }
 
     THEN("FSM connection route duplication will fail") {
         p->startAsync();
-        auto ope = p->store()->getOperation("add0.ope");
+        auto ope = p->store()->operation("add0.ope");
         REQUIRE(ope->isNull() == false);
-        auto ope2 = p->store()->getOperation("zero0.ope");
+        auto ope2 = p->store()->operation("zero0.ope");
         REQUIRE(ope2->isNull() == false);
 
-        auto fsm = p->store()->getFSM("FSM0.fsm");
+        auto fsm = p->store()->fsm("FSM0.fsm");
         REQUIRE(fsm->isNull() == false);
 
-        auto state = fsm->setFSMState("stopped");
-        state = fsm->getFSMState();
-        REQUIRE(state.stringValue() == "stopped");
+        auto v1 = fsm->setFSMState("stopped");
+        auto state1 = fsm->currentFsmState();
+        REQUIRE(state1->fullName() == "stopped");
 
         Value conInfo{
           {"name", "con0"},
@@ -316,7 +320,9 @@ SCENARIO( "FSM test", "[ec]" ) {
             }}
           }}
         };
-        ConnectionBuilder::createConnection(p->store(), conInfo);
+
+        auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        // ConnectionBuilder::createConnection(p->store(), conInfo);
 
         Value conInfo2{
           {"name", "con0"},
@@ -343,33 +349,13 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
 
-        auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
+        auto ret = p->coreBroker()->connection()->createConnection(conInfo);
+        //auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
         REQUIRE(ret.isError() == true);
 
       }
 
-    THEN("Broker is running") {
-      p->startAsync();
-      REQUIRE(p->isRunning() == true);
-
-      auto factory = p->store()->getBrokerFactory({{"typeName", "HTTPBroker"}, {"instanceName", "HTTPBroker0.brk"}});
-      REQUIRE(factory!= nullptr);
-      REQUIRE(factory->isNull() == false);
-      auto proxy = factory->createProxy({{"typeName", "HTTPBroker"}, {"host", "localhost"}, {"port", 8080}});
-      REQUIRE(proxy != nullptr);
-      REQUIRE(proxy->isNull() == false);
-
-      auto pInfo = proxy->getProcessInfo();
-
-      REQUIRE(pInfo["instanceName"].stringValue() == "fsm_test");
-
-      AND_THEN("fsm") {
-        auto fsmInfos = proxy->getFSMInfos();
-        REQUIRE(fsmInfos.isListValue());
-        REQUIRE(fsmInfos.listValue().size() == 1);
-        REQUIRE(fsmInfos[0]["instanceName"].stringValue() == "FSM0.fsm");
-      }
-    }
+    
   }
 
   GIVEN("FSM automatic load behavior") {
@@ -445,13 +431,13 @@ SCENARIO( "FSM test", "[ec]" ) {
 
     THEN("FSM automatically bound to operation") {
         p->startAsync();
-        auto ope = p->store()->getOperation(std::string("add0.ope"));
+        auto ope = p->store()->operation(std::string("add0.ope"));
         REQUIRE(ope->isNull() == false);
 
-        auto fsm = p->store()->getFSM(std::string("FSM0.fsm"));
+        auto fsm = p->store()->fsm(std::string("FSM0.fsm"));
         REQUIRE(fsm->isNull() == false);
 
-        auto opes = fsm->getBoundOperations("running");
+        auto opes = fsm->fsmState("running")->boundOperations();
         REQUIRE (opes.size() == 1);
         REQUIRE (opes[0]->info().at("instanceName") == "add0.ope");
     }

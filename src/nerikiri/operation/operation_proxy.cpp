@@ -18,6 +18,10 @@ public:
 
     OperationInletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName, const std::string& name) : owner_(owner), broker_(broker), fullName_(fullName), name_(name) {}
 
+    virtual bool isNull() const override {
+        return false;
+    }
+    
     virtual std::string name() const override {
         return name_;
     }
@@ -34,7 +38,8 @@ public:
         return broker_->operationInlet()->put(fullName_, name_, value);
     }
 
-    virtual OperationAPI* owner() override { return owner_; }
+    /// virtual OperationAPI* owner() override { return owner_; }
+    virtual Value executeOwner() override { return owner_->execute(); }
 
     virtual Value info() const override {
         return broker_->operationInlet()->info(fullName_, name_);
@@ -69,7 +74,9 @@ public:
     OperationOutletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : owner_(owner), broker_(broker), fullName_(fullName) {}
     virtual ~OperationOutletProxy() {}
     
-    virtual OperationAPI* owner() override { return owner_; }
+    // virtual OperationAPI* owner() override { return owner_; }
+
+    virtual Value invokeOwner() override { return owner_->invoke(); }
 
     virtual Value get() const override {
         return broker_->operationOutlet()->get(fullName_);

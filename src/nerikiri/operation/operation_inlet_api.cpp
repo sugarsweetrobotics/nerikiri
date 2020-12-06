@@ -13,6 +13,10 @@ public:
     NullOperationInlet() : owner_(nullOperation()) {}
     virtual ~NullOperationInlet() {}
 
+    virtual bool isNull() const override {
+        return true;
+    }
+
     virtual std::string name() const override {
         logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__);
         return "null";
@@ -63,9 +67,8 @@ public:
         return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
     }
 
-    virtual OperationAPI* owner() override {
-        logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__);
-        return owner_.get();
+    virtual Value executeOwner() override {
+        return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
     }
 };
 

@@ -18,6 +18,11 @@ namespace nerikiri {
         static Value createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
         static Value deleteConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 
+
+        static Value createStateBind(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+        static Value deleteStateBindI(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+
+
         static Value registerConsumerConnection(ProcessStore* store, const Value& ci);
 
         static Value registerProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker=nullptr);

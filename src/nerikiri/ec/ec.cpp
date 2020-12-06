@@ -38,6 +38,7 @@ Value ExecutionContextBase::start() {
     if (info_["state"].stringValue() != "started") {
         onStarting();
         info_["state"] = Value("started");
+        ExecutionContextAPI::start();
         if (!onStarted()) {
             stop();
             return Value::error(logger::error("ExecutionContext::start() failed. onStarted callback returns false."));;
@@ -52,6 +53,7 @@ Value ExecutionContextBase::stop() {
     if (info_["state"].stringValue() != "stopped") {
         onStopping();
         info_["state"] = Value("stopped");
+        ExecutionContextAPI::stop();
         onStopped();
         logger::info("ExecutionContext({}) successfully stopped.", getInstanceName());
     }

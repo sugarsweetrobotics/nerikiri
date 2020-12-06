@@ -16,7 +16,7 @@
 namespace nerikiri {
 
 
-    std::shared_ptr<FSMAPI> fsm(const Value& info);
+    std::shared_ptr<FSMAPI> fsm(const std::string& fullName, const Value& info);
     std::shared_ptr<FSMFactoryAPI> fsmFactory(const std::string& fullName);
 
 

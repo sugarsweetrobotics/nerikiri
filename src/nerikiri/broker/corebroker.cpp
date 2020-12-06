@@ -9,6 +9,7 @@
 #include "nerikiri/connection/connection_builder.h"
 
 #include <nerikiri/proxy_builder.h>
+#include "nerikiri/operation_proxy.h"
 
 using namespace nerikiri;
 
@@ -18,27 +19,6 @@ using namespace nerikiri;
 class CoreBroker : public BrokerProxyAPI {
 protected:
   ProcessAPI* process_;
-public:
-  std::shared_ptr<FactoryBrokerAPI> factory_;
-  std::shared_ptr<StoreBrokerAPI> store_;
-  std::shared_ptr<OperationBrokerAPI> operation_;
-  std::shared_ptr<OperationOutletBrokerAPI> operationOutlet_;
-  std::shared_ptr<OperationInletBrokerAPI> operationInlet_;
-  std::shared_ptr<ConnectionBrokerAPI> connection_;
-public:
-
-  virtual std::shared_ptr<FactoryBrokerAPI> factory() override { return factory_; }
-  virtual std::shared_ptr<StoreBrokerAPI>  store() override { return store_; }
-  virtual std::shared_ptr<const FactoryBrokerAPI> factory() const override{ return factory_; }
-  virtual std::shared_ptr<const StoreBrokerAPI> store() const override{ return store_; }
-  virtual std::shared_ptr<OperationBrokerAPI>   operation() override { return operation_; }
-  virtual std::shared_ptr<const OperationBrokerAPI>   operation() const override { return operation_; }
-  virtual std::shared_ptr<OperationOutletBrokerAPI>   operationOutlet() override { return operationOutlet_; }
-  virtual std::shared_ptr<const OperationOutletBrokerAPI>   operationOutlet() const override { return operationOutlet_; }
-  virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() override { return operationInlet_; }
-  virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const override { return operationInlet_; }
-  virtual std::shared_ptr<ConnectionBrokerAPI>   connection() override { return connection_; }
-  virtual std::shared_ptr<const ConnectionBrokerAPI>   connection() const override { return connection_; }
 
 public:
 
@@ -371,7 +351,7 @@ public:
   }
 
   virtual Value addConnection(const std::string& fullName, const Value& c) override {
-      return process_->store()->operation(fullName)->outlet()->addConnection(ProxyBuilder::outgoingConnectionProxy(c, process_->store()));
+      return process_->store()->operation(fullName)->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(c, process_->store()));
   }
   
   virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
@@ -453,11 +433,12 @@ public:
   
 
   virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
+      // まずtargetNameを持つinletを見つける
       auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
           return i->name() == targetName;
       });
-      if (inlet) { 
-          return inlet.value()->addConnection(ProxyBuilder::incomingConnectionProxy(c, process_->store()));
+      if (inlet) { // inletが見つかったらProxyBuilderがつくる接続を使って接続しますよ
+          return inlet.value()->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
       }
       return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
   }
@@ -482,7 +463,12 @@ public:
   virtual ~CoreConnectionBroker() {}
 
     virtual Value createConnection(const Value& connectionInfo) override {
-        return ConnectionBuilder::createConnection(process_->store(), connectionInfo);
+        logger::trace("CoreConnectionBroker::createConnection({}) called", connectionInfo);
+        if (Value::string(connectionInfo.at("type")) == "stateBind") {
+            return ConnectionBuilder::createStateBind(process_->store(), connectionInfo);
+        } else {
+            return ConnectionBuilder::createConnection(process_->store(), connectionInfo);
+        }
     }
 
     virtual Value deleteConnection(const std::string& fullName) override {
@@ -490,16 +476,202 @@ public:
         
 };
 
+
+class CoreECBroker : public ECBrokerAPI {
+private:
+  ProcessAPI* process_;
+public:
+  CoreECBroker(ProcessAPI* proc) : process_(proc) {}
+  virtual ~CoreECBroker() {}
+
+    virtual Value activateStart(const std::string& fullName) const override {
+        return process_->store()->executionContext(fullName)->startedState()->activate();
+    }
+
+    virtual Value activateStop(const std::string& fullName) override {
+        return process_->store()->executionContext(fullName)->stoppedState()->activate();
+    }
+
+};
+
+
+class CoreFSMBroker : public FSMBrokerAPI {
+private:
+  ProcessAPI* process_;
+public:
+  CoreFSMBroker(ProcessAPI* proc) : process_(proc) {}
+  virtual ~CoreFSMBroker() {}
+
+    virtual Value currentFSMState(const std::string& fsmFullName) override {
+        return process_->store()->fsm(fsmFullName)->currentFsmState()->info();
+    }
+
+    virtual Value setFSMState(const std::string& fsmFullName, const std::string& stateFullName) override {
+        return process_->store()->fsm(fsmFullName)->setFSMState(stateFullName);
+    }
+
+    virtual Value fsmStates(const std::string& fsmFullName) override {
+        return nerikiri::functional::map<Value, std::shared_ptr<FSMStateAPI>>(process_->store()->fsm(fsmFullName)->fsmStates(), [](auto s) {
+            return s->info();
+        });
+    }
+
+    virtual Value fsmState(const std::string& fsmFullName, const std::string& stateName) override {
+        return process_->store()->fsm(fsmFullName)->fsmState(stateName)->info();
+    }
+};
+
+class CoreFSMStateBroker : public FSMStateBrokerAPI {
+private:
+  ProcessAPI* process_;
+public:
+  CoreFSMStateBroker(ProcessAPI* proc) : process_(proc) {}
+  virtual ~CoreFSMStateBroker() {}
+
+    virtual Value isActive(const std::string& fsmName, const std::string& stateName) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->isActive();
+    }
+
+    virtual Value activate(const std::string& fsmName, const std::string& stateName) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->activate();
+    }
+
+    virtual Value deactivate(const std::string& fsmName, const std::string& stateName) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->deactivate();
+    }
+
+    virtual Value isTransitable(const std::string& fsmName, const std::string& stateName,const std::string& targetStateName) const override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->isTransitable(targetStateName);
+    }
+
+    virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->bind(ProxyBuilder::operationProxy(info, process_->store()));
+    }
+
+    virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info, const Value& arg) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->bind(ProxyBuilder::operationProxy(info, process_->store()), arg);
+    }
+
+    virtual Value bindECState(const std::string& fsmName, const std::string& stateName, const Value& info) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->bind(ProxyBuilder::ecStateProxy(info, process_->store()));
+    }
+
+    virtual Value unbindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->unbind(ProxyBuilder::operationProxy(info, process_->store()));
+    }
+
+    virtual Value unbindECState(const std::string& fsmName, const std::string& stateName, const Value& info) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->unbind(ProxyBuilder::ecStateProxy(info, process_->store()));
+    }
+
+    virtual Value boundOperations(const std::string& fsmName, const std::string& stateName) override {
+        return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->fsm(fsmName)->fsmState(stateName)->boundOperations(), [](auto op) {
+            return op->info();
+        });
+    }
+
+    virtual Value boundECStates(const std::string& fsmName, const std::string& stateName) override {
+        return nerikiri::functional::map<Value, std::shared_ptr<ECStateAPI>>(process_->store()->fsm(fsmName)->fsmState(stateName)->boundECStates(), [](auto op) {
+            return op->info();
+        });
+    }
+
+    virtual Value inlet(const std::string& fsmName, const std::string& stateName) override {
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->inlet()->info();
+    }
+/*
+    virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
+        auto broker = process_->store()->brokerFactory(Value::string(info.at("broker").at("typeName")))->createProxy(info.at("broker"));
+        return process_->store()->fsm(fsmName)->fsmState(stateName)->bind(operationProxy(broker, Value::string(info.at("fullName"))));
+    }
+
+    virtual Value addConnection(const std::string& fullName, const std::string& stateName, const Value& c) {
+        auto inlet = process_->store()->fsm(fullName)->fsmState(stateName)->inlet();
+        // TODO: OperationからStateへの接続のstate側
+        if (inlet->isNull()) { 
+            return inlet->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
+        }
+        return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, stateName));
+    }
+    */
+};
+
+
+
+class CoreFSMStateInletBroker : public OperationInletBrokerAPI {
+private:
+  ProcessAPI* process_;
+public:
+  CoreFSMStateInletBroker(ProcessAPI* proc) : process_(proc) {}
+  virtual ~CoreFSMStateInletBroker() {}
+
+  virtual Value name(const std::string& fullName, const std::string& targetName) const override {
+      return process_->store()->fsm(fullName)->fsmState(targetName)->inlet()->name(); 
+  }
+  
+  virtual Value info(const std::string& fullName, const std::string& targetName) const override {
+      return process_->store()->fsm(fullName)->fsmState(targetName)->inlet()->info(); 
+  }
+  
+
+  virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override {
+      return process_->store()->fsm(fullName)->fsmState(targetName)->inlet()->defaultValue(); 
+  }
+
+  virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override {
+      return process_->store()->fsm(fullName)->fsmState(targetName)->inlet()->put(value); 
+  }
+  
+
+  virtual Value get(const std::string& fullName, const std::string& targetName) const override {
+      return process_->store()->fsm(fullName)->fsmState(targetName)->inlet()->get(); 
+  }
+  
+
+  virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override {
+      return process_->store()->fsm(fullName)->fsmState(targetName)->inlet()->isUpdated(); 
+  }
+  
+
+  virtual Value connections(const std::string& fullName, const std::string& targetName) const override {
+    auto inlet = process_->store()->fsm(fullName)->fsmState(targetName)->inlet();
+    return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(inlet->connections(), [](auto c) {
+        return c->info();
+    });
+  }
+  
+
+  virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
+      // まずtargetNameを持つinletを見つける
+    auto inlet = process_->store()->fsm(fullName)->fsmState(targetName)->inlet();
+    return inlet->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
+  }
+  
+  
+  virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
+      auto inlet = process_->store()->fsm(fullName)->fsmState(targetName)->inlet();
+      return inlet->removeConnection(name); 
+  }
+  
+};
+
+
 /**
  * 
  */
-CoreBroker::CoreBroker(ProcessAPI* process, const std::string& fullName): BrokerProxyAPI("CoreBroker", fullName), process_(process),
-factory_(std::make_shared<CoreFactoryBroker>(process)), 
-store_(std::make_shared<CoreStoreBroker>(process)),
-operation_(std::make_shared<CoreOperationBroker>(process)),
-operationInlet_(std::make_shared<CoreOperationInletBroker>(process)),
-operationOutlet_(std::make_shared<CoreOperationOutletBroker>(process)),
-connection_(std::make_shared<CoreConnectionBroker>(process))
+CoreBroker::CoreBroker(ProcessAPI* process, const std::string& fullName): 
+BrokerProxyAPI("CoreBroker", fullName,
+    std::make_shared<CoreStoreBroker>(process),
+    std::make_shared<CoreFactoryBroker>(process), 
+    std::make_shared<CoreOperationBroker>(process),
+    std::make_shared<CoreOperationOutletBroker>(process),
+    std::make_shared<CoreOperationInletBroker>(process),
+    std::make_shared<CoreConnectionBroker>(process),
+    std::make_shared<CoreECBroker>(process),
+    std::make_shared<CoreFSMBroker>(process),
+    std::make_shared<CoreFSMStateBroker>(process),
+    std::make_shared<CoreFSMStateInletBroker>(process)
+), process_(process)
 {}
 
 CoreBroker::~CoreBroker() {}

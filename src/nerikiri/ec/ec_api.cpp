@@ -48,15 +48,19 @@ public:
         return Value::error(logger::error("NullExecutionContext::{}}() called. ExecutionContext is null.", __func__));
     }
 
-    virtual std::shared_ptr<ECStateAPI> startedState() override {
+    virtual std::shared_ptr<ECStateAPI> startedState() const override {
         return std::make_shared<NullECState>();
     }
 
-    virtual std::shared_ptr<ECStateAPI> stoppedState() override {
+    virtual std::shared_ptr<ECStateAPI> stoppedState() const override {
         return std::make_shared<NullECState>();
     }
 };
 
 std::shared_ptr<ExecutionContextAPI> nerikiri::nullEC() {
     return std::make_shared<NullExecutionContext>();
+}
+
+std::shared_ptr<ECStateAPI> nerikiri::nullECState() {
+    return std::make_shared<NullECState>();
 }

@@ -15,8 +15,8 @@ namespace nerikiri {
 
     public:
         virtual Value activate() = 0;
-
     };
 
+    std::shared_ptr<ECStateAPI> nullECState();
 
 }

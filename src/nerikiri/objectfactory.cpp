@@ -28,14 +28,16 @@ std::string loadFullName(const std::vector<T>& ts, const Value& info) {
 
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
-  logger::trace("ObjectFactory::createOperation({})", (info));
+  logger::trace("ObjectFactory::createOperation({}) called", (info));
   auto fullName = loadFullName(store.operations(), info);
+  logger::info("ObjectFactory::createOperation({})", info);
   return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(fullName));
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainer({})", (info));
   auto fullName = loadFullName(store.containers(), info);
+  logger::info("ObjectFactory::createContainer({})", info);
   auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
   if (info.hasKey("operations")) {
     info.at("operations").const_list_for_each([&store, &c](auto& value) {
@@ -56,6 +58,7 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
 
 
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& info) {
+  logger::info("ObjectFactory::createBroker({})", info);
   //auto fullName = Value::string(info.at("fullName)"));
   auto fullName = loadFullName(store.brokers(), info);
   return store.addBroker(store.brokerFactory(Value::string(info.at("typeName")))->create(info));
@@ -67,18 +70,19 @@ std::shared_ptr<BrokerProxyAPI> ObjectFactory::createBrokerProxy(ProcessStore& s
 }
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {
-  logger::debug("ObjectFactory::createExecutionContext({})", value);
+  logger::info("ObjectFactory::createExecutionContext({})", value);
   return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(Value::string(value.at("fullName"))));
 }
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
-  logger::debug("ObjectFactory::createTopic({})", topicInfo);
+  logger::info("ObjectFactory::createTopic({})", topicInfo);
   return store.addTopic(store.topicFactory(Value::string("typeName"))->create(Value::string(topicInfo.at("fullName"))));
 }
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
-  logger::debug("ObjectFactory::createFSM({})", fsmInfo);
-  return store.addFSM(store.fsmFactory(Value::string(fsmInfo.at("typeName")))->create(Value::string(fsmInfo.at("fullName"))));
+  logger::info("ObjectFactory::createFSM({})", fsmInfo);
+  auto fullName = loadFullName(store.fsms(), fsmInfo);
+  return store.addFSM(store.fsmFactory(Value::string(fsmInfo.at("typeName")))->create(fullName, fsmInfo));
 }
 
 Value ObjectFactory::deleteOperation(ProcessStore& store, const std::string& fullName)  {

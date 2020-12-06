@@ -7,6 +7,7 @@ broker/broker_proxy_api.cpp
 broker/broker_factory_api.cpp
 broker/crud_broker.cpp
 broker/crud_broker_base.cpp
+broker/crud_broker_proxy_base.cpp
 broker/corebroker.cpp
 
 container/container_base.cpp
@@ -28,8 +29,13 @@ dllproxy.cpp
 ec/ec.cpp
 ec/ec_api.cpp
 ec/ec_factory_api.cpp
+ec/ec_proxy.cpp
 
 fsm/fsm.cpp
+fsm/fsm_api.cpp
+fsm/fsm_state_api.cpp
+fsm/fsm_proxy.cpp
+fsm/fsm_factory_api.cpp
 
 json.cpp 
 logger.cpp 
