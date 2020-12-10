@@ -40,7 +40,9 @@ HttpServerImpl::HttpServerImpl(HttpServerImpl&& server) {
 
 HttpServerImpl::~HttpServerImpl() {
   terminateBackground();
-  thread_->join();
+  if (thread_) {
+    thread_->join();
+  }
 }
 
 void HttpServerImpl::baseDirectory(const std::string& path) {
@@ -96,10 +98,11 @@ void HttpServerImpl::runBackground(const int32_t port /*=8080*/) {
 	}
       }));
   */
-
-  thread_ = std::unique_ptr<std::thread>(new std::thread([port, this] {
+  thread_ = std::make_unique<std::thread>([port, this] {
+//  thread_ = std::unique_ptr<std::thread>(new std::thread([port, this] {
+    //logger::info("HttpServerImpl::runBackground called");
 	this->runForever(port);
-      }));
+      });
 }
 
 bool HttpServerImpl::waitBackground(const double timeout_sec) {

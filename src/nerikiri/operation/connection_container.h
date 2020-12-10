@@ -31,7 +31,7 @@ namespace nerikiri {
     virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) {
       for(auto c : connections()) {
         if (c->fullName() == con->fullName()) {
-          return Value::error(logger::error("ConnectionContainer::addConnection({}) failed. Outlet already has the same name connection.", con->fullName()));
+          return Value::error(logger::error("ConnectionContainer::addConnection({}) failed. ConnectionContainer already has the same name connection.", con->fullName()));
         }
       }
       connections_.push_back(con);

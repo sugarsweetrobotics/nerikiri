@@ -203,9 +203,11 @@ bool FSM::_setupStates(const Value& info) {
             return nullFSMState();
         }
         logger::trace("FSM({}) create FSMState({}, {})", fullName(), stateInfo.at("name"), stateInfo.at("transit"));
-        return std::make_shared<FSMState>(stateInfo.at("name").stringValue(), stateInfo.at("transit").template const_list_map<std::string>([this](auto t) {
+        auto state = std::make_shared<FSMState>(stateInfo.at("name").stringValue(), stateInfo.at("transit").template const_list_map<std::string>([this](auto t) {
             return t.stringValue();
         }), stateInfo.at("name").stringValue() == defaultStateName);
+        state->setOwner(this);
+        return state;
     });
     logger::trace("FSM::{} exit", __func__);
     return true;
@@ -284,7 +286,7 @@ Value FSM::setFSMState(const std::string& stateName) {
     if (tgtState->isNull()) {
         return Value::error(logger::error("FSM::setFSMState() error. FSM does not have state {}", stateName));
     }
-    currentFsmState()->deactivate();
+    //currentFsmState()->deactivate();
     tgtState->activate();
     return tgtState->info();
 }

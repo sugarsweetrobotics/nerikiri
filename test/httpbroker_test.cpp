@@ -66,7 +66,7 @@ SCENARIO( "Broker test", "[broker]" ) {
       }
 
       THEN("Broker is running") {
-        p->startAsync();
+        //p->startAsync();
         REQUIRE(p->isRunning() == true);
 
         auto factory = p->store()->brokerFactory("HTTPBroker");
@@ -78,7 +78,7 @@ SCENARIO( "Broker test", "[broker]" ) {
 
         auto pInfo = proxy->getProcessInfo();
 
-        REQUIRE(pInfo["instanceName"].stringValue() == "fsm_test");
+        REQUIRE(pInfo["instanceName"].stringValue() == "httpbroker_test");
 
         AND_THEN("fsm") {
           auto fsmInfos = proxy->store()->getClassObjectInfos("fsm");
@@ -189,6 +189,6 @@ SCENARIO( "Broker test", "[broker]" ) {
 
       } // Connection test
     }
-    p->stop();
+    // p->stop();
   }
 }

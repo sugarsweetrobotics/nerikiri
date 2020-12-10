@@ -77,11 +77,12 @@ namespace nerikiri {
         //std::vector<std::pair<std::shared_ptr<OperationAPI>, Value>> operationAndArgs_;
         std::vector<std::string> transitableStateNames_;
         std::shared_ptr<OperationInletAPI> inlet_;
+        FSMAPI* owner_;
         bool is_active_;
 
         //std::shared_ptr<OperationInletAPI> inlet_;
     public:
-        FSMState() : is_active_(false), inlet_(std::make_shared<FSMStateInlet>("")) {}
+        FSMState() : is_active_(false), inlet_(std::make_shared<FSMStateInlet>("")), owner_(nullptr) {}
 
         FSMState(const std::string& name, const std::vector<std::string>& transitableNames = {}, const bool is_active=false) : FSMStateAPI("FSMState", "FSMState", name), transitableStateNames_(transitableNames),
           inlet_(std::make_shared<FSMStateInlet>(name)), is_active_(is_active)  {}
@@ -89,6 +90,8 @@ namespace nerikiri {
         //FSMState(const std::string& name): FSMState(name, {}) {}
 
         virtual ~FSMState() {}
+
+        void setOwner(FSMAPI* owner) { owner_ = owner; }
 
     public:
         virtual Value info() const override {
@@ -117,6 +120,7 @@ namespace nerikiri {
             for(auto ec : boundECStates()) {
                 ec->activate();
             }
+            owner_->currentFsmState()->deactivate();
             is_active_ = true;
             return true;
         }

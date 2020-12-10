@@ -9,9 +9,9 @@ class FSMStateInletProxy;
 
 class FSMStateInletProxy : public OperationInletAPI {
 private:
-    FSMStateProxy* state_;
+    const std::shared_ptr<FSMStateProxy> state_;
 public:
-    FSMStateInletProxy(FSMStateProxy* state) : OperationInletAPI(), state_(state) {}
+    FSMStateInletProxy(const std::shared_ptr<FSMStateProxy>& state) : OperationInletAPI(), state_(state) {}
     virtual ~FSMStateInletProxy() {}
 
 
@@ -23,7 +23,9 @@ public:
 
     virtual Value get() const { return {}; }
 
-    virtual Value put(const Value& value) { return {}; }
+    virtual Value put(const Value& value) { 
+        return {}; 
+    }
 
     virtual Value executeOwner();
 
@@ -39,15 +41,17 @@ public:
 };
 
 class FSMStateProxy : public FSMStateAPI {
-private:
+public:
     const std::shared_ptr<BrokerProxyAPI> broker_;
     const std::string fsmFullName_;
     const std::string stateName_;
-    const std::shared_ptr<OperationInletAPI> inlet_;
+    std::shared_ptr<OperationInletAPI> inlet_;
 public:
     FSMStateProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fsmFullName, const std::string& stateName) : FSMStateAPI("FSMStateProxy", fsmFullName, (stateName)), broker_(broker),
-        fsmFullName_(fsmFullName), stateName_(stateName), inlet_(std::make_shared<FSMStateInletProxy>(this)) {}
+        fsmFullName_(fsmFullName), stateName_(stateName), inlet_(nullptr) { }
     virtual ~FSMStateProxy() {}
+
+    void setInlet(const std::shared_ptr<OperationInletAPI>& inlet) { inlet_ = inlet; }
 
 
     virtual bool isActive() const override {
@@ -126,7 +130,9 @@ public:
 
 std::string FSMStateInletProxy::name() const { return state_->fullName(); }
 
-Value FSMStateInletProxy::executeOwner() { return state_->activate(); }
+Value FSMStateInletProxy::executeOwner() { 
+    return state_->activate(); 
+}
 
 Value FSMStateInletProxy::info() const { return {{"fullName", state_->fullName()}}; }
 
@@ -162,13 +168,18 @@ public:
 public:
 
     virtual std::shared_ptr<FSMStateAPI> currentFsmState() const override {
+        auto v = broker_->fsm()->currentFSMState(fullName_);
+        return std::make_shared<FSMStateProxy>(broker_, fullName_, Value::string(v.at("name")));
         //return broker_->fsm()->currentFSMState(fullName_);
     }
 
     virtual std::shared_ptr<FSMStateAPI> fsmState(const std::string& stateName) const override {
         auto stateInfo = broker_->fsm()->fsmState(fullName_, stateName);
         if (stateInfo.isError()) return nullFSMState();
-        return std::make_shared<FSMStateProxy>(broker_, fullName_, stateName);
+        auto state = std::make_shared<FSMStateProxy>(broker_, fullName_, stateName);
+        auto inlet = std::make_shared<FSMStateInletProxy>(state);
+        state->setInlet(inlet);
+        return state;
     }
 
     virtual std::vector<std::shared_ptr<FSMStateAPI>> fsmStates() const override {

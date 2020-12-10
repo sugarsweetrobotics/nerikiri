@@ -36,10 +36,19 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
   return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
 }
 
-Value ConnectionBuilder::createStateBind(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
+Value ConnectionBuilder::createStateBind(ProcessStore* store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
+  Value connectionInfo = connectionInfo_;
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
   auto value = connectionInfo.at("inlet").at("fsm");
   auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  // TODO: 名前が同じのがあったらどうするか？
+  auto cons = inletBroker->fsmStateInlet()->connections(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")));
+  cons.const_list_for_each([&connectionInfo](const auto& c) {
+    if (c.at("fullName").stringValue() == Value::string(connectionInfo.at("name"))) {
+      logger::warn("ConnectionBuilder::createStateBind() warning. Same name connection is encountered");
+      connectionInfo["name"] = connectionInfo["name"].stringValue() + "1";
+    }
+  });
   inletBroker->fsmStateInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
   // TODO: 名前が同じのがあったらどうするか？
   value = connectionInfo.at("outlet").at("operation");

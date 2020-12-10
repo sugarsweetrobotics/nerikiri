@@ -464,7 +464,7 @@ public:
 
     virtual Value createConnection(const Value& connectionInfo) override {
         logger::trace("CoreConnectionBroker::createConnection({}) called", connectionInfo);
-        if (Value::string(connectionInfo.at("type")) == "stateBind") {
+        if (connectionInfo.at("inlet").hasKey("fsm")) {
             return ConnectionBuilder::createStateBind(process_->store(), connectionInfo);
         } else {
             return ConnectionBuilder::createConnection(process_->store(), connectionInfo);

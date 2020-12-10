@@ -17,7 +17,7 @@ using namespace nerikiri;
 SCENARIO( "FSM test", "[ec]" ) {
   GIVEN("FSM basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "INFO" },
+      "logger": { "logLevel": "WARN" },
 
       "operations": {
         "precreate": [
@@ -174,7 +174,7 @@ SCENARIO( "FSM test", "[ec]" ) {
 
         Value conInfo{
           {"name", "con0"},
-          {"type", "stateBind"},
+          {"type", "EVENT"},
           {"broker", "CoreBroker"},
           {"inlet", {
             {"name", "running"},
@@ -225,60 +225,58 @@ SCENARIO( "FSM test", "[ec]" ) {
 
         Value conInfo{
           {"name", "con0"},
-          {"type", "stateBind"},
+          {"type", "EVENT"},
           {"broker", "CoreBroker"},
-          {"input", {
-            {"info", {
-              {"fullName", "FSM0.fsm"}
-            }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }},
-            {"target", {
-              {"name", "running"}
+          {"inlet", {
+            {"name", "running"},
+            {"fsm", {
+              {"fullName", "FSM0.fsm"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
             }}
           }},
-          {"output", {
-            {"info", {
-              {"fullName", "add0.ope"}
+          {"outlet", {
+            {"operation", {
+              {"fullName", "add0.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
             }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }}
+            
           }}
         };
 
         auto v3 = p->coreBroker()->connection()->createConnection(conInfo);
 //        ConnectionBuilder::createConnection(p->store(), conInfo);
 
-        Value conInfo2{
+        Value conInfo2 {
           {"name", "con0"},
-          {"type", "stateBind"},
+          {"type", "EVENT"},
           {"broker", "CoreBroker"},
-          {"input", {
-            {"info", {
-              {"fullName", "FSM0.fsm"}
-            }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }},
-            {"target", {
-              {"name", "running"}
+          {"inlet", {
+            {"name", "running"},
+            {"fsm", {
+              {"fullName", "FSM0.fsm"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
             }}
           }},
-          {"output", {
-            {"info", {
-              {"fullName", "zero0.ope"}
+          {"outlet", {
+            {"operation", {
+              {"fullName", "zero0.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
             }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }}
+            
           }}
         };
 
         auto ret = p->coreBroker()->connection()->createConnection(conInfo);
         // auto ret = ConnectionBuilder::createConnection(p->store(), conInfo2);
-        REQUIRE(ret.at("name").stringValue() != "con0");
+        REQUIRE(ret.at("fullName").stringValue() != "con0");
 
       }
 
@@ -386,17 +384,27 @@ SCENARIO( "FSM test", "[ec]" ) {
                     },
                     { 
                       "name": "running",
-                      "transit": ["stopped"],
-                      "bindOperations": [
-                        {
-                          "instanceName": "add0.ope"
-                        }
-                      ]
+                      "transit": ["stopped"]
                     }
                   ],
                   "defaultState" : "created"
               }
-          ]
+          ],
+          "bind": {
+            "operations": [
+              {
+                "fsm": {
+                  "fullName": "FSM0.fsm",
+                  "state": "running"
+                },
+                "operation": {
+                  "fullName": "add0.ope",
+                  "argument": {"data": 0}
+                }
+              }
+            ]
+
+          }
       },
       "ecs": {
           "precreate": [
