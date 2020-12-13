@@ -16,7 +16,7 @@ SCENARIO( "Broker test", "[broker]" ) {
     const std::string jsonStr = R"(
     {
         "logger": { 
-          "logLevel": "TRACE"
+          "logLevel": "WARN"
         },
 
         "operations": {
@@ -25,7 +25,29 @@ SCENARIO( "Broker test", "[broker]" ) {
             {"typeName": "zero", "instanceName": "zero0.ope"}
           ]
         },
-
+        "fsms": {
+          "precreate": [
+              {
+                  "typeName": "GenericFSM",
+                  "instanceName": "FSM0.fsm",
+                  "states" : [
+                    {
+                      "name": "created",
+                      "transit": ["stopped"]
+                    },
+                    { 
+                      "name": "stopped",
+                      "transit": ["running"] 
+                    },
+                    { 
+                      "name": "running",
+                      "transit": ["stopped"]
+                    }
+                  ],
+                  "defaultState" : "created"
+              }
+          ]
+        },
         "brokers": {
             "load_paths": ["test", "build/test", "../build/lib", "../build/example"],
             "preload": ["HTTPBroker"],
@@ -171,8 +193,8 @@ SCENARIO( "Broker test", "[broker]" ) {
           }}
         };
 
-        proxy->connection()->createConnection(conInfo);
-
+        auto ret = proxy->connection()->createConnection(conInfo);
+        REQUIRE(ret.isError() != true);
 
         auto con1 = ope1->outlet()->connections();
         REQUIRE(con1.size() == 1);
@@ -189,6 +211,6 @@ SCENARIO( "Broker test", "[broker]" ) {
 
       } // Connection test
     }
-    // p->stop();
+    p->stop();
   }
 }

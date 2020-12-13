@@ -47,7 +47,7 @@ SCENARIO( "Connection test", "[ec]" ) {
 
       THEN("Operation can connected") {
 
-        p->startAsync();
+        //p->startAsync();
 
       
         Value conInfo{

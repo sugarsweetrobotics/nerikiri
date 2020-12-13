@@ -82,10 +82,13 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
       return coreBroker->operationOutlet()->info(match[1]);
     } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/fullInfo$"))) {
       auto v = coreBroker->operation()->fullInfo(match[1]);
-      if (!receiverBrokerInfo.isNull()) v["broker"] = receiverBrokerInfo;
+      if (!receiverBrokerInfo.isNull() && !v.isError()) v["broker"] = receiverBrokerInfo;
       return v;
-    }
+    } 
 
+    if (std::regex_match(path, match, std::regex("containers/([^/]*)/operations$"))) {  
+      return coreBroker->container()->operations(match[1]);
+    }
     /*
 
     if (std::regex_match(path, match, std::regex("/process/operations/$"))) { return coreBroker->store()->getClassObjectInfos("operation"); }
@@ -206,6 +209,8 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
 Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
   logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
   std::smatch match;
+
+
 
   if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)"))) {
     return coreBroker->operationInlet()->put(match[1], match[2], value);

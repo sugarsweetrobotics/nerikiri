@@ -85,8 +85,11 @@ namespace nerikiri {
     virtual Value fullInfo() const override;
     
     virtual int32_t start() override;
+
     virtual void startAsync() override;
+
     virtual int32_t wait() override;
+    
     virtual void stop() override;
     
     virtual ProcessAPI& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) override {

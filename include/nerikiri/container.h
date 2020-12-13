@@ -28,6 +28,11 @@ namespace nerikiri {
           ,_ptr(std::make_shared<T>()) {}
         virtual ~Container() {}
 
+
+        //virtual std::string typeName() const { return base_->typeName()};
+        //virtual std::string fullName() const { return base_->fullName()};
+        virtual Value info() const override { return base_->info(); } 
+
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { return base_->operations(); }
 
         virtual std::shared_ptr<OperationAPI> operation(const std::string& fullName) const override { return base_->operation(fullName); }

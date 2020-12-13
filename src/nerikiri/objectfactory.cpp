@@ -41,8 +41,9 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
   if (info.hasKey("operations")) {
     info.at("operations").const_list_for_each([&store, &c](auto& value) {
-      auto fullName = loadFullName(store.operations(), value);
-      store.addOperation(store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, fullName));
+      auto fullName = nerikiri::naming::join(c->fullName(), loadFullName(store.operations(), value));
+      auto cop = (store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, fullName));
+      c->addOperation(cop);
     });
   }
   return store.addContainer(c);

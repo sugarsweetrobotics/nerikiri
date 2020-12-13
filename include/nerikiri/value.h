@@ -327,14 +327,23 @@ namespace nerikiri {
       return (*objectvalue_)[key];
     }
 
-    Value operator[](const int key) {
+    const Value& operator[](const std::string& key) const {
+      if (!isObjectValue()) {
+        throw ValueTypeError("Value::operator[std::string] failed. Value is not Object type.");
+      }
+      return (*objectvalue_)[key];
+    }
+
+    Value& operator[](const int key) {
       if (!isListValue()) {
-        return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But value is " + getTypeString() + " type.");
+        throw ValueTypeError("Value::operator[int] failed. Value is not List type.");
+        //return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But value is " + getTypeString() + " type.");
       }
       if ((*listvalue_).size() <= key) {
-        return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But list out of bounds.");
+        throw ValueTypeError("Value::operator[int] failed. Value is List type but size range error.");
+        //return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But list out of bounds.");
       } 
-      return listvalue_[key];
+      return (*listvalue_)[key];
     }
 
     Value& operator=(const Value& value) {

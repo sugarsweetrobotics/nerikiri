@@ -270,6 +270,8 @@ public:
             return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->operationFactories(), [](auto op) { return op->info(); });
         } else if (className == "container") {
             return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->containers(), [](auto o) { return o->info(); });
+        } else if (className == "connection") {
+            return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->connections(), [](auto o) { return o->info(); });
         } else if (className == "containerFactory") {
             return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->containerFactories(), [](auto o) { return o->info(); });
         } else if (className == "ec") {
@@ -293,7 +295,35 @@ public:
 
   virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {}
 
-  virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {}
+  virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
+      if (className == "operation") {
+            return process_->store()->operation(fullName)->info();
+        } else if (className == "operationFactory") {
+            return process_->store()->operationFactory(fullName)->info();
+        } else if (className == "container") {
+            return process_->store()->container(fullName)->info();
+        } else if (className == "containerFactory") {
+            return process_->store()->containerFactory(fullName)->info();
+        } else if (className == "containerOperationFactory") {
+            return process_->store()->containerOperationFactory(fullName)->info();
+        } else if (className == "ec") {
+            return process_->store()->executionContext(fullName)->info();
+        } else if (className == "ecFactory") {
+            return process_->store()->executionContextFactory(fullName)->info();
+        } else if (className == "topic") {
+            return process_->store()->topic(fullName)->info();
+        } else if (className == "topicFactory") {
+            return process_->store()->topicFactory(fullName)->info();
+        } else if (className == "fsm") {
+            return process_->store()->fsm(fullName)->info();
+        } else if (className == "fsmFactory") {
+            return process_->store()->fsmFactory(fullName)->info();
+        } else if (className == "broker") {
+            return process_->store()->broker(fullName)->info();
+        } else if (className == "brokerFactory") {
+            return process_->store()->brokerFactory(fullName)->info();
+        }
+  }
 };
 
 
@@ -474,6 +504,21 @@ public:
     virtual Value deleteConnection(const std::string& fullName) override {
     }
         
+};
+
+
+class CoreContainerBroker : public ContainerBrokerAPI {
+private:
+  ProcessAPI* process_;
+public:
+  CoreContainerBroker(ProcessAPI* proc) : process_(proc) {}
+  virtual ~CoreContainerBroker() {}
+
+  virtual Value operations(const std::string& containerFullName) const override {
+    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->container(containerFullName)->operations(), [](auto op) {
+        return op->info();
+    });
+  }
 };
 
 
@@ -667,6 +712,7 @@ BrokerProxyAPI("CoreBroker", fullName,
     std::make_shared<CoreOperationOutletBroker>(process),
     std::make_shared<CoreOperationInletBroker>(process),
     std::make_shared<CoreConnectionBroker>(process),
+    std::make_shared<CoreContainerBroker>(process),
     std::make_shared<CoreECBroker>(process),
     std::make_shared<CoreFSMBroker>(process),
     std::make_shared<CoreFSMStateBroker>(process),

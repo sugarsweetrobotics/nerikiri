@@ -99,6 +99,8 @@ namespace nerikiri {
     class ContainerBrokerAPI {  
     public:
         virtual ~ContainerBrokerAPI() {}
+
+        virtual Value operations(const std::string& containerFullName)  const = 0;
     };
 
     class ContainerOperationBrokerAPI {
@@ -180,6 +182,7 @@ namespace nerikiri {
         const std::shared_ptr<OperationOutletBrokerAPI> operationOutlet_;
         const std::shared_ptr<OperationInletBrokerAPI> operationInlet_;
         const std::shared_ptr<ConnectionBrokerAPI> connection_;
+        const std::shared_ptr<ContainerBrokerAPI> container_;
         const std::shared_ptr<FSMBrokerAPI> fsm_;
         const std::shared_ptr<FSMStateBrokerAPI> fsmState_;
         const std::shared_ptr<OperationInletBrokerAPI> fsmStateInlet_;
@@ -200,6 +203,8 @@ namespace nerikiri {
         virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const { return operationInlet_; }
         virtual std::shared_ptr<ConnectionBrokerAPI> connection() { return connection_; }
         virtual std::shared_ptr<const ConnectionBrokerAPI>  connection() const { return connection_; }
+        virtual std::shared_ptr<ContainerBrokerAPI> container() { return container_; }
+        virtual std::shared_ptr<const ContainerBrokerAPI>  container() const { return container_; }
         virtual std::shared_ptr<FSMBrokerAPI> fsm() { return fsm_; }
         virtual std::shared_ptr<const FSMBrokerAPI> fsm() const { return fsm_; }
         virtual std::shared_ptr<FSMStateBrokerAPI> fsmState() { return fsmState_; }
@@ -217,12 +222,13 @@ namespace nerikiri {
             const std::shared_ptr<OperationOutletBrokerAPI>& operationOutlet, 
             const std::shared_ptr<OperationInletBrokerAPI>& operationInlet, 
             const std::shared_ptr<ConnectionBrokerAPI>& connection,
+            const std::shared_ptr<ContainerBrokerAPI>& container,
             const std::shared_ptr<ECBrokerAPI>& ec,
             const std::shared_ptr<FSMBrokerAPI>& fsm,
             const std::shared_ptr<FSMStateBrokerAPI>& fsmState,
             const std::shared_ptr<OperationInletBrokerAPI>& fsmStateInlet
         ): Object(typeName, fullName), store_(store), factory_(factory), operation_(operation), operationOutlet_(operationOutlet),
-           operationInlet_(operationInlet), connection_(connection), ec_(ec), fsm_(fsm), fsmState_(fsmState), fsmStateInlet_(fsmStateInlet) {}
+           operationInlet_(operationInlet), connection_(connection), container_(container), ec_(ec), fsm_(fsm), fsmState_(fsmState), fsmStateInlet_(fsmStateInlet) {}
 
         BrokerProxyAPI(const Value& info) : Object(info) {}
 

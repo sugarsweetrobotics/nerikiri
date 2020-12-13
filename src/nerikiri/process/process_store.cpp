@@ -18,6 +18,11 @@ using namespace nerikiri::logger;
 
 Value ProcessStore::info() const { return process_->info(); }
 
+
+std::vector<std::shared_ptr<ConnectionAPI>> ProcessStore::connections() const {
+  return {};
+}
+
 Value ProcessStore::addBroker(const std::shared_ptr<BrokerAPI>& b) {
   return add<BrokerAPI>(brokers_, b, ".brk");
 }

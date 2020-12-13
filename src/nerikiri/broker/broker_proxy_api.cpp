@@ -145,6 +145,17 @@ public:
 
 };
 
+
+class NullContainerBroker : public ContainerBrokerAPI {
+public:
+    virtual ~NullContainerBroker() {}
+
+    virtual Value operations(const std::string& containerFullName) const override {
+        return Value::error(logger::error("NullContainerBroker::{}({}) called. Object is null.", __func__, containerFullName));
+    }
+
+};
+
 class NullECBroker : public ECBrokerAPI {
 public:
     virtual ~NullECBroker() {}
@@ -257,6 +268,7 @@ public:
         std::make_shared<NullOperationOutletBroker>(),
         std::make_shared<NullOperationInletBroker>(),
         std::make_shared<NullConnectionBroker>(),
+        std::make_shared<NullContainerBroker>(),
         std::make_shared<NullECBroker>(),
         std::make_shared<NullFSMBroker>(),
         std::make_shared<NullFSMStateBroker>(),

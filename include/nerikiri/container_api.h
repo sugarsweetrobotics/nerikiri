@@ -18,6 +18,7 @@ namespace nerikiri {
 
         virtual ~ContainerAPI() {}
 
+
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const = 0;
 
         virtual std::shared_ptr<OperationAPI> operation(const std::string& fullName) const = 0;

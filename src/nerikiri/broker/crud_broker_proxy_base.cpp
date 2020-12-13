@@ -37,7 +37,7 @@ public:
     }
 
     virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const {
-
+        return {};
     }
 };
 
@@ -152,6 +152,18 @@ public:
     }
     virtual Value deleteConnection(const std::string& fullName) override {
         return broker_->readResource("connections/" + fullName);
+    }
+};
+
+
+class CRUDContainerBroker : public ContainerBrokerAPI {
+    CRUDBrokerProxyAPI* broker_;
+public:
+    CRUDContainerBroker(CRUDBrokerProxyAPI* broker) : broker_(broker) {}
+    virtual ~CRUDContainerBroker() {}
+
+    virtual Value operations(const std::string& containerFullName) const override {
+        return broker_->readResource("containers/" + containerFullName + "/operations");
     }
 };
 
@@ -312,6 +324,7 @@ CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& typeName, const std:
     std::make_shared<CRUDOperationOutletBroker>(this),
     std::make_shared<CRUDOperationInletBroker>(this),
     std::make_shared<CRUDConnectionBroker>(this),
+    std::make_shared<CRUDContainerBroker>(this),
     std::make_shared<CRUDECBroker>(this),
     std::make_shared<CRUDFSMBroker>(this),
     std::make_shared<CRUDFSMStateBroker>(this),

@@ -12,7 +12,10 @@ namespace nerikiri {
    */
   class Object {
   private:
-    
+    ClassName className_;
+    TypeName  typeName_;
+    std::string fullName_;
+    std::string instanceName_;
   public:
     Object(const std::string& typeName, const std::string& fullName);
 
@@ -26,12 +29,14 @@ namespace nerikiri {
 
   public:
 
-    ClassName className() const { 
-      return info_.at("className").stringValue();
+    virtual ClassName className() const { 
+      return className_;
+      //return info_.at("className").stringValue();
     }
 
-    TypeName typeName() const { 
-      return info_.at("typeName").stringValue();
+    virtual TypeName typeName() const { 
+      return typeName_;
+      //return info_.at("typeName").stringValue();
     }
 
     virtual bool isInstanceOf(const TypeName& _typeName) const { 
@@ -40,8 +45,7 @@ namespace nerikiri {
     
     bool isNull() const { return fullName() == "null"; }
 
-
-    std::string fullName() const;
+    virtual std::string fullName() const;
 
     std::string getFullName() const;
 
@@ -49,7 +53,7 @@ namespace nerikiri {
 
     virtual Value setFullName(const std::string& fullName);
     
-    std::string instanceName() const;
+    virtual std::string instanceName() const;
 
     std::string getInstanceName() const;
 

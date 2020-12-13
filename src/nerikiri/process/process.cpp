@@ -80,7 +80,7 @@ Value defaultProcessConfig({
   {"callbacks", Value::list()}
 });
 
-Process Process::null("");
+// Process Process::null("");
 
 Process::Process(const std::string& name) : ProcessAPI("Process", "Process", name), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
@@ -373,5 +373,7 @@ Value Process::fullInfo() const {
   inf["brokers"] = functional::map<Value, std::shared_ptr<BrokerAPI>>(store()->brokers(), [](auto o) { return o->fullInfo(); });  
   inf["brokerFactories"] = functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(store()->brokerFactories(), [](auto op) { return op->info(); });
   inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->containers(), [](auto c) { return c->info(); });  
+  inf["fsms"] = functional::map<Value, std::shared_ptr<FSMAPI>>(store()->fsms(), [](auto c) { return c->info(); });  
+  inf["ecs"] = functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(store()->executionContexts(), [](auto c) { return c->info(); });  
   return inf;
 }

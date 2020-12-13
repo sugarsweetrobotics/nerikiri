@@ -20,7 +20,7 @@ using namespace nerikiri;
  */
 class ContainerBase : public ContainerAPI {
 protected:
-    std::vector<std::shared_ptr<ContainerOperationBase>> operations_;
+    std::vector<std::shared_ptr<OperationAPI>> operations_;
     ContainerFactoryAPI* parentFactory_;
 public:
 
@@ -42,11 +42,21 @@ public:
      * @param operation
      */
     virtual Value addOperation(const std::shared_ptr<OperationAPI>& _operation) override { 
-        operations_.push_back(std::dynamic_pointer_cast<ContainerOperationBase>(_operation)); 
+        logger::trace("ContainerBase::addOperation({})", _operation ? _operation->fullName() : "nullptr");
+        if (!_operation) {
+            return Value::error(logger::error("ContainerBase({})::addOperation(op) failed. Passed ContainerOperation is nullptr.", fullName()));
+        }
+        operations_.push_back((_operation)); 
         return _operation->info();;
     }
 
-    
+    virtual Value info() const override {
+        auto inf = ContainerAPI::info();
+        inf["operations"] = nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
+            return op->info();
+        });
+        return inf;
+    }
 
     /**
      * 登録しているOperationを削除します

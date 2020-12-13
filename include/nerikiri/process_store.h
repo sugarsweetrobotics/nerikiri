@@ -106,11 +106,11 @@ namespace nerikiri {
         obj->setFullName(nameSpace, name); /// fullName指定
       } else { /// instanceNameが指定されているなら，重複をチェックする
         for(auto& c : collection) {
-          if (c->info().at("instanceName") == obj->info().at("instanceName")) {
+          if (c->info().at("fullName") == obj->info().at("fullName")) {
             return Value::error(logger::error("ProcessStore::add({}) Error. Process already has the same name operation", typeid(T).name()));
           }
         }
-        obj->setFullName(nameSpace, obj->getInstanceName()); /// fullName指定
+        //obj->setFullName(nameSpace, obj->getInstanceName()); /// fullName指定
       }
       return obj->info();
     }
@@ -152,7 +152,12 @@ namespace nerikiri {
      * Get Operations (includes ContainerOperations)
      */
     std::vector<std::shared_ptr<OperationAPI>> operations() const {
-      return {operations_.begin(), operations_.end()};
+      std::vector<std::shared_ptr<OperationAPI>> ops = {operations_.begin(), operations_.end()};
+      for(auto c : containers()) {
+        auto cops = c->operations();
+        std::copy(cops.begin(), cops.end(),std::back_inserter(ops));
+      }
+      return ops;
     }
 
     std::vector<std::shared_ptr<OperationFactoryAPI>> operationFactories() const {
@@ -203,6 +208,7 @@ namespace nerikiri {
       return {brokerFactories_.begin(), brokerFactories_.end()};
     }
 
+    std::vector<std::shared_ptr<ConnectionAPI>> connections() const;
     /**
      * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
      */
