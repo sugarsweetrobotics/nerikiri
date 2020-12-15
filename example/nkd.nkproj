@@ -1,0 +1,60 @@
+{
+    "logger": { "logLevel": "INFO" },
+
+    "load_paths": ["./"],
+
+    "shelves": [
+        {"path": "brokers.nkshelf"}
+    ],
+    "operations": {
+      "load_paths": ["../build/lib"],
+      "preload": ["one", "increment"],
+      "precreate": [
+          {
+              "typeName": "one",
+              "instanceName": "one0.ope"
+          }, 
+          {
+              "typeName": "increment",
+              "instanceName": "increment0.ope"
+          }
+      ]
+    },
+    "containers": {
+      "load_paths": ["../build/lib"],
+      "preload": [
+        { 
+          "typeName": "MyStruct",
+          "operations": ["addInt", "intGetter"]
+        }
+      ],
+      "precreate": [
+        {
+          "typeName": "MyStruct",
+          "instanceName": "MyStruct0.ctn",
+          "operations": [
+            {
+              "typeName": "addInt",
+              "instanceName": "addInt0.ope"
+            },
+            {
+              "typeName": "intGetter",
+              "instanceName": "intGetter0.ope"
+            }
+          ]
+        }
+      ]
+    },
+    "brokers": {
+        "precreate": [ 
+          {
+            "typeName": "HTTPBroker",
+            "instanceName": "HTTPBroker0.brk",
+            "host": "0.0.0.0",
+            "port": 8080,
+            "baseDir": "${ProjectDirectory}"
+          }
+        ]
+    }
+
+}  
