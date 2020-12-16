@@ -55,6 +55,29 @@
             "baseDir": "${ProjectDirectory}"
           }
         ]
-    }
-
+    },
+    "connections": [
+      {
+        "name": "con0",
+        "type": "event",
+        "broker": "CoreBroker",
+        "inlet": {
+          "name": "data", 
+          "operation": {
+            "fullName": "increment0.ope",
+            "broker": {
+              "typeName": "CoreBroker"
+            }
+          }
+        },
+        "outlet": {
+          "operation": {
+            "fullName": "one0.ope",
+            "broker": {
+              "typeName": "CoreBroker"
+            }
+          }
+        }
+      }
+    ]
 }  
