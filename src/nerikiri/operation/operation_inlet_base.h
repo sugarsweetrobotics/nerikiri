@@ -43,11 +43,13 @@ namespace nerikiri {
     
     virtual std::string name() const override { return name_; }
 
+    virtual std::string ownerFullName() const override { 
+      return operation_->fullName();
+    }
+
     virtual Value defaultValue() const override { return default_; }
 
-    virtual Value get() const override {
-      return buffer_->pop();
-    }
+    virtual Value get() const override { return buffer_->pop(); }
 
     virtual Value info() const override;
 

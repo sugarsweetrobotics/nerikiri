@@ -1,4 +1,5 @@
 #include <nerikiri/fsm_state_api.h>
+#include <nerikiri/ec_state_api.h>
 #include <nerikiri/operation_api.h>
 
 using namespace nerikiri;

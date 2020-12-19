@@ -18,6 +18,10 @@ public:
     virtual bool isNull() const { return false; }
     
     virtual std::string name() const;
+    
+    
+    virtual std::string ownerFullName() const;
+
 
     virtual Value defaultValue() const { return {}; }
 
@@ -125,10 +129,14 @@ public:
     virtual std::shared_ptr<OperationInletAPI> inlet()  override {
         return inlet_;
     }
+
+    virtual std::string ownerFullName() const { return fsmFullName_; }
 };
 
 
 std::string FSMStateInletProxy::name() const { return state_->fullName(); }
+
+std::string FSMStateInletProxy::ownerFullName() const { return state_->ownerFullName(); }
 
 Value FSMStateInletProxy::executeOwner() { 
     return state_->activate(); 

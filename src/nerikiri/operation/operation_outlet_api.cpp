@@ -23,6 +23,12 @@ using namespace nerikiri;
     }
     */
    
+    virtual std::string ownerFullName() const override { 
+      logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__);
+      return "null";
+    }
+
+
     virtual Value get() const override {
       return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__));
     }

@@ -26,6 +26,10 @@ public:
         return name_;
     }
 
+    virtual std::string ownerFullName() const override { 
+      return fullName_;
+    }
+
     virtual Value defaultValue() const override {
         return broker_->operationInlet()->defaultValue(fullName_, name_);
     }
@@ -77,6 +81,10 @@ public:
     // virtual OperationAPI* owner() override { return owner_; }
 
     virtual Value invokeOwner() override { return owner_->invoke(); }
+
+    virtual std::string ownerFullName() const override { 
+      return fullName_;
+    }
 
     virtual Value get() const override {
         return broker_->operationOutlet()->get(fullName_);

@@ -8,46 +8,81 @@ using namespace nerikiri;
 
 class Connection : public ConnectionAPI {
 private:
-    const std::shared_ptr<OperationInletAPI> inlet_;
+  const std::shared_ptr<OperationInletAPI> inlet_;
 
-    const std::shared_ptr<OperationOutletAPI> outlet_;
+  const std::shared_ptr<OperationOutletAPI> outlet_;
 public:
-    Connection();
+  Connection();
 
-    Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet) :
-      ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet) {}
-    
-    virtual ~Connection() {}
+  Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet) :
+    ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet) {}
+  
+  virtual ~Connection() {}
 
-    virtual std::shared_ptr<OperationInletAPI> inlet() const override { return inlet_; }
+public:
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return outlet_; }
+  virtual std::shared_ptr<OperationInletAPI> inlet() const override { return inlet_; }
 
-    virtual Value pull() override;
+  virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return outlet_; }
 
-    virtual Value put(const Value& value) override;
+
+  virtual Value info() const override {
+    auto i = Object::info();
+    i["type"] = toString(type());
+    i["inlet"] = {
+      {"name", inlet()->name()},
+      {"ownerFullName", inlet()->ownerFullName()},
+      {"fullName", inlet()->ownerFullName() + ':' + inlet()->name()}
+    };
+    i["outlet"] = {
+      {"ownerFullName", outlet()->ownerFullName()}
+    };
+    // i["outlet"] = outlet()->info();
+    return i;
+  }
+
+  virtual Value pull() override {
+    if (this->isPull()) {
+      //return outlet_->owner()->invoke();
+      return outlet_->invokeOwner();
+    }
+    return outlet_->get();
+  }
+
+
+  virtual Value put(const Value& value) override {
+    auto v = inlet_->put(value);
+    if (this->isPush() || this->isEvent()) {
+      return inlet_->executeOwner(); //owner()->execute();
+    }
+    return v;
+  }
 };
 
 std::shared_ptr<ConnectionAPI> nerikiri::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet) {
+  logger::trace("nerikiri::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
   return std::make_shared<Connection>(name, type, inlet, outlet);
 }
 
+ConnectionAPI::ConnectionType nerikiri::connectionType(const std::string& str) {
+    if (str == "PULL") return ConnectionAPI::ConnectionType::PULL;
+    else if (str == "PUSH") return ConnectionAPI::ConnectionType::PUSH;
+    else if (str == "EVENT") return ConnectionAPI::ConnectionType::EVENT;
+    if (str == "pull") return ConnectionAPI::ConnectionType::PULL;
+    else if (str == "push") return ConnectionAPI::ConnectionType::PUSH;
+    else if (str == "event") return ConnectionAPI::ConnectionType::EVENT;
+    return ConnectionAPI::ConnectionType::UNKNOWN;
+};
 
-Value Connection::pull() {
-  if (this->isPull()) {
-    //return outlet_->owner()->invoke();
-    return outlet_->invokeOwner();
-  }
-  return outlet_->get();
-}
+std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
+    if (typ == ConnectionAPI::ConnectionType::PULL) return "PULL";
+    else if (typ == ConnectionAPI::ConnectionType::PUSH) return "PUSH";
+    else if (typ == ConnectionAPI::ConnectionType::EVENT) return "EVENT";
+    return "UNKNOWN";
+};
 
-Value Connection::put(const Value& value) {
-  auto v = inlet_->put(value);
-  if (this->isPush() || this->isEvent()) {
-    return inlet_->executeOwner(); //owner()->execute();
-  }
-  return v;
-}
+
+
 
 
 class NullConnection : public ConnectionAPI {

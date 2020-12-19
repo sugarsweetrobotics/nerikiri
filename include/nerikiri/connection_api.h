@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <nerikiri/object.h>
-#include <nerikiri/operation_api.h>
+// #include <nerikiri/operation_api.h>
 
 namespace nerikiri {
 
@@ -26,6 +26,10 @@ namespace nerikiri {
 
 
     public:
+
+        ConnectionType type() const { return type_; }
+
+        
         ConnectionType getType() const { return type_; }
 
         ConnectionAPI& setType(const ConnectionAPI::ConnectionType& type) {
@@ -47,19 +51,9 @@ namespace nerikiri {
 
     };
 
-    inline ConnectionAPI::ConnectionType connectionType(const std::string& str) {
-        if (str == "PULL") return ConnectionAPI::ConnectionType::PULL;
-        else if (str == "PUSH") return ConnectionAPI::ConnectionType::PUSH;
-        else if (str == "EVENT") return ConnectionAPI::ConnectionType::EVENT;
-        return ConnectionAPI::ConnectionType::UNKNOWN;
-    };
+    ConnectionAPI::ConnectionType connectionType(const std::string& str);
 
-    inline std::string toString(const ConnectionAPI::ConnectionType& typ) {
-        if (typ == ConnectionAPI::ConnectionType::PULL) return "PULL";
-        else if (typ == ConnectionAPI::ConnectionType::PUSH) return "PUSH";
-        else if (typ == ConnectionAPI::ConnectionType::EVENT) return "EVENT";
-        return "UNKNOWN";
-    };
+    std::string toString(const ConnectionAPI::ConnectionType& typ);
 
     std::shared_ptr<ConnectionAPI> nullConnection();
 }

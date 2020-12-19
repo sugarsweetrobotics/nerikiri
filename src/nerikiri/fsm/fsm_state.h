@@ -18,12 +18,18 @@ namespace nerikiri {
 
         ConnectionContainer connections_;
         const std::string name_;
-
+        std::string ownerFullName_;
     public:
-        FSMStateInlet(const std::string& fullName) : OperationInletAPI() , name_(fullName) {}
+        FSMStateInlet(const std::string& fullName) : OperationInletAPI() , name_(fullName), ownerFullName_("null") {}
         virtual ~FSMStateInlet() {}
 
         // irtual OperationAPI* owner() override { return operation_; }
+
+        virtual std::string ownerFullName() const override {
+            return ownerFullName_;
+        }
+
+        void setOwnerFullName(const std::string& ownerFullName) { ownerFullName_ = ownerFullName; }
 
         virtual Value executeOwner() override { 
             // TODO: Not Impl
@@ -76,7 +82,7 @@ namespace nerikiri {
         std::vector<std::shared_ptr<ECStateAPI>> ecStates_;
         //std::vector<std::pair<std::shared_ptr<OperationAPI>, Value>> operationAndArgs_;
         std::vector<std::string> transitableStateNames_;
-        std::shared_ptr<OperationInletAPI> inlet_;
+        std::shared_ptr<FSMStateInlet> inlet_;
         FSMAPI* owner_;
         bool is_active_;
 
@@ -91,7 +97,10 @@ namespace nerikiri {
 
         virtual ~FSMState() {}
 
-        void setOwner(FSMAPI* owner) { owner_ = owner; }
+        void setOwner(FSMAPI* owner) {
+             owner_ = owner; 
+             inlet_->setOwnerFullName(owner->fullName());
+        }
 
     public:
         virtual Value info() const override {

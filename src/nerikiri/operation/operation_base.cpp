@@ -20,6 +20,8 @@ class OperationOutletBase  : public OperationOutletAPI {
   public:
     //virtual OperationAPI* owner() override { return operation_; }
   
+    virtual std::string ownerFullName() const override { return operation_->fullName(); }
+    
     virtual Value invokeOwner() override { return operation_->invoke(); }
 
     virtual Value get() const override { return outputBuffer_.pop(); }
@@ -76,7 +78,9 @@ Value OperationInletBase::info() const {
       {"value", get()},
       {"defaultValue", defaultValue()},
       {"connections", {
-          nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
+        nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) {
+          return c->info();
+        })
       }}
   };
 }

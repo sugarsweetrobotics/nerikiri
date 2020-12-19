@@ -369,7 +369,7 @@ public:
   virtual Value info(const std::string& fullName) const override {
       return process_->store()->operation(fullName)->outlet()->info();
   }
-
+  
   virtual Value get(const std::string& fullName) const override {
       return process_->store()->operation(fullName)->outlet()->get();
   }

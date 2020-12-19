@@ -52,6 +52,8 @@ namespace nerikiri {
     public:
         virtual ~OperationOutletBrokerAPI() {}
 
+        //virtual Value ownerFullName() const  = 0;
+
         virtual Value get(const std::string& fullName) const = 0;
 
         virtual Value connections(const std::string& fullName) const = 0;

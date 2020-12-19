@@ -21,6 +21,8 @@ namespace nerikiri {
 
         // virtual OperationAPI* owner() = 0;
 
+        virtual std::string ownerFullName() const = 0;
+
         virtual Value invokeOwner() = 0;
 
         virtual Value get() const = 0;
@@ -48,6 +50,8 @@ namespace nerikiri {
         virtual bool isNull() const = 0;
         
         virtual std::string name() const = 0;
+
+        virtual std::string ownerFullName() const = 0;
 
         virtual Value defaultValue() const = 0;
 
