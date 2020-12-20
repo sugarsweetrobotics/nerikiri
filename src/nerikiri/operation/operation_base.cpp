@@ -21,7 +21,7 @@ class OperationOutletBase  : public OperationOutletAPI {
     //virtual OperationAPI* owner() override { return operation_; }
   
     virtual std::string ownerFullName() const override { return operation_->fullName(); }
-    
+
     virtual Value invokeOwner() override { return operation_->invoke(); }
 
     virtual Value get() const override { return outputBuffer_.pop(); }
@@ -147,6 +147,12 @@ Value OperationBase::fullInfo() const {
 }
     
 
+Value OperationBase::info() const {
+  auto i = Object::info();
+  i["outlet"] = outlet()->info();
+  i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(inlets(), [](auto inlet) { return inlet->info(); });
+  return i;
+}
 
 Value OperationBase::invoke() {
   try {

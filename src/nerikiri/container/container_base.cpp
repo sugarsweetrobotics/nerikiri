@@ -53,7 +53,7 @@ public:
     virtual Value info() const override {
         auto inf = ContainerAPI::info();
         inf["operations"] = nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
-            return op->info();
+            return op->fullInfo();
         });
         return inf;
     }

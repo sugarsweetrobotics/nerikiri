@@ -58,5 +58,7 @@ namespace nerikiri {
     virtual Value invoke() override;
 
 	  virtual Value execute() override;
+
+    virtual Value info() const override;
   };
 }
