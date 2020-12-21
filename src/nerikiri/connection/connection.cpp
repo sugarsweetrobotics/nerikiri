@@ -51,8 +51,10 @@ public:
 
 
   virtual Value put(const Value& value) override {
+    logger::trace("Connection({})::put({}) called", fullName(), value);
     auto v = inlet_->put(value);
-    if (this->isPush() || this->isEvent()) {
+    if (this->isEvent()) {
+      logger::trace(" - executing owner operation({})", inlet_->ownerFullName());
       return inlet_->executeOwner(); //owner()->execute();
     }
     return v;

@@ -3,113 +3,12 @@
 #include <nerikiri/logger.h>
 #include <nerikiri/functional.h>
 #include "operation_base.h"
+#include "operation_outlet_base.h"
 
 using namespace nerikiri;
 
-namespace nerikiri {
-class OperationOutletBase  : public OperationOutletAPI {
-  public:
-    OperationOutletBase(OperationAPI* operation): operation_(operation) {}
-    virtual ~OperationOutletBase() {}
-
-  public:
-    OperationAPI* operation_;
-
-    NewestValueBuffer outputBuffer_;
-    ConnectionContainer connections_;
-  public:
-    //virtual OperationAPI* owner() override { return operation_; }
-  
-    virtual std::string ownerFullName() const override { return operation_->fullName(); }
-
-    virtual Value invokeOwner() override { return operation_->invoke(); }
-
-    virtual Value get() const override { return outputBuffer_.pop(); }
-
-    virtual Value invoke() { 
-      outputBuffer_.push(operation_->invoke());
-      return outputBuffer_.pop(); 
-    }
-
-    virtual Value info() const override {
-        return {
-            {"connections", {
-                nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
-            }}
-        };
-    }
-
-    virtual Value put(Value&& v);
-
-    virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
-
-    virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) override {
-      if (con->isNull()) {
-        return Value::error(logger::error("OperationBase::addConnection() failed. Passing connection is null"));
-      }
-      return connections_.addConnection(con);
-    }
-    
-    virtual Value removeConnection(const std::string& _fullName) override {
-      return connections_.removeConnection(_fullName);
-    }
-  };
-}
 
 
-
-Value OperationOutletBase::put(Value&& v) {
-  outputBuffer_.push(v);
-  for (auto& c : connections_.connections()) {
-    c->put(v);
-  }
-  return std::forward<Value>(v);
-}
-
-OperationInletBase::OperationInletBase(const std::string& name, OperationAPI* operation, const Value& defaultValue) 
-: name_(name), operation_(operation), default_(defaultValue), argument_updated_(false), 
-     buffer_(std::make_shared<NewestValueBuffer>(defaultValue))
-{
-  
-}
-Value OperationInletBase::info() const {
-  return {
-      {"name", name()},
-      {"value", get()},
-      {"defaultValue", defaultValue()},
-      {"connections", {
-        nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) {
-          return c->info();
-        })
-      }}
-  };
-}
-
-Value OperationInletBase::collectValues() {
-  for (auto& con : connections_.connections()) {
-    if (con->isPull()) { 
-      logger::trace(" - Pulling by connection: {}", con->fullName());
-      auto v = put(con->pull());
-      if (v.isError()) {
-        logger::warn(" - Pulling by connection {} failed. Error message is : {}", con->fullName(), v.getErrorMessage());
-        continue;
-      }
-      break; // 今はどれか一つでもpullできたらそれで終了という仕様．いいのかこれで？
-    }
-  }
-  return buffer_->pop();
-}
-
-Value OperationInletBase::put(const Value& value) {
-  std::lock_guard<std::mutex> lock(argument_mutex_);
-  if (value.isError()) {
-    logger::error("OperationInletBase::{} failed. Argument is error({})", __func__, value.getErrorMessage());
-    return value;
-  }
-  buffer_->push(value);
-  argument_updated_ = true;
-  return value;
-}
 /**
  * コネクションに対してデータの要求を行っていく．
  * リスト内のpull型の最初のコネクションのデータのみを使う．それ以降はpull型であってもexecuteしない
@@ -154,22 +53,36 @@ Value OperationBase::info() const {
   return i;
 }
 
+std::shared_ptr<OperationInletAPI> OperationBase::inlet(const std::string& name) const {
+  auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+  if (i) return i.value();
+  return nullOperationInlet();
+}
+
+std::vector<std::shared_ptr<OperationInletAPI>> OperationBase::inlets() const{ return {inlets_.begin(), inlets_.end()}; }
+
+
 Value OperationBase::invoke() {
+  logger::trace("OPerationBase({})::invoke() called", fullName());
   try {
     if (nerikiri::functional::for_all<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return inlet->isUpdated(); })) {
+      logger::trace("OperationBase({})::invoke() inlet updated. Collecting data and calling...", fullName());
       return call(
         nerikiri::functional::map<std::pair<std::string, Value>, std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) {
           return std::pair<std::string, Value>{inlet->name(), inlet->collectValues()};
       }));
     } else {
+      logger::trace("OperationBase({})::invoke() not updated. Just output the outlet buffer.", fullName());
       return outlet_->get();
     }
   } catch (const std::exception& ex) {
     return Value::error(logger::error("OperationBase({})::invoke() failed. Exception occurred {}", fullName(), std::string(ex.what())));
   }
+  
 }
 
 Value OperationBase::execute() {
+  logger::trace("OperationBase({})::execute() called", fullName());
   try {
     return outlet_->put(invoke());
   } catch (const std::exception& ex) {

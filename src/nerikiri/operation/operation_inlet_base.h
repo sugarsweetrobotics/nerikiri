@@ -35,7 +35,10 @@ namespace nerikiri {
 
   public:
     //virtual OperationAPI* owner() override { return operation_; }
-    virtual Value executeOwner() override { return operation_->execute(); }
+    virtual Value executeOwner() override { 
+      logger::trace("OperationInletBase::executeOwner() called");
+      return operation_->execute(); 
+    }
 
     virtual bool isNull() const override {
         return false;

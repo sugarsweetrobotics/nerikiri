@@ -2,7 +2,6 @@
 
 #include "nerikiri/value.h"
 
-
 namespace nerikiri {
 
   /**

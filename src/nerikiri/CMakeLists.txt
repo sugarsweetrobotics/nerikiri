@@ -51,6 +51,8 @@ operation/operation_outlet_api.cpp
 operation/operation_inlet_api.cpp
 operation/operation_with_argument.cpp
 operation/operation_proxy.cpp
+operation/operation_inlet_base.cpp
+operation/operation_outlet_base.cpp
 object.cpp
 objectfactory.cpp
 

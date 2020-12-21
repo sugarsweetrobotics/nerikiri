@@ -23,6 +23,7 @@ namespace nerikiri {
   using Process_ptr = Process*;
 
 
+  class OperationInletBase;
   class OperationOutletBase;
 
   class OperationBase : public OperationAPI {
@@ -36,13 +37,9 @@ namespace nerikiri {
 
     virtual std::shared_ptr<OperationOutletAPI> outlet() const override;
 
-    virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
-      auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
-      if (i) return i.value();
-      return nullOperationInlet();
-    }
+    virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override;
     
-    virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return {inlets_.begin(), inlets_.end()}; }
+    virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override;
       
   public:
     OperationBase(const std::string& className, const std::string& typeName, const std::string& fullName, const Value& defaultArg = {});
