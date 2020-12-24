@@ -47,7 +47,17 @@ auto opf3 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   }
 )));
 
-
+auto opf4 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri::OperationFactoryAPI*>(operationFactory(
+  nerikiri::Value { 
+    {"typeName", "one"},
+    {"defaultArg", {}
+    }
+  },
+  [](auto arg)  {
+    operationIsCalled = true;
+    return nerikiri::Value(1);
+  }
+)));
 
 class OneShotEC : public nerikiri::ExecutionContextBase {
 public:

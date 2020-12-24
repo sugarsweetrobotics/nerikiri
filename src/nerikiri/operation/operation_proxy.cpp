@@ -2,21 +2,25 @@
 #include <nerikiri/connection_proxy.h>
 #include <nerikiri/functional.h>
 
+#include "operation_proxy.h"
 
 using namespace nerikiri;
 /// -------------- Operation Outlet
 
+class OperationProxy;
 
 class OperationInletProxy: public OperationInletAPI {
 private:
     const std::shared_ptr<BrokerProxyAPI> broker_;
     OperationAPI* owner_;
+    std::shared_ptr<OperationProxy> ownerProxy_;
     const std::string fullName_;
     const std::string name_;
 public:
     virtual ~OperationInletProxy() {}
 
-    OperationInletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName, const std::string& name) : owner_(owner), broker_(broker), fullName_(fullName), name_(name) {}
+    OperationInletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName, const std::string& name) : 
+      owner_(owner), broker_(broker), fullName_(fullName), name_(name), ownerProxy_(nullptr) {}
 
     virtual bool isNull() const override {
         return false;
@@ -43,7 +47,17 @@ public:
     }
 
     /// virtual OperationAPI* owner() override { return owner_; }
-    virtual Value executeOwner() override { return owner_->execute(); }
+    virtual Value executeOwner() override ;
+    /*
+    virtual Value executeOwner() override {
+        if (!ownerProxy_) {
+            // ここでproxyを実体化しておく
+            ownerProxy_ = std::make_shared<OperationProxy>(broker_, fullName_);
+        }
+        //return owner_->execute(); 
+        return ownerProxy_->execute();
+    }
+    */
 
     virtual Value info() const override {
         return broker_->operationInlet()->info(fullName_, name_);
@@ -69,18 +83,28 @@ public:
  
 };
 
+
+std::shared_ptr<OperationInletAPI> nerikiri::operationInletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName, const std::string& name) {
+    return std::make_shared<OperationInletProxy>(owner, broker, fullName, name);
+} 
+
+
+
 class OperationOutletProxy : public OperationOutletAPI {
 private:
     const std::shared_ptr<BrokerProxyAPI> broker_;
     OperationAPI* owner_;
     const std::string fullName_;
+    std::shared_ptr<OperationAPI> ownerProxy_;
 public:
-    OperationOutletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : owner_(owner), broker_(broker), fullName_(fullName) {}
+    OperationOutletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : owner_(owner), broker_(broker), fullName_(fullName), ownerProxy_(nullptr) {}
     virtual ~OperationOutletProxy() {}
     
     // virtual OperationAPI* owner() override { return owner_; }
 
-    virtual Value invokeOwner() override { return owner_->invoke(); }
+    virtual Value invokeOwner() override { 
+        return owner_->invoke(); 
+    }
 
     virtual std::string ownerFullName() const override { 
       return fullName_;
@@ -94,8 +118,9 @@ public:
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override {
         auto infos = broker_->operationOutlet()->connections(fullName_);
         if (infos.isError()) return {};
-
-        
+        return infos.const_list_map<std::shared_ptr<ConnectionAPI>>([this](auto info) {
+            return connectionProxy(broker_, info);
+        });
     }
 
     Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
@@ -112,6 +137,12 @@ public:
 
 };
 
+
+std::shared_ptr<OperationOutletAPI> nerikiri::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
+    return std::make_shared<OperationOutletProxy>(owner, broker, fullName);
+} 
+
+
 class OperationProxy : public OperationAPI {
 private:
     const std::shared_ptr<BrokerProxyAPI> broker_;
@@ -125,19 +156,21 @@ private:
 public:
     OperationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
         fullName_(fullName), outlet_(std::make_shared<OperationOutletProxy>(this, broker, fullName)), inlets_ready_(false) {
-        if (!inlets_ready_) {
-            inletInfos_ = broker_->operation()->inlets(fullName_);
-            if (inletInfos_.isError()) {
-                return;
-            }
-            inlets_.clear();
-            inletInfos_.const_list_for_each([this](auto inletInfo) {
-                this->inlets_.push_back(std::make_shared<OperationInletProxy>(this, broker_, fullName_, Value::string(inletInfo.at("name"))));
-            });
-            inlets_ready_ = true;
+        inletInfos_ = broker_->operation()->inlets(fullName_);
+        if (inletInfos_.isError()) {
+            return;
         }
+        inlets_.clear();
+        inletInfos_.const_list_for_each([this](auto inletInfo) {
+            this->inlets_.push_back(std::make_shared<OperationInletProxy>(this, broker_, fullName_, Value::string(inletInfo.at("name"))));
+        });
+        inlets_ready_ = true;
     }
-    virtual ~OperationProxy() {}
+
+    virtual ~OperationProxy() {
+        inlets_.clear();
+        
+    }
 public:
     virtual Value info() const override {
         return broker_->store()->getObjectInfo("operation", fullName_);
@@ -159,7 +192,9 @@ public:
         return broker_->operation()->execute(fullName_);
     }
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return std::dynamic_pointer_cast<OperationOutletAPI>(outlet_); }
+    virtual std::shared_ptr<OperationOutletAPI> outlet() const override {
+         return std::dynamic_pointer_cast<OperationOutletAPI>(outlet_);
+    }
  
     virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
       auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
@@ -178,7 +213,14 @@ public:
 
 
 
-
+Value OperationInletProxy::executeOwner() {
+        if (!ownerProxy_) {
+            // ここでproxyを実体化しておく
+            ownerProxy_ = std::make_shared<OperationProxy>(broker_, fullName_);
+        }
+        //return owner_->execute(); 
+        return ownerProxy_->execute();
+    }
 
 ///-------------- Operation Inlet
 

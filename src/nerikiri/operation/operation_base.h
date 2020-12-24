@@ -1,26 +1,26 @@
 #pragma once
 
-#include <map>
-#include <functional>
-#include <thread>
-#include <mutex>
+//#include <map>
+//#include <functional>
+//#include <thread>
+//#include <mutex>
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/object.h"
+//#include "nerikiri/nerikiri.h"
+//#include "nerikiri/object.h"
 #include "nerikiri/operation_api.h"
 
-#include "nerikiri/connection.h"
-#include "nerikiri/functional.h"
+//#include "nerikiri/connection.h"
+//#include "nerikiri/functional.h"
 
-#include "newest_value_buffer.h"
+//#include "newest_value_buffer.h"
 
-#include "operation_inlet_base.h"
+//#include "operation_inlet_base.h"
 
 namespace nerikiri {
 
-  class Process;
+  //class Process;
 
-  using Process_ptr = Process*;
+  //using Process_ptr = Process*;
 
 
   class OperationInletBase;

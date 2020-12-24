@@ -28,7 +28,9 @@ namespace nerikiri {
     virtual ~Object();
 
   public:
+    virtual void finalize() {}
 
+    
     virtual ClassName className() const { 
       return className_;
       //return info_.at("className").stringValue();

@@ -3,6 +3,7 @@
 #include <nerikiri/logger.h>
 #include <nerikiri/functional.h>
 #include "operation_base.h"
+#include "operation_inlet_base.h"
 #include "operation_outlet_base.h"
 
 using namespace nerikiri;

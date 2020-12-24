@@ -296,33 +296,36 @@ public:
   virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {}
 
   virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
-      if (className == "operation") {
-            return process_->store()->operation(fullName)->info();
-        } else if (className == "operationFactory") {
-            return process_->store()->operationFactory(fullName)->info();
-        } else if (className == "container") {
-            return process_->store()->container(fullName)->info();
-        } else if (className == "containerFactory") {
-            return process_->store()->containerFactory(fullName)->info();
-        } else if (className == "containerOperationFactory") {
-            return process_->store()->containerOperationFactory(fullName)->info();
-        } else if (className == "ec") {
-            return process_->store()->executionContext(fullName)->info();
-        } else if (className == "ecFactory") {
-            return process_->store()->executionContextFactory(fullName)->info();
-        } else if (className == "topic") {
-            return process_->store()->topic(fullName)->info();
-        } else if (className == "topicFactory") {
-            return process_->store()->topicFactory(fullName)->info();
-        } else if (className == "fsm") {
-            return process_->store()->fsm(fullName)->info();
-        } else if (className == "fsmFactory") {
-            return process_->store()->fsmFactory(fullName)->info();
-        } else if (className == "broker") {
-            return process_->store()->broker(fullName)->info();
-        } else if (className == "brokerFactory") {
-            return process_->store()->brokerFactory(fullName)->info();
-        }
+    if (className == "operation") {
+        return process_->store()->operation(fullName)->info();
+    } else if (className == "operationFactory") {
+        return process_->store()->operationFactory(fullName)->info();
+    } else if (className == "container") {
+        return process_->store()->container(fullName)->info();
+    } else if (className == "containerFactory") {
+        return process_->store()->containerFactory(fullName)->info();
+    } else if (className == "containerOperationFactory") {
+        return process_->store()->containerOperationFactory(fullName)->info();
+    } else if (className == "ec") {
+        return process_->store()->executionContext(fullName)->info();
+    } else if (className == "ecFactory") {
+        return process_->store()->executionContextFactory(fullName)->info();
+    } else if (className == "topic") {
+        return process_->store()->topic(fullName)->info();
+    } else if (className == "topicFactory") {
+        return process_->store()->topicFactory(fullName)->info();
+    } else if (className == "fsm") {
+        return process_->store()->fsm(fullName)->info();
+    } else if (className == "fsmFactory") {
+        return process_->store()->fsmFactory(fullName)->info();
+    } else if (className == "broker") {
+        return process_->store()->broker(fullName)->info();
+    } else if (className == "brokerFactory") {
+        return process_->store()->brokerFactory(fullName)->info();
+    } else if (className == "connection") {
+        return process_->store()->connection(fullName)->info();
+    }
+    return Value::error(logger::error("CoreStoreBroker::getObjectInfo({}, {}) failed. ClassName={} not found", className, fullName, className));
   }
 };
 
@@ -463,6 +466,7 @@ public:
   
 
   virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
+      logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, c);
       // まずtargetNameを持つinletを見つける
       auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
           return i->name() == targetName;
@@ -470,16 +474,17 @@ public:
       if (inlet) { // inletが見つかったらProxyBuilderがつくる接続を使って接続しますよ
           return inlet.value()->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
       }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return Value::error(logger::error("CoreOperationInletBroker::addConnection({}, {}) failed. Inlet can not be found.", fullName, targetName));
   }
   
   
   virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
+      logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, name);
       auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
           return i->name() == targetName;
       });
       if (inlet) { return inlet.value()->removeConnection(name); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return Value::error(logger::error("CoreOperationInletBroker::removeConnection({}, {}) failed. Inlet can not be found.", fullName, targetName));
   }
   
 };
@@ -502,6 +507,8 @@ public:
     }
 
     virtual Value deleteConnection(const std::string& fullName) override {
+        logger::trace("CoreConnectionBroker::deleteConnection({}) called", fullName);
+        return ConnectionBuilder::deleteConnection(process_->store(), fullName);
     }
         
 };

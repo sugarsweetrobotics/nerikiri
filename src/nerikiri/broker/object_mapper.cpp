@@ -31,9 +31,7 @@ Value ObjectMapper::createResource(BrokerProxyAPI* coreBroker, const std::string
   if (path == "/process/fsms/") { return coreBroker->factory()->createObject("fsm", value); }
   if (path == "/process/connections/") { return coreBroker->factory()->createObject("connection", value); } 
 
-  if (std::regex_match(path, match, std::regex("/process/containers/([^/]*)/operations/"))) {
-    return coreBroker->factory()->createObject("containerOperation", Value::merge(value, {{"containerFullName", match[1].str()}} ));
-  }
+  
   if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet/connections"))) {
     return coreBroker->factory()->createObject("outletConnection", Value::merge(value, {{"operationFullName", match[1].str()}} ));
   }
@@ -45,7 +43,7 @@ Value ObjectMapper::createResource(BrokerProxyAPI* coreBroker, const std::string
     return coreBroker->factory()->createObject("ecBind", Value::merge(value, {{"ecFullName", match[1].str()}}));
   }
 
-  return Value::error(logger::error("ObjectMapper::createResource({}) failed. This request could not find appropreate callbacks", path));
+  return Value::error(logger::error("ObjectMapper::createResource({}) failed. No route matched", path));
 }
 
 Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::string& _path, const Value& params, const Value& receiverBrokerInfo) {
@@ -78,8 +76,14 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
 
     if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets$"))) {
       return coreBroker->operation()->inlets(match[1]);
-    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet$"))) {
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)$"))) {
+      return coreBroker->operationInlet()->get(match[1], match[2]);
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)/info$"))) {
+      return coreBroker->operationInlet()->info(match[1], match[2]);
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet/info$"))) {
       return coreBroker->operationOutlet()->info(match[1]);
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet$"))) {
+      return coreBroker->operationOutlet()->get(match[1]);
     } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/fullInfo$"))) {
       auto v = coreBroker->operation()->fullInfo(match[1]);
       if (!receiverBrokerInfo.isNull() && !v.isError()) v["broker"] = receiverBrokerInfo;
@@ -197,7 +201,7 @@ Value ObjectMapper::readResource(const BrokerProxyAPI* coreBroker, const std::st
       return coreBroker->getTopicConnectionInfos(match[1]);
     }
     */
-    return Value::error(logger::error("ObjectMapper::readResource({}) failed.", path));
+    return Value::error(logger::error("ObjectMapper::readResource({}) failed. No route matched", path));
 }
 
 
@@ -270,7 +274,7 @@ Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string
     return coreBroker->setFSMState(match[1].str(), getStringValue(value, ""));
   }
   */
-  return Value::error(logger::error("ObjectMapper::updateResource({}) failed.", path));
+  return Value::error(logger::error("ObjectMapper::updateResource({}) failed. No route matched", path));
 }
 
 /**
@@ -279,10 +283,18 @@ Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string
  * 
  * 
  */
-Value ObjectMapper::deleteResource(BrokerProxyAPI* coreBroker, const std::string& path, const Value& params, BrokerAPI* receiverBroker) {
-  logger::debug("ObjectMapper::deleteResource(path={}", path);
+Value ObjectMapper::deleteResource(BrokerProxyAPI* coreBroker, const std::string& _path, const Value& params, BrokerAPI* receiverBroker) {
+  auto path = _path;
+  if (path.length() == 0) 
+    return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
+  if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
+
+  logger::debug("ObjectMapper::deleteResource(path={}", path);std::smatch match;
+  if (std::regex_match(path, match, std::regex("connections/([^/]*)"))) {
+    return coreBroker->connection()->deleteConnection(match[1]);
+  }
+  
   /*
-  std::smatch match;
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/input/arguments/([^/]*)/connections/([^/]*)/"))) {
     return coreBroker->removeConsumerConnection(match[1], match[2], match[3]);
     //return ConnectionBuilder::deleteConsumerConnection(store, {
@@ -313,5 +325,5 @@ Value ObjectMapper::deleteResource(BrokerProxyAPI* coreBroker, const std::string
     return coreBroker->unbindOperationFromExecutionContext(match[1], match[2]);
   }
    */
-  return Value::error(logger::error("ObjectMapper::deleteResource({}) failed.", path));
+  return Value::error(logger::error("ObjectMapper::deleteResource({}) failed. No route matched", path));
 }

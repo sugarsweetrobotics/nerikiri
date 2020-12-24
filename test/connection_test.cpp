@@ -19,11 +19,13 @@ using namespace nerikiri;
 SCENARIO( "Connection test", "[ec]" ) {
   GIVEN("Connection basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "OFF" },
+      "logger": { "logLevel": "INFO" },
 
       "operations": {
         "precreate": [
           {"typeName": "inc", "instanceName": "inc0.ope"},
+          {"typeName": "one", "instanceName": "one0.ope"},
+          {"typeName": "add", "instanceName": "add0.ope"},
           {"typeName": "zero", "instanceName": "zero0.ope"}
         ]
       }
@@ -34,59 +36,155 @@ SCENARIO( "Connection test", "[ec]" ) {
     
     p->loadOperationFactory(opf1);
     p->loadOperationFactory(opf2);
+    p->loadOperationFactory(opf3);
+    p->loadOperationFactory(opf4);
 
     WHEN("Operation is stanby") {
       p->startAsync();
-      auto ope1 = p->store()->operation("zero0.ope");
-      REQUIRE(ope1->isNull() == false);
-      REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
+      auto zero0ope = p->store()->operation("zero0.ope");
+      REQUIRE(zero0ope->isNull() == false);
+      REQUIRE(Value::intValue(zero0ope->call({}), -1) == 0);
 
-      auto ope2 = p->store()->operation("inc0.ope");
-      REQUIRE(ope2->isNull() == false);
-      REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
+      auto inc0ope = p->store()->operation("inc0.ope");
+      REQUIRE(inc0ope->isNull() == false);
+      REQUIRE(Value::intValue(inc0ope->call({{"arg01", 3}}), -1) == 4);
 
-      THEN("Operation can connected") {
 
-        //p->startAsync();
+      auto one0ope = p->store()->operation("one0.ope");
+      REQUIRE(one0ope->isNull() == false);
+      REQUIRE(Value::intValue(one0ope->call({}), -1) == 1);
 
-      
-        Value conInfo{
-          {"name", "con0"},
-          {"type", "event"},
-          {"broker", "CoreBroker"},
-          {"inlet", {
-            {"name", "arg01"}, 
-            {"operation", {
-              {"fullName", "inc0.ope"},
-              {"broker", {
-                {"typeName", "CoreBroker"}
-              }}
-            }}
-          }},
-          {"outlet", {
-            {"operation", {
-              {"fullName", "zero0.ope"},
-              {"broker", {
-                {"typeName", "CoreBroker"}
-              }}
+
+      auto add0ope = p->store()->operation("add0.ope");
+      REQUIRE(add0ope->isNull() == false);
+      REQUIRE(Value::intValue(add0ope->call({
+        {"arg01", 1}, {"arg02", 2}
+      }), -1) == 3);
+
+      Value con0Info{
+        {"name", "con0"},
+        {"type", "event"},
+        {"broker", "CoreBroker"},
+        {"inlet", {
+          {"name", "arg01"}, 
+          {"operation", {
+            {"fullName", "inc0.ope"},
+            {"broker", {
+              {"typeName", "CoreBroker"}
             }}
           }}
-        };
-        auto v = p->coreBroker()->connection()->createConnection(conInfo);
-        //auto v =ConnectionBuilder::createConnection(p.store(), conInfo);
+        }},
+        {"outlet", {
+          {"operation", {
+            {"fullName", "zero0.ope"},
+            {"broker", {
+              {"typeName", "CoreBroker"}
+            }}
+          }}
+        }}
+      };
+
+      Value con1Info{
+        {"name", "con1"},
+        {"type", "event"},
+        {"broker", "CoreBroker"},
+        {"inlet", {
+          {"name", "arg01"}, 
+          {"operation", {
+            {"fullName", "inc0.ope"},
+            {"broker", {
+              {"typeName", "CoreBroker"}
+            }}
+          }}
+        }},
+        {"outlet", {
+          {"operation", {
+            {"fullName", "one0.ope"},
+            {"broker", {
+              {"typeName", "CoreBroker"}
+            }}
+          }}
+        }}
+      };
+
+
+      THEN("Operation can connected") {
+        auto v = p->coreBroker()->connection()->createConnection(con0Info);
         REQUIRE(v.isError() == false);
 
-        auto con1 = ope1->outlet()->connections();
+        auto con1 = zero0ope->outlet()->connections();
         REQUIRE(con1.size() == 1);
+        REQUIRE(con1[0]->fullName() == "con0");
 
-        auto con2 = ope2->inlet("arg01")->connections();
+        auto con2 = inc0ope->inlet("arg01")->connections();
         REQUIRE(con2.size() == 1);
+        REQUIRE(con2[0]->fullName() == "con0");
 
-        REQUIRE(Value::intValue(ope2->execute(), -1) == 2);
+        REQUIRE(Value::intValue(inc0ope->execute(), -1) == 2);
 
-        ope1->execute();
+        zero0ope->execute();
 
-        REQUIRE(Value::intValue(ope2->execute(), -1) == 1);
+        REQUIRE(Value::intValue(inc0ope->execute(), -1) == 1);
+
+        AND_THEN("Exact Same Connection in inlet side fails") {
+          auto v = p->coreBroker()->connection()->createConnection(con0Info);
+          REQUIRE(v.isError() == true);
+        }
+
+        AND_THEN("Exact Same Connection in outlet side fails") {
+
+          Value con0Info2 {
+            {"name", "con0"},
+            {"type", "event"},
+            {"broker", "CoreBroker"},
+            {"inlet", {
+              {"name", "arg01"}, 
+              {"operation", {
+                {"fullName", "add0.ope"},
+                {"broker", {
+                  {"typeName", "CoreBroker"}
+                }}
+              }}
+            }},
+            {"outlet", {
+              {"operation", {
+                {"fullName", "zero0.ope"},
+                {"broker", {
+                  {"typeName", "CoreBroker"}
+                }}
+              }}
+            }}
+          };
+
+          
+          auto v = p->coreBroker()->connection()->createConnection(con0Info2);
+          REQUIRE(v.isError() == true);
+
+
+          auto con2 = add0ope->inlet("arg01")->connections();
+          REQUIRE(con2.size() == 0);
+          //REQUIRE(con2[0]->fullName() == "con0");
+
+          auto con1 = zero0ope->outlet()->connections();
+          REQUIRE(con1.size() == 1);
+        }
+
+        AND_THEN("Double connection") {
+          auto v = p->coreBroker()->connection()->createConnection(con1Info);
+          REQUIRE(v.isError() == false);
+        }
+
+        AND_THEN("Same Connection but different name fails") {
+          con0Info["name"] = "con3";
+          auto v = p->coreBroker()->connection()->createConnection(con0Info);
+          REQUIRE(v.isError() == true);
+        }
+
+        AND_THEN("Different Connection but same name fails") {
+          con1Info["name"] = "con0";
+          auto v = p->coreBroker()->connection()->createConnection(con1Info);
+          REQUIRE(v.isError() == true);
+        }
       }
       
     }

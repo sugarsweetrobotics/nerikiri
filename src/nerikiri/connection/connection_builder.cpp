@@ -29,11 +29,16 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
   auto value = connectionInfo.at("inlet").at("operation");
   // TODO: brokerの項目がなかったらどうするか？
   auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-  inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+  auto ret0 = inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+  if (ret0.isError()) return ret0;
   // TODO: 名前が同じのがあったらどうするか？
-  value = connectionInfo.at("outlet").at("operation");
-  auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-  return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
+  auto value2 = connectionInfo.at("outlet").at("operation");
+  auto outletBroker = store->brokerFactory(Value::string(value2.at("broker").at("typeName")))->createProxy(value2.at("broker"));
+  auto ret1 = outletBroker->operationOutlet()->addConnection(Value::string(value2.at("fullName")), connectionInfo);
+  if (ret1.isError()) {
+    inletBroker->operationInlet()->removeConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), Value::string(ret0.at("fullName")));
+  }
+  return ret1;
 }
 
 Value ConnectionBuilder::createStateBind(ProcessStore* store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
@@ -184,8 +189,34 @@ Value ConnectionBuilder::registerOperationConsumerConnection(ProcessStore* store
 */
 
 
-Value ConnectionBuilder::deleteConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker/*=nullptr*/) {
-  return Value::error(logger::error("ConnectionBuilder::deleteConnection(" + str(ci) + ") failed."));
+Value ConnectionBuilder::deleteConnection(ProcessStore* store, const std::string& connectionFullName, BrokerAPI* receiverBroker /*=nullptr*/) {
+  auto con = store->connection(connectionFullName);
+  if (con->isNull()) {
+    return Value::error(logger::error("ConnectionBuilder::deleteConnection() failed. Connection({}) not found.", connectionFullName));
+  }
+
+  auto info = con->info();
+
+  auto v_in = con->inlet()->removeConnection(connectionFullName);
+
+  auto v_out = con->outlet()->removeConnection(connectionFullName);
+  
+
+  //store->deleteConnection(connectionFullName);
+    //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
+    /*
+  auto value = connectionInfo.at("inlet").at("operation");
+  // TODO: brokerの項目がなかったらどうするか？
+  auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+  // TODO: 名前が同じのがあったらどうするか？
+  value = connectionInfo.at("outlet").at("operation");
+  auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
+  */
+  // return Value::error(logger::error("ConnectionBuilder::deleteConnection() failed."));
+
+  return info;
 }
 
 /*

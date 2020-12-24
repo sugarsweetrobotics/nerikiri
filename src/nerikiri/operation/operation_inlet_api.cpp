@@ -18,7 +18,7 @@ public:
     }
 
     virtual std::string ownerFullName() const override { 
-      logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__);
+      logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__);
       return "null";
     }
     

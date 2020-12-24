@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 
+#include <nerikiri/functional.h>
 
 #include <nerikiri/container_api.h>
 #include "container_operation_base.h"

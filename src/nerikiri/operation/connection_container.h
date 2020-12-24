@@ -41,8 +41,9 @@ namespace nerikiri {
     Value removeConnection(const std::string& _fullName) {
       for(auto it = connections_.begin(); it != connections_.end();++it) {
         if ((*it)->fullName() == _fullName) {
+          auto i = (*it)->info();
           connections_.erase(it);
-          return (*it)->info();
+          return i;
         }
       }
       return Value::error(logger::warn("ConnectionContainer::removeConnection({}) failed. Connection not found.", _fullName));

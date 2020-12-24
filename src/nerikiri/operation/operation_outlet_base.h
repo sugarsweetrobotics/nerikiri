@@ -46,7 +46,12 @@ namespace nerikiri {
       if (con->isNull()) {
         return Value::error(logger::error("OperationBase::addConnection() failed. Passing connection is null"));
       }
-      return connections_.addConnection(con);
+      auto v = connections_.addConnection(con);
+      if (v.isError()) {
+        logger::error("OperationOutletBase::addConnection failed: {}", v.getErrorMessage());
+        return v;
+      }
+      return v;
     }
     
     virtual Value removeConnection(const std::string& _fullName) override {

@@ -20,7 +20,12 @@ Value ProcessStore::info() const { return process_->info(); }
 
 
 std::vector<std::shared_ptr<ConnectionAPI>> ProcessStore::connections() const {
-  return {};
+  std::vector<std::shared_ptr<ConnectionAPI>> cons;
+  nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(operations(), [&cons](auto op) {
+    auto cs = op->outlet()->connections();
+    cons.insert(cons.end(), cs.begin(), cs.end());
+  });
+  return cons;
 }
 
 Value ProcessStore::addBroker(const std::shared_ptr<BrokerAPI>& b) {
@@ -46,6 +51,13 @@ std::shared_ptr<OperationAPI> ProcessStore::operation(const std::string& fullNam
   if (op) return op.value();;
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
   return nullOperation();
+}
+
+std::shared_ptr<ConnectionAPI> ProcessStore::connection(const std::string& fullName) const { 
+  auto op = nerikiri::functional::find<std::shared_ptr<ConnectionAPI>>(connections(), [&fullName](auto op) { return op->fullName() == fullName; });
+  if (op) return op.value();;
+  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
+  return nullConnection();
 }
 
 std::shared_ptr<OperationFactoryAPI> ProcessStore::operationFactory(const std::string& operationTypeFullName) const {

@@ -74,7 +74,12 @@ namespace nerikiri {
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
 
     virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) override {
-      return connections_.addConnection(con);
+      auto v = connections_.addConnection(con);
+      if (v.isError()) {
+        logger::error("OperationInletBase::addConnection failed: {}", v.getErrorMessage());
+        return v;
+      }
+      return v;
     }
     
     virtual Value removeConnection(const std::string& _fullName) override {

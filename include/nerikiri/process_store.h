@@ -307,6 +307,8 @@ namespace nerikiri {
 
     std::shared_ptr<OperationAPI> operation(const std::string& fullName) const;
 
+    std::shared_ptr<ConnectionAPI> connection(const std::string& fullName) const;
+
     std::shared_ptr<OperationFactoryAPI> operationFactory(const std::string& operationTypeFullName) const;
 
     std::shared_ptr<ContainerAPI> container(const std::string& fullName) const;

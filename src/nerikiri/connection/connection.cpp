@@ -1,6 +1,7 @@
 #include "nerikiri/logger.h"
 
 #include <nerikiri/operation_api.h>
+#include <nerikiri/fsm_api.h>
 #include "nerikiri/connection.h"
 
 
@@ -9,15 +10,31 @@ using namespace nerikiri;
 class Connection : public ConnectionAPI {
 private:
   const std::shared_ptr<OperationInletAPI> inlet_;
-
   const std::shared_ptr<OperationOutletAPI> outlet_;
+
+  std::shared_ptr<OperationAPI> operation_holder_;
+  std::shared_ptr<FSMAPI> fsm_holder_;
+  std::shared_ptr<Object> obj_holder_;
 public:
   Connection();
 
   Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet) :
     ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet) {}
   
-  virtual ~Connection() {}
+  Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationAPI>& op) :
+    ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), operation_holder_(op) {}
+
+  Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<FSMAPI>& fsm) :
+    ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), fsm_holder_(fsm) {}
+
+  Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<Object>& obj) :
+    ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), obj_holder_(obj) {}
+
+
+  virtual ~Connection() {
+    //inlet_->finalize();
+    //outlet_->finalize();
+  }
 
 public:
 
@@ -34,6 +51,17 @@ public:
       {"ownerFullName", inlet()->ownerFullName()},
       {"fullName", inlet()->ownerFullName() + ':' + inlet()->name()}
     };
+    if (obj_holder_->className() == "Operation" || obj_holder_->className() == "OperationProxy" || obj_holder_->className() == "ContainerOperation") {
+      i["inlet"]["operation"] = {
+        {"fullName", inlet()->ownerFullName()}
+      };
+    } else {
+      i["inlet"]["fsm"] = {
+        {"fullName", inlet()->ownerFullName()}
+      };
+    }
+
+
     i["outlet"] = {
       {"ownerFullName", outlet()->ownerFullName()}
     };
@@ -64,6 +92,11 @@ public:
 std::shared_ptr<ConnectionAPI> nerikiri::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet) {
   logger::trace("nerikiri::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
   return std::make_shared<Connection>(name, type, inlet, outlet);
+}
+
+std::shared_ptr<ConnectionAPI> nerikiri::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<Object>& obj) {
+  logger::trace("nerikiri::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
+  return std::make_shared<Connection>(name, type, inlet, outlet, obj);
 }
 
 ConnectionAPI::ConnectionType nerikiri::connectionType(const std::string& str) {
