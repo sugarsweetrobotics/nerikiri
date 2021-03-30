@@ -8,10 +8,11 @@ namespace nerikiri {
 
   class ContainerOperationFactoryAPI : public Object {
   public:
-    virtual std::string containerTypeFullName() const = 0;
-    virtual std::string operationTypeFullName() const = 0;
+//    virtual std::string containerTypeFullName() const = 0;
+//    virtual std::string operationTypeFullName() const = 0;
   public:
-    ContainerOperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName): Object(className, typeName, fullName) {}
+    ContainerOperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName):
+      Object(className, typeName, fullName) {}
     virtual ~ContainerOperationFactoryAPI() {}
 
     virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& _fullName) const = 0;

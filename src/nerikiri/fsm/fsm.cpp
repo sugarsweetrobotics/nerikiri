@@ -215,7 +215,8 @@ bool FSM::_setupStates(const Value& info) {
 
 Value FSM::info() const {
     auto v = Object::info();
-    v["states"] = nerikiri::functional::map<Value, std::shared_ptr<FSMStateAPI>>(states_, [](auto state) {
+    v["currentFsmState"] = currentFsmState()->fullName();
+    v["fsmStates"] = nerikiri::functional::map<Value, std::shared_ptr<FSMStateAPI>>(states_, [](auto state) {
         return state->info();
     });
     return v;

@@ -19,7 +19,7 @@ using namespace nerikiri;
 SCENARIO( "Connection test", "[ec]" ) {
   GIVEN("Connection basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "INFO" },
+      "logger": { "logLevel": "WARN" },
 
       "operations": {
         "precreate": [

@@ -1,4 +1,5 @@
 #include "operation_inlet_base.h"
+#include <nerikiri/connection.h>
 
 
 using namespace nerikiri;
@@ -53,4 +54,14 @@ Value OperationInletBase::put(const Value& value) {
   buffer_->push(value);
   argument_updated_ = true;
   return value;
+}
+
+
+
+Value OperationInletBase::connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) {  
+  return addConnection( createConnection(Value::string(connectionInfo["name"]), connectionType(Value::string(connectionInfo.at("type"))), operation_->inlet(this->name()), outlet, nullptr));
+}
+    
+Value OperationInletBase::disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) {
+  
 }

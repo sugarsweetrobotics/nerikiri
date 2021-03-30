@@ -68,7 +68,8 @@ Value Object::info() const {
         {"instanceName", instanceName()},
         {"typeName", typeName()},
         {"className", className()},
-        {"state", info_.at("state")}
+        {"state", info_.at("state")},
+        {"description", description_}
     }; 
 }
 

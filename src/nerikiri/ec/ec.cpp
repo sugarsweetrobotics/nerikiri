@@ -28,10 +28,19 @@ public:
 };
 
 ExecutionContextBase::ExecutionContextBase(const std::string& typeName, const std::string& fullName) : 
-    ExecutionContextAPI(typeName, fullName), startedState_(std::make_shared<StartedECState>(this)), stoppedState_(std::make_shared<StoppedECState>(this)) {
+    ExecutionContextAPI("ExecutionContext", typeName, fullName), startedState_(std::make_shared<StartedECState>(this)), stoppedState_(std::make_shared<StoppedECState>(this)) {
 }
 
 ExecutionContextBase::~ExecutionContextBase() { }
+
+Value ExecutionContextBase::info() const {
+    auto i = Object::info();
+    i["operations"] = nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
+        return op->info();
+    });
+    i["currentState"] = { isStarted()? "started" : "stopped"};
+    return i;
+}
 
 Value ExecutionContextBase::start() {
     logger::trace("ExecutionContext({})::start() called", getInstanceName());

@@ -4,8 +4,8 @@ using namespace nerikiri;
 
 class NullContainerOperationFactory : public ContainerOperationFactoryAPI {
 public:
-    virtual std::string containerTypeFullName() const override { return "NullContainer"; }
-    virtual std::string operationTypeFullName() const override { return "NullOperation"; }
+   // virtual std::string containerTypeFullName() const override { return "NullContainer"; }
+   // virtual std::string operationTypeFullName() const override { return "NullOperation"; }
 public:
     NullContainerOperationFactory() : ContainerOperationFactoryAPI("NullContainerOperationFactory", "NullOperation", "null") {}
     virtual ~NullContainerOperationFactory() {}

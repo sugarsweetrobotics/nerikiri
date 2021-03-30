@@ -9,6 +9,9 @@ using namespace nerikiri;
 
     
 class ContainerOperationBase : public OperationBase {
+
+private:
+    
 public:
     ContainerOperationBase(const std::string& _typeName, const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}) :
         OperationBase(_typeName, operationTypeName, _fullName, defaultArgs) {}
@@ -16,6 +19,6 @@ public:
 
 
     virtual Value call(const Value& value) override {
-        return Value::error("ContainerOperationBase::call called. But this function must be overwritten.");
+        return Value::error(logger::error("ContainerOperationBase::call called. But this function must be overwritten."));
     }
 };

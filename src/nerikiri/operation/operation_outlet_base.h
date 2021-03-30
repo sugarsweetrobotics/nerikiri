@@ -17,8 +17,8 @@ namespace nerikiri {
     NewestValueBuffer outputBuffer_;
     ConnectionContainer connections_;
   public:
-    //virtual OperationAPI* owner() override { return operation_; }
-  
+    virtual OperationAPI* owner() { return operation_; }
+
     virtual std::string ownerFullName() const override { return operation_->fullName(); }
 
     virtual Value invokeOwner() override { return operation_->invoke(); }
@@ -54,6 +54,10 @@ namespace nerikiri {
       return v;
     }
     
+    virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override;
+    
+    virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override;
+
     virtual Value removeConnection(const std::string& _fullName) override {
       return connections_.removeConnection(_fullName);
     }

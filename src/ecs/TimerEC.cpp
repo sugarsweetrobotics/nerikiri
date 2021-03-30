@@ -22,9 +22,17 @@ public:
             logger::error("TimerEC creation failed. Rate must be double (or int) value.");
             rate_ = -1;
         }
+        setDescription("タイマー実行コンテキスト．started状態ではbindされたOperationを周期的に実行します．");
     }
+
     virtual ~TimerEC() {
         stop();
+    }
+
+    virtual Value info() const { 
+        auto i =ExecutionContextBase::info();
+        i["rate"] = rate_;
+        return i;
     }
 
 public:
@@ -50,25 +58,6 @@ public:
     }
 };
 
-/*
-class TimerECFactory : public ExecutionContextFactoryBase {
-public:
-    TimerECFactory() {}
-    virtual ~TimerECFactory() {}
-public:
-    virtual std::shared_ptr<ExecutionContextAPI> create(const Value& arg) const {
-        return std::shared_ptr<ExecutionContext>(new TimerEC(arg));
-    };
-
-    virtual std::string typeName() const { 
-        return "TimerEC";
-    }
-};
-
-*/
-
-
 void* createTimerEC() {
-    new ECFactory<TimerEC>("TimerECFactory");
-   // return new TimerECFactory();
+   return new ECFactory<TimerEC>("TimerECFactory");
 }

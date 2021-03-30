@@ -3,6 +3,7 @@
 #include <mutex>
 #include <thread>
 
+#include <nerikiri/operation.h>
 #include <nerikiri/container.h>
 
 namespace nerikiri {
@@ -15,14 +16,21 @@ namespace nerikiri {
     private:
         std::shared_ptr<OperationAPI> base_;
         std::shared_ptr<ContainerAPI> container_;
-        std::function<Value(T&,Value)> function_;
+        std::function<Value(T&,const Value&)> function_;
         std::mutex mutex_;
     public:
-        ContainerOperation(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs={}, const std::function<Value(T&,Value)>& func=nullptr): 
-          OperationAPI("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName), base_(containerOperationBase("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName, defaultArgs)), container_(container), function_(func) {}
+        ContainerOperation(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs={}, const std::function<Value(T&,const Value&)>& func=nullptr): 
+          OperationAPI("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName), 
+          base_(createOperation(nerikiri::naming::join(container->fullName(), _typeName), _fullName, defaultArgs, [this](auto value) {
+              return this->call(value);
+          })), container_(container), function_(func) {}
 
         virtual ~ContainerOperation() {}
-        virtual Value fullInfo() const override { return base_->fullInfo(); }
+        virtual Value fullInfo() const override { 
+            auto i = base_->fullInfo(); 
+            i["ownerContainerFullName"] = container_->fullName();
+            return i;
+        }
 
 
         /**

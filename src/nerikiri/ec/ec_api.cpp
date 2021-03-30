@@ -23,7 +23,7 @@ public:
 
 class NullExecutionContext : public ExecutionContextAPI {
 public:
-    NullExecutionContext() : ExecutionContextAPI("NullExecutionContext", "null") {}
+    NullExecutionContext() : ExecutionContextAPI("ExecutionContext", "NullExecutionContext", "null") {}
     virtual ~NullExecutionContext() {}
 
 public:

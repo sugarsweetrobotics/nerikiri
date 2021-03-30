@@ -63,6 +63,10 @@ namespace nerikiri {
         virtual Value removeConnection(const std::string& fullName, const std::string& name) = 0;
 
         virtual Value info(const std::string& fullName) const = 0; 
+
+        virtual Value connectTo(const std::string& fullName, const Value& conInfo) = 0;
+
+        virtual Value disconnectFrom(const std::string& fullName, const Value& inletInfo) = 0;
     };
 
     class OperationInletBrokerAPI {
@@ -86,6 +90,10 @@ namespace nerikiri {
         virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) = 0;
         
         virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) = 0;
+
+        virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) = 0;
+
+        virtual Value disconnectFrom(const std::string& fullName, const std::string& targetName, const Value& outletInfo) = 0;
     };
 
 

@@ -16,7 +16,7 @@ namespace nerikiri {
             STOPPED,
         } state_;
     public:
-        ExecutionContextAPI(const std::string& typeName, const std::string& fullName) : Object(typeName, fullName), state_(STOPPED) {}
+        ExecutionContextAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName), state_(STOPPED) {}
         
         virtual ~ExecutionContextAPI() {}
 

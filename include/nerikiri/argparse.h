@@ -29,15 +29,15 @@ namespace nerikiri {
   template<typename R>
   class Result : public ResultBase {
   private:
-      R value_;
-      bool matched_;
+    R value_;
+    bool matched_;
   public:
-      Result(const bool matched, const R& value): matched_(matched), value_(value) {}
-      virtual ~Result() {}
+    Result(const bool matched, const R& value): matched_(matched), value_(value) {}
+    virtual ~Result() {}
 
-      R value() {
-        return value_;
-      }
+    R value() {
+      return value_;
+    }
   };
 
   /**
@@ -60,20 +60,20 @@ namespace nerikiri {
     bool matched() const { return matched_; }
 
     bool match(const std::string& str) {
-        if (str == short_) {
-            matched_ = true;
-            return true;
-        } else if (str == long_) {
-            matched_ = true;
-            return true;
-        }
-        return false;
+      if (str == short_) {
+          matched_ = true;
+          return true;
+      } else if (str == long_) {
+          matched_ = true;
+          return true;
+      }
+      return false;
     }
 
 
   public:
-     virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) = 0;
-     virtual std::shared_ptr<ResultBase> makeDefaultResult() = 0;
+    virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) = 0;
+    virtual std::shared_ptr<ResultBase> makeDefaultResult() = 0;
   };
 
   /**

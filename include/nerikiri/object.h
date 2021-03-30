@@ -16,6 +16,7 @@ namespace nerikiri {
     TypeName  typeName_;
     std::string fullName_;
     std::string instanceName_;
+    std::string description_;
   public:
     Object(const std::string& typeName, const std::string& fullName);
 
@@ -30,6 +31,8 @@ namespace nerikiri {
   public:
     virtual void finalize() {}
 
+    virtual const std::string& description() const { return description_; }
+    virtual void setDescription(const std::string& description) { description_ = description; }
     
     virtual ClassName className() const { 
       return className_;
@@ -40,6 +43,8 @@ namespace nerikiri {
       return typeName_;
       //return info_.at("typeName").stringValue();
     }
+
+    virtual void setTypeName(const std::string& typeName) { typeName_ = typeName; }
 
     virtual bool isInstanceOf(const TypeName& _typeName) const { 
       return(typeName() == _typeName);

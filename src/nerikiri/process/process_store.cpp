@@ -95,7 +95,7 @@ std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFa
 
 std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<ContainerOperationFactoryAPI>>(containerOperationFactories(), [&containerTypeFullName, &operationTypeFullName] (auto f) {
-    return f->containerTypeFullName() == containerTypeFullName && f->operationTypeFullName() == operationTypeFullName;
+    return f->typeName() == nerikiri::naming::join(containerTypeFullName,operationTypeFullName);
   });
   if (f) return f.value();
   logger::error("ProcessStore::{}({}, {}) called, but not found.", __func__, containerTypeFullName, operationTypeFullName);
@@ -171,6 +171,14 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   }
   return operation(Value::string(info.at("fullName")));
 }
+
+std::shared_ptr<FSMAPI> ProcessStore::fsmProxy(const Value& info) {
+  if (info.hasKey("broker")) {
+    return ProxyBuilder::fsmProxy(info, this);
+  }
+  return fsm(Value::string(info.at("fullName")));
+}
+
 
 
 /**

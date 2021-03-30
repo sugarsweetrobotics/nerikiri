@@ -96,6 +96,15 @@ public:
     virtual Value info(const std::string& fullName) const override {
         return broker_->readResource("operations/" + fullName + "/outlet/info");
     }
+
+    virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
+        return broker_->createResource("operations/" + fullName + "/outlet/connections/", conInfo);
+    }
+
+    virtual Value disconnectFrom(const std::string& fullName, const Value& connectionInfo) override {
+        return broker_->deleteResource("operations/" + fullName + "/outlet/connections/" + Value::string(connectionInfo["name"]));
+    }
+
 };
 
 class CRUDOperationInletBroker : public OperationInletBrokerAPI {
@@ -139,6 +148,17 @@ public:
     virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
         return broker_->deleteResource("operations/" + fullName + "/inlets/" + targetName + "/connections/" + name);
     }
+
+
+    virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
+        return broker_->createResource("operations/" + fullName + "/inlets/" + targetName + "/connections/", conInfo);
+    }
+
+
+    virtual Value disconnectFrom(const std::string& fullName, const std::string& targetName, const Value& connectionInfo) override {
+        return broker_->deleteResource("operations/" + fullName + "/inlets/" + targetName + "/connections/" + Value::string(connectionInfo["name"]));
+    }
+
 };
 
 class CRUDConnectionBroker : public ConnectionBrokerAPI {
@@ -207,7 +227,7 @@ public:
         return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
     }
 
-    virtual Value fsmState(const std::string& fsmFullName, const std::string& stateName) {
+    virtual Value fsmState(const std::string& fsmFullName, const std::string& stateName) override {
         return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
     }
 };

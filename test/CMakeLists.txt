@@ -3,7 +3,8 @@
 if (BUILD_NK_TEST)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2)
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2fg
+)
 
 OPTION(BUILD_NK_TEST_HTTP "Http Server Client Test" OFF)
 OPTION(BUILD_NK_TEST_HTTPBROKER "HttpBroker Test" OFF)

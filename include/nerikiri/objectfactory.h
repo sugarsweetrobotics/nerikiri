@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "nerikiri/operation_api.h"
 #include "nerikiri/broker_api.h"
 #include "nerikiri/broker_proxy_api.h"
 #include "nerikiri/value.h"
@@ -20,7 +21,7 @@ namespace nerikiri {
 
         static Value createContainer(ProcessStore& store, const Value& ci);
 
-        static Value createContainerOperation(ProcessStore& store, const Value& info);
+        static Value createContainerOperation(ProcessStore& store, const Value& cInfo, const Value& info);
 
         static Value createBroker(ProcessStore& store, const Value& ci);
 

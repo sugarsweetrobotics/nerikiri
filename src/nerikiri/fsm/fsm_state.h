@@ -68,7 +68,14 @@ namespace nerikiri {
         virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) override {
         return connections_.addConnection(con);
         }
-        
+
+        virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
+            // TODO: Not Impl
+        }
+
+        virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) override {
+            // TODO: Not Impl
+        }
         virtual Value removeConnection(const std::string& _fullName) override {
         return connections_.removeConnection(_fullName);
         }

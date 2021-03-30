@@ -45,6 +45,67 @@
         }
       ]
     },
+    "fsms": {
+      "precreate": [
+          {
+              "typeName": "GenericFSM",
+              "instanceName": "FSM0.fsm",
+              "states" : [
+                {
+                  "name": "created",
+                  "transit": ["stopped"]
+                },
+                { 
+                  "name": "stopped",
+                  "transit": ["running"] 
+                },
+                { 
+                  "name": "running",
+                  "transit": ["stopped"]
+                }
+              ],
+              "defaultState" : "created"
+          }
+      ],
+      "bind": {
+        "states": [
+          {
+            "name": "running",
+            "operations": [
+              {
+                "fullName": "MyStruct0.ctn:intGetter0.ope",
+                "argument": {}
+              }
+            ],
+            "ecs": [
+              {
+                "name": "TimerEC0.ec",
+                "state": "started"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "ecs": {
+      "load_paths": ["../build/lib"],
+      "preload": ["TimerEC"],
+      "precreate": [
+        {
+          "typeName": "TimerEC",
+          "fullName": "TimerEC0.ec",
+          "rate": 10.0
+        }
+      ],
+      "bind": {
+        "TimerEC0.ec": [
+          {
+              "fullName": "MyStruct0.ctn:intGetter0.ope",
+              "broker": "CoreBroker"
+          }
+        ]
+      }
+    },
     "brokers": {
         "precreate": [ 
           {

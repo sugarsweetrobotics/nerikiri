@@ -231,6 +231,16 @@ Value ObjectMapper::updateResource(BrokerProxyAPI* coreBroker, const std::string
   if (std::regex_match(path, match, std::regex("operations/([^/]*)/execute"))) {
     return coreBroker->operation()->execute(match[1].str());
   }
+
+  if (std::regex_match(path, match, std::regex("ecs/([^/]*)/state"))) {
+    if (Value::string(value) == "started") {
+      coreBroker->ec()->activateStart(match[1]);
+    } else if (Value::string(value) == "stopped") {
+      coreBroker->ec()->activateStop(match[1]);
+    } else {
+      return Value::error(logger::error("ObjectMapper::updateResource({}, {}) failed. ObjectMapper tried to update EC's state, but the argument can not be recognized."));
+    }
+  }
   /*
   if (std::regex_match(path, match, std::regex("/process/operations/([^/]*)/"))) {
     return coreBroker->callOperation(match[1].str(), (value));

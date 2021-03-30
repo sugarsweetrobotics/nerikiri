@@ -28,6 +28,8 @@ namespace nerikiri {
 
 
     public:
+        virtual Value info() const override;
+        
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { return operations_; }
 
         virtual Value start() override;
@@ -63,7 +65,7 @@ namespace nerikiri {
     
     public:
         ExecutionContextFactoryBase(const std::string& typeName, const std::string& executionContextTypeFullName, const std::string& fullName) :
-          ExecutionContextFactoryAPI(typeName, fullName), executionContextTypeFullName_(executionContextTypeFullName) {}
+          ExecutionContextFactoryAPI("ExecutionContextFactory", typeName, fullName), executionContextTypeFullName_(executionContextTypeFullName) {}
         virtual ~ExecutionContextFactoryBase() {}
 
         virtual std::string executionContextTypeFullName() const { return executionContextTypeFullName_; }
@@ -77,8 +79,8 @@ namespace nerikiri {
         virtual ~ECFactory() {}
 
     public:
-        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const override {
-            return std::shared_ptr<ExecutionContextAPI>(new T(fullName));
+        virtual std::shared_ptr<ExecutionContextAPI> create(const Value& value) const override {
+            return std::shared_ptr<ExecutionContextAPI>(new T(value));
         };
     };
 

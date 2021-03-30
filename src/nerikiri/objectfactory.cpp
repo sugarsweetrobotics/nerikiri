@@ -31,7 +31,8 @@ Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createOperation({}) called", (info));
   auto fullName = loadFullName(store.operations(), info);
   logger::info("ObjectFactory::createOperation({})", info);
-  return store.addOperation(store.operationFactory(Value::string(info.at("typeName")))->create(fullName));
+  auto op = store.operationFactory(Value::string(info.at("typeName")))->create(fullName);
+  return store.addOperation(op);
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
@@ -39,22 +40,18 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   auto fullName = loadFullName(store.containers(), info);
   logger::info("ObjectFactory::createContainer({})", info);
   auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
-  if (info.hasKey("operations")) {
-    info.at("operations").const_list_for_each([&store, &c](auto& value) {
-      auto fullName = nerikiri::naming::join(c->fullName(), loadFullName(store.operations(), value));
-      auto cop = (store.containerOperationFactory(c->typeName(), Value::string(value.at("typeName")))->create(c, fullName));
-      c->addOperation(cop);
-    });
-  }
+
   return store.addContainer(c);
 }
 
-Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& info) {
+Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& cInfo, const Value& info) {
   logger::trace("ObjectFactory::createContainerOperation({})", info);
-  const std::string& containerFullName = Value::string(info.at("containerFullName"));
+//  const std::string& containerFullName = Value::string(info.at("containerFullName"));
+  auto containerFullName = Value::string(cInfo.at("fullName"));
   //auto fullName = Value::string(info.at("fullName)"));
-  auto fullName = loadFullName(store.operations(), info);
-  return store.addOperation(store.containerOperationFactory(Value::string(info.at("typeName")))->create(store.container(containerFullName), fullName));
+  auto fullName = nerikiri::naming::join(containerFullName, loadFullName(store.operations(), info));
+  auto typeName = nerikiri::naming::join(Value::string(cInfo.at("typeName")), Value::string(info.at("typeName")));
+  return store.addOperation(store.containerOperationFactory(typeName)->create(store.container(containerFullName), fullName));
 }
 
 
@@ -72,12 +69,15 @@ std::shared_ptr<BrokerProxyAPI> ObjectFactory::createBrokerProxy(ProcessStore& s
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {
   logger::info("ObjectFactory::createExecutionContext({})", value);
-  return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(Value::string(value.at("fullName"))));
+  auto info = value;
+  auto fullName = loadFullName(store.executionContexts(), value);
+  info["fullName"] = fullName;
+  return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
 }
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   logger::info("ObjectFactory::createTopic({})", topicInfo);
-  return store.addTopic(store.topicFactory(Value::string("typeName"))->create(Value::string(topicInfo.at("fullName"))));
+  return store.addTopic(store.topicFactory(Value::string(topicInfo.at("typeName")))->create(Value::string(topicInfo.at("fullName"))));
 }
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {

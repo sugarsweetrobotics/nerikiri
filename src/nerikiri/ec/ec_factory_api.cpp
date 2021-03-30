@@ -8,12 +8,12 @@ using namespace nerikiri;
 class NullExecutionContextFactory : public ExecutionContextFactoryAPI{
 public:
     NullExecutionContextFactory() :
-        ExecutionContextFactoryAPI("NullExecutionContextFactory", "null") {}
+        ExecutionContextFactoryAPI("NullExecutionContextFactory", "NullExecutionContext", "null") {}
     virtual ~NullExecutionContextFactory() {}
 
     virtual std::string executionContextTypeFullName() const override  { return "NullExecutionContext"; }
 
-    virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const override{
+    virtual std::shared_ptr<ExecutionContextAPI> create(const Value& info) const override{
         logger::warn("NullExecutionContextFactory::create() called. ExecutionContextFactory is null.");
         return nullEC();
     }

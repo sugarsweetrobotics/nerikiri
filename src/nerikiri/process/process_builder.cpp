@@ -3,6 +3,7 @@
 #include "moduleloader.h"
 #include <nerikiri/objectfactory.h>
 #include "nerikiri/connection/connection_builder.h"
+#include "nerikiri/topic/topic_factory.h"
 using namespace nerikiri;
 /**
  * OperationFactoryの読み込み
@@ -16,7 +17,13 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
   });
 
   config.at("operations").at("precreate").const_list_for_each([&store](auto& oinfo) {
-    ObjectFactory::createOperation(store, oinfo);
+    auto opInfo = ObjectFactory::createOperation(store, oinfo);
+    auto op = store.operation(Value::string(opInfo.at("fullName")));
+    if (oinfo.hasKey("publish")) {
+      oinfo.at("publish").const_list_for_each([&op, &store](auto pubTopicInfo) {
+        TopicFactory::publishTopic(store, op, pubTopicInfo);
+      });
+    }
   });
 
   logger::trace("Process::_preloadOperations() exit");
@@ -38,8 +45,24 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
     }
   });
   
-  config.at("containers").at("precreate").const_list_for_each([&store](auto& value) {
-    ObjectFactory::createContainer(store, value);
+  config.at("containers").at("precreate").const_list_for_each([&store](auto info) {
+    auto cInfo = ObjectFactory::createContainer(store, info);
+    if (info.hasKey("operations")) {
+      info.at("operations").const_list_for_each([&store, &cInfo](auto value) {
+        auto opInfo = ObjectFactory::createContainerOperation(store, cInfo, value);
+
+        auto c = store.container(Value::string(cInfo.at("fullName")));
+        auto cop = c->operation(Value::string(opInfo.at("fullName")));
+        if (value.hasKey("publish")) {
+          value.at("publish").const_list_for_each([&store, &cop](auto topicInfo) {
+            //ConnectionBuilder::createConnection(cop, ObjectFactory::createTopic(store, topicInfo));
+            // TODO: クリエイトコネクション
+          });
+        }
+        if (value.hasKey("subscribe")) {
+        }
+      });
+    }
   });
 
   logger::trace("Process::_preloadContainers() exit");
@@ -170,18 +193,40 @@ void ProcessBuilder::preloadConnections(ProcessStore& store, const Value& config
 void ProcessBuilder::preloadTopics(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("Process::_preloadTopics() entry");
   try {
-    auto operationCallback = [](const Value& opInfo) -> void {
+    /*
+    std::vector<Value> topicInfos;
+    config.at("operations").at("precreate").const_list_for_each([&store](auto &opInfo) {
+      opInfo.at("publish").const_list_for_each([&opInfo, &store](auto &topicInfo) {
+        ConnectionBuilder::registerTopicPublisher(store, opInfo, topicInfo);
+      });
+      opInfo.at("subscribe").const_list_for_each([&store](auto &topicInfo) {
+        
+      });
+    });
+    config.at("containers").at("precreate").const_list_for_each([&store](auto &cInfo) {
+      cInfo.at("operations").const_list_for_each([&cInfo, &store](auto &opInfo) {
+        opInfo.at("publish").const_list_for_each([&cInfo, &opInfo, &store](auto &topicInfo) {
+          ConnectionBuilder::registerTopicPublisher(store, cInfo, opInfo, topicInfo);
+        });
+        opInfo.at("subscribe").const_list_for_each([](auto &topicInfo) {
+          
+        });
+      });
+    });
+
+    auto operationCallback = [&store](const Value& opInfo) -> void {
       logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
-      getListValue(opInfo, "publish").const_list_for_each([&opInfo](auto v) {
-       // ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
-       //  {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
+      getListValue(opInfo, "publish").const_list_for_each([&store, &opInfo](auto topicInfo) { 
+        ObjectFactory::createTopic(store, topicInfo);
+        //ConnectionBuilder::registerTopicPublisher(&store, opInfo, ObjectFactory::createTopic(store,
+        //  {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
       });
       /*
       opInfo.at("publish").const_list_for_each([this, &opInfo](auto v) {
         ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
          {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
       });
-      */
+      *
       getObjectValue(opInfo, "subscribe").const_object_for_each([&opInfo](auto key, auto v) {
         v.list_for_each([&opInfo, key](auto sv) {
          // ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
@@ -195,11 +240,9 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const Value& config, con
            {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
         });
       });
-      */
+      *
     };
-    nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(store.operations(), [operationCallback](auto op) {
-      operationCallback(op->info());
-    });
+    
     
     //store()->getOperationInfos().const_list_for_each(operationCallback);
     //for(auto pc : store()->getContainers()) {
@@ -207,6 +250,7 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const Value& config, con
     //    operationCallback(opInfo);
     //  }
     //}
+    **/
 
   } catch (nerikiri::ValueTypeError& e) {
     logger::debug("Process::_preloadTopics(). ValueTypeException:{}", e.what());

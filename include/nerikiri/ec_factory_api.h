@@ -13,11 +13,11 @@ namespace nerikiri {
 
     class ExecutionContextFactoryAPI : public Object {
     public:
-        ExecutionContextFactoryAPI(const std::string& typeName, const std::string& fullName) :
-          Object(typeName, fullName) {}
+        ExecutionContextFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName) :
+          Object(className, typeName, fullName) {}
         virtual ~ExecutionContextFactoryAPI() {}
 
-        virtual std::shared_ptr<ExecutionContextAPI> create(const std::string& fullName) const = 0;
+        virtual std::shared_ptr<ExecutionContextAPI> create(const Value& value) const = 0;
         virtual std::string executionContextTypeFullName() const = 0;
     };
 

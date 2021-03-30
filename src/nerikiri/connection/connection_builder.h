@@ -10,6 +10,14 @@ namespace nerikiri {
 
     class ConnectionBuilder {
     public:
+        static Value createConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+
+        static Value createOperationToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+
+        static Value createFSMStateToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+
+        static Value connect(ProcessStore& store, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo);
+
         static Value connect(const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const ConnectionAPI::ConnectionType& type);
         static Value createInletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& receiverBroker/*=nullptr*/);
         static Value createOutletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& receiverBroker/*=nullptr*/);
@@ -22,6 +30,8 @@ namespace nerikiri {
         static Value createStateBind(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
         static Value deleteStateBindI(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 
+        static Value registerTopicPublisher(ProcessStore& store, const Value& containerInfo, const Value& opInfo, const Value& topicInfo);
+        static Value registerTopicPublisher(ProcessStore& store, const Value& opInfo, const Value& topicInfo);
 
         static Value registerConsumerConnection(ProcessStore* store, const Value& ci);
 
@@ -30,7 +40,6 @@ namespace nerikiri {
         static Value deleteConsumerConnection(ProcessStore* store, const std::string& fullName, const std::string& targetArgName, const std::string& conName);
         static Value deleteProviderConnection(ProcessStore* store, const std::string& fullName, const std::string& conName);
 
-        static Value registerTopicPublisher(ProcessStore* store, const Value& opInfo, const Value& topicInfo);
         static Value registerTopicSubscriber(ProcessStore* store, const Value& opInfo, const std::string& argName, const Value& topicInfo);
 
         static Value registerOperationConsumerConnection(ProcessStore* store, const Value& ci);

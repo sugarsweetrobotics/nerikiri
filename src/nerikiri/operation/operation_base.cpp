@@ -64,7 +64,7 @@ std::vector<std::shared_ptr<OperationInletAPI>> OperationBase::inlets() const{ r
 
 
 Value OperationBase::invoke() {
-  logger::trace("OPerationBase({})::invoke() called", fullName());
+  logger::trace("OperationBase({})::invoke() called", fullName());
   try {
     if (nerikiri::functional::for_all<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return inlet->isUpdated(); })) {
       logger::trace("OperationBase({})::invoke() inlet updated. Collecting data and calling...", fullName());

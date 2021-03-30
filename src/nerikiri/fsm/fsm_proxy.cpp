@@ -42,6 +42,14 @@ public:
     virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c);
 
     virtual Value removeConnection(const std::string& _fullName);
+
+    virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
+        // TODO: Not Impl
+    }
+
+    virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) override {
+        // TODO: Not Impl
+    }
 };
 
 class FSMStateProxy : public FSMStateAPI {

@@ -9,6 +9,8 @@ namespace nerikiri {
     class OperationAPI;
     class ConnectionAPI;
 
+    class OperationInletAPI;
+
     /**
      * 
      * 
@@ -30,6 +32,10 @@ namespace nerikiri {
         virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const = 0;
 
         virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) = 0;
+
+        virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) = 0;
+
+        virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) = 0;
 
         virtual Value removeConnection(const std::string& _fullName) = 0;
 
@@ -70,6 +76,10 @@ namespace nerikiri {
         virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const = 0;
 
         virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) = 0;
+
+        virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) = 0;
+
+        virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) = 0;
 
         virtual Value removeConnection(const std::string& _fullName) = 0;
     };

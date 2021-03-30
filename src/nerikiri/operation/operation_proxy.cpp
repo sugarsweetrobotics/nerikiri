@@ -76,6 +76,18 @@ public:
     virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
         return broker_->operationInlet()->defaultValue(fullName_, name_);
     }
+
+
+    virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
+        // TODO: connect imple
+        return broker_->operationInlet()->connectTo(fullName_, name_, connectionInfo);
+    }
+
+
+    virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) override {
+        // TODO: connect imple
+    }
+
     
     virtual Value removeConnection(const std::string& _fullName) override {
         return broker_->operationInlet()->defaultValue(fullName_, name_);
@@ -125,6 +137,16 @@ public:
 
     Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
         auto value = broker_->operationOutlet()->addConnection(fullName_, c->info());
+    }
+
+
+    virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override {
+        // TODO: connect imple
+        return broker_->operationOutlet()->connectTo(fullName_, connectionInfo);
+    }
+
+    virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override {
+        // TODO: connect imple
     }
 
     Value removeConnection(const std::string& _fullName) override {

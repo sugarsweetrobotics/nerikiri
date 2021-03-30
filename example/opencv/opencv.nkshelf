@@ -9,9 +9,13 @@
 
     "containers": {
       "load_paths": [ "${ShelfDirectory}", "../build/lib", "../build/lib/Debug}" ],
-        "preload": {
-            "OpenCVCamera": ["initialize", "capture"],
-            "OpenCVCascadeClassifier": ["initialize", "detectMultiScale"]
-        }
+        "preload": [{
+            "typeName": "OpenCVCamera",
+            "operations": ["initialize", "capture"]
+        },
+        {
+            "typeName": "OpenCVCascadeClassifier",
+            "operations": ["initialize", "detectMultiScale"]
+        }]
     }
 }

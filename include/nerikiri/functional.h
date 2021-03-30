@@ -129,6 +129,14 @@ namespace nerikiri {
 
 
   namespace functional {
+
+    template<typename V>
+    std::vector<V> join(const std::vector<V>& v0, const std::vector<V>& v1) {
+      std::vector<V> v{v0.begin(), v0.end()};
+      v.insert(v.end(), v1.begin(), v1.end());
+      return v;
+    }
+
     template<typename V>
     bool for_all(const std::vector<V>& vec, std::function<bool(const V&)> func) {
       bool flag = true;

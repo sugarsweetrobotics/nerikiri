@@ -36,6 +36,7 @@ namespace nerikiri {
     std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
 
     std::vector<std::shared_ptr<OperationAPI>> operations_;
+    std::vector<std::shared_ptr<OperationAPI>> operationProxies_;
     std::vector<std::shared_ptr<OperationFactoryAPI>> operationFactories_;
 
     std::vector<std::shared_ptr<ContainerAPI>> containers_;
@@ -54,6 +55,7 @@ namespace nerikiri {
     std::vector<std::shared_ptr<TopicFactoryAPI>> topicFactories_;
 
     std::vector<std::shared_ptr<FSMAPI>> fsms_;
+    std::vector<std::shared_ptr<FSMAPI>> fsmProxies_;
     std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories_;
 
     friend class Process;
@@ -99,7 +101,7 @@ namespace nerikiri {
 
     template<class T>
     Value updateFullName(std::vector<std::shared_ptr<T>>& collection, const std::shared_ptr<T>& obj, const std::string& ext) {
-      if (obj->isNull()) return Value::error(logger::error("Process::add failed. Object is null."));
+      if (obj->isNull()) return Value::error(logger::error("Process::add({}) failed. Object is null.", nerikiri::demangle(typeid(T).name())));
       auto nameSpace = ""; /// ネームスペースは未来に実装予定
       if (obj->getInstanceName() == "") { /// infoへのinstanceName指定がまだなら自動指定する
         auto name = nerikiri::numbering_policy<std::shared_ptr<T>>(collection, obj->info().at("typeName").stringValue(), ext);
@@ -107,7 +109,7 @@ namespace nerikiri {
       } else { /// instanceNameが指定されているなら，重複をチェックする
         for(auto& c : collection) {
           if (c->info().at("fullName") == obj->info().at("fullName")) {
-            return Value::error(logger::error("ProcessStore::add({}) Error. Process already has the same name operation", typeid(T).name()));
+            return Value::error(logger::error("ProcessStore::add({}) Error. Process already has the same name ({}) operation",  nerikiri::demangle(typeid(T).name()), obj->info().at("fullName")));
           }
         }
         //obj->setFullName(nameSpace, obj->getInstanceName()); /// fullName指定
@@ -121,7 +123,7 @@ namespace nerikiri {
     template<class T>
     Value add(std::vector<std::shared_ptr<T>>& collection, const std::shared_ptr<T>& obj, const std::string& ext) {
       /// まずはNULLオブジェクトならエラーを返す
-      if (obj->isNull()) { return Value::error(logger::error("ProcessStore::add<>({}) failed. Object is null.", typeid(T).name())); }
+      if (obj->isNull()) { return Value::error(logger::error("ProcessStore::add<>({}) failed. Object is null.", nerikiri::demangle(typeid(T).name()))); }
 
       auto info = updateFullName(collection, obj, ext);
       if (!info.isError()) {
@@ -143,9 +145,6 @@ namespace nerikiri {
                               [&fullName](auto c){return c->fullName() == fullName; }), collection.end());
       return c.value()->info();
     }
-  public:
-    // PROXIES 
-    std::shared_ptr<OperationAPI> operationProxy(const Value& info);
 
   public:
     /**
@@ -216,8 +215,16 @@ namespace nerikiri {
       return add<OperationAPI>(operations_, operation, ".ope");
     }
 
+    Value addOperationProxy(const std::shared_ptr<OperationAPI>& operation) {
+      return add<OperationAPI>(operationProxies_, operation, ".ope");
+    }
+
     Value deleteOperation(const std::string& fullName) {
       return del<OperationAPI>(operations_, fullName);
+    }
+
+    Value deleteOperationProxy(const std::string& fullName) {
+      return del<OperationAPI>(operationProxies_, fullName);
     }
 
     Value addOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) {
@@ -259,8 +266,16 @@ namespace nerikiri {
       return add<FSMAPI>(fsms_, fsm, ".fsm");
     }
 
+    Value addFSMProxy(const std::shared_ptr<FSMAPI>& obj) {
+      return add<FSMAPI>(fsmProxies_, obj, ".fsm");
+    }
+
     Value deleteFSM(const std::string& fullName) {
       return del<FSMAPI>(fsms_, fullName);
+    }
+
+    Value deleteFSMProxy(const std::string& fullName) {
+      return del<FSMAPI>(fsmProxies_, fullName);
     }
 
     Value addFSMFactory(const std::shared_ptr<FSMFactoryAPI>& ff) {
@@ -301,6 +316,12 @@ namespace nerikiri {
 
     Value addBrokerFactory(const std::shared_ptr<BrokerFactoryAPI>& bf);
     Value deleteBrokerFactory(const std::string& fullName);
+
+
+  public:
+    // PROXIES 
+    std::shared_ptr<OperationAPI> operationProxy(const Value& info);
+    std::shared_ptr<FSMAPI> fsmProxy(const Value& info);
 
 
     //-------- getter ---------

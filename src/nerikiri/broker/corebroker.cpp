@@ -219,11 +219,13 @@ public:
         } else if (className == "container") {
             return ObjectFactory::createContainer(*process_->store(), info);
         } else if (className == "containerOperation") {
-            return ObjectFactory::createContainerOperation(*process_->store(), info);
+            return ObjectFactory::createContainerOperation(*process_->store(), process_->store()->container(Value::string(info.at("containerFullName")))->info(), info);
         } else if (className == "ec") {
             return ObjectFactory::createExecutionContext(*process_->store(), info);
         } else if (className == "fsm") {
             return ObjectFactory::createFSM(*process_->store(), info);
+        } else if (className == "topic") {
+            return ObjectFactory::createTopic(*process_->store(), info);
         } else if (className == "connection") {
             return ConnectionBuilder::createConnection(process_->store(), info);
         } else if (className == "outletConnection") {
@@ -231,8 +233,6 @@ public:
         } else if (className == "inletConnection") {
             return ConnectionBuilder::createInletConnection(process_->store(), info, process_->coreBroker());
         }
-
-
         return Value::error(logger::error("CoreBroker::createObject({}, {}) failed. Class name is invalid.", className, info));
     }
 
@@ -293,7 +293,9 @@ public:
     }
 
 
-  virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {}
+  virtual Value getChildrenClassObjectInfos(const std::string& parentName, const std::string& className) const override {
+      return Value::error(logger::error("CoreBroker::getChildrenClassObjectInfos() failed. Not implemented"));
+  }
 
   virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
     if (className == "operation") {

@@ -41,7 +41,15 @@ using namespace nerikiri;
     virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
       return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__));
     }
-    
+
+    virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override {
+        return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationInlet is null.", __func__));
+    }
+
+    virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override {
+        return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationInlet is null.", __func__));
+    }
+
     virtual Value removeConnection(const std::string& _fullName) override {
       return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationOutlet is null.", __func__));
     }

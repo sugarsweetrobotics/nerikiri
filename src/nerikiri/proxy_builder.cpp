@@ -4,18 +4,49 @@
 #include <nerikiri/fsm_proxy.h>
 #include <nerikiri/ec_proxy.h>
 #include <nerikiri/operation_proxy.h>
+#include <nerikiri/objectfactory.h>
+
 using namespace nerikiri;
+
+
+
+std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+    auto fullName = Value::string(value.at("fullName"));
+    std::string brokerTypeName = "CoreBroker";
+    if (!value.hasKey("broker")) {
+        return store->operation(fullName);
+    }
+    auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+    auto op = nerikiri::operationProxy(broker, fullName);
+    Value info = store->addOperationProxy(op);
+    if (info.isError()) {
+        return nullOperation();
+    }
+    return op;
+}
+
+std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+    auto fullName = Value::string(value.at("fullName"));
+    std::string brokerTypeName = "CoreBroker";
+    if (!value.hasKey("broker")) {
+        return store->fsm(fullName);
+    }
+    auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+    auto fsm = nerikiri::fsmProxy(broker, fullName);
+    Value info = store->addFSMProxy(fsm);
+    if (info.isError()) {
+        return nullFSM();
+    }
+    return fsm;
+}
+
+
 
 std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, const std::shared_ptr<BrokerProxyAPI>& broker) {
     return nerikiri::operationProxy(broker, Value::string(value.at("fullName")));
 }
 
-std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
-    auto fullName = Value::string(value.at("fullName"));
-//    auto op = store->operation(Value::string(value.at("fullName")));
-    auto brk = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-    return nerikiri::operationProxy(brk, fullName);
-}
+
 
 std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, ProcessStore* store) {
     auto fullName = Value::string(value.at("fullName"));
@@ -38,11 +69,7 @@ std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, con
     return nerikiri::fsmProxy(broker, Value::string(value.at("fullName")));
 }
 
-std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
-    auto fullName = Value::string(value.at("fullName"));
-    auto brk = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-    return nerikiri::fsmProxy(brk, fullName);
-}
+
 
 /**
  * inletOwnerClassName must be "operation" or "fsm"
@@ -72,46 +99,62 @@ std::string applyConnectionAutoRename(const std::string& name, const int count_h
 }
 
 std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(const Value& value, ProcessStore* store) {
+
+    auto outlet_side_operation = store->operation(Value::string(value.at("outlet").at("operation").at("fullName")));
+
+    std::shared_ptr<OperationInletAPI> inlet = nullptr;
+    std::shared_ptr<Object> inlet_holder = nullptr;
+    auto className = "operation";
     if (value.at("inlet").hasKey("operation")) {
         // Check the same connection route is already connected
         auto inlet_side_operationProxy = ProxyBuilder::operationProxy(value.at("inlet").at("operation"), store);
-        auto outlet_side_operation = store->operation(Value::string(value.at("outlet").at("operation").at("fullName")));
-        auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlet_side_operationProxy->inlets(), 
+        auto inlet_opt = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlet_side_operationProxy->inlets(), 
             [&value](auto i) { return i->name() == Value::string(value.at("inlet").at("name")); }
         );
-        if (inlet) { 
-            if (check_the_same_route_connection_exists(outlet_side_operation->outlet()->connections(), value, "operation")) {
-                logger::error("ProxyBuilder::{}({}) fails. Outlet side has the same route connection", __func__, value);
-                return nullConnection();
-            }
-            auto name = Value::string(value.at("name"));
-            int count_hint = 0;
-            while (check_the_same_name_connection_exists(outlet_side_operation->outlet()->connections(), name)) {
-                logger::error("ProxyBuilder::{}({}) fails. Outlet side has the same name connection", __func__, value);
-                // TODO: ここでConnectionInfoがオート裏ネームの設定ならリネームする
-                if (value.hasKey("namingPolicy")) {
-                    auto v = Value::string(value.at("namingPolicy"));
-                    if (v == "true" || v == "True" || v == "TRUE") {
-                        name = applyConnectionAutoRename(name, count_hint++);
-                    }
-                } else { break; }
-            }
-            //if (check_the_same_route_connection_exists(inlet.value()->connections(), value, "operation")) {
-            //    logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, value);
-            //    return nullConnection();
-            // }
-            return createConnection(name, connectionType(Value::string(value.at("type"))), inlet.value(), outlet_side_operation->outlet(), inlet_side_operationProxy);
+        if (!inlet_opt) {
+            logger::error("ProxyBuilder::{}({}) failed. Inlet not found", value);
+            return nullConnection();
         }
-        return nullConnection();
+        inlet = inlet_opt.value();
+        inlet_holder = inlet_side_operationProxy;
     } else if (value.at("inlet").hasKey("fsm")) {
-        auto fsmp = ProxyBuilder::fsmProxy(value.at("inlet").at("fsm"), store);
-        auto op = store->operation(Value::string(value.at("outlet").at("operation").at("fullName")));
-        auto inlet = fsmp->fsmState(Value::string(value.at("inlet").at("name")))->inlet();
-        return createConnection(Value::string(value.at("name")), connectionType(Value::string(value.at("type"))), inlet, op->outlet(), fsmp);
+        className = "fsm";
+        auto inlet_side_fsm_proxy = ProxyBuilder::fsmProxy(value.at("inlet").at("fsm"), store);
+        inlet = inlet_side_fsm_proxy->fsmState(Value::string(value.at("inlet").at("name")))->inlet();
+        inlet_holder = inlet_side_fsm_proxy;
+
+        //return createConnection(Value::string(value.at("name")), connectionType(Value::string(value.at("type"))), inlet, outlet_side_operation->outlet(), inlet_side_fsm_proxy);
+    } else if (value.at("inlet").hasKey("topic")) {
+        className = "topic";
+        auto inlet_side_topic_info = ObjectFactory::createTopic(*store, value.at("inlet").at("topic"));
+        auto inlet_side_topic = store->topic(Value::string(value.at("inlet").at("topic").at("fullName")));
+        inlet = inlet_side_topic->inlet(Value::string(value.at("inlet").at("name")));
+        inlet_holder = inlet_side_topic;
     }
 
-    logger::error("ProxyBuilder::outgoingOperationConnectionProxy({}) failed. 'inlet' object must have 'operation' or 'fsm' element object.", value);
-    return nullConnection();
+    if (check_the_same_route_connection_exists(outlet_side_operation->outlet()->connections(), value, className)) {
+        logger::error("ProxyBuilder::{}({}) fails. Outlet side has the same route connection", __func__, value);
+        return nullConnection();
+    }
+
+
+    auto name = Value::string(value.at("name"));
+    int count_hint = 0;
+    while (check_the_same_name_connection_exists(outlet_side_operation->outlet()->connections(), name)) {
+        logger::error("ProxyBuilder::{}({}) fails. Outlet side has the same name connection", __func__, value);
+        // TODO: ここでConnectionInfoがオート裏ネームの設定ならリネームする
+        if (value.hasKey("namingPolicy")) {
+            auto v = Value::string(value.at("namingPolicy"));
+            if (v == "auto") {
+                name = applyConnectionAutoRename(name, count_hint++);
+            }
+        } else { break; }
+    }
+    //if (check_the_same_route_connection_exists(inlet.value()->connections(), value, "operation")) {
+    //    logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, value);
+    //    return nullConnection();
+    // }
+    return createConnection(name, connectionType(Value::string(value.at("type"))), inlet, outlet_side_operation->outlet(), inlet_holder);
 }
 
 std::shared_ptr<ConnectionAPI> ProxyBuilder::incomingOperationConnectionProxy(const Value& value, ProcessStore* store) {
@@ -140,7 +183,7 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::incomingOperationConnectionProxy(co
             // TODO: ここでConnectionInfoがオート裏ネームの設定ならリネームする
             if (value.hasKey("namingPolicy")) {
                 auto v = Value::string(value.at("namingPolicy"));
-                if (v == "true" || v == "True" || v == "TRUE") {
+                if (v == "auto") {
                     name = applyConnectionAutoRename(name, count_hint++);
                 }
             } else {
