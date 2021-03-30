@@ -70,6 +70,7 @@ signal.cpp
 value.cpp 
 
 topic/topic_api.cpp
+topic/topic_factory.cpp
 #broker.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 )

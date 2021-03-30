@@ -23,7 +23,7 @@ namespace nerikiri {
         static Value createOutletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& receiverBroker/*=nullptr*/);
 
 
-        static Value createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+        //static Value createConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
         static Value deleteConnection(ProcessStore* store, const std::string& connectionFullName, BrokerAPI* receiverBroker=nullptr);
 
 

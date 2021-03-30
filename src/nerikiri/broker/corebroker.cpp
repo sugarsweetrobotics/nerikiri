@@ -1,4 +1,4 @@
-#include <utility>
+// #include <utility>
 
 #include "nerikiri/process_api.h"
 #include "nerikiri/corebroker.h"
@@ -227,7 +227,7 @@ public:
         } else if (className == "topic") {
             return ObjectFactory::createTopic(*process_->store(), info);
         } else if (className == "connection") {
-            return ConnectionBuilder::createConnection(process_->store(), info);
+            return ConnectionBuilder::createConnection(*process_->store(), info);
         } else if (className == "outletConnection") {
             return ConnectionBuilder::createOutletConnection(process_->store(), info, process_->coreBroker());
         } else if (className == "inletConnection") {
@@ -392,6 +392,14 @@ public:
   virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
       return process_->store()->operation(fullName)->outlet()->removeConnection(name);
   }
+
+    virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
+        return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
+
+    virtual Value disconnectFrom(const std::string& fullName, const Value& inletInfo) override {
+        return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
 };
 
 class CoreOperationInletBroker : public OperationInletBrokerAPI {
@@ -489,6 +497,16 @@ public:
       return Value::error(logger::error("CoreOperationInletBroker::removeConnection({}, {}) failed. Inlet can not be found.", fullName, targetName));
   }
   
+  // TODO: 未実装
+     virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
+
+
+  // TODO: 未実装
+    virtual Value disconnectFrom(const std::string& fullName, const std::string& targetName, const Value& outletInfo) override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
 };
 
 
@@ -504,7 +522,7 @@ public:
         if (connectionInfo.at("inlet").hasKey("fsm")) {
             return ConnectionBuilder::createStateBind(process_->store(), connectionInfo);
         } else {
-            return ConnectionBuilder::createConnection(process_->store(), connectionInfo);
+            return ConnectionBuilder::createConnection(*process_->store(), connectionInfo);
         }
     }
 
@@ -706,7 +724,19 @@ public:
       auto inlet = process_->store()->fsm(fullName)->fsmState(targetName)->inlet();
       return inlet->removeConnection(name); 
   }
-  
+
+
+  // TODO: 未実装
+     virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
+
+
+  // TODO: 未実装
+    virtual Value disconnectFrom(const std::string& fullName, const std::string& targetName, const Value& outletInfo) override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
+
 };
 
 

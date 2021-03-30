@@ -21,7 +21,7 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
     auto op = store.operation(Value::string(opInfo.at("fullName")));
     if (oinfo.hasKey("publish")) {
       oinfo.at("publish").const_list_for_each([&op, &store](auto pubTopicInfo) {
-        TopicFactory::publishTopic(store, op, pubTopicInfo);
+        publishTopic(store, op, pubTopicInfo);
       });
     }
   });
@@ -184,7 +184,7 @@ void ProcessBuilder::preloadConnections(ProcessStore& store, const Value& config
   logger::trace("Process::_preloadConnections() entry");
   config.at("connections").const_list_for_each([&store](auto& value) {
    // ConnectionBuilder::registerProviderConnection(store(), value);
-    ConnectionBuilder::createConnection(&store, value);
+    ConnectionBuilder::createConnection(store, value);
   });
   logger::trace("Process::_preloadConnections() exit");
 }

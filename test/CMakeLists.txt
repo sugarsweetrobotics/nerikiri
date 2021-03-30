@@ -3,8 +3,8 @@
 if (BUILD_NK_TEST)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2fg
-)
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/single_include/catch2)
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/src)
 
 OPTION(BUILD_NK_TEST_HTTP "Http Server Client Test" OFF)
 OPTION(BUILD_NK_TEST_HTTPBROKER "HttpBroker Test" OFF)
@@ -21,7 +21,7 @@ set(EXAMPLE_LIBS nerikiri)
 
 function(declare_test arg1)
   add_executable(${arg1}_test ${arg1}_test.cpp)
-  target_link_libraries(${arg1}_test nerikiri Catch2::Catch2)
+  target_link_libraries(${arg1}_test nerikiri Catch2::Catch2WithMain)
   add_dependencies(${arg1}_test nerikiri ${EXAMPLE_MODULES})
   add_test(NAME ${arg1}_test COMMAND $<TARGET_FILE:${arg1}_test>
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test

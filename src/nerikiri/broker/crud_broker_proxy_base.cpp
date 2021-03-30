@@ -334,6 +334,14 @@ public:
     virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
         return Value::error(logger::error("NullOperationInletBroker::{}({}, {}) called. Object is null.", __func__, fullName, targetName));
     }
+
+    virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
+
+    virtual Value disconnectFrom(const std::string& fullName, const std::string& targetName, const Value& outletInfo) override {
+        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+    }
 };
 
 CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& typeName, const std::string& fullName) : 
