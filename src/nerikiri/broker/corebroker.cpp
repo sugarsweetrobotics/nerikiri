@@ -227,7 +227,7 @@ public:
         } else if (className == "topic") {
             return ObjectFactory::createTopic(*process_->store(), info);
         } else if (className == "connection") {
-            return ConnectionBuilder::createConnection(*process_->store(), info);
+            return ConnectionBuilder::createOperationConnection(*process_->store(), info);
         } else if (className == "outletConnection") {
             return ConnectionBuilder::createOutletConnection(process_->store(), info, process_->coreBroker());
         } else if (className == "inletConnection") {
@@ -394,7 +394,10 @@ public:
   }
 
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
-        return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
+        // TODO:
+        auto inlet = process_->store()->operationProxy(conInfo["inlet"]["operation"])->inlet(conInfo["inlet"]["name"].stringValue());
+        return process_->store()->operation(fullName)->outlet()->connectTo(inlet, conInfo);
+        //return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
     }
 
     virtual Value disconnectFrom(const std::string& fullName, const Value& inletInfo) override {
@@ -499,7 +502,15 @@ public:
   
   // TODO: 未実装
      virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
-        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+         auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+             return i->name() == targetName;
+         });
+         if (inlet) {
+             auto outlet = process_->store()->operationProxy(conInfo["outlet"]["operation"])->outlet();
+             return inlet.value()->connectTo(outlet, conInfo);
+             
+         }
+         return Value::error(logger::error("NullOperationInletBroker::{}({}) called. inlet not found.", __func__, fullName));
     }
 
 
@@ -522,7 +533,7 @@ public:
         if (connectionInfo.at("inlet").hasKey("fsm")) {
             return ConnectionBuilder::createStateBind(process_->store(), connectionInfo);
         } else {
-            return ConnectionBuilder::createConnection(*process_->store(), connectionInfo);
+            return ConnectionBuilder::createOperationConnection(*process_->store(), connectionInfo);
         }
     }
 

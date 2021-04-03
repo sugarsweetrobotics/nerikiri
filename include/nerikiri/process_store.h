@@ -158,6 +158,10 @@ namespace nerikiri {
       }
       return ops;
     }
+      
+      std::vector<std::shared_ptr<OperationAPI>> operationProxies() const {
+          return {operationProxies_.begin(), operationProxies_.end()};
+      }
 
     std::vector<std::shared_ptr<OperationFactoryAPI>> operationFactories() const {
       return {operationFactories_.begin(), operationFactories_.end()};

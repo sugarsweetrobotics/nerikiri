@@ -10,7 +10,7 @@ namespace nerikiri {
 
     class ConnectionBuilder {
     public:
-        static Value createConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+        static Value createOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 
         static Value createOperationToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 

@@ -17,6 +17,7 @@ OperationInletBase::OperationInletBase(const std::string& name, OperationAPI* op
 Value OperationInletBase::info() const {
   return {
     {"name", name()},
+      {"ownerFullName", operation_->fullName()},
     {"value", get()},
     {"defaultValue", defaultValue()},
     {"connections", {

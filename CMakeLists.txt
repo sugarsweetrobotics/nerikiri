@@ -8,10 +8,14 @@ set(NERIKIRI_VERSION_SUBMINOR 1)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #  set(CMAKE_C_COMPILER "gcc")
-#  set(CMAKE_C_COMPILER "clang")
+# set(CMAKE_C_COMPILER "clang")
 #  set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_CXX_COMPILER "clang++")
+# set(CMAKE_CXX_COMPILER "clang++")
 endif()
+
+# set(CMAKE_C_COMPILER "clang")
+#  set(CMAKE_CXX_COMPILER "g++")
+# set(CMAKE_CXX_COMPILER "clang++")
 
 project(nerikiri LANGUAGES CXX C VERSION ${NERIKIRI_VERSION})
 

@@ -51,6 +51,7 @@ public:
       {"ownerFullName", inlet()->ownerFullName()},
       {"fullName", inlet()->ownerFullName() + ':' + inlet()->name()}
     };
+    /*
     if (obj_holder_->className() == "Operation" || obj_holder_->className() == "OperationProxy" || obj_holder_->className() == "ContainerOperation") {
       i["inlet"]["operation"] = {
         {"fullName", inlet()->ownerFullName()}
@@ -60,6 +61,7 @@ public:
         {"fullName", inlet()->ownerFullName()}
       };
     }
+     */
 
 
     i["outlet"] = {

@@ -20,6 +20,8 @@ public:
         // TODO: ここでinletの実体を返さないとdeleteできない．
         if (info_.at("inlet").hasKey("operation")) {
             return nerikiri::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("operation").at("fullName")), Value::string(info_.at("inlet").at("name")));
+        } else {
+            return nerikiri::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("ownerFullName")), Value::string(info_.at("inlet").at("name")));
         }
         return nullOperationInlet();
     }

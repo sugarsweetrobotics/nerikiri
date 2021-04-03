@@ -147,6 +147,7 @@ public:
 
     virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override {
         // TODO: connect imple
+        return broker_->operationOutlet()->disconnectFrom(fullName_, inlet->info());
     }
 
     Value removeConnection(const std::string& _fullName) override {

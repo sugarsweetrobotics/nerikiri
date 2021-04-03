@@ -52,6 +52,7 @@ Value OperationOutletBase::put(Value&& v) {
 Value OperationOutletBase::connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo_) {
   // TODO: 未実装
   // return addConnection( createConnection(name, connectionType(Value::string(connectionInfo_.at("type"))), inlet, operation_->outlet(), nullptr) );
+    return addConnection( createConnection(Value::string(connectionInfo_["name"]), connectionType(Value::string(connectionInfo_["type"])), inlet, operation_->outlet(), nullptr));
 }
     
 Value OperationOutletBase::disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) {

@@ -20,7 +20,7 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value
     auto op = nerikiri::operationProxy(broker, fullName);
     Value info = store->addOperationProxy(op);
     if (info.isError()) {
-        return nullOperation();
+        return store->operationProxy(value);
     }
     return op;
 }

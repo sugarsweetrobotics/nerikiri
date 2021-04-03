@@ -166,6 +166,9 @@ std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string&
 }
 
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
+    auto fullName = Value::string(info.at("fullName"));
+  auto f = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+    if (f) return f.value();
   if (info.hasKey("broker")) {
     return ProxyBuilder::operationProxy(info, this);
   }

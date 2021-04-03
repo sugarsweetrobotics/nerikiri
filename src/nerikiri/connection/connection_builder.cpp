@@ -86,25 +86,31 @@ Value ConnectionBuilder::createOutletConnection(ProcessStore* store, const Value
 /**
  * 接続の作成
  */
-Value ConnectionBuilder::createConnection(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
+Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
   Value connectionInfo = connectionInfo_;
   logger::trace("ConnectionBuilder::createConnection({}) called", connectionInfo);
 
   // まずinletとoutletを用意．別のホストならばbroker経由のproxyになる．
-  std::shared_ptr<OperationInletAPI> inlet = nullptr;
-  std::shared_ptr<OperationOutletAPI> outlet = nullptr;
-  if (connectionInfo["inlet"].hasKey("operation")) {
-    inlet = store.operationProxy(connectionInfo["inlet"]["operation"])->inlet(Value::string(connectionInfo["inlet"]["name"]));
-  } else if (connectionInfo["inlet"].hasKey("fsm")) {
-    inlet = store.fsmProxy(connectionInfo["inlet"]["fsm"])->fsmState(Value::string(connectionInfo["inlet"]["name"]))->inlet();
-  }
-  if (connectionInfo["outlet"].hasKey("operation")) {
-    outlet = store.operationProxy(connectionInfo["outlet"]["operation"])->outlet();
-  }
-  // もしoutletとinletの両方とも用意できなかったらエラーを返す
-  if (! ( outlet && inlet )) {
-      return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
-  }
+  // std::shared_ptr<OperationInletAPI> inlet = nullptr;
+  // std::shared_ptr<OperationOutletAPI> outlet = nullptr;
+  // if (connectionInfo["inlet"].hasKey("operation")) {
+  //   inlet = store.operationProxy(connectionInfo["inlet"]["operation"])->inlet(Value::string(connectionInfo["inlet"]["name"]));
+  // } 
+  // else if (connectionInfo["inlet"].hasKey("fsm")) {
+  //   inlet = store.fsmProxy(connectionInfo["inlet"]["fsm"])->fsmState(Value::string(connectionInfo["inlet"]["name"]))->inlet();
+  // }
+  // if (connectionInfo["outlet"].hasKey("operation")) {
+  //   outlet = store.operationProxy(connectionInfo["outlet"]["operation"])->outlet();
+  // }
+  // // もしoutletとinletの両方とも用意できなかったらエラーを返す
+  // if (! ( outlet && inlet )) {
+  //     return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
+  // }
+  auto inlet = store.operationProxy(connectionInfo["inlet"]["operation"])->inlet(Value::string(connectionInfo["inlet"]["name"]));
+  auto outlet = store.operationProxy(connectionInfo["outlet"]["operation"])->outlet();
+  //if ( outlet->isNull() || inlet->isNull() ) {
+  //  return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
+  //}
 
   // 同一ルートがあるかどうか確認．あるならエラー
   if (check_the_same_route_connection_exists(outlet, inlet)) {
@@ -121,7 +127,7 @@ Value ConnectionBuilder::createConnection(ProcessStore& store, const Value& conn
       // 同一名称があってnamingPolicyがautoでない場合はエラーを返す
       return Value::error(logger::error("ConnectionBuilder::{}({}) failed. Outlet side has the same name connection", __func__, connectionInfo));
     }
-  } 
+  }
   connectionInfo["name"] = name;
 
   // outlet側から接続を構築する．失敗したらエラーを返す

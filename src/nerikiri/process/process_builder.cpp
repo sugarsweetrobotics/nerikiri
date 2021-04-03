@@ -184,7 +184,8 @@ void ProcessBuilder::preloadConnections(ProcessStore& store, const Value& config
   logger::trace("Process::_preloadConnections() entry");
   config.at("connections").const_list_for_each([&store](auto& value) {
    // ConnectionBuilder::registerProviderConnection(store(), value);
-    ConnectionBuilder::createConnection(store, value);
+   /// TODO: ここではStateBindも来るかもしれない
+    ConnectionBuilder::createOperationConnection(store, value);
   });
   logger::trace("Process::_preloadConnections() exit");
 }
