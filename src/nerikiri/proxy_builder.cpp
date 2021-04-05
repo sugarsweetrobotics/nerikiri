@@ -35,7 +35,7 @@ std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, ner
     auto fsm = nerikiri::fsmProxy(broker, fullName);
     Value info = store->addFSMProxy(fsm);
     if (info.isError()) {
-        return nullFSM();
+        return store->fsmProxy(value);
     }
     return fsm;
 }

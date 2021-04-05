@@ -176,6 +176,11 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
 }
 
 std::shared_ptr<FSMAPI> ProcessStore::fsmProxy(const Value& info) {
+    auto fullName = Value::string(info.at("fullName"));
+    auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsmProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+      if (f) return f.value();
+    
+    
   if (info.hasKey("broker")) {
     return ProxyBuilder::fsmProxy(info, this);
   }

@@ -196,11 +196,27 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
 }
 */
 
-Value ConnectionBuilder::createStateBind(ProcessStore* store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
+Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
+    // これinlet側はFSM、outlet側はoperationを使う
+    
   Value connectionInfo = connectionInfo_;
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
   auto value = connectionInfo.at("inlet").at("fsm");
-  auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  auto inletBroker = store.brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+
+    
+    auto inlet = store.fsmProxy(connectionInfo["inlet"]["fsm"])->fsmState(Value::string(connectionInfo["inlet"]["name"]))->inlet();
+    auto outlet = store.operationProxy(connectionInfo["outlet"]["operation"])->outlet();
+    //if ( outlet->isNull() || inlet->isNull() ) {
+    //  return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
+    //}
+
+    // 同一ルートがあるかどうか確認．あるならエラー
+    if (check_the_same_route_connection_exists(outlet, inlet)) {
+      return Value::error(logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, connectionInfo));
+    }
+
+    
   // TODO: 名前が同じのがあったらどうするか？
   auto cons = inletBroker->fsmStateInlet()->connections(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")));
   cons.const_list_for_each([&connectionInfo](const auto& c) {
@@ -212,8 +228,11 @@ Value ConnectionBuilder::createStateBind(ProcessStore* store, const Value& conne
   inletBroker->fsmStateInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
   // TODO: 名前が同じのがあったらどうするか？
   value = connectionInfo.at("outlet").at("operation");
-  auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-  return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
+  auto outletBroker = store.brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+  // TODO: ここはconnectToに変更した方がいいな
+    return outletBroker->operationOutlet()->connectTo(Value::string(value.at("fullName")), connectionInfo);
+
+    // return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
 }
 
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& cInfo, const Value& opInfo, const Value& topicInfo) {

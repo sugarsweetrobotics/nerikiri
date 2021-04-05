@@ -386,6 +386,7 @@ public:
   }
 
   virtual Value addConnection(const std::string& fullName, const Value& c) override {
+      /// FSMからはこちらが呼ばれるのはなんとかしなければならない
       return process_->store()->operation(fullName)->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(c, process_->store()));
   }
   
@@ -395,7 +396,15 @@ public:
 
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
         // TODO:
-        auto inlet = process_->store()->operationProxy(conInfo["inlet"]["operation"])->inlet(conInfo["inlet"]["name"].stringValue());
+        std::shared_ptr<nerikiri::OperationInletAPI> inlet = nullptr;
+        if (conInfo["inlet"].hasKey("fsm")) {
+            inlet = process_->store()->operationProxy(conInfo["inlet"]["fsm"])->inlet(conInfo["inlet"]["name"].stringValue());
+        } else if (conInfo["inlet"].hasKey("operation")) {
+            inlet = process_->store()->operationProxy(conInfo["inlet"]["operation"])->inlet(conInfo["inlet"]["name"].stringValue());
+        } else {
+            return Value::error(logger::error("CoreOperationOutletBroker::{}({}) called. passed connection information is invalid ({})", __func__, fullName, conInfo));
+        }
+        
         return process_->store()->operation(fullName)->outlet()->connectTo(inlet, conInfo);
         //return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
     }
@@ -531,7 +540,7 @@ public:
     virtual Value createConnection(const Value& connectionInfo) override {
         logger::trace("CoreConnectionBroker::createConnection({}) called", connectionInfo);
         if (connectionInfo.at("inlet").hasKey("fsm")) {
-            return ConnectionBuilder::createStateBind(process_->store(), connectionInfo);
+            return ConnectionBuilder::createStateBind(*process_->store(), connectionInfo);
         } else {
             return ConnectionBuilder::createOperationConnection(*process_->store(), connectionInfo);
         }

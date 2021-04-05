@@ -298,24 +298,22 @@ SCENARIO( "FSM test", "[ec]" ) {
           {"name", "con0"},
           {"type", "stateBind"},
           {"broker", "CoreBroker"},
-          {"input", {
-            {"info", {
-              {"fullName", "FSM0.fsm"}
-            }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }},
-            {"target", {
-              {"name", "running"}
-            }}
+          {"inlet", {
+              {"name", "running"},
+              {"fsm", {
+                  {"fullName", "FSM0.fsm"},
+                  {"broker", {
+                      {"typeName", "CoreBroker"}
+                  }}
+              }}
           }},
-          {"output", {
-            {"info", {
-              {"fullName", "add0.ope"}
-            }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }}
+          {"outlet", {
+              {"operation", {
+                  {"fullName", "add0.ope"},
+                  {"broker", {
+                      {"typeName", "CoreBroker"}
+                  }}
+              }}
           }}
         };
 
@@ -326,25 +324,23 @@ SCENARIO( "FSM test", "[ec]" ) {
           {"name", "con0"},
           {"type", "stateBind"},
           {"broker", "CoreBroker"},
-          {"input", {
-            {"info", {
-              {"fullName", "FSM0.fsm"}
+            {"inlet", {
+                {"name", "running"},
+                {"fsm", {
+                    {"fullName", "FSM0.fsm"},
+                    {"broker", {
+                        {"typeName", "CoreBroker"}
+                    }}
+                }}
             }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }},
-            {"target", {
-              {"name", "running"}
+            {"outlet", {
+                {"operation", {
+                    {"fullName", "add0.ope"},
+                    {"broker", {
+                        {"typeName", "CoreBroker"}
+                    }}
+                }}
             }}
-          }},
-          {"output", {
-            {"info", {
-              {"fullName", "add0.ope"}
-            }},
-            {"broker", {
-              {"typeName", "CoreBroker"}
-            }}
-          }}
         };
 
         auto ret = p->coreBroker()->connection()->createConnection(conInfo);

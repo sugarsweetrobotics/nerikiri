@@ -182,7 +182,10 @@ namespace nerikiri {
     std::vector<std::shared_ptr<FSMAPI>> fsms() const {
       return {fsms_.begin(), fsms_.end()};
     }
-
+      std::vector<std::shared_ptr<FSMAPI>> fsmProxies() const {
+          return {fsmProxies_.begin(), fsmProxies_.end()};
+      }
+      
     std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories() const {
       return {fsmFactories_.begin(), fsmFactories_.end()};
     }

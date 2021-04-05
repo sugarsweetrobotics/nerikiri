@@ -48,6 +48,18 @@ namespace nerikiri {
         virtual Value info() const override {
 
             // TODO: Not Impl
+            return {
+                {"name", name_},
+                {"ownerFullName", ownerFullName_},
+                {"value", get()},
+                {"defaultValue", defaultValue()},
+                {"connections", {
+                    nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) {
+                        return c->info();
+                    })
+                }}
+            };
+            
         }
 
         virtual Value put(const Value& value) override {
