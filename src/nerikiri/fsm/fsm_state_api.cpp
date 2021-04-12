@@ -69,6 +69,11 @@ public:
         return nullOperationInlet();
     }
 
+    virtual std::shared_ptr<OperationOutletAPI> outlet() override {
+        logger::error("NullFSMState({})::outlet() called.", fullName());
+        return nullOperationOutlet();
+    }
+
 };
 
 

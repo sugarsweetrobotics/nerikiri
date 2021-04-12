@@ -26,7 +26,7 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value
 }
 
 std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
-    auto fullName = Value::string(value.at("fullName"));
+    /* auto fullName = Value::string(value.at("fullName"));
     std::string brokerTypeName = "CoreBroker";
     if (!value.hasKey("broker")) {
         return store->fsm(fullName);
@@ -37,7 +37,8 @@ std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, ner
     if (info.isError()) {
         return store->fsmProxy(value);
     }
-    return fsm;
+    return fsm; */
+    return nullFSM();
 }
 
 
@@ -66,7 +67,7 @@ std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, const
 }
 
 std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, const std::shared_ptr<BrokerProxyAPI>& broker) {
-    return nerikiri::fsmProxy(broker, Value::string(value.at("fullName")));
+    // return nerikiri::fsmProxy(broker, Value::string(value.at("fullName")));
 }
 
 

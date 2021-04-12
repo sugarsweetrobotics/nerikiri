@@ -15,7 +15,7 @@ namespace nerikiri {
       Object(className, typeName, fullName) {}
     virtual ~ContainerOperationFactoryAPI() {}
 
-    virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& _fullName) const = 0;
+    virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& _fullName, const Value& info=Value::error("")) const = 0;
   };
 
 

@@ -24,7 +24,7 @@ namespace nerikiri {
 
         virtual std::vector<std::shared_ptr<FSMStateAPI>> fsmStates() const = 0;
         
-        virtual Value setFSMState(const std::string& stateName) = 0;
+        // virtual Value setFSMState(const std::string& stateName) = 0;
 
     protected:
         //virtual bool setFsmStateActive(const std::shared_ptr<FSMStateAPI>& state) {

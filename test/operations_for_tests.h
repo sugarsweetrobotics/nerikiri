@@ -2,6 +2,8 @@
 #include <memory>
 #include "nerikiri/operation_factory.h"
 #include "nerikiri/ec.h"
+#include "nerikiri/container_factory.h"
+#include "nerikiri/container_operation_factory.h"
 
 bool operationIsCalled = false;
 
@@ -71,3 +73,54 @@ public:
 };
 
 auto ecf1 = std::make_shared<nerikiri::ECFactory<OneShotEC>>("oneshotECFactory");
+
+struct MyStruct {
+  int32_t value;
+  MyStruct(): value(0) {}
+};
+
+auto cf0 = std::make_shared<nerikiri::ContainerFactory<MyStruct>>("MyStructContainerFactory");
+
+
+auto copf0 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
+  nerikiri::Value { 
+    {"typeName", {"set"}},
+    {"defaultArg", {
+      {"value", {0}}
+    }}
+  },
+  [](auto container, auto arg)  {
+    if (arg["value"].isIntValue()) {
+      container.value = arg["value"].intValue();
+    }
+    return arg;
+  }
+)));
+
+auto copf2 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
+  nerikiri::Value { 
+    {"typeName", {"get"}},
+    {"defaultArg", {
+      {}
+    }}
+  },
+  [](auto& container, auto arg)  {
+    
+    return container.value;
+  }
+)));
+
+
+
+auto copf1 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
+  nerikiri::Value { 
+    {"typeName", {"inc"}},
+    {"defaultArg", {
+      {}
+    }}
+  },
+  [](auto& container, auto arg)  {
+    container.value++;
+    return arg;
+  }
+)));

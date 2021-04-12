@@ -42,7 +42,6 @@ namespace nerikiri {
     std::vector<std::shared_ptr<ContainerAPI>> containers_;
     std::vector<std::shared_ptr<ContainerFactoryAPI>> containerFactories_;
 
-
     std::vector<std::shared_ptr<ContainerOperationFactoryAPI>> containerOperationFactories_;
 
     std::vector<std::shared_ptr<ExecutionContextAPI>> executionContexts_;
@@ -57,6 +56,9 @@ namespace nerikiri {
     std::vector<std::shared_ptr<FSMAPI>> fsms_;
     std::vector<std::shared_ptr<FSMAPI>> fsmProxies_;
     std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories_;
+
+    std::vector<std::shared_ptr<OperationInletAPI>> inletProxies_;
+    std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies_;
 
     friend class Process;
   public:
@@ -103,6 +105,7 @@ namespace nerikiri {
     Value updateFullName(std::vector<std::shared_ptr<T>>& collection, const std::shared_ptr<T>& obj, const std::string& ext) {
       if (obj->isNull()) return Value::error(logger::error("Process::add({}) failed. Object is null.", nerikiri::demangle(typeid(T).name())));
       auto nameSpace = ""; /// ネームスペースは未来に実装予定
+
       if (obj->getInstanceName() == "") { /// infoへのinstanceName指定がまだなら自動指定する
         auto name = nerikiri::numbering_policy<std::shared_ptr<T>>(collection, obj->info().at("typeName").stringValue(), ext);
         obj->setFullName(nameSpace, name); /// fullName指定
@@ -159,9 +162,9 @@ namespace nerikiri {
       return ops;
     }
       
-      std::vector<std::shared_ptr<OperationAPI>> operationProxies() const {
-          return {operationProxies_.begin(), operationProxies_.end()};
-      }
+    std::vector<std::shared_ptr<OperationAPI>> operationProxies() const {
+        return {operationProxies_.begin(), operationProxies_.end()};
+    }
 
     std::vector<std::shared_ptr<OperationFactoryAPI>> operationFactories() const {
       return {operationFactories_.begin(), operationFactories_.end()};
@@ -179,13 +182,20 @@ namespace nerikiri {
       return {containerOperationFactories_.begin(), containerOperationFactories_.end()};
     }
 
-    std::vector<std::shared_ptr<FSMAPI>> fsms() const {
-      return {fsms_.begin(), fsms_.end()};
+    std::vector<std::shared_ptr<FSMAPI>> fsms() const;
+
+    std::vector<std::shared_ptr<FSMAPI>> fsmProxies() const {
+        return {fsmProxies_.begin(), fsmProxies_.end()};
     }
-      std::vector<std::shared_ptr<FSMAPI>> fsmProxies() const {
-          return {fsmProxies_.begin(), fsmProxies_.end()};
-      }
-      
+
+    std::vector<std::shared_ptr<OperationInletAPI>> inletProxies() const {
+        return {inletProxies_.begin(), inletProxies_.end()};
+    }
+
+    std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies() const {
+        return {outletProxies_.begin(), outletProxies_.end()};
+    }
+    
     std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories() const {
       return {fsmFactories_.begin(), fsmFactories_.end()};
     }
@@ -219,6 +229,7 @@ namespace nerikiri {
      * Operationの追加．fullNameやinstanceNameの自動割り当ても行う
      */
     Value addOperation(const std::shared_ptr<OperationAPI>& operation) {
+      logger::trace("ProcessStore::addOperation({}) called", operation->info());
       return add<OperationAPI>(operations_, operation, ".ope");
     }
 
@@ -245,8 +256,8 @@ namespace nerikiri {
     /**
      * Containerの追加．fullNameやinstanceNameの自動割り当ても行う
      */
-    Value addContainer(const std::shared_ptr<ContainerAPI>& container) {
-      return add<ContainerAPI>(containers_, container, ".ctn");
+    Value addContainer(const std::shared_ptr<ContainerAPI>& container, const std::string& ext = ".ctn") {
+      return add<ContainerAPI>(containers_, container, ext);
     }
 
     Value deleteContainer(const std::string& fullName) {
@@ -324,11 +335,34 @@ namespace nerikiri {
     Value addBrokerFactory(const std::shared_ptr<BrokerFactoryAPI>& bf);
     Value deleteBrokerFactory(const std::string& fullName);
 
+    /**
+     * InletProxyをStoreに追加
+     */
+    Value addInletProxy(const std::shared_ptr<OperationInletAPI>& inlet) {
+      inletProxies_.push_back(inlet); //add<OperationInletAPI>(inletProxies_, inlet, "");
+      return inlet->info();
+    }
+
+    Value addOutletProxy(const std::shared_ptr<OperationOutletAPI>& outlet) {
+      outletProxies_.push_back(outlet);
+      return outlet->info(); //return add<OperationOutletAPI>(outletProxies_, outlet, "");
+    }
 
   public:
     // PROXIES 
     std::shared_ptr<OperationAPI> operationProxy(const Value& info);
     std::shared_ptr<FSMAPI> fsmProxy(const Value& info);
+
+    /**
+     * InletProxyを取得する
+     */
+    std::shared_ptr<OperationInletAPI> inletProxy(const Value& info);
+
+    /**
+     * OutletProxyを取得する
+     * 
+     */
+    std::shared_ptr<OperationOutletAPI> outletProxy(const Value& info);
 
 
     //-------- getter ---------

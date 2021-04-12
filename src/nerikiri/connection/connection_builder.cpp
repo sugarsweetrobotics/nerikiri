@@ -33,6 +33,8 @@ static bool check_the_same_name_connection_exists(const std::vector<std::shared_
 }
 
 
+
+
 static std::string applyConnectionAutoRename(const std::string& name, const int count_hint=0) {
   std::stringstream ss;
   ss << name << count_hint;
@@ -89,29 +91,8 @@ Value ConnectionBuilder::createOutletConnection(ProcessStore* store, const Value
 Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
   Value connectionInfo = connectionInfo_;
   logger::trace("ConnectionBuilder::createConnection({}) called", connectionInfo);
-
-  // まずinletとoutletを用意．別のホストならばbroker経由のproxyになる．
-  // std::shared_ptr<OperationInletAPI> inlet = nullptr;
-  // std::shared_ptr<OperationOutletAPI> outlet = nullptr;
-  // if (connectionInfo["inlet"].hasKey("operation")) {
-  //   inlet = store.operationProxy(connectionInfo["inlet"]["operation"])->inlet(Value::string(connectionInfo["inlet"]["name"]));
-  // } 
-  // else if (connectionInfo["inlet"].hasKey("fsm")) {
-  //   inlet = store.fsmProxy(connectionInfo["inlet"]["fsm"])->fsmState(Value::string(connectionInfo["inlet"]["name"]))->inlet();
-  // }
-  // if (connectionInfo["outlet"].hasKey("operation")) {
-  //   outlet = store.operationProxy(connectionInfo["outlet"]["operation"])->outlet();
-  // }
-  // // もしoutletとinletの両方とも用意できなかったらエラーを返す
-  // if (! ( outlet && inlet )) {
-  //     return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
-  // }
-  auto inlet = store.operationProxy(connectionInfo["inlet"]["operation"])->inlet(Value::string(connectionInfo["inlet"]["name"]));
-  auto outlet = store.operationProxy(connectionInfo["outlet"]["operation"])->outlet();
-  //if ( outlet->isNull() || inlet->isNull() ) {
-  //  return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
-  //}
-
+  auto inlet = store.inletProxy(connectionInfo["inlet"]);
+  auto outlet = store.outletProxy(connectionInfo["outlet"]);
   // 同一ルートがあるかどうか確認．あるならエラー
   if (check_the_same_route_connection_exists(outlet, inlet)) {
     return Value::error(logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, connectionInfo));
@@ -146,23 +127,6 @@ Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Va
     return inletConnectionResult;
   }
   return inletConnectionResult;
-  /*
-  //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
-  auto value = connectionInfo.at("inlet").at("operation");
-  // TODO: brokerの項目がなかったらどうするか？
-  auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-  auto ret0 = inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
-  if (ret0.isError()) return ret0;
-  // TODO: 名前が同じのがあったらどうするか？
-  auto value2 = connectionInfo.at("outlet").at("operation");
-  auto outletBroker = store->brokerFactory(Value::string(value2.at("broker").at("typeName")))->createProxy(value2.at("broker"));
-  auto ret1 = outletBroker->operationOutlet()->addConnection(Value::string(value2.at("fullName")), connectionInfo);
-  if (ret1.isError()) {
-    inletBroker->operationInlet()->removeConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), Value::string(ret0.at("fullName")));
-  }
-  return ret1;
-  */
-
 }
 
 Value ConnectionBuilder::createOperationToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
@@ -200,6 +164,7 @@ Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& conne
     // これinlet側はFSM、outlet側はoperationを使う
     
   Value connectionInfo = connectionInfo_;
+  /*
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
   auto value = connectionInfo.at("inlet").at("fsm");
   auto inletBroker = store.brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
@@ -210,13 +175,16 @@ Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& conne
     //if ( outlet->isNull() || inlet->isNull() ) {
     //  return Value::error(logger::error("ConnectionBuilder::createConnection({}) error. Unavailable outlet-inlet pair.", connectionInfo));
     //}
+  */
 
-    // 同一ルートがあるかどうか確認．あるならエラー
-    if (check_the_same_route_connection_exists(outlet, inlet)) {
-      return Value::error(logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, connectionInfo));
-    }
+  auto inlet = store.inletProxy(connectionInfo["inlet"]);
+  auto outlet = store.outletProxy(connectionInfo["outlet"]);
+  // 同一ルートがあるかどうか確認．あるならエラー
+  if (check_the_same_route_connection_exists(outlet, inlet)) {
+    return Value::error(logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, connectionInfo));
+  }
 
-    
+  /*
   // TODO: 名前が同じのがあったらどうするか？
   auto cons = inletBroker->fsmStateInlet()->connections(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")));
   cons.const_list_for_each([&connectionInfo](const auto& c) {
@@ -225,13 +193,36 @@ Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& conne
       connectionInfo["name"] = connectionInfo["name"].stringValue() + "1";
     }
   });
-  inletBroker->fsmStateInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+  */
+
+
+  // outlet側から接続を構築する．失敗したらエラーを返す
+  auto outletConnectionResult = outlet->connectTo(inlet, connectionInfo);
+  if (outletConnectionResult.isError()) return outletConnectionResult;
+  // inlet側から接続を構築．
+  auto inletConnectionResult = inlet->connectTo(outlet, connectionInfo);
+  if (inletConnectionResult.isError()) {
+    // inlet側接続が失敗した場合，outlet側は成功しているのでoutlet側接続を削除する必要がある．
+    logger::error("ConnectionBuilder::createConnection({}) failed. Outlet connection success but Inlet failed (Message: {}). Now trying to remove connection of outlet side.", inletConnectionResult);
+    auto outletDisconnectionResult = outlet->disconnectFrom(inlet);
+    if (outletDisconnectionResult.isError()) {
+      logger::error("ConnectionBuilder::createConnection({}) failed. Outlet connection success but Inlet failed. Outlet side connection deletion failed. Error({})", outletDisconnectionResult);
+      return outletDisconnectionResult;
+    }
+    return inletConnectionResult;
+  }
+  return inletConnectionResult;
+
+
+ /*
+  inletBroker->fsmStateInlet()->connectTo(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+  //inletBroker->fsmStateInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
   // TODO: 名前が同じのがあったらどうするか？
   value = connectionInfo.at("outlet").at("operation");
   auto outletBroker = store.brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
   // TODO: ここはconnectToに変更した方がいいな
     return outletBroker->operationOutlet()->connectTo(Value::string(value.at("fullName")), connectionInfo);
-
+  */
     // return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
 }
 

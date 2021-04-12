@@ -38,6 +38,10 @@ namespace nerikiri {
 
         virtual ProcessAPI& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) = 0;
 
+        virtual ProcessAPI& loadContainerFactory(const std::shared_ptr<ContainerFactoryAPI>& cf) = 0;
+
+        virtual ProcessAPI& loadContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryAPI>& copf) = 0;
+
         virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) = 0; 
     };
 

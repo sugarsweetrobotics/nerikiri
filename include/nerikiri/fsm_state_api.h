@@ -8,6 +8,7 @@ namespace nerikiri {
 
     class OperationAPI;
     class OperationInletAPI;
+    class OperationOutletAPI;
     class ECStateAPI;
     class FSMAPI;
 
@@ -45,6 +46,8 @@ namespace nerikiri {
         virtual std::vector<std::shared_ptr<ECStateAPI>> boundECStates() = 0;
 
         virtual std::shared_ptr<OperationInletAPI> inlet() = 0;
+
+        virtual std::shared_ptr<OperationOutletAPI> outlet() = 0;
     protected:
         // virtual bool _setActive() = 0;
 

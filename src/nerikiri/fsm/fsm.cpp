@@ -270,7 +270,12 @@ Value FSM::info() const {
 
 FSM::FSM() : FSMAPI() {}
 
-FSM::~FSM() {}
+FSM::~FSM() {
+    nerikiri::functional::for_each<std::shared_ptr<FSMStateAPI>>(states_, [](auto s) {
+        s->finalize();
+    });
+    states_.clear();
+}
 
 
 bool FSM::hasState(const std::string& stateName) const {

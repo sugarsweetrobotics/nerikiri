@@ -26,8 +26,16 @@ namespace nerikiri {
           /*base_(containerOperationFactoryBase("ContainerOperationFactory", nerikiri::demangle(typeid(T).name()), operationTypeFullName, fullName, defaultArgs)), */function_(func) , defaultArgs_(defaultArgs) {}
         virtual ~ContainerOperationFactory() {}
     public:
-        virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& fullName) const override { 
-            return std::make_shared<ContainerOperation<T>>(container, typeName(), fullName, defaultArgs_, function_);
+        virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& fullName, const Value& info=Value::error("")) const override { 
+            auto defaultArg = defaultArgs_;
+            if (!info.isError()) {
+
+                
+                if (info.hasKey("defaultArg")) {
+                    defaultArg = Value::merge(defaultArg, info["defaultArg"]);
+                }
+            }
+            return std::make_shared<ContainerOperation<T>>(container, typeName(), fullName, defaultArg, function_);
         }
     };
 

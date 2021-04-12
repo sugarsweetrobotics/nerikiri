@@ -17,6 +17,8 @@
 
 #include <nerikiri/fsm.h>
 
+#include "nerikiri/fsm/fsm_container.h"
+
 using namespace nerikiri;
 using namespace nerikiri::logger;
 
@@ -95,7 +97,9 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
   try {
     store_.addBrokerFactory(cf);
     store_.addTopicFactory(topicFactory("topicFactory"));
-    store_.addFSMFactory(fsmFactory("fsmFactory"));
+    // store_.addFSMFactory(fsmFactory("fsmFactory"));
+
+    setupFSMContainer(*this->store());
     setExecutablePath(getExecutablePath(name));
 
     env_dictionary_["${ExecutableDirectory}"] = path_.substr(0, path_.rfind('/'));
@@ -210,7 +214,6 @@ void Process::_preloadContainers() {
 void Process::_preloadFSMs() {
   ProcessBuilder::preloadFSMs(store_, config_, path_);
 }
-
 
 void Process::_preloadExecutionContexts() {
   ProcessBuilder::preloadExecutionContexts(store_, config_, path_);

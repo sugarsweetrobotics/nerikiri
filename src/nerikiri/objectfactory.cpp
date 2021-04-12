@@ -4,6 +4,8 @@
 #include "nerikiri/objectfactory.h"
 
 
+#include "nerikiri/fsm/fsm_container.h"
+
 
 using namespace nerikiri;
 
@@ -83,7 +85,14 @@ Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
   logger::info("ObjectFactory::createFSM({})", fsmInfo);
   auto fullName = loadFullName(store.fsms(), fsmInfo);
-  return store.addFSM(store.fsmFactory(Value::string(fsmInfo.at("typeName")))->create(fullName, fsmInfo));
+  return nerikiri::createFSM(store, fullName, fsmInfo);
+  /*
+  auto container = store.containerFactory("_FSMContainerStruct")->create(fullName);
+  if (container->isNull()) {
+    logger::error("ObjectFactory::createFSM failed");
+  }
+  */
+  // return store.addFSM(store.fsmFactory(Value::string(fsmInfo.at("typeName")))->create(fullName, fsmInfo));
 }
 
 Value ObjectFactory::deleteOperation(ProcessStore& store, const std::string& fullName)  {

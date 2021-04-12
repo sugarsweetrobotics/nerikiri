@@ -10,8 +10,10 @@ class FSMStateInletProxy;
 class FSMStateInletProxy : public OperationInletAPI {
 private:
     const std::shared_ptr<FSMStateProxy> state_;
+
+    const std::shared_ptr<BrokerProxyAPI> broker_;
 public:
-    FSMStateInletProxy(const std::shared_ptr<FSMStateProxy>& state) : OperationInletAPI(), state_(state) {}
+    FSMStateInletProxy(const std::shared_ptr<FSMStateProxy>& state, const std::shared_ptr<BrokerProxyAPI>& broker) : OperationInletAPI(), state_(state), broker_(broker) {}
     virtual ~FSMStateInletProxy() {}
 
 
@@ -43,9 +45,7 @@ public:
 
     virtual Value removeConnection(const std::string& _fullName);
 
-    virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
-        // TODO: Not Impl
-    }
+    virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override;
 
     virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) override {
         // TODO: Not Impl
@@ -58,6 +58,7 @@ public:
     const std::string fsmFullName_;
     const std::string stateName_;
     std::shared_ptr<OperationInletAPI> inlet_;
+    std::shared_ptr<OperationOutletAPI> outlet_;
 public:
     FSMStateProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fsmFullName, const std::string& stateName) : FSMStateAPI("FSMStateProxy", fsmFullName, (stateName)), broker_(broker),
         fsmFullName_(fsmFullName), stateName_(stateName), inlet_(nullptr) { }
@@ -138,6 +139,11 @@ public:
         return inlet_;
     }
 
+
+    virtual std::shared_ptr<OperationOutletAPI> outlet()  override {
+        return outlet_;
+    }
+
     virtual std::string ownerFullName() const { return fsmFullName_; }
 };
 
@@ -193,7 +199,7 @@ public:
         auto stateInfo = broker_->fsm()->fsmState(fullName_, stateName);
         if (stateInfo.isError()) return nullFSMState();
         auto state = std::make_shared<FSMStateProxy>(broker_, fullName_, stateName);
-        auto inlet = std::make_shared<FSMStateInletProxy>(state);
+        auto inlet = std::make_shared<FSMStateInletProxy>(state, broker_);
         state->setInlet(inlet);
         return state;
     }
@@ -257,4 +263,10 @@ public:
 
 std::shared_ptr<FSMAPI> nerikiri::fsmProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<FSMProxy>(broker, fullName);
+}
+
+
+Value FSMStateInletProxy::connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) {
+    // TODO: Not Impl
+    return broker_->fsmStateInlet()->connectTo(state_->ownerFullName(), state_->fullName(), connectionInfo);
 }

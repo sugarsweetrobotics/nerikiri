@@ -29,7 +29,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 
-set(CMAKE_USE_RELATIVE_PATHS True)
+# set(CMAKE_USE_RELATIVE_PATHS True)
 add_subdirectory(thirdparty)
 
 add_subdirectory(include)

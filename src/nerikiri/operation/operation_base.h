@@ -31,6 +31,7 @@ namespace nerikiri {
     //const std::string& operationTypeName_;
     std::vector<std::shared_ptr<OperationInletBase>> inlets_;
     std::shared_ptr<OperationOutletBase> outlet_;
+    std::shared_ptr<OperationInletBase> event_inlet_;
   public:
 
     virtual Value fullInfo() const override;

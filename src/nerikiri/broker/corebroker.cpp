@@ -422,81 +422,40 @@ public:
   virtual ~CoreOperationInletBroker() {}
 
   virtual Value name(const std::string& fullName, const std::string& targetName) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->name(); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->name();
   }
   
   virtual Value info(const std::string& fullName, const std::string& targetName) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->info(); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->info();
   }
   
-
   virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->defaultValue(); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->defaultValue();
   }
   
-
   virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->put(value); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->put(value);
   }
   
-
   virtual Value get(const std::string& fullName, const std::string& targetName) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->get(); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->get();
   }
   
-
   virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->isUpdated(); }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->isUpdated();
   }
   
-
   virtual Value connections(const std::string& fullName, const std::string& targetName) const override {
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { 
-          return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(inlet.value()->connections(), [](auto c) {
+      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->operation(fullName)->inlet(targetName)->connections(),
+         [](auto c) {
               return c->info();
           });
-      }
-      return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, targetName));
   }
   
 
   virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
       logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, c);
-      // まずtargetNameを持つinletを見つける
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { // inletが見つかったらProxyBuilderがつくる接続を使って接続しますよ
-          return inlet.value()->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
-      }
-      return Value::error(logger::error("CoreOperationInletBroker::addConnection({}, {}) failed. Inlet can not be found.", fullName, targetName));
+      return process_->store()->operation(fullName)->inlet(targetName)->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
   }
   
   
@@ -511,15 +470,8 @@ public:
   
   // TODO: 未実装
      virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
-         auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
-             return i->name() == targetName;
-         });
-         if (inlet) {
-             auto outlet = process_->store()->operationProxy(conInfo["outlet"]["operation"])->outlet();
-             return inlet.value()->connectTo(outlet, conInfo);
-             
-         }
-         return Value::error(logger::error("NullOperationInletBroker::{}({}) called. inlet not found.", __func__, fullName));
+         auto outlet = process_->store()->operationProxy(conInfo["outlet"]["operation"])->outlet();
+        return process_->store()->operation(fullName)->inlet(targetName)->connectTo(outlet, conInfo);
     }
 
 
@@ -599,7 +551,7 @@ public:
     }
 
     virtual Value setFSMState(const std::string& fsmFullName, const std::string& stateFullName) override {
-        return process_->store()->fsm(fsmFullName)->setFSMState(stateFullName);
+        return process_->store()->fsm(fsmFullName)->fsmState(stateFullName)->activate();//setFSMState(stateFullName);
     }
 
     virtual Value fsmStates(const std::string& fsmFullName) override {
@@ -748,7 +700,15 @@ public:
 
   // TODO: 未実装
      virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
-        return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
+        auto inlet = nerikiri::functional::find<std::shared_ptr<FSMStateAPI>>(process_->store()->fsm(fullName)->fsmStates(), [&targetName](auto i) {
+             return i->fullName() == targetName;
+         });
+         if (inlet) {
+             auto outlet = process_->store()->operationProxy(conInfo["outlet"]["operation"])->outlet();
+             return inlet.value()->inlet()->connectTo(outlet, conInfo);
+             
+         }
+         return Value::error(logger::error("NullOperationInletBroker::{}({}) called. inlet not found.", __func__, fullName));
     }
 
 

@@ -175,6 +175,7 @@ private:
 
     bool inlets_ready_;
     Value inletInfos_;
+    std::shared_ptr<OperationInletAPI> event_inlet_;
     std::vector<std::shared_ptr<OperationInletAPI>> inlets_;
 public:
     OperationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
@@ -187,6 +188,7 @@ public:
         inletInfos_.const_list_for_each([this](auto inletInfo) {
             this->inlets_.push_back(std::make_shared<OperationInletProxy>(this, broker_, fullName_, Value::string(inletInfo.at("name"))));
         });
+        event_inlet_ = std::make_shared<OperationInletProxy>(this, broker_, fullName_, "__event__");
         inlets_ready_ = true;
     }
 
@@ -220,6 +222,9 @@ public:
     }
  
     virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
+        if (name == "__event__") { 
+            return event_inlet_;
+        }
       auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
       if (i) return i.value();
       return nullOperationInlet();
