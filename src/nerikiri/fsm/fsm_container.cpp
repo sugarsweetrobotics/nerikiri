@@ -24,7 +24,7 @@ nerikiri::setupFSMContainer(nerikiri::ProcessStore& store) {
     store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_FSMContainerStruct>())));
     store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
         {
-          {"typeName", "state_activate"},
+          {"typeName", "activate_state"},
           {"defaultArg", {
               {"stateName", "__invalid__"}
           }},
@@ -73,7 +73,7 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
     
     // ここからStateを実際に作ります．
     const auto name = stateInfo.at("name").stringValue();
-    auto cop = store.containerOperationFactory("_FSMContainerStruct", "state_activate")->create(container, container->fullName() + ":" +  "activate_state_" + name + ".ope", 
+    auto cop = store.containerOperationFactory("_FSMContainerStruct", "activate_state")->create(container, container->fullName() + ":" +  "activate_state_" + name + ".ope", 
       { {"defaultArg", 
             {
                 {"stateName", name}
