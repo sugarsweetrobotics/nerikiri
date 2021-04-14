@@ -31,6 +31,9 @@ ec/ec_api.cpp
 ec/ec_factory_api.cpp
 ec/ec_proxy.cpp
 
+ec/ec_container.h
+ec/ec_container.cpp
+
 fsm/fsm_container.cpp
 #new_fsm/fsm.cpp
 new_fsm/fsm_api.cpp

@@ -54,7 +54,7 @@ nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
 }
 
 Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo) {
-    logger::info("nerikiri::createEC({})", fsmInfo);
+    logger::info("nerikiri::createEC({})", ecInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
     auto container = store.containerFactory("_ECContainerStruct")->create(fullName);
     if (container->isNull()) {
@@ -77,8 +77,7 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
             { {"stateName", "stopped"} }
       }});
     if (stop_cop->isNull()) {
-        logger::error("createEC failed. ContainerOperation can not be created");
-        return nullOperation();
+        return Value::error(logger::error("createEC failed. ContainerOperation can not be created"));
     }
 
     auto start_cop = store.containerOperationFactory("_ECContainerStruct", "activate_state")->create(container, container->fullName() + ":" +  "activate_state_" + "started" + ".ope", 
@@ -86,8 +85,7 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
             { {"stateName", "started"} }
       }});
     if (start_cop->isNull()) {
-        logger::error("createEC failed. ContainerOperation can not be created");
-        return nullOperation();
+        return Value::error(logger::error("createEC failed. ContainerOperation can not be created"));
     }
 
     store.addContainer(c, ".ec");
