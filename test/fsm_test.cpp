@@ -17,7 +17,7 @@ using namespace nerikiri;
 SCENARIO( "FSM test", "[ec]" ) {
   GIVEN("FSM basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "TRACE" },
+      "logger": { "logLevel": "INFO" },
 
       "operations": {
         "precreate": [
@@ -77,7 +77,7 @@ SCENARIO( "FSM test", "[ec]" ) {
           "precreate": [
             {
               "typeName": "OneShotEC",
-              "instanceName": "OneShotEC0.ec"
+              "fullName": "OneShotEC0.ec"
             }
           ],
           "bind": {},
@@ -99,69 +99,63 @@ SCENARIO( "FSM test", "[ec]" ) {
     })";
 
     auto p = nerikiri::process("fsm_test", jsonStr);
+      
+    p->loadOperationFactory(opf3);
+    p->loadContainerFactory(cf0);
+    p->loadContainerOperationFactory(copf1);
+    p->loadContainerOperationFactory(copf2);
+    
+      
+    p->startAsync();
+    REQUIRE(p->store()->containers().size() == 3); // FSM and EC
 
-    //p->loadOperationFactory(opf1);
-    //p->loadOperationFactory(opf2);
-    //p->loadOperationFactory(opf3);
-    //p->loadECFactory(ecf1);
-    //p->loadContainerFactory(cf0);
+    auto fsm = p->store()->container("FSM0.fsm");
+    REQUIRE(fsm->isNull() == false);
+      
+    auto ec = p->store()->container("OneShotEC0.ec");
+    REQUIRE(ec->isNull() == false);
+    
+    auto ec_getter = p->store()->operation("OneShotEC0.ec:get_state.ope");
+    REQUIRE(ec_getter->isNull() == false);
 
+    auto getter = p->store()->operation("FSM0.fsm:get_state.ope");
+    REQUIRE(getter->isNull() == false);
 
-    THEN("FSM is stanby") {
-        p->startAsync();
-        REQUIRE(p->store()->containers().size() == 1);
+    auto currentState0 = getter->call({});
+    REQUIRE(currentState0.stringValue() == "created");
 
-        auto fsm = p->store()->container("FSM0.fsm");
-        REQUIRE(fsm->isNull() == false);
+    auto act_stopped = p->store()->operation("FSM0.fsm:activate_state_stopped.ope");
+    REQUIRE(act_stopped->isNull() == false);
+      
+    REQUIRE(p->store()->operation("FSM0.fsm:activate_state_hoge.ope")->isNull() == true);
+      
+    auto act_run = p->store()->operation("FSM0.fsm:activate_state_running.ope");
+    REQUIRE(act_run->isNull() == false);
+      
+    auto result = act_stopped->execute();
+    currentState0 = getter->call({});
+    REQUIRE(currentState0.stringValue() == "stopped");
 
-        auto getter = p->store()->operation("FSM0.fsm:get_state.ope");
-        REQUIRE(getter->isNull() == false);
+      
+    THEN("Activate Stopped and Running") {
 
-        auto curState = getter->call({});
-        REQUIRE(curState.stringValue() == "created");
-
-        auto act_stopped = p->store()->operation("FSM0.fsm:activate_state_stopped.ope");
-        REQUIRE(act_stopped->isNull() == false);
-        auto result = act_stopped->execute();
-
-        auto curState2 = getter->call({});
-        REQUIRE(curState2.stringValue() == "stopped");
-
-        auto act_hoge = p->store()->operation("FSM0.fsm:activate_state_hoge.ope");
-        REQUIRE(act_hoge->isNull() == true);
-        auto result2 = act_hoge->execute();
+        //auto result2 = act_hoge->execute();
 
         auto curState3 = getter->call({});
         REQUIRE(curState3.stringValue() == "stopped");
 
 
-        auto act_run = p->store()->operation("FSM0.fsm:activate_state_running.ope");
-        REQUIRE(act_run->isNull() == false);
         auto result3 = act_run->execute();
 
         auto curState4 = getter->call({});
         REQUIRE(curState4.stringValue() == "running");
+
     }
+      
+    auto add_ope = p->store()->operation(std::string("add0.ope"));
+    REQUIRE(add_ope->isNull() == false);
 
     THEN("FSM can bind to operation from state") {
-        p->loadOperationFactory(opf3);
-        p->startAsync();
-        auto ope = p->store()->operation(std::string("add0.ope"));
-        REQUIRE(ope->isNull() == false);
-
-        auto fsm = p->store()->container("FSM0.fsm");
-        REQUIRE(fsm->isNull() == false);
-
-
-        auto getter = p->store()->operation("FSM0.fsm:get_state.ope");
-        REQUIRE(getter->isNull() == false);
-
-        auto curState = getter->call({});
-        REQUIRE(curState.stringValue() == "created");
-
-        auto act_stopped = p->store()->operation("FSM0.fsm:activate_state_stopped.ope");
-        REQUIRE(act_stopped->isNull() == false);
-
         Value conInfo{
           {"name", "con0"},
           {"type", "EVENT"},
@@ -186,24 +180,18 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
         auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        REQUIRE(add_ope->outlet()->connections().size() == 1);
 
-        REQUIRE(ope->outlet()->connections().size() == 1);
+        AND_THEN("Run Operation and FSM State Change") {
+            add_ope->execute();
 
-        ope->execute();
-
-        auto curState2 = getter->call({});
-        REQUIRE(curState2.stringValue() == "stopped");
-
+            auto curState2 = getter->call({});
+            REQUIRE(curState2.stringValue() == "stopped");
+        }
     }
 
 
     THEN("FSM can bind from state to operation") {
-        p->loadContainerFactory(cf0);
-        p->loadContainerOperationFactory(copf1);
-        p->loadContainerOperationFactory(copf2);
-        p->startAsync();
-
-
         auto container = p->store()->container("MyStruct0.ctn");
         REQUIRE(container->isNull() == false);
 
@@ -213,25 +201,13 @@ SCENARIO( "FSM test", "[ec]" ) {
         auto get = p->store()->operation(std::string("MyStruct0.ctn:get0.ope"));
         REQUIRE(get->isNull() == false);
 
-        auto fsm = p->store()->container("FSM0.fsm");
-        REQUIRE(fsm->isNull() == false);
-
-        auto getter = p->store()->operation("FSM0.fsm:get_state.ope");
-        REQUIRE(getter->isNull() == false);
-
-        auto curState = getter->call({});
-        REQUIRE(curState.stringValue() == "created");
-
-        auto act_stopped = p->store()->operation("FSM0.fsm:activate_state_stopped.ope");
-        REQUIRE(act_stopped->isNull() == false);
-
         Value conInfo{
           {"name", "con0"},
           {"type", "EVENT"},
           {"broker", "CoreBroker"},
           {"outlet", {
             {"operation", {
-              {"fullName", "FSM0.fsm:activate_state_stopped.ope"},
+              {"fullName", "FSM0.fsm:activate_state_running.ope"},
               {"broker", {
                 {"typeName", "CoreBroker"}
               }}
@@ -249,72 +225,66 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
         auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        REQUIRE(act_run->outlet()->connections().size() == 1);
 
-        REQUIRE(act_stopped->outlet()->connections().size() == 1);
+        AND_THEN("Activate State and Operation is called") {
+            auto curValue1 = get->call({});
+            REQUIRE(curValue1.intValue() == 0);
 
-        auto curValue1 = get->call({});
-        REQUIRE(curValue1.intValue() == 0);
+            act_run->execute();
 
-        act_stopped->execute();
+            auto curState2 = getter->call({});
+            REQUIRE(curState2.stringValue() == "running");
 
-        auto curState2 = getter->call({});
-        REQUIRE(curState2.stringValue() == "stopped");
-
-        auto curValue2 = get->call({});
-        REQUIRE(curValue2.intValue() == 1);
-
+            auto curValue2 = get->call({});
+            REQUIRE(curValue2.intValue() == 1);
+        }
     }
-  }
-
-
-/*
-    
-        
-
-        auto v = fsm->setFSMState("stopped");
-        auto state = fsm->currentFsmState();
-        REQUIRE(state->fullName() == "stopped");
-
-        auto bindResult = fsm->fsmState("running")->bind(ope);
-        REQUIRE(bindResult.isError() == false);
-
-        operationIsCalled = false;
-        v = fsm->setFSMState("running");
-        state = fsm->currentFsmState();
-        REQUIRE(state->fullName() == "running");
-        REQUIRE(operationIsCalled == true);
-      }
+  
 
     THEN("FSM can bind EC from state") {
-        p->startAsync();
-        auto ec = p->store()->executionContext("OneShotEC0.ec");
-        REQUIRE(ec->isNull() == false);
+        auto ecc = p->store()->container("OneShotEC0.ec");
+        REQUIRE(ecc->isNull() == false);
+        
+        Value conInfo{
+          {"name", "con0"},
+          {"type", "EVENT"},
+          {"broker", "CoreBroker"},
+          {"outlet", {
+            {"operation", {
+              {"fullName", "FSM0.fsm:activate_state_running.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
+            }}
+          }},
+          {"inlet", {
+            {"name", "__event__"},
+            {"operation", {
+              {"fullName", "OneShotEC0.ec:activate_state_started.ope"},
+              {"broker", {
+                {"typeName", "CoreBroker"}
+              }}
+            }
+            }
+          }}
+        };
+        
+        auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        REQUIRE(act_run->outlet()->connections().size() == 1);
 
-        auto fsm = p->store()->fsm("FSM0.fsm");
-        REQUIRE(fsm->isNull() == false);
-
-        auto v = fsm->setFSMState("stopped");
-        auto state = fsm->currentFsmState();
-        REQUIRE(state->fullName() == "stopped");
-
-        auto bindResult = fsm->fsmState("running")->bind(ec->startedState());
-        REQUIRE(bindResult.isError() == false);
-        bindResult = fsm->fsmState("stopped")->bind(ec->stoppedState());
-        REQUIRE(bindResult.isError() == false);
-
-        ec->stop();
-        REQUIRE(ec->isStopped());
-        auto v2 = fsm->setFSMState("running");
-        state = fsm->currentFsmState();
-        REQUIRE(state->fullName()  == "running");
-        REQUIRE(ec->isStarted());
-
-        auto v3 = fsm->setFSMState("stopped");
-        state = fsm->currentFsmState();
-        REQUIRE(state->fullName() == "stopped");
-        REQUIRE(ec->isStopped());
-      }
-    
+        AND_THEN("FSM State change and EC state change.") {
+            REQUIRE(getter->call({}).stringValue() == "stopped");
+            REQUIRE(ec_getter->call({}).stringValue() == "stopped");
+            act_run->execute();
+        
+            REQUIRE(getter->call({}).stringValue() == "running");
+            REQUIRE(ec_getter->call({}).stringValue() == "started");
+            
+        }
+    }
+  }
+    /*
     THEN("FSM can be bound from Operation") {
         p->startAsync();
         auto ope = p->store()->operation("add0.ope");

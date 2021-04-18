@@ -30,6 +30,9 @@ nerikiri::setupFSMContainer(nerikiri::ProcessStore& store) {
           }},
         },
         [](auto& container, auto arg) {
+            if (!arg.hasKey("stateName")) {
+                return Value::error(logger::error("FSMContainer::activate_state failed. Argument does not has 'stateName' object"));
+            }
             const auto s = Value::string(arg["stateName"]);
             const auto c = container.currentState;
             if (std::find(container.availableStates.begin(), container.availableStates.end(), s) == container.availableStates.end()) {
