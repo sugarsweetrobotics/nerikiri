@@ -5,7 +5,7 @@
 //#include <nerikiri/ec_state_api.h>
 
 namespace nerikiri {
-
+/*
     class OperationAPI;
     class OperationInletAPI;
     class OperationOutletAPI;
@@ -57,4 +57,5 @@ namespace nerikiri {
 
     
     std::shared_ptr<FSMStateAPI> nullFSMState();
+    */
 }

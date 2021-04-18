@@ -2,7 +2,7 @@
 
 using namespace nerikiri;
 
-
+/* 
 class NK_API NullFSM : public FSMAPI {
 public:
     NullFSM(): FSMAPI() {}
@@ -28,7 +28,7 @@ public:
     virtual Value setFSMState(const std::string& stateName) override {
         return Value::error(logger::debug("NullFSM::setFSMState({}) called.", stateName));
     }
-    */ 
+    * 
 
 
 };
@@ -37,3 +37,5 @@ std::shared_ptr<FSMAPI> nerikiri::nullFSM() {
     logger::error("nullFSM() called. Created FSM is null.");
     return std::make_shared<NullFSM>();
 }
+
+*/

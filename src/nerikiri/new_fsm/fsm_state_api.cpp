@@ -4,7 +4,7 @@
 
 using namespace nerikiri;
 
-
+/*
 
 class NK_API NullFSMState : public FSMStateAPI {
 public:
@@ -80,3 +80,4 @@ public:
 std::shared_ptr<FSMStateAPI> nerikiri::nullFSMState() { 
     return std::make_shared<NullFSMState>();
 }
+*/

@@ -182,7 +182,7 @@ namespace nerikiri {
       return {containerOperationFactories_.begin(), containerOperationFactories_.end()};
     }
 
-    std::vector<std::shared_ptr<FSMAPI>> fsms() const;
+    /// std::vector<std::shared_ptr<FSMAPI>> fsms() const;
 
     //std::vector<std::shared_ptr<FSMAPI>> fsmProxies() const {
     //    return {fsmProxies_.begin(), fsmProxies_.end()};

@@ -6,6 +6,6 @@
 
 namespace nerikiri {
 
-    std::shared_ptr<FSMAPI> fsmProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
+  //   std::shared_ptr<FSMAPI> fsmProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
 
 }

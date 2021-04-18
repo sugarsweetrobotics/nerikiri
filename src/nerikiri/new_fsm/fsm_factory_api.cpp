@@ -1,7 +1,7 @@
 #include <nerikiri/fsm_factory_api.h>
 
 using namespace nerikiri;
-
+/* 
 class NullFSMFactory : public FSMFactoryAPI {
 public:
 
@@ -18,3 +18,4 @@ public:
 std::shared_ptr<FSMFactoryAPI> nerikiri::nullFSMFactory() {
     return std::make_shared<NullFSMFactory>();
 }
+*/

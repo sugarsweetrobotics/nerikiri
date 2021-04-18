@@ -5,7 +5,7 @@
 #include <nerikiri/object.h>
 #include <nerikiri/fsm_api.h>
 namespace nerikiri {
-
+/*
     class FSMFactoryAPI : public Object {
     protected:
         FSMFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {} // For Null
@@ -19,5 +19,5 @@ namespace nerikiri {
 
 
     std::shared_ptr<FSMFactoryAPI> nullFSMFactory();
-
+*/
 }

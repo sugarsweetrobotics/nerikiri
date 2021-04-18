@@ -13,7 +13,7 @@ private:
   const std::shared_ptr<OperationOutletAPI> outlet_;
 
   std::shared_ptr<OperationAPI> operation_holder_;
-  std::shared_ptr<FSMAPI> fsm_holder_;
+  //std::shared_ptr<FSMAPI> fsm_holder_;
   std::shared_ptr<Object> obj_holder_;
 public:
   Connection();
@@ -24,8 +24,8 @@ public:
   Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationAPI>& op) :
     ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), operation_holder_(op) {}
 
-  Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<FSMAPI>& fsm) :
-    ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), fsm_holder_(fsm) {}
+//  Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<FSMAPI>& fsm) :
+ //   ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), fsm_holder_(fsm) {}
 
   Connection(const std::string& name, const ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<Object>& obj) :
     ConnectionAPI("Connection", name, type), inlet_(inlet), outlet_(outlet), obj_holder_(obj) {}

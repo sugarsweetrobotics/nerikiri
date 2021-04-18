@@ -2,7 +2,7 @@
 
 using namespace nerikiri;
 
-
+/*
 class NK_API NullFSM : public FSMAPI {
 public:
     NullFSM(): FSMAPI() {}
@@ -37,3 +37,5 @@ std::shared_ptr<FSMAPI> nerikiri::nullFSM() {
     logger::error("nullFSM() called. Created FSM is null.");
     return std::make_shared<NullFSM>();
 }
+#endif
+*/

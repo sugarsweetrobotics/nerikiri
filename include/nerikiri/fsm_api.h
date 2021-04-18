@@ -3,10 +3,10 @@
 #include <nerikiri/fsm_state_api.h>
 
 namespace nerikiri {
-
+    
     /**
      * 
-     */
+     *
     class NK_API FSMAPI : public Object {
     public:
         FSMAPI(): Object() {}
@@ -37,4 +37,5 @@ namespace nerikiri {
     
 
     std::shared_ptr<FSMAPI> nullFSM();
+     */
 }
