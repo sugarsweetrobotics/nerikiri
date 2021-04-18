@@ -71,11 +71,12 @@ Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<Oper
 
 
 
-Value ConnectionBuilder::createInletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& inletBroker/*=nullptr*/) {
+Value ConnectionBuilder::createInletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& inletBroker) {
   auto value = connectionInfo.at("inlet").at("operation");
   //auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
   return inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
 }
+
 
 Value ConnectionBuilder::createOutletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& outletBroker/*=nullptr*/) {
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
@@ -129,18 +130,20 @@ Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Va
   return inletConnectionResult;
 }
 
-Value ConnectionBuilder::createOperationToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
+
+//Value ConnectionBuilder::createOperationToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
 
 
 
-}
+//}
 
 
-Value ConnectionBuilder::createFSMStateToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
+//Value ConnectionBuilder::createFSMStateToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker/*=nullptr*/) {
 
 
   
-}
+//}
+
 /*
 Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker) {
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
@@ -160,10 +163,10 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
 }
 */
 
-Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
+//Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
     // これinlet側はFSM、outlet側はoperationを使う
     
-  Value connectionInfo = connectionInfo_;
+//  Value connectionInfo = connectionInfo_;
   /*
   //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
   auto value = connectionInfo.at("inlet").at("fsm");
@@ -177,12 +180,12 @@ Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& conne
     //}
   */
 
-  auto inlet = store.inletProxy(connectionInfo["inlet"]);
-  auto outlet = store.outletProxy(connectionInfo["outlet"]);
+ // auto inlet = store.inletProxy(connectionInfo["inlet"]);
+ // auto outlet = store.outletProxy(connectionInfo["outlet"]);
   // 同一ルートがあるかどうか確認．あるならエラー
-  if (check_the_same_route_connection_exists(outlet, inlet)) {
-    return Value::error(logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, connectionInfo));
-  }
+ // if (check_the_same_route_connection_exists(outlet, inlet)) {
+ //   return Value::error(logger::error("ProxyBuilder::{}({}) fails. Inlet side has the same name connection", __func__, connectionInfo));
+ // }
 
   /*
   // TODO: 名前が同じのがあったらどうするか？
@@ -197,21 +200,21 @@ Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& conne
 
 
   // outlet側から接続を構築する．失敗したらエラーを返す
-  auto outletConnectionResult = outlet->connectTo(inlet, connectionInfo);
-  if (outletConnectionResult.isError()) return outletConnectionResult;
+ // auto outletConnectionResult = outlet->connectTo(inlet, connectionInfo);
+ // if (outletConnectionResult.isError()) return outletConnectionResult;
   // inlet側から接続を構築．
-  auto inletConnectionResult = inlet->connectTo(outlet, connectionInfo);
-  if (inletConnectionResult.isError()) {
+ // auto inletConnectionResult = inlet->connectTo(outlet, connectionInfo);
+ // if (inletConnectionResult.isError()) {
     // inlet側接続が失敗した場合，outlet側は成功しているのでoutlet側接続を削除する必要がある．
-    logger::error("ConnectionBuilder::createConnection({}) failed. Outlet connection success but Inlet failed (Message: {}). Now trying to remove connection of outlet side.", inletConnectionResult);
-    auto outletDisconnectionResult = outlet->disconnectFrom(inlet);
-    if (outletDisconnectionResult.isError()) {
-      logger::error("ConnectionBuilder::createConnection({}) failed. Outlet connection success but Inlet failed. Outlet side connection deletion failed. Error({})", outletDisconnectionResult);
-      return outletDisconnectionResult;
-    }
-    return inletConnectionResult;
-  }
-  return inletConnectionResult;
+ //   logger::error("ConnectionBuilder::createConnection({}) failed. Outlet connection success but Inlet failed (Message: {}). Now trying to remove connection of outlet side.", inletConnectionResult);
+ //   auto outletDisconnectionResult = outlet->disconnectFrom(inlet);
+ //   if (outletDisconnectionResult.isError()) {
+ //     logger::error("ConnectionBuilder::createConnection({}) failed. Outlet connection success but Inlet failed. Outlet side connection deletion failed. Error({})", outletDisconnectionResult);
+ //     return outletDisconnectionResult;
+ //   }
+ //   return inletConnectionResult;
+ // }
+ // return inletConnectionResult;
 
 
  /*
@@ -224,7 +227,7 @@ Value ConnectionBuilder::createStateBind(ProcessStore& store, const Value& conne
     return outletBroker->operationOutlet()->connectTo(Value::string(value.at("fullName")), connectionInfo);
   */
     // return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
-}
+//}
 
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& cInfo, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ConnectionBuilder::registerTopicPublisher({}, {}, {})", cInfo, opInfo, topicInfo);

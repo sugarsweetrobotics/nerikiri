@@ -14,7 +14,7 @@ namespace nerikiri {
 
         static Value createOperationToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 
-        static Value createFSMStateToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+        // static Value createFSMStateToOperationConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 
         static Value connect(ProcessStore& store, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo);
 
@@ -27,8 +27,8 @@ namespace nerikiri {
         static Value deleteConnection(ProcessStore* store, const std::string& connectionFullName, BrokerAPI* receiverBroker=nullptr);
 
 
-        static Value createStateBind(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
-        static Value deleteStateBindI(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+        //static Value createStateBind(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
+        //static Value deleteStateBindI(ProcessStore* store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);
 
         static Value registerTopicPublisher(ProcessStore& store, const Value& containerInfo, const Value& opInfo, const Value& topicInfo);
         static Value registerTopicPublisher(ProcessStore& store, const Value& opInfo, const Value& topicInfo);

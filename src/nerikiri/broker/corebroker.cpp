@@ -491,11 +491,11 @@ public:
 
     virtual Value createConnection(const Value& connectionInfo) override {
         logger::trace("CoreConnectionBroker::createConnection({}) called", connectionInfo);
-        if (connectionInfo.at("inlet").hasKey("fsm")) {
-            return ConnectionBuilder::createStateBind(*process_->store(), connectionInfo);
-        } else {
+        //if (connectionInfo.at("inlet").hasKey("fsm")) {
+        //    return ConnectionBuilder::createStateBind(*process_->store(), connectionInfo);
+        //} else {
             return ConnectionBuilder::createOperationConnection(*process_->store(), connectionInfo);
-        }
+        //}
     }
 
     virtual Value deleteConnection(const std::string& fullName) override {
