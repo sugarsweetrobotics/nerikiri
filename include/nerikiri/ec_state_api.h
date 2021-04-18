@@ -3,7 +3,7 @@
 #include <nerikiri/object.h>
 
 namespace nerikiri {
-
+/*
 
 
 
@@ -18,5 +18,5 @@ namespace nerikiri {
     };
 
     std::shared_ptr<ECStateAPI> nullECState();
-
+*/
 }

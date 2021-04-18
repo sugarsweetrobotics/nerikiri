@@ -4,7 +4,7 @@
 
 using namespace nerikiri;
 
-
+/*
 class ECStateStartProxy : public ECStateAPI {
 private:
     const std::shared_ptr<BrokerProxyAPI> broker_;
@@ -19,7 +19,9 @@ public:
         return broker_->ec()->activateStart(fullName_);
     }
 };
+*/
 
+/*
 class ECStateStopProxy : public ECStateAPI {
 private:
     const std::shared_ptr<BrokerProxyAPI> broker_;
@@ -34,7 +36,9 @@ public:
         return broker_->ec()->activateStop(fullName_);
     }
 };
+*/
 
+/*
 std::shared_ptr<ECStateAPI> nerikiri::ecStateStartProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<ECStateStartProxy>(broker, fullName);
 }
@@ -42,3 +46,4 @@ std::shared_ptr<ECStateAPI> nerikiri::ecStateStartProxy(const std::shared_ptr<Br
 std::shared_ptr<ECStateAPI> nerikiri::ecStateStopProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<ECStateStopProxy>(broker, fullName);
 }
+*/

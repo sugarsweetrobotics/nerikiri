@@ -19,8 +19,8 @@
 
 
 #include "nerikiri/topic.h"
-#include "nerikiri/fsm_api.h"
-#include "nerikiri/fsm_factory_api.h"
+//#include "nerikiri/fsm_api.h"
+//#include "nerikiri/fsm_factory_api.h"
 
 namespace nerikiri {
 

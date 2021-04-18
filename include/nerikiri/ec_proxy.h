@@ -7,6 +7,6 @@
 
 namespace nerikiri {
 
-    std::shared_ptr<ECStateAPI> ecStateStartProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
-    std::shared_ptr<ECStateAPI> ecStateStopProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
+    //std::shared_ptr<ECStateAPI> ecStateStartProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
+    //std::shared_ptr<ECStateAPI> ecStateStopProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
 }
