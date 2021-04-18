@@ -11,11 +11,11 @@
 
 namespace nerikiri {
 
-    class ProcessStore;
-    
+    class ProcessAPI;
+
     class InvalidBrokerException : public std::exception {};
 
-    std::shared_ptr<ConnectionAPI> connect(ProcessStore& store, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options={});
+    Value connect(const std::shared_ptr<ProcessAPI>& process, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options={});
 
     std::shared_ptr<ConnectionAPI> createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet);
 

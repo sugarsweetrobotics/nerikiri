@@ -56,6 +56,8 @@ namespace nerikiri {
 
     virtual Value info() const override;
 
+    virtual Value fullInfo() const override;
+
     virtual Value put(const Value& value) override;
 
     virtual Value execute(const Value& value){

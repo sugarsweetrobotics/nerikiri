@@ -40,6 +40,8 @@ namespace nerikiri {
         virtual Value removeConnection(const std::string& _fullName) = 0;
 
         virtual Value info() const = 0;
+
+        virtual Value fullInfo() const { return info(); }
     };
 
     std::shared_ptr<OperationOutletAPI> nullOperationOutlet();
@@ -70,6 +72,8 @@ namespace nerikiri {
         virtual Value executeOwner() = 0;
 
         virtual Value info() const = 0;
+
+        virtual Value fullInfo() const { return info(); }
 
         virtual bool isUpdated() const = 0;
 

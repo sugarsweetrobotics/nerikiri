@@ -13,18 +13,26 @@ OperationInletBase::OperationInletBase(const std::string& name, OperationAPI* op
   
 }
 
-
-Value OperationInletBase::info() const {
+Value OperationInletBase::fullInfo() const {
   return {
     {"name", name()},
-      {"ownerFullName", operation_->fullName()},
+    {"ownerFullName", operation_->fullName()},
     {"value", get()},
     {"defaultValue", defaultValue()},
     {"connections", {
       nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) {
         return c->info();
       })
-    }}
+    }},
+    {"operation", operation_->info()}
+  };
+}
+
+Value OperationInletBase::info() const {
+  return {
+    {"name", name()},
+    {"ownerFullName", operation_->fullName()},
+    {"operation", operation_->info()}
   };
 }
 

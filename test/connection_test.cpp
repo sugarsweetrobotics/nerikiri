@@ -50,14 +50,35 @@ SCENARIO( "Connection test", "[ec]" ) {
     auto add0ope = p->store()->operation("add0.ope");
     REQUIRE(add0ope->isNull() == false);
 
-    WHEN("Operation is stanby") {
+    THEN("Operation Behavior test") {
       REQUIRE(Value::intValue(zero0ope->call({}), -1) == 0);
       REQUIRE(Value::intValue(inc0ope->call({{"arg01", 3}}), -1) == 4);
       REQUIRE(Value::intValue(one0ope->call({}), -1) == 1);
       REQUIRE(Value::intValue(add0ope->call({
         {"arg01", 1}, {"arg02", 2}
       }), -1) == 3);
+    }
 
+    THEN("Connect with API") {
+      auto ret = nerikiri::connect(p, "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
+      REQUIRE(ret.isError() == false);
+
+      auto con1 = zero0ope->outlet()->connections();
+      REQUIRE(con1.size() == 1);
+      REQUIRE(con1[0]->fullName() == "con0");
+
+      auto con2 = inc0ope->inlet("arg01")->connections();
+      REQUIRE(con2.size() == 1);
+      REQUIRE(con2[0]->fullName() == "con0");
+
+      REQUIRE(Value::intValue(inc0ope->execute(), -1) == 2);
+
+      zero0ope->execute();
+
+      REQUIRE(Value::intValue(inc0ope->execute(), -1) == 1);
+    }
+
+    WHEN("ConnectionInfo is stanby") {
       Value con0Info{
         {"name", "con0"},
         {"type", "event"},

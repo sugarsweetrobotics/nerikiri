@@ -3,7 +3,7 @@
 #include <nerikiri/operation_api.h>
 #include <nerikiri/fsm_api.h>
 #include "nerikiri/connection.h"
-
+#include <nerikiri/process_api.h>
 
 using namespace nerikiri;
 
@@ -119,8 +119,16 @@ std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
-std::shared_ptr<ConnectionAPI> nerikiri::connect(ProcessStore& store, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
+Value nerikiri::connect(const std::shared_ptr<ProcessAPI>& process, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
+  Value con0Info{
+    {"name", name},
+    {"type", "event"},
+    {"broker", "CoreBroker"},
+    {"inlet", inlet->info()},
+    {"outlet", outlet->info()}
+  };
 
+  return process->coreBroker()->connection()->createConnection(con0Info);
 }
 
 class NullConnection : public ConnectionAPI {
