@@ -5,14 +5,17 @@
 #include <map>
 #include <functional>
 
+#include <nerikiri/process_store.h>
 #include <nerikiri/connection_api.h>
 #include <nerikiri/broker_api.h>
 
 namespace nerikiri {
 
+    class ProcessStore;
+    
     class InvalidBrokerException : public std::exception {};
 
-    std::shared_ptr<ConnectionAPI> connect(const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options={});
+    std::shared_ptr<ConnectionAPI> connect(ProcessStore& store, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options={});
 
     std::shared_ptr<ConnectionAPI> createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet);
 

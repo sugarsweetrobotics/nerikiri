@@ -119,8 +119,9 @@ std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
+std::shared_ptr<ConnectionAPI> nerikiri::connect(ProcessStore& store, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
 
-
+}
 
 class NullConnection : public ConnectionAPI {
 private:

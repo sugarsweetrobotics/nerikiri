@@ -19,7 +19,7 @@ using namespace nerikiri;
 SCENARIO( "Connection test", "[ec]" ) {
   GIVEN("Connection basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "WARN" },
+      "logger": { "logLevel": "OFF" },
 
       "operations": {
         "precreate": [
@@ -38,25 +38,22 @@ SCENARIO( "Connection test", "[ec]" ) {
     p->loadOperationFactory(opf2);
     p->loadOperationFactory(opf3);
     p->loadOperationFactory(opf4);
+    
+    p->startAsync();
+
+    auto zero0ope = p->store()->operation("zero0.ope");
+    REQUIRE(zero0ope->isNull() == false);
+    auto inc0ope = p->store()->operation("inc0.ope");
+    REQUIRE(inc0ope->isNull() == false);
+    auto one0ope = p->store()->operation("one0.ope");
+    REQUIRE(one0ope->isNull() == false);
+    auto add0ope = p->store()->operation("add0.ope");
+    REQUIRE(add0ope->isNull() == false);
 
     WHEN("Operation is stanby") {
-      p->startAsync();
-      auto zero0ope = p->store()->operation("zero0.ope");
-      REQUIRE(zero0ope->isNull() == false);
       REQUIRE(Value::intValue(zero0ope->call({}), -1) == 0);
-
-      auto inc0ope = p->store()->operation("inc0.ope");
-      REQUIRE(inc0ope->isNull() == false);
       REQUIRE(Value::intValue(inc0ope->call({{"arg01", 3}}), -1) == 4);
-
-
-      auto one0ope = p->store()->operation("one0.ope");
-      REQUIRE(one0ope->isNull() == false);
       REQUIRE(Value::intValue(one0ope->call({}), -1) == 1);
-
-
-      auto add0ope = p->store()->operation("add0.ope");
-      REQUIRE(add0ope->isNull() == false);
       REQUIRE(Value::intValue(add0ope->call({
         {"arg01", 1}, {"arg02", 2}
       }), -1) == 3);
