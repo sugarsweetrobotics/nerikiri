@@ -12,7 +12,7 @@ namespace nerikiri {
 
     class InvalidBrokerException : public std::exception {};
 
-    
+    std::shared_ptr<ConnectionAPI> connect(const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options={});
 
     std::shared_ptr<ConnectionAPI> createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet);
 

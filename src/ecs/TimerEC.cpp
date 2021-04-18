@@ -13,7 +13,7 @@ private:
     bool flag_;
     std::thread* thread_;
 public:
-    TimerEC(const Value& info) : ExecutionContextBase("TimerEC", Value::string(info.at("fullName"))) {
+    TimerEC(const Value& info) : ExecutionContextBase("TimerEC") {
         if (info.at("rate").isDoubleValue()) {
             rate_ = (info.at("rate").doubleValue());
         } else if (info.at("rate").isIntValue()) {
@@ -22,19 +22,20 @@ public:
             logger::error("TimerEC creation failed. Rate must be double (or int) value.");
             rate_ = -1;
         }
-        setDescription("タイマー実行コンテキスト．started状態ではbindされたOperationを周期的に実行します．");
+        //setDescription("タイマー実行コンテキスト．started状態ではbindされたOperationを周期的に実行します．");
     }
 
     virtual ~TimerEC() {
-        stop();
+        //stop();
     }
 
+/*
     virtual Value info() const { 
         auto i =ExecutionContextBase::info();
         i["rate"] = rate_;
         return i;
     }
-
+*/
 public:
 
     virtual bool onStarted() override {
