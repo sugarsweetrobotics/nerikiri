@@ -186,7 +186,7 @@ public:
     }
 };
 
-
+/*
 class NullFSMBroker : public FSMBrokerAPI {
 public:
     virtual ~NullFSMBroker() {}
@@ -207,7 +207,8 @@ public:
         return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
     }
 };
-
+*/
+/*
 class NullFSMStateBroker : public FSMStateBrokerAPI {
 public:
     virtual ~NullFSMStateBroker() {}
@@ -269,9 +270,9 @@ public:
     virtual Value addConnection(const std::string& fsmName, const std::string& stateName, const Value& c) override {
         return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));       
     }
-    */
+    
 };
-
+*/
 class NullBrokerProxy : public BrokerProxyAPI
 {
 private:
@@ -285,10 +286,10 @@ public:
         std::make_shared<NullOperationInletBroker>(),
         std::make_shared<NullConnectionBroker>(),
         std::make_shared<NullContainerBroker>(),
-        std::make_shared<NullECBroker>(),
-        std::make_shared<NullFSMBroker>(),
-        std::make_shared<NullFSMStateBroker>(),
-        std::make_shared<NullOperationInletBroker>()
+        std::make_shared<NullECBroker>()
+        //std::make_shared<NullFSMBroker>(),
+        //std::make_shared<NullFSMStateBroker>(),
+        //std::make_shared<NullOperationInletBroker>()
     ) {}
     virtual ~NullBrokerProxy() {}
 public:

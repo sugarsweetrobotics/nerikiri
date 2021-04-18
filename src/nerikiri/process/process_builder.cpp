@@ -108,7 +108,7 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
  */
 void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("Process::_preStartFSMs() entry");
-  
+    /* 
     config.at("fsms").at("bind").at("operations").const_list_for_each([&store](auto& bindInfo) {
       auto fsmInfo = bindInfo.at("fsm");
       auto opInfo = bindInfo.at("operation");
@@ -126,10 +126,12 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
           this->store()->getAllOperation(opInfo)
         );
       }
-      */
-    });
+      *
+    }); */
+    /* 
     auto c = config.at("fsms").at("bind");
     auto ecs = c.at("ecs");
+    */
     /*
     ecs.list_for_each([this](auto& value) {
       // TODO: ECへのバインド

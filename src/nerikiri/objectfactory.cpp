@@ -87,7 +87,8 @@ Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
   logger::info("ObjectFactory::createFSM({})", fsmInfo);
-  auto fullName = loadFullName(store.fsms(), fsmInfo);
+  // auto fullName = loadFullName(store.fsms(), fsmInfo);
+  auto fullName = Value::string(fsmInfo["fullName"]);
   return nerikiri::createFSM(store, fullName, fsmInfo);
   /*
   auto container = store.containerFactory("_FSMContainerStruct")->create(fullName);
@@ -114,6 +115,6 @@ Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const std::stri
   //return store.deleteEC(fullName);
 }
 
-Value ObjectFactory::deleteFSM(ProcessStore& store, const std::string& fullName)  {
-  return store.deleteFSM(fullName);
-}
+//Value ObjectFactory::deleteFSM(ProcessStore& store, const std::string& fullName)  {
+//  return store.deleteFSM(fullName);
+//}

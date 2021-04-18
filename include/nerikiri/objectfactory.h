@@ -44,7 +44,7 @@ namespace nerikiri {
 
         static Value deleteExecutionContext(ProcessStore& store, const std::string& fullName) ;
 
-        static Value deleteFSM(ProcessStore& store, const std::string& fullName) ;
+        // static Value deleteFSM(ProcessStore& store, const std::string& fullName) ;
     };
     
 }

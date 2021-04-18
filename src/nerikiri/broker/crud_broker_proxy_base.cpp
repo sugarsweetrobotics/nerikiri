@@ -207,7 +207,7 @@ public:
 };
 
 
-
+/*
 class CRUDFSMBroker : public FSMBrokerAPI {
 private:
     CRUDBrokerProxyAPI* broker_;
@@ -232,6 +232,8 @@ public:
     }
 };
 
+*/
+/*
 class CRUDFSMStateBroker : public FSMStateBrokerAPI {
 private:
     CRUDBrokerProxyAPI* broker_;
@@ -288,8 +290,8 @@ virtual ~CRUDFSMStateBroker() {}
     }
 };
 
-
-
+*/
+/*
 class CRUDFSMStateInletBroker : public OperationInletBrokerAPI {
 private:
 
@@ -343,7 +345,7 @@ public:
         return Value::error(logger::error("NullOperationInletBroker::{}({}) called. Object is null.", __func__, fullName));
     }
 };
-
+*/
 CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& typeName, const std::string& fullName) : 
   CRUDBrokerProxyAPI(), BrokerProxyAPI(typeName, fullName, 
     std::make_shared<CRUDStoreBroker>(this),
@@ -353,10 +355,10 @@ CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& typeName, const std:
     std::make_shared<CRUDOperationInletBroker>(this),
     std::make_shared<CRUDConnectionBroker>(this),
     std::make_shared<CRUDContainerBroker>(this),
-    std::make_shared<CRUDECBroker>(this),
-    std::make_shared<CRUDFSMBroker>(this),
-    std::make_shared<CRUDFSMStateBroker>(this),
-    std::make_shared<CRUDFSMStateInletBroker>(this)
+    std::make_shared<CRUDECBroker>(this)//,
+    //std::make_shared<CRUDFSMBroker>(this),
+    //std::make_shared<CRUDFSMStateBroker>(this),
+    //std::make_shared<CRUDFSMStateInletBroker>(this)
     )
 {}
 

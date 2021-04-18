@@ -120,14 +120,13 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(co
         }
         inlet = inlet_opt.value();
         inlet_holder = inlet_side_operationProxy;
-    } else if (value.at("inlet").hasKey("fsm")) {
+    } /* else if (value.at("inlet").hasKey("fsm")) {
         className = "fsm";
         auto inlet_side_fsm_proxy = ProxyBuilder::fsmProxy(value.at("inlet").at("fsm"), store);
         inlet = inlet_side_fsm_proxy->fsmState(Value::string(value.at("inlet").at("name")))->inlet();
         inlet_holder = inlet_side_fsm_proxy;
-
-        //return createConnection(Value::string(value.at("name")), connectionType(Value::string(value.at("type"))), inlet, outlet_side_operation->outlet(), inlet_side_fsm_proxy);
-    } else if (value.at("inlet").hasKey("topic")) {
+      //return createConnection(Value::string(value.at("name")), connectionType(Value::string(value.at("type"))), inlet, outlet_side_operation->outlet(), inlet_side_fsm_proxy);
+    }*/ else if (value.at("inlet").hasKey("topic")) {
         className = "topic";
         auto inlet_side_topic_info = ObjectFactory::createTopic(*store, value.at("inlet").at("topic"));
         auto inlet_side_topic = store->topic(Value::string(value.at("inlet").at("topic").at("fullName")));
@@ -194,11 +193,11 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::incomingOperationConnectionProxy(co
             }
         }
         return createConnection(name, connectionType(Value::string(value.at("type"))), inlet.value(), outlet_side_operationProxy->outlet(), outlet_side_operationProxy);
-    } else if (value.at("inlet").hasKey("fsm")) {
+    } /* else if (value.at("inlet").hasKey("fsm")) {
         auto op = ProxyBuilder::operationProxy(value.at("outlet").at("operation"), store);
         auto inlet = store->fsm(Value::string(value.at("inlet").at("fsm").at("fullName")))->fsmState(Value::string(value.at("inlet").at("name")))->inlet();
         return createConnection(Value::string(value.at("name")), connectionType(Value::string(value.at("type"))), inlet, op->outlet(), op);
-   }
+   } */
 
     logger::error("ProxyBuilder::outgoingOperationConnectionProxy({}) failed. Top level 'outlet' object must have 'operation' element object.", value);
     return nullConnection();

@@ -17,7 +17,7 @@ using namespace nerikiri;
 SCENARIO( "FSM test", "[ec]" ) {
   GIVEN("FSM basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "INFO" },
+      "logger": { "logLevel": "OFF" },
 
       "operations": {
         "precreate": [
@@ -54,7 +54,7 @@ SCENARIO( "FSM test", "[ec]" ) {
           "precreate": [
               {
                   "typeName": "GenericFSM",
-                  "instanceName": "FSM0.fsm",
+                  "fullName": "FSM0.fsm",
                   "states" : [
                     {
                       "name": "created",

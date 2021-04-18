@@ -102,26 +102,26 @@ std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFa
   return nullContainerOperationFactory();
 }
 
-std::vector<std::shared_ptr<FSMAPI>> ProcessStore::fsms() const {
-  return {fsms_.begin(), fsms_.end()};
-}
+//std::vector<std::shared_ptr<FSMAPI>> ProcessStore::fsms() const {
+//  return {fsms_.begin(), fsms_.end()};
+//}
 
-std::shared_ptr<FSMAPI> ProcessStore::fsm(const std::string& fullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsms(), [&fullName](auto fsm) { return fsm->fullName() == fullName; });
-  if (f) return f.value();;
-  
-  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
-  return nullFSM();
-}
+//std::shared_ptr<FSMAPI> ProcessStore::fsm(const std::string& fullName) const {
+//  auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsms(), [&fullName](auto fsm) { return fsm->fullName() == fullName; });
+//  if (f) return f.value();;
+//  
+//  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
+//  return nullFSM();/
+//}
 
-std::shared_ptr<FSMFactoryAPI> ProcessStore::fsmFactory(const std::string& fsmTypeFullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<FSMFactoryAPI>>(fsmFactories(), [&fsmTypeFullName] (auto f) {
-    return f->typeName() == fsmTypeFullName;
-  });
-  if (f) return f.value();
-  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fsmTypeFullName);
-  return nullFSMFactory();
-}
+//std::shared_ptr<FSMFactoryAPI> ProcessStore::fsmFactory(const std::string& fsmTypeFullName) const {
+//  auto f = nerikiri::functional::find<std::shared_ptr<FSMFactoryAPI>>(fsmFactories(), [&fsmTypeFullName] (auto f) {
+//    return f->typeName() == fsmTypeFullName;
+//  });
+//  if (f) return f.value();
+//  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fsmTypeFullName);
+//  return nullFSMFactory();
+//}
 
 std::shared_ptr<TopicAPI> ProcessStore::topic(const std::string& fullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<TopicAPI>>(topics(), [&fullName](auto t) { return t->fullName() == fullName; });
@@ -179,17 +179,15 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   return operation(Value::string(info.at("fullName")));
 }
 
-std::shared_ptr<FSMAPI> ProcessStore::fsmProxy(const Value& info) {
-    auto fullName = Value::string(info.at("fullName"));
-    auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsmProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
-      if (f) return f.value();
-    
-    /*
-  if (info.hasKey("broker")) {
-    return ProxyBuilder::fsmProxy(info, this);
-  } */
-  return fsm(Value::string(info.at("fullName")));
-}
+//std::shared_ptr<FSMAPI> ProcessStore::fsmProxy(const Value& info) {
+//    auto fullName = Value::string(info.at("fullName"));
+//    auto f = nerikiri::functional::find<std::shared_ptr<FSMAPI>>(fsmProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+//      if (f) return f.value();
+//  if (info.hasKey("broker")) {
+//    return ProxyBuilder::fsmProxy(info, this);
+//  } 
+//  return fsm(Value::string(info.at("fullName")));
+//}
 
 
 std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
@@ -204,7 +202,7 @@ std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
     auto ip = operationProxy->inlet(Value::string(info["name"]));
     addInletProxy(ip);
     return ip;
-  } else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
+  } /* else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
     auto p = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["fsm"]["fullName"] && p->name() == Value::string(info["name"]);
@@ -216,7 +214,7 @@ std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
     auto ip = fsmProxy->fsmState(Value::string(info["name"]))->inlet();
     addInletProxy(ip);
     return ip;
-  } 
+  } */
     
   logger::error("ProcessStore::inletProxy({}) failed. Invalid Info format", info);
   return nullOperationInlet();  
@@ -235,7 +233,7 @@ std::shared_ptr<OperationOutletAPI> ProcessStore::outletProxy(const Value& info)
     auto op = operationProxy->outlet();
     addOutletProxy(op);
     return op;
-  } else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
+  } /* else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
     auto p = nerikiri::functional::find<std::shared_ptr<OperationOutletAPI>>(outletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["fsm"]["fullName"];
@@ -247,7 +245,7 @@ std::shared_ptr<OperationOutletAPI> ProcessStore::outletProxy(const Value& info)
     auto op = fsmProxy->fsmState(Value::string(info["name"]))->outlet();
     addOutletProxy(op);
     return op;
-  } 
+  }  */
 
   logger::error("ProcessStore::outletProxy({}) failed. Invalid Info format", info);
   return nullOperationOutlet();

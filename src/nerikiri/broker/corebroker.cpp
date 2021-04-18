@@ -247,8 +247,8 @@ public:
             return ObjectFactory::deleteContainerOperation(*process_->store(), fullName);
         } else if (className == "ec") {
             return ObjectFactory::deleteExecutionContext(*process_->store(), fullName);
-        } else if (className == "fsm") {
-            return ObjectFactory::deleteFSM(*process_->store(), fullName);
+        //} else if (className == "fsm") {
+        //    return ObjectFactory::deleteFSM(*process_->store(), fullName);
         }
 
         return Value::error(logger::error("CoreBroker::deleteObject({}, {}) failed. Class name is invalid.", className, fullName));
@@ -280,10 +280,10 @@ public:
             return nerikiri::functional::map<Value, std::shared_ptr<TopicAPI>>(process_->store()->topics(), [](auto o) { return o->info(); });
         } else if (className == "ecFactory") {
             return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
-        } else if (className == "fsm") {
-            return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
-        } else if (className == "fsmFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
+        //} else if (className == "fsm") {
+        //    return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
+        //} else if (className == "fsmFactory") {
+        //    return nerikiri::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
         } else if (className == "broker") {
             return nerikiri::functional::map<Value, std::shared_ptr<BrokerAPI>>(process_->store()->brokers(), [](auto o) { return o->info(); });
         } else if (className == "brokerFactory") {
@@ -316,10 +316,10 @@ public:
         return process_->store()->topic(fullName)->info();
     } else if (className == "topicFactory") {
         return process_->store()->topicFactory(fullName)->info();
-    } else if (className == "fsm") {
-        return process_->store()->fsm(fullName)->info();
-    } else if (className == "fsmFactory") {
-        return process_->store()->fsmFactory(fullName)->info();
+    //} else if (className == "fsm") {
+    //    return process_->store()->fsm(fullName)->info();
+    //} else if (className == "fsmFactory") {
+    //    return process_->store()->fsmFactory(fullName)->info();
     } else if (className == "broker") {
         return process_->store()->broker(fullName)->info();
     } else if (className == "brokerFactory") {
@@ -538,7 +538,7 @@ public:
 
 };
 
-
+/*
 class CoreFSMBroker : public FSMBrokerAPI {
 private:
   ProcessAPI* process_;
@@ -564,7 +564,9 @@ public:
         return process_->store()->fsm(fsmFullName)->fsmState(stateName)->info();
     }
 };
+*/
 
+/*
 class CoreFSMStateBroker : public FSMStateBrokerAPI {
 private:
   ProcessAPI* process_;
@@ -623,7 +625,7 @@ public:
     virtual Value inlet(const std::string& fsmName, const std::string& stateName) override {
         return process_->store()->fsm(fsmName)->fsmState(stateName)->inlet()->info();
     }
-/*
+
     virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
         auto broker = process_->store()->brokerFactory(Value::string(info.at("broker").at("typeName")))->createProxy(info.at("broker"));
         return process_->store()->fsm(fsmName)->fsmState(stateName)->bind(operationProxy(broker, Value::string(info.at("fullName"))));
@@ -637,11 +639,11 @@ public:
         }
         return Value::error(logger::error("CoreOperationInletBroker::name({}, {}) failed. Inlet can not be found.", fullName, stateName));
     }
-    */
+    *
 };
+*/
 
-
-
+/*
 class CoreFSMStateInletBroker : public OperationInletBrokerAPI {
 private:
   ProcessAPI* process_;
@@ -718,7 +720,7 @@ public:
     }
 
 };
-
+*/
 
 /**
  * 
@@ -732,10 +734,10 @@ BrokerProxyAPI("CoreBroker", fullName,
     std::make_shared<CoreOperationInletBroker>(process),
     std::make_shared<CoreConnectionBroker>(process),
     std::make_shared<CoreContainerBroker>(process),
-    std::make_shared<CoreECBroker>(process),
-    std::make_shared<CoreFSMBroker>(process),
-    std::make_shared<CoreFSMStateBroker>(process),
-    std::make_shared<CoreFSMStateInletBroker>(process)
+    std::make_shared<CoreECBroker>(process)
+    //std::make_shared<CoreFSMBroker>(process),
+    //std::make_shared<CoreFSMStateBroker>(process),
+    //std::make_shared<CoreFSMStateInletBroker>(process)
 ), process_(process)
 {}
 

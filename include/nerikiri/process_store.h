@@ -44,7 +44,7 @@ namespace nerikiri {
 
     std::vector<std::shared_ptr<ContainerOperationFactoryAPI>> containerOperationFactories_;
 
-    std::vector<std::shared_ptr<ExecutionContextAPI>> executionContexts_;
+    //std::vector<std::shared_ptr<ExecutionContextAPI>> executionContexts_;
     std::vector<std::shared_ptr<ExecutionContextFactoryAPI>> executionContextFactories_;
     
     std::vector<std::shared_ptr<BrokerAPI>> brokers_;
@@ -53,9 +53,9 @@ namespace nerikiri {
     std::vector<std::shared_ptr<TopicAPI>> topics_;
     std::vector<std::shared_ptr<TopicFactoryAPI>> topicFactories_;
 
-    std::vector<std::shared_ptr<FSMAPI>> fsms_;
-    std::vector<std::shared_ptr<FSMAPI>> fsmProxies_;
-    std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories_;
+    //std::vector<std::shared_ptr<FSMAPI>> fsms_;
+    //std::vector<std::shared_ptr<FSMAPI>> fsmProxies_;
+    //std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories_;
 
     std::vector<std::shared_ptr<OperationInletAPI>> inletProxies_;
     std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies_;
@@ -66,11 +66,11 @@ namespace nerikiri {
 
     ~ProcessStore() {
       /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
-      fsms_.clear();
+      //fsms_.clear();
 
       topics_.clear();
       topicFactories_.clear();
-      executionContexts_.clear();
+      // executionContexts_.clear();
       executionContextFactories_.clear();
       operations_.clear();
       operationFactories_.clear();
@@ -184,9 +184,9 @@ namespace nerikiri {
 
     std::vector<std::shared_ptr<FSMAPI>> fsms() const;
 
-    std::vector<std::shared_ptr<FSMAPI>> fsmProxies() const {
-        return {fsmProxies_.begin(), fsmProxies_.end()};
-    }
+    //std::vector<std::shared_ptr<FSMAPI>> fsmProxies() const {
+    //    return {fsmProxies_.begin(), fsmProxies_.end()};
+    //}
 
     std::vector<std::shared_ptr<OperationInletAPI>> inletProxies() const {
         return {inletProxies_.begin(), inletProxies_.end()};
@@ -196,9 +196,9 @@ namespace nerikiri {
         return {outletProxies_.begin(), outletProxies_.end()};
     }
     
-    std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories() const {
-      return {fsmFactories_.begin(), fsmFactories_.end()};
-    }
+    //std::vector<std::shared_ptr<FSMFactoryAPI>> fsmFactories() const {
+    //  return {fsmFactories_.begin(), fsmFactories_.end()};
+    //}
 
     std::vector<std::shared_ptr<TopicAPI>> topics() const {
       return {topics_.begin(), topics_.end()};
@@ -208,9 +208,9 @@ namespace nerikiri {
       return {topicFactories_.begin(), topicFactories_.end()};
     }
 
-    std::vector<std::shared_ptr<ExecutionContextAPI>> executionContexts() const { 
-      return {executionContexts_.begin(), executionContexts_.end()};
-    }
+    //std::vector<std::shared_ptr<ExecutionContextAPI>> executionContexts() const { 
+    //  return {executionContexts_.begin(), executionContexts_.end()};
+    //}
     
     std::vector<std::shared_ptr<ExecutionContextFactoryAPI>> executionContextFactories() const { 
       return {executionContextFactories_.begin(), executionContextFactories_.end()};
@@ -280,25 +280,25 @@ namespace nerikiri {
     /**
      * 
      */
-    Value addFSM(const std::shared_ptr<FSMAPI>& fsm) {
-      return add<FSMAPI>(fsms_, fsm, ".fsm");
-    }
+    //Value addFSM(const std::shared_ptr<FSMAPI>& fsm) {
+    //  return add<FSMAPI>(fsms_, fsm, ".fsm");
+    //}
 
-    Value addFSMProxy(const std::shared_ptr<FSMAPI>& obj) {
-      return add<FSMAPI>(fsmProxies_, obj, ".fsm");
-    }
+    //Value addFSMProxy(const std::shared_ptr<FSMAPI>& obj) {
+    //  return add<FSMAPI>(fsmProxies_, obj, ".fsm");
+    //}
 
-    Value deleteFSM(const std::string& fullName) {
-      return del<FSMAPI>(fsms_, fullName);
-    }
+    //Value deleteFSM(const std::string& fullName) {
+    //  return del<FSMAPI>(fsms_, fullName);
+    //}
 
-    Value deleteFSMProxy(const std::string& fullName) {
-      return del<FSMAPI>(fsmProxies_, fullName);
-    }
+    //Value deleteFSMProxy(const std::string& fullName) {
+    //  return del<FSMAPI>(fsmProxies_, fullName);
+    //}
 
-    Value addFSMFactory(const std::shared_ptr<FSMFactoryAPI>& ff) {
-      return add<FSMFactoryAPI>(fsmFactories_, ff, ".ff");
-    }
+    //Value addFSMFactory(const std::shared_ptr<FSMFactoryAPI>& ff) {
+    //  return add<FSMFactoryAPI>(fsmFactories_, ff, ".ff");
+    //}
 
     /**
      * 
@@ -352,7 +352,7 @@ namespace nerikiri {
   public:
     // PROXIES 
     std::shared_ptr<OperationAPI> operationProxy(const Value& info);
-    std::shared_ptr<FSMAPI> fsmProxy(const Value& info);
+    // std::shared_ptr<FSMAPI> fsmProxy(const Value& info);
 
     /**
      * InletProxyを取得する
@@ -382,9 +382,9 @@ namespace nerikiri {
 
     std::shared_ptr<ContainerOperationFactoryAPI> containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const;
 
-    std::shared_ptr<FSMAPI> fsm(const std::string& fullName) const;
+    //std::shared_ptr<FSMAPI> fsm(const std::string& fullName) const;
 
-    std::shared_ptr<FSMFactoryAPI> fsmFactory(const std::string& fsmTypeFullName) const;
+    //std::shared_ptr<FSMFactoryAPI> fsmFactory(const std::string& fsmTypeFullName) const;
 
     std::shared_ptr<TopicAPI> topic(const std::string& fullName) const;
 
