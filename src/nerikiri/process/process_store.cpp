@@ -140,10 +140,10 @@ std::shared_ptr<TopicFactoryAPI> ProcessStore::topicFactory(const std::string& t
 }
 
 std::shared_ptr<ExecutionContextAPI> ProcessStore::executionContext(const std::string& fullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextAPI>>(executionContexts(), [&fullName](auto ec) { return ec->fullName() == fullName; });
-  if (f) return f.value();;
-  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
-  return nullEC();
+  //auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextAPI>>(executionContexts(), [&fullName](auto ec) { return ec->fullName() == fullName; });
+  //if (f) return f.value();;
+  //logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
+  //return nullEC();
 }
 
 std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactory(const std::string& ecTypeFullName) const {

@@ -63,7 +63,7 @@ auto opf4 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
 
 class OneShotEC : public nerikiri::ExecutionContextBase {
 public:
-    OneShotEC(const nerikiri::Value& info) : nerikiri::ExecutionContextBase("OneShotEC", nerikiri::Value::string(info.at("fullName"))) {}
+    OneShotEC(const nerikiri::Value& info) : nerikiri::ExecutionContextBase("OneShotEC") {}
 
 public:
     virtual bool onStarted() override {

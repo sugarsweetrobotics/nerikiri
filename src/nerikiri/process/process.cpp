@@ -18,6 +18,7 @@
 #include <nerikiri/fsm.h>
 
 #include "nerikiri/fsm/fsm_container.h"
+#include "nerikiri/ec/ec_container.h"
 
 using namespace nerikiri;
 using namespace nerikiri::logger;
@@ -100,6 +101,7 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
     // store_.addFSMFactory(fsmFactory("fsmFactory"));
 
     setupFSMContainer(*this->store());
+    setupECContainer(*this->store());
     setExecutablePath(getExecutablePath(name));
 
     env_dictionary_["${ExecutableDirectory}"] = path_.substr(0, path_.rfind('/'));
@@ -377,6 +379,6 @@ Value Process::fullInfo() const {
   inf["brokerFactories"] = functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(store()->brokerFactories(), [](auto op) { return op->info(); });
   inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->containers(), [](auto c) { return c->info(); });  
   inf["fsms"] = functional::map<Value, std::shared_ptr<FSMAPI>>(store()->fsms(), [](auto c) { return c->info(); });  
-  inf["ecs"] = functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(store()->executionContexts(), [](auto c) { return c->info(); });  
+  ///inf["ecs"] = functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(store()->executionContexts(), [](auto c) { return c->info(); });  
   return inf;
 }

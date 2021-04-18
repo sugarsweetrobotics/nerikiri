@@ -313,14 +313,15 @@ namespace nerikiri {
 
     /**
      * 
-     */
+     *
     Value addEC(const std::shared_ptr<ExecutionContextAPI>& ec) {
       return add<ExecutionContextAPI>(executionContexts_, ec, ".ec");
-    }
-
+    } */
+    /** 
     Value deleteEC(const std::string& fullName) {
       return del<ExecutionContextAPI>(executionContexts_, fullName);
     }
+    */
 
     Value addECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ff) {
       return add<ExecutionContextFactoryAPI>(executionContextFactories_, ff, ".ecf");

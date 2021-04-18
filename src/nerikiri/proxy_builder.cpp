@@ -58,7 +58,9 @@ std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, Proce
     } else if (Value::string(value.at("stateName")) == "stopped") {
         return nerikiri::ecStateStopProxy(broker, fullName);
     }
-    return nullECState();
+    //return nullECState();
+
+    // TODO: ここでnullECを返すはず
 }
 
 std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, const std::shared_ptr<BrokerProxyAPI>& brokerProxy) {

@@ -84,6 +84,10 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
       {"typeName", value}, {"load_paths", config.at("ecs").at("load_paths")}
     });
   });
+  config.at("ecs").at("precreate").const_list_for_each([&store](auto& value) {
+    ObjectFactory::createExecutionContext(store, value);
+  });
+  /*
   
   config.at("ecs").at("precreate").const_list_for_each([&store](auto& value) {
     ObjectFactory::createExecutionContext(store, value);
@@ -94,7 +98,7 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
       store.executionContext(key)->bind(store.operation(Value::string(v.at("fullName"))));
     });
   });
-  
+  */
   logger::trace("Process::_preloadExecutionContexts() exit");
 }
 
@@ -155,7 +159,8 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
 void ProcessBuilder::preStartExecutionContexts(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("Process::_preStartExecutionContexts() entry");
   nerikiri::getListValue(config, "ecs.start").const_list_for_each([&store](const auto& value) {
-    store.executionContext(value.stringValue())->start();
+   // store.executionContext(value.stringValue())->start();
+   // TODO: ここでECをスタートする
   });
     /*
     auto c = config_.at("ecs").at("start");

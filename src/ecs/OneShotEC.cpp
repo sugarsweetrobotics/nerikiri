@@ -9,7 +9,7 @@ extern "C" {
 
 class OneShotEC : public ExecutionContextBase {
 public:
-    OneShotEC(const Value& info) : ExecutionContextBase("OneShotEC", Value::string(info.at("fullName"))) {}
+    OneShotEC() : ExecutionContextBase("OneShotEC") {}
 
 public:
     virtual bool onStarted() override {

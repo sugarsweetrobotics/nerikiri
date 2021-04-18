@@ -5,6 +5,7 @@
 
 
 #include "nerikiri/fsm/fsm_container.h"
+#include "nerikiri/ec/ec_container.h"
 
 
 using namespace nerikiri;
@@ -71,10 +72,12 @@ std::shared_ptr<BrokerProxyAPI> ObjectFactory::createBrokerProxy(ProcessStore& s
 
 Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& value) {
   logger::info("ObjectFactory::createExecutionContext({})", value);
-  auto info = value;
-  auto fullName = loadFullName(store.executionContexts(), value);
-  info["fullName"] = fullName;
-  return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
+  // auto info = value;
+  //auto fullName = loadFullName(store.executionContexts(), value);
+  auto fullName = Value::string(value["fullName"]);
+  // info["fullName"] = fullName;
+  return nerikiri::createEC(store, fullName, value);
+  // return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
 }
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
@@ -108,7 +111,7 @@ Value ObjectFactory::deleteContainerOperation(ProcessStore& store, const std::st
 }
         
 Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const std::string& fullName) {
-  return store.deleteEC(fullName);
+  //return store.deleteEC(fullName);
 }
 
 Value ObjectFactory::deleteFSM(ProcessStore& store, const std::string& fullName)  {

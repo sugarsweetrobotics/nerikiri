@@ -17,7 +17,7 @@ using namespace nerikiri;
 SCENARIO( "ExecutionContext test", "[ec]" ) {
   GIVEN("ExecutionContext basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "OFF" },
+      "logger": { "logLevel": "INFO" },
 
       "operations": {
           "precreate": [
@@ -36,7 +36,7 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
           "precreate": [
             {
               "typeName": "OneShotEC",
-              "instanceName": "OneShotEC0.ec"
+              "fullName": "OneShotEC0.ec"
             }
           ],
           "bind": {},
@@ -53,12 +53,70 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
 
     THEN("ExcutionContext is stanby") {
       p->startAsync();
-      auto ecInfos = p->store()->executionContexts();
-      REQUIRE(ecInfos.size() == 1);
+        
+        auto ecc = p->store()->container("OneShotEC0.ec");
+        REQUIRE(ecc->isNull() == false);
+        
+        auto getter = p->store()->operation("OneShotEC0.ec:get_state.ope");
+        REQUIRE(getter->isNull() == false);
+        
+        auto startOp = p->store()->operation("OneShotEC0.ec:activate_state_started.ope");
+        REQUIRE(startOp->isNull() == false);
+        auto stopOp = p->store()->operation("OneShotEC0.ec:activate_state_stopped.ope");
+        REQUIRE(stopOp->isNull() == false);
+        
+        auto op = p->store()->operation("zero0.ope");
+        REQUIRE(op->isNull() == false);
+        
+        AND_THEN("Bind and start EC") {
+            
+            Value conInfo{
+              {"name", "con0"},
+              {"type", "EVENT"},
+              {"broker", "CoreBroker"},
+              {"outlet", {
+                {"operation", {
+                  {"fullName", "OneShotEC0.ec:activate_state_started.ope"},
+                  {"broker", {
+                    {"typeName", "CoreBroker"}
+                  }}
+                }}
+              }},
+              {"inlet", {
+                {"name", "__event__"},
+                {"operation", {
+                  {"fullName", "zero0.ope"},
+                  {"broker", {
+                    {"typeName", "CoreBroker"}
+                  }}
+                }
+                }
+              }}
+            };
+            auto v = p->coreBroker()->connection()->createConnection(conInfo);
+
+            REQUIRE(startOp->outlet()->connections().size() == 1);
+            
+            
+            REQUIRE(getter->call({}).stringValue() == "stopped");
+            
+            
+            operationIsCalled = false;
+            REQUIRE(operationIsCalled == false);
+            
+            startOp->execute();
+            
+            REQUIRE(operationIsCalled == true);
+            
+            REQUIRE(getter->call({}).stringValue() == "started");
+        }
+      //auto ecInfos = p->store()->executionContexts();
+      //REQUIRE(ecInfos.size() == 1);
     }
 
     THEN("ExecutionContext can bind to operation") {
       p->startAsync();
+        /*
       auto ec = p->store()->executionContext("OneShotEC0.ec");
       REQUIRE(ec->isNull() == false);
 
@@ -72,6 +130,7 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
       REQUIRE(operationIsCalled == false);
       ec->start();
       REQUIRE(operationIsCalled == true);
+         */
 
     }
   }

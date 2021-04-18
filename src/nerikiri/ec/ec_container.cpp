@@ -6,11 +6,13 @@
 #include <nerikiri/container_operation_factory.h>
 #include <nerikiri/logger.h>
 #include "nerikiri/ec/ec_container.h"
+#include <nerikiri/ec.h>
 
 using namespace nerikiri;
 
 struct _ECContainerStruct {
     std::string fullName;
+    std::shared_ptr<ExecutionContextAPI> ec;
     std::string currentState;
     const std::vector<std::string> availableStates;
     _ECContainerStruct(): currentState(""), availableStates({"started", "stopped"}) {}
@@ -69,7 +71,10 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
 
     c->ptr()->fullName = fullName;
     c->ptr()->currentState = defaultStateName;
-
+    c->ptr()->ec = store.executionContextFactory(Value::string(ecInfo.at("typeName")))->create(ecInfo);
+    //if (c->ptr()->ec->isNull()) {
+    //    return Value::error(logger::error("ObjectFactory::createEC failed. Failed to create ExecutionContext(typeName={})", Value::string(ecInfo.at("typeName"))));
+    //}
     auto getter = store.containerOperationFactory("_ECContainerStruct", "get_state")->create(container, container->fullName() + ":" + "get_state.ope");
 
     auto stop_cop = store.containerOperationFactory("_ECContainerStruct", "activate_state")->create(container, container->fullName() + ":" +  "activate_state_" + "stopped" + ".ope", 

@@ -274,8 +274,8 @@ public:
             return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->connections(), [](auto o) { return o->info(); });
         } else if (className == "containerFactory") {
             return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->containerFactories(), [](auto o) { return o->info(); });
-        } else if (className == "ec") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
+        //} else if (className == "ec") {
+        //    return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
         } else if (className == "topic") {
             return nerikiri::functional::map<Value, std::shared_ptr<TopicAPI>>(process_->store()->topics(), [](auto o) { return o->info(); });
         } else if (className == "ecFactory") {
@@ -308,8 +308,8 @@ public:
         return process_->store()->containerFactory(fullName)->info();
     } else if (className == "containerOperationFactory") {
         return process_->store()->containerOperationFactory(fullName)->info();
-    } else if (className == "ec") {
-        return process_->store()->executionContext(fullName)->info();
+    //} else if (className == "ec") {
+    //    return process_->store()->executionContext(fullName)->info();
     } else if (className == "ecFactory") {
         return process_->store()->executionContextFactory(fullName)->info();
     } else if (className == "topic") {
@@ -529,11 +529,11 @@ public:
   virtual ~CoreECBroker() {}
 
     virtual Value activateStart(const std::string& fullName) const override {
-        return process_->store()->executionContext(fullName)->startedState()->activate();
+        //return process_->store()->executionContext(fullName)->startedState()->activate();
     }
 
     virtual Value activateStop(const std::string& fullName) override {
-        return process_->store()->executionContext(fullName)->stoppedState()->activate();
+        //return process_->store()->executionContext(fullName)->stoppedState()->activate();
     }
 
 };

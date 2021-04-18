@@ -19,13 +19,29 @@ namespace nerikiri {
 
     class ExecutionContextBase : public ExecutionContextAPI {
     private:
+        std::shared_ptr<OperationAPI> svcOperation_;
+        const std::string& typeName_;
+    public:
+        ExecutionContextBase(const std::string& typeName): ExecutionContextAPI(), typeName_(typeName) {}
+        virtual ~ExecutionContextBase() {}
+
+    public:
+        virtual bool onStarting() override { return true; }
+        virtual bool onStarted() override { return true; }
+        virtual bool onStopping() override { return true; }
+        virtual bool onStopped() override { return true; }
+
+        virtual bool svc() override { svcOperation_->execute(); }
+    };
+/*
+    class ExecutionContextBase : public ExecutionContextAPI {
+    private:
         std::vector<std::shared_ptr<OperationAPI>> operations_;
         std::shared_ptr<ECStateAPI> startedState_;
         std::shared_ptr<ECStateAPI> stoppedState_;
     public:
         ExecutionContextBase(const std::string& typeName, const std::string& fullName);
         virtual ~ExecutionContextBase();
-
 
     public:
         virtual Value info() const override;
@@ -50,14 +66,12 @@ namespace nerikiri {
 
         std::shared_ptr<OperationAPI> operation(const std::string& fullName) const;
 
-
         virtual std::shared_ptr<ECStateAPI> startedState() const override { return startedState_; }
 
         virtual std::shared_ptr<ECStateAPI> stoppedState() const override { return stoppedState_; }
     };
-
+*/
     
-
     class ExecutionContextFactoryBase : public ExecutionContextFactoryAPI {
     private:
     private:
@@ -83,6 +97,5 @@ namespace nerikiri {
             return std::shared_ptr<ExecutionContextAPI>(new T(value));
         };
     };
-
 
 }

@@ -3,6 +3,7 @@
 #include "nerikiri/ec.h"
 using namespace nerikiri;
 
+/*
 class StartedECState : public ECStateAPI {
 private:
     ExecutionContextBase* ec_;
@@ -26,7 +27,9 @@ public:
         return ec_->stop();
     }
 };
+*/
 
+/*
 ExecutionContextBase::ExecutionContextBase(const std::string& typeName, const std::string& fullName) : 
     ExecutionContextAPI("ExecutionContext", typeName, fullName), startedState_(std::make_shared<StartedECState>(this)), stoppedState_(std::make_shared<StoppedECState>(this)) {
 }
@@ -113,3 +116,4 @@ std::shared_ptr<OperationAPI> ExecutionContextBase::operation(const std::string&
 }
 
     
+*/
