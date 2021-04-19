@@ -35,6 +35,13 @@ namespace nerikiri {
         Vector3D(double _x, double _y, double _z): x(_x), y(_y), z(_z) {}
     };
 
+    std::string toStr(const Vector3D& q) {
+        std::stringstream ss;
+        ss << "Vector3D(" << q.x << ", " << q.y << ", " << q.z << ")";
+        return ss.str();
+    }
+
+
     inline Vector3D operator+(const Vector3D& v0, const Vector3D& v1) {
         return {v0.x + v1.x, v0.y + v1.y, v0.z + v1.z};
     }
@@ -51,12 +58,20 @@ namespace nerikiri {
         return (v0.x == v1.x && v0.y == v1.y && v0.z == v1.z);
     }
 
+    inline bool nearlyEqual(const Vector3D& v0, const Vector3D& v1, const double epsilon=1.0E-6) {
+        return norm(v0-v1) < epsilon;
+    }
+
     
     struct Quaternion {
         const double x, y, z, w;
         Quaternion() : x(0), y(0), z(0), w(1) {}
         Quaternion(double _x, double _y, double _z, double _w) : x(_x), y(_y), z(_z), w(_w) {}
     };
+
+    Quaternion conjugated(const Quaternion& q) {
+        return {-q.x, -q.y, -q.z, q.w};
+    }
 
     std::string toStr(const Quaternion& q) {
         std::stringstream ss;
@@ -76,6 +91,10 @@ namespace nerikiri {
         return (q0.x == q1.x && q0.y == q1.y && q0.z == q1.z && q0.w == q1.w);
     }
 
+    inline bool nearlyEqual(const Quaternion& v0, const Quaternion& v1, const double epsilon=1.0E-6) {
+        return norm(v0-v1) < epsilon;
+    }
+
     inline Quaternion dot(const Quaternion& q, const Quaternion& p) {
         return {
              q.w * p.x - q.z * p.y + q.y * p.z + q.x * p.w,
@@ -90,7 +109,7 @@ namespace nerikiri {
     }
 
     inline Vector3D dot(const Quaternion& q, const Vector3D& v) {
-        return vector3d(dot(dot(q, Quaternion(v.x, v.y, v.z, 0)), q));
+        return vector3d(dot(q, dot(Quaternion(v.x, v.y, v.z, 0), conjugated(q))));
     }
 
     using Point3D = Vector3D;
@@ -99,7 +118,15 @@ namespace nerikiri {
     struct Pose3D {
         const Point3D position;
         const Orientation3D orientation;
+        Pose3D(): position(), orientation() {}
+        Pose3D(const Point3D& pos, const Orientation3D& ori): position(pos), orientation(ori) {}
     };
+
+    inline std::string toStr(const Pose3D& q) {
+        std::stringstream ss;
+        ss << "Pose3D(position=" << toStr(q.position) << ", orientation=" << toStr(q.orientation) << ")";
+        return ss.str();
+    }
 
     struct TimedPose3D {
         const Time tm;
@@ -107,7 +134,7 @@ namespace nerikiri {
     };
 
     inline Pose3D dot(const Pose3D& x0, const Pose3D& x1) {
-        return {dot(x0.orientation, x1.position) + x0.position, dot(x0.orientation, x1.orientation)};
+        return {dot(x1.orientation, x1.position) + x0.position , dot(x0.orientation, x1.orientation)};
     }
 
     inline TimedPose3D dot(const TimedPose3D& x0, const TimedPose3D& x1) {
