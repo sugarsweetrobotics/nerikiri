@@ -5,6 +5,7 @@
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/dllproxy.h"
 #include <nerikiri/operation_api.h>
+#include <nerikiri/functional.h>
 #include <nerikiri/operation_factory_api.h>
 #include <nerikiri/container_api.h>
 #include <nerikiri/container_factory_api.h>

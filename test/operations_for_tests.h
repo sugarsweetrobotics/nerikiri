@@ -72,14 +72,14 @@ public:
     }
 };
 
-auto ecf1 = std::make_shared<nerikiri::ECFactory<OneShotEC>>("oneshotECFactory");
+auto ecf1 = std::make_shared<nerikiri::ECFactory<OneShotEC>>();
 
 struct MyStruct {
   int32_t value;
   MyStruct(): value(0) {}
 };
 
-auto cf0 = std::make_shared<nerikiri::ContainerFactory<MyStruct>>("MyStructContainerFactory");
+auto cf0 = std::make_shared<nerikiri::ContainerFactory<MyStruct>>();
 
 
 auto copf0 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
@@ -89,7 +89,7 @@ auto copf0 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast
       {"value", {0}}
     }}
   },
-  [](auto container, auto arg)  {
+  [](auto& container, auto arg)  {
     if (arg["value"].isIntValue()) {
       container.value = arg["value"].intValue();
     }

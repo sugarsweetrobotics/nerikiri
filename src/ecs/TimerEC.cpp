@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "nerikiri/ec.h"
 
 using namespace nerikiri;
@@ -25,17 +27,8 @@ public:
         //setDescription("タイマー実行コンテキスト．started状態ではbindされたOperationを周期的に実行します．");
     }
 
-    virtual ~TimerEC() {
-        //stop();
-    }
+    virtual ~TimerEC() {}
 
-/*
-    virtual Value info() const { 
-        auto i =ExecutionContextBase::info();
-        i["rate"] = rate_;
-        return i;
-    }
-*/
 public:
 
     virtual bool onStarted() override {
@@ -60,5 +53,5 @@ public:
 };
 
 void* createTimerEC() {
-   return new ECFactory<TimerEC>("TimerECFactory");
+   return new ECFactory<TimerEC>();
 }

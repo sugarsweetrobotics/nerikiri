@@ -14,10 +14,10 @@ public:
 public:
     virtual bool onStarted() override {
         svc();
-        return false;
+        return true;
     }
 };
 
 void* createOneShotEC() {
-    return new ECFactory<OneShotEC>("OneShotECFactory");
+    return new ECFactory<OneShotEC>();
 }

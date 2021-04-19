@@ -19,11 +19,13 @@ namespace nerikiri {
         std::function<Value(T&,const Value&)> function_;
         std::mutex mutex_;
     public:
-        ContainerOperation(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs={}, const std::function<Value(T&,const Value&)>& func=nullptr): 
-          OperationAPI("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName), 
+        ContainerOperation(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func)
+          : OperationAPI("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName),
           base_(createOperation(nerikiri::naming::join(container->fullName(), _typeName), _fullName, defaultArgs, [this](auto value) {
               return this->call(value);
-          })), container_(container), function_(func) {}
+          })), container_(container), function_(func) {
+              
+          }
 
         virtual ~ContainerOperation() {}
         virtual Value fullInfo() const override { 

@@ -2,7 +2,7 @@ set(nk_base_srcs
 
 base64.c
 
-broker/brokerfactory.cpp
+# broker/brokerfactory.cpp
 broker/broker_proxy_api.cpp
 broker/broker_factory_api.cpp
 broker/crud_broker.cpp
@@ -26,20 +26,19 @@ connection/connection.cpp
 
 dllproxy.cpp 
 
-ec/ec.cpp
+# ec/ec.cpp
 ec/ec_api.cpp
 ec/ec_factory_api.cpp
-ec/ec_proxy.cpp
 
 ec/ec_container.h
 ec/ec_container.cpp
 
 fsm/fsm_container.cpp
 #new_fsm/fsm.cpp
-new_fsm/fsm_api.cpp
+# new_fsm/fsm_api.cpp
 #new_fsm/fsm_state.cpp
-new_fsm/fsm_state_api.cpp
-new_fsm/fsm_factory_api.cpp
+# new_fsm/fsm_state_api.cpp
+# new_fsm/fsm_factory_api.cpp
 
 #fsm/fsm.cpp
 #fsm/fsm_state.cpp

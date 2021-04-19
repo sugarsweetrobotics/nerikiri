@@ -11,8 +11,6 @@ namespace nerikiri {
       virtual ~ContainerFactoryAPI() {}
 
       virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) = 0;
-
-      // virtual ContainerFactoryAPI& addOperationFactory(const std::shared_ptr<ContainerOperationFactoryBase>& cof) = 0;
     };
 
 

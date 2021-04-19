@@ -19,7 +19,7 @@ namespace nerikiri {
         /**
          * コンストラクタ
          */
-        ContainerFactory(const std::string& fullName): ContainerFactoryAPI("ContainerFactory", demangle(typeid(T).name()), fullName) {}
+        ContainerFactory(): ContainerFactoryAPI("ContainerFactory", demangle(typeid(T).name()), "ContainerFactory:"+demangle(typeid(T).name())+".cf") {}
 
 
         /**
@@ -45,7 +45,7 @@ namespace nerikiri {
     template<typename T>
     void* containerFactory() {
         logger::info("nerikiri::containerFactory<{}> called.", demangle(typeid(T).name()));
-        return new ContainerFactory<T>("containerFactory" + demangle(typeid(T).name())); 
+        return new ContainerFactory<T>(); 
     }
 
 }

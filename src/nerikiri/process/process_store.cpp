@@ -148,7 +148,7 @@ std::shared_ptr<ExecutionContextAPI> ProcessStore::executionContext(const std::s
 
 std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactory(const std::string& ecTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextFactoryAPI>>(executionContextFactories(), [&ecTypeFullName] (auto f) {
-    return f->executionContextTypeFullName() == ecTypeFullName;
+    return f->typeName() == ecTypeFullName;
   });
   if (f) return f.value();
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, ecTypeFullName);

@@ -1,7 +1,6 @@
 #include "nerikiri/logger.h"
 
 #include <nerikiri/operation_api.h>
-#include <nerikiri/fsm_api.h>
 #include "nerikiri/connection.h"
 #include <nerikiri/process_api.h>
 

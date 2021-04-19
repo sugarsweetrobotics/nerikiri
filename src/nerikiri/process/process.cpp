@@ -15,7 +15,7 @@
 #include "moduleloader.h"
 #include "process_builder.h"
 
-#include <nerikiri/fsm.h>
+// #include <nerikiri/fsm.h>
 
 #include "nerikiri/fsm/fsm_container.h"
 #include "nerikiri/ec/ec_container.h"
