@@ -4,10 +4,9 @@
 #include <nerikiri/operation_api.h>
 #include <nerikiri/logger.h>
 
+//#include <nerikiri/geometry.h>
+
 namespace nerikiri {
-
-
-
 
     class OperationOutletAPI;
     class OperationInletAPI;
@@ -17,7 +16,6 @@ namespace nerikiri {
         ContainerAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
 
         virtual ~ContainerAPI() {}
-
 
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const = 0;
 

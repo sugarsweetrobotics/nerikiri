@@ -16,6 +16,7 @@ OPTION(BUILD_NK_TEST_EC "ExecutionContext Test" OFF)
 OPTION(BUILD_NK_TEST_FSM "FSM Test" ON)
 OPTION(BUILD_NK_TEST_CONNECTION "Connection Test" ON)
 OPTION(BUILD_NK_TEST_HTTPBROKER "HTTP Broker Test" ON)
+OPTION(BUILD_NK_TEST_GEOMETRY "Geometry Test" ON)
 
 set(EXAMPLE_LIBS nerikiri)
 
@@ -30,6 +31,10 @@ endfunction()
 
 if (${BUILD_NK_TEST_HTTP})
   declare_test(http)
+endif ()
+
+if (${BUILD_NK_TEST_GEOMETRY})
+  declare_test(geometry)
 endif ()
 
 if (${BUILD_NK_TEST_HTTPBROKER})
