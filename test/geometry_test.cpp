@@ -23,8 +23,22 @@ SCENARIO( "Geometry test", "[ec]" ) {
   }
 
   GIVEN("Quaternion and RPY") {
-    auto q = EulerXYZtoQuaternion({radians(30.0), 0, 0});
-    std::cout << toStr(q);
-    REQUIRE(norm(q - Quaternion(0.258819, 0, 0, 0.9659258)) <= 0.0000002);
+    const auto q1 = EulerXYZToQuaternion({radians(30.0), 0, 0});
+    std::cout << toStr(q1);
+    REQUIRE(norm(q1 - Quaternion(0.258819, 0, 0, 0.9659258)) <= 0.0000002);
+    const auto v1 = QuaternionToEulerXYZ(q1);
+    REQUIRE(norm(v1 - Vector3D{radians(30.0), 0, 0}) <= 0.0000002);
+
+    const auto q2 = EulerXYZToQuaternion({ 0, radians(30.0), 0});
+    std::cout << toStr(q2);
+    REQUIRE(norm(q2 - Quaternion(0, 0.2588190, 0, 0.9659258)) <= 0.0000002);
+    const auto v2 = QuaternionToEulerXYZ(q2);
+    REQUIRE(norm(v2 - Vector3D{0, radians(30.0), 0}) <= 0.0000002);
+
+    const auto q3 = EulerXYZToQuaternion({ 0, 0, radians(30.0)});
+    std::cout << toStr(q3);
+    REQUIRE(norm(q3 - Quaternion(0, 0, 0.258819, 0.9659258)) <= 0.0000002);
+    const auto v3 = QuaternionToEulerXYZ(q3);
+    REQUIRE(norm(v3 - Vector3D{0, 0, radians(30.0)}) <= 0.0000002);
   }
 }

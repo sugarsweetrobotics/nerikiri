@@ -125,7 +125,7 @@ namespace nerikiri {
     #endif
     }
 
-    Quaternion EulerXYZtoQuaternion(const Vector3D& v) {
+    inline Quaternion EulerXYZToQuaternion(const Vector3D& v) {
         double cx, sx, cy, sy, cz, sz;
         _sincos(v.x / 2.0, &sx, &cx);
         _sincos(v.y / 2.0, &sy, &cy);
@@ -138,4 +138,21 @@ namespace nerikiri {
             cx * cy * cz + sx * sy * sz
         };
     }
+
+    inline Vector3D QuaternionToEulerXYZ(const Quaternion& q) {
+        const double q0q0 = q.w * q.w;
+        const double q0q1 = q.w * q.x;
+        const double q0q2 = q.w * q.y;
+        const double q0q3 = q.w * q.z;
+        const double q1q1 = q.x * q.x;
+        const double q1q2 = q.x * q.y;
+        const double q1q3 = q.x * q.z;
+        const double q2q2 = q.y * q.y;
+        const double q2q3 = q.y * q.z;
+        const double q3q3 = q.z * q.z;
+        return {atan2(2.0 * (q2q3 + q0q1), q0q0 - q1q1 - q2q2 + q3q3),
+            asin(2.0 * (q0q2 - q1q3)),
+            atan2(2.0 * (q1q2 + q0q3), q0q0 + q1q1 - q2q2 - q3q3)};
+    }
+
 }
