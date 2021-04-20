@@ -43,8 +43,17 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   auto fullName = loadFullName(store.containers(), info);
   logger::info("ObjectFactory::createContainer({})", info);
   auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
-
-  return store.addContainer(c);
+  auto v = store.addContainer(c);
+  if (v.isError()) return v;
+  auto getterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
+    {"fullName", "getBasePose.ope"},
+    {"typeName", "ContainerGetBasePose"}
+  });
+  auto setterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
+    {"fullName", "setBasePose.ope"},
+    {"typeName", "ContainerSetBasePose"}
+  });
+  return v;
 }
 
 Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& cInfo, const Value& info) {

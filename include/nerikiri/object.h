@@ -74,6 +74,8 @@ namespace nerikiri {
 
     virtual Value info() const;
 
+    virtual Value fullInfo() const { return info(); }
+
     Value setObjectState(const std::string& state) { 
       info_["state"] = state;
       return info_;

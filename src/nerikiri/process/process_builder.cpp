@@ -4,6 +4,7 @@
 #include <nerikiri/objectfactory.h>
 #include "nerikiri/connection/connection_builder.h"
 #include "nerikiri/topic/topic_factory.h"
+
 using namespace nerikiri;
 /**
  * OperationFactoryの読み込み
@@ -46,6 +47,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
   });
   
   config.at("containers").at("precreate").const_list_for_each([&store](auto info) {
+    /// ここでコンテナを作成する
     auto cInfo = ObjectFactory::createContainer(store, info);
     if (info.hasKey("operations")) {
       info.at("operations").const_list_for_each([&store, &cInfo](auto value) {

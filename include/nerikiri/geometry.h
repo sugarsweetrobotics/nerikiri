@@ -9,8 +9,15 @@
 namespace nerikiri {
 
     struct Time {
-        const long sec;
-        const long nsec;
+        long sec;
+        long nsec;
+
+        Time(const long& sec_, const long& nsec_): sec(sec_), nsec(nsec_) {}
+        Time(): sec(0), nsec(0) {}
+        Time& operator=(const Time& t) {
+            sec = t.sec; nsec = t.nsec;
+            return *this;
+        }
     };
 
     inline bool operator==(const Time& x0, const Time& x1) {
@@ -30,12 +37,16 @@ namespace nerikiri {
     inline bool operator<=(const Time& x0, const Time& x1) { return ! (x0 > x1); }
 
     struct Vector3D {
-        const double x, y, z;
+        double x, y, z;
         Vector3D() : x(0), y(0), z(0) {}
         Vector3D(double _x, double _y, double _z): x(_x), y(_y), z(_z) {}
+        Vector3D& operator=(const Vector3D& v) {
+            x = v.x; y = v.y; z = v.z;
+            return *this;
+        }
     };
 
-    std::string toStr(const Vector3D& q) {
+    inline std::string toStr(const Vector3D& q) {
         std::stringstream ss;
         ss << "Vector3D(" << q.x << ", " << q.y << ", " << q.z << ")";
         return ss.str();
@@ -64,16 +75,20 @@ namespace nerikiri {
 
     
     struct Quaternion {
-        const double x, y, z, w;
+        double x, y, z, w;
         Quaternion() : x(0), y(0), z(0), w(1) {}
         Quaternion(double _x, double _y, double _z, double _w) : x(_x), y(_y), z(_z), w(_w) {}
+        Quaternion& operator=(const Quaternion& q) {
+            x = q.x; y = q.y; z = q.z; w = q.w;
+            return *this;
+        }
     };
 
-    Quaternion conjugated(const Quaternion& q) {
+    inline Quaternion conjugated(const Quaternion& q) {
         return {-q.x, -q.y, -q.z, q.w};
     }
 
-    std::string toStr(const Quaternion& q) {
+    inline std::string toStr(const Quaternion& q) {
         std::stringstream ss;
         ss << "Quaternion(" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << ")";
         return ss.str();
@@ -116,10 +131,15 @@ namespace nerikiri {
     using Orientation3D = Quaternion;
 
     struct Pose3D {
-        const Point3D position;
-        const Orientation3D orientation;
+        Point3D position;
+        Orientation3D orientation;
         Pose3D(): position(), orientation() {}
         Pose3D(const Point3D& pos, const Orientation3D& ori): position(pos), orientation(ori) {}
+        Pose3D& operator=(const Pose3D& p) {
+            position = p.position;
+            orientation = p.orientation;
+            return *this;
+        }
     };
 
     inline std::string toStr(const Pose3D& q) {
@@ -129,8 +149,15 @@ namespace nerikiri {
     }
 
     struct TimedPose3D {
-        const Time tm;
-        const Pose3D pose;
+        Time tm;
+        Pose3D pose;
+        TimedPose3D() {}
+        TimedPose3D(const Time& tm_, const Pose3D& pose_): tm(tm_), pose(pose_) {}
+        TimedPose3D& operator=(const TimedPose3D& tp) {
+            tm = tp.tm;
+            pose = tp.pose;
+            return *this;
+        }
     };
 
     inline Pose3D dot(const Pose3D& x0, const Pose3D& x1) {

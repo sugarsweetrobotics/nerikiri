@@ -1,10 +1,8 @@
 #pragma once
 
-//#include <nerikiri/container_base.h>
-//#include <nerikiri/operation/operation_base.h>
 #include <nerikiri/container_factory_api.h>
-
 #include <nerikiri/container_operation_factory_api.h>
+#include <nerikiri/geometry.h>
 
 namespace nerikiri {
 
@@ -24,14 +22,27 @@ namespace nerikiri {
         std::shared_ptr<T> _ptr;
         std::shared_ptr<ContainerAPI> base_;
     public:
+        virtual TimedPose3D getPose() const override { return base_->getPose(); }
+        virtual void setPose(const TimedPose3D& pose) override { base_->setPose(pose); }
+        virtual void setPose(TimedPose3D&& pose) override { base_->setPose(std::move(pose)); }
+        
+
+    public:
         Container(ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
-          ,_ptr(std::make_shared<T>()) {}
+          ,_ptr(std::make_shared<T>())
+        {}
         virtual ~Container() {}
 
+        virtual Value info() const override { 
+            auto i = base_->info(); 
+            return i;
+        } 
 
-        //virtual std::string typeName() const { return base_->typeName()};
-        //virtual std::string fullName() const { return base_->fullName()};
-        virtual Value info() const override { return base_->info(); } 
+        virtual Value fullInfo() const override {
+            auto inf = base_->fullInfo();
+            inf["pose"] = toValue(getPose()); 
+            return inf;
+        }
 
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { return base_->operations(); }
 

@@ -12,6 +12,19 @@ public:
     virtual ~NullContainer() {}
 
 
+    virtual TimedPose3D getPose() const override { 
+        logger::error("NullContainer::{}() failed. Container is null.", __func__);
+        return {};
+    }
+
+    virtual void setPose(const TimedPose3D& pose) override {
+        logger::error("NullContainer::{}() failed. Container is null.", __func__);
+    }
+    
+    virtual void setPose(TimedPose3D&& pose) override {
+        logger::error("NullContainer::{}() failed. Container is null.", __func__);
+    }
+
     virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override {
         logger::warn("NullContainer::operations() failed. Container is null.");
         return {};

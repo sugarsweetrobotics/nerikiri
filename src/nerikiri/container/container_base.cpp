@@ -7,8 +7,6 @@
 #include "container_operation_base.h"
 #include "container_factory_base.h"
 
-
-
 #include "container_operation_base_impl.h"
 
 
@@ -23,13 +21,23 @@ class ContainerBase : public ContainerAPI {
 protected:
     std::vector<std::shared_ptr<OperationAPI>> operations_;
     ContainerFactoryAPI* parentFactory_;
+
+    
+    nerikiri::TimedPose3D pose_;
+
+public:
+    virtual TimedPose3D getPose() const override { return pose_; }
+    virtual void setPose(const TimedPose3D& pose) override { pose_ = pose; }
+    virtual void setPose(TimedPose3D&& pose) override { pose_ = std::move(pose); }
 public:
 
     /**
      * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
      */
     ContainerBase(ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) :  
-        ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory) {}
+        ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory)
+    {
+    }
 
     /**
      * デストラクタ
@@ -51,11 +59,16 @@ public:
         return _operation->info();;
     }
 
-    virtual Value info() const override {
-        auto inf = ContainerAPI::info();
+    virtual Value fullInfo() const override {
+        auto inf = info();
         inf["operations"] = nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
             return op->fullInfo();
         });
+        return inf;
+    }
+
+    virtual Value info() const override {
+        auto inf = ContainerAPI::info();
         return inf;
     }
 
@@ -92,69 +105,8 @@ public:
         return nullOperation();
     }
 
-    /*
-    std::shared_ptr<ContainerOperationFactoryBase> getContainerOperationFactory(const Value& info) {
-        if (this->isNull()) {
-            //logger::error("ContainerBase::getContainerOperationFactory failed. Container is null.");
-            return nullptr;
-        }
-        for(auto& opf : parentFactory_->operationFactories_) {
-            if (opf->typeName() == opf->containerTypeName() + ":"+ info.at("typeName").stringValue()) {
-                return opf;
-            }
-        }
-        return nullptr;
-    }
-    */
-
-    /*
-    Value createContainerOperation(const Value& info) {
-        //logger::trace("ContainerBase::createContainerOperation({})", str(info));
-        auto f = getContainerOperationFactory(info);
-        if (!f) {
-            return Value::error("ContainerBase::createContainerOperation failed. Can not find appropreate operation factory.");
-        }
-        //logger::info("Creating ContainerOperation({})", str(info));
-        return addOperation(f->create(info));
-    }
-    */
-    /*
-    Value deleteContainerOperation(const std::string& fullName) {
-        auto f = operation(fullName);
-        if (!f) {
-            return Value::error("ContainerBase::deleteContainerOperation failed. Can not find appropreate operation factory.");
-        }
-        return deleteOperation(fullName);
-    }
-    */
-
-    /*
-    virtual Value setFullName(const std::string& nameSpace, const std::string& name) override  {
-        Object::setFullName(nameSpace, name);
-        for(auto& op: operations_) {
-            op->setFullName(getFullName(), op->getInstanceName());
-            op->setContainer(this);
-        }
-        return this->info();
-    }
-    */
 };
 
-/*
-inline static std::shared_ptr<ContainerBase> nullContainer() {
-    return std::make_shared<ContainerBase>();
-}
-
-inline bool containerNameValidator(const std::string& name) {
-    if (name.find("/") != std::string::npos) {
-    return false; // Invalid Name
-    }
-    if (name.find(":") != std::string::npos) {
-    return false; // Invalid Name
-    }
-    return true;
-};
-*/
 
 
 std::shared_ptr<ContainerAPI> nerikiri::containerBase(ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) {

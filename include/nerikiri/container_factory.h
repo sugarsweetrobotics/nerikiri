@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <nerikiri/container.h>
+#include <nerikiri/container_operation.h>
 #include <nerikiri/container_factory_api.h>
 
 namespace nerikiri {
@@ -35,7 +36,10 @@ namespace nerikiri {
          */
         virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) override { 
             logger::info("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
-            return std::make_shared<Container<T>>(this, fullName);
+            auto c = std::make_shared<Container<T>>(this, fullName);
+            c->getPoseOperation_ = std::make_shared<ContainerGetPoseOperation>(c);
+            c->setPoseOperation_ = std::make_shared<ContainerSetPoseOperation>(c);
+            return c;
         }
     };
 

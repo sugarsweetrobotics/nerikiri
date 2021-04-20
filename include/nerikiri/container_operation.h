@@ -1,53 +1,60 @@
 #pragma once
+#include <nerikiri/geometry.h>
 
-#include <mutex>
-#include <thread>
-
-#include <nerikiri/operation.h>
-#include <nerikiri/container.h>
-
+#include <nerikiri/container_operation_base.h>
 namespace nerikiri {
 
+    inline TimedPose3D toTimedPose3D(const Value& value) {
+        return TimedPose3D{
+                    Time{Value::intValue(value["tm"]["sec"]), Value::intValue(value["tm"]["nsec"])},
+                    Pose3D{
+                        Point3D{
+                            value["pose"]["position"]["x"].doubleValue(),
+                            value["pose"]["position"]["y"].doubleValue(),
+                            value["pose"]["position"]["z"].doubleValue()
+                        },
+                        Orientation3D{
+                            value["pose"]["orientation"]["x"].doubleValue(),
+                            value["pose"]["orientation"]["y"].doubleValue(),
+                            value["pose"]["orientation"]["z"].doubleValue(),
+                            value["pose"]["orientation"]["w"].doubleValue()
+                        }
+                    }
+                };
+    }
 
-    std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {});
-
+    inline Value toValue(const TimedPose3D& pose) {
+        return {
+                {"tm", {
+                    {"sec", (int64_t)pose.tm.sec},
+                    {"nsec", (int64_t)pose.tm.nsec}
+                }},
+                {"pose", {
+                    {"position", {
+                        {"x", pose.pose.position.x},
+                        {"y", pose.pose.position.y},
+                        {"z", pose.pose.position.z}
+                    }},
+                    {"orientation", {
+                        {"x", pose.pose.orientation.x},
+                        {"y", pose.pose.orientation.y},
+                        {"z", pose.pose.orientation.z},
+                        {"w", pose.pose.orientation.w}
+                    }}
+                }}
+            };
+    }
+    
     template<typename T>
-    class ContainerOperation : public OperationAPI {
-    private:
-        std::shared_ptr<OperationAPI> base_;
-        std::shared_ptr<ContainerAPI> container_;
+    class ContainerOperation : public ContainerOperationBase {
+    protected:
         std::function<Value(T&,const Value&)> function_;
-        std::mutex mutex_;
     public:
         ContainerOperation(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func)
-          : OperationAPI("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName),
-          base_(createOperation(nerikiri::naming::join(container->fullName(), _typeName), _fullName, defaultArgs, [this](auto value) {
-              return this->call(value);
-          })), container_(container), function_(func) {
-              
-          }
-
-        virtual ~ContainerOperation() {}
-        virtual Value fullInfo() const override { 
-            auto i = base_->fullInfo(); 
-            i["ownerContainerFullName"] = container_->fullName();
-            return i;
+        : ContainerOperationBase(container, _typeName, _fullName, defaultArgs), function_(func)  {
         }
 
-
-        /**
-         * This function collects the value from inlets and calls the function inside the Operation,
-         * but this does not execute the output side operation
-         */
-        virtual Value invoke() override { return base_->invoke(); }
-
-        virtual Value execute() override { return base_->execute(); }
-
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return base_->outlet(); }
-
-        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return base_->inlet(name); }
-    
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return base_->inlets(); }
+        virtual ~ContainerOperation() {}
 
         virtual Value call(const Value& value) override {
             std::lock_guard<std::mutex> lock(mutex_);
@@ -56,9 +63,35 @@ namespace nerikiri {
         }
     };
 
+    class ContainerGetPoseOperation : public ContainerOperationBase {
+    private:
+    public:
+        ContainerGetPoseOperation(const std::shared_ptr<ContainerAPI>& container)
+          : ContainerOperationBase(container, "container_get_pose", "container_get_pose.ope", {}) {}
+        virtual ~ContainerGetPoseOperation() {}
 
+        virtual Value call(const Value& value) {
+            std::lock_guard<std::mutex> lock(this->mutex_);
+            auto pose = this->container_->getPose();
+            return toValue(pose);
+        }
+    };
 
+    class ContainerSetPoseOperation : public ContainerOperationBase {
+    public:
+        ContainerSetPoseOperation(const std::shared_ptr<ContainerAPI>& container)
+          : ContainerOperationBase(container, "container_set_pose", "container_set_pose.ope", 
+                {
+                  {"pose", toValue(TimedPose3D())}
+                } 
+          ) {}
+        virtual ~ContainerSetPoseOperation() {}
 
-
-
+        virtual Value call(const Value& value) {
+            std::lock_guard<std::mutex> lock(this->mutex_);
+            auto pose = toTimedPose3D(value["pose"]);
+            this->container_->setPose(pose);
+            return value;
+        }
+    };
 }
