@@ -22,8 +22,8 @@ struct _ECContainerStruct {
 
 bool 
 nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
-    store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>())));
-    store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
+    store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>())));
+    store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
         {
           {"typeName", "activate_state"},
           {"defaultArg", {
@@ -42,7 +42,7 @@ nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
         }))
     ));
 
-    store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
+    store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
         {
           {"typeName", "get_state"},
           {"defaultArg", {
@@ -59,7 +59,7 @@ nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
 Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo) {
     logger::info("nerikiri::createEC({})", ecInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
-    auto container = store.containerFactory("_ECContainerStruct")->create(fullName);
+    auto container = store.get<ContainerFactoryAPI>("_ECContainerStruct")->create(fullName);
     if (container->isNull()) {
         return Value::error(logger::error("ObjectFactory::createEC failed. NullContainer is returned from factory."));
     }
@@ -76,27 +76,33 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
     //if (c->ptr()->ec->isNull()) {
     //    return Value::error(logger::error("ObjectFactory::createEC failed. Failed to create ExecutionContext(typeName={})", Value::string(ecInfo.at("typeName"))));
     //}
-    auto getter = store.containerOperationFactory("_ECContainerStruct", "get_state")->create(container, container->fullName() + ":" + "get_state.ope");
+    auto getter = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:get_state")->create(container->fullName() + ":" + "get_state.ope");
+    getter->setOwner(container);
 
-    auto stop_cop = store.containerOperationFactory("_ECContainerStruct", "activate_state")->create(container, container->fullName() + ":" +  "activate_state_" + "stopped" + ".ope", 
+    auto stop_cop = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:activate_state")->create(container->fullName() + ":" +  "activate_state_" + "stopped" + ".ope", 
       { {"defaultArg", 
             { {"stateName", "stopped"} }
       }});
+    stop_cop->setOwner(container);
     if (stop_cop->isNull()) {
         return Value::error(logger::error("createEC failed. ContainerOperation can not be created"));
     }
 
-    auto start_cop = store.containerOperationFactory("_ECContainerStruct", "activate_state")->create(container, container->fullName() + ":" +  "activate_state_" + "started" + ".ope", 
+    auto start_cop = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:activate_state")->create(container->fullName() + ":" +  "activate_state_" + "started" + ".ope", 
       { {"defaultArg", 
             { {"stateName", "started"} }
       }});
     if (start_cop->isNull()) {
         return Value::error(logger::error("createEC failed. ContainerOperation can not be created"));
     }
+    start_cop->setOwner(container);
 
-    store.addContainer(c, ".ec");
-    store.addOperation(start_cop);
-    store.addOperation(stop_cop);
-    store.addOperation(getter);
+    store.add<ContainerAPI>(c);
+    c->addOperation(start_cop);
+    //store.addOperation(start_cop);
+    c->addOperation(stop_cop);
+    c->addOperation(getter);
+    //store.addOperation(stop_cop);
+    //store.addOperation(getter);
     return c->info();
 }

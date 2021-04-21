@@ -8,7 +8,7 @@ using namespace nerikiri;
       NullContainerFactory() : ContainerFactoryAPI("NullContainerFactory", "NullContainer", "null") {}
       virtual ~NullContainerFactory() {}
 
-      virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) {
+      virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName, const Value& info={}) {
         return nullContainer();
       }
 

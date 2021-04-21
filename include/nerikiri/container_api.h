@@ -41,4 +41,8 @@ namespace nerikiri {
     };
 
     std::shared_ptr<ContainerAPI> nullContainer();
+
+
+    template<>
+    inline std::shared_ptr<ContainerAPI> nullObject() { return nullContainer(); }
 }

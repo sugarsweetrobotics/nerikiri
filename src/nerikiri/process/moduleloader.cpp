@@ -25,7 +25,8 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
       auto f = dllproxy->functionSymbol(info.at("typeName").stringValue());
       if (f) {
         logger::info("ModuleLoader::loadOperationFactory({}, {}) load success.", p, name);
-        store.addOperationFactory(std::shared_ptr<OperationFactoryAPI>(  static_cast<OperationFactoryAPI*>(f())  ) );
+        //store.addOperationFactory(std::shared_ptr<OperationFactoryAPI>(  static_cast<OperationFactoryAPI*>(f())  ) );
+        store.add<OperationFactoryAPI>(std::shared_ptr<OperationFactoryAPI>(  static_cast<OperationFactoryAPI*>(f())  ) );
         return info;
       } else {
         logger::debug("ModuleLoader:loadOperationFactory failed. Can load DLL but can not find Symbol({})", name);
@@ -52,7 +53,7 @@ Value ModuleLoader::loadContainerOperationFactory(ProcessStore& store, std::vect
       auto f = dllproxy->functionSymbol(name);
       if (f) {
         logger::info("ModuleLoader::loadContainerOperationFactory({}, {}) load success.", p, name);
-        store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(  static_cast<ContainerOperationFactoryAPI*>(f())  ) );
+        store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(  static_cast<ContainerOperationFactoryAPI*>(f())  ) );
         return info;
       } else {
         logger::debug("ModuleLoader::loadContainerOperationFactory failed. Can load DLL but can not find Symbol({})", name);
@@ -80,7 +81,7 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
       if (f) {
         logger::info("ModuleLoader::loadContainerFactory({}, {}). function(\"create{}\") is successfully loaded.", p, name, name);
         auto cf = static_cast<ContainerFactoryAPI*>(f());
-        store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>( cf ) );
+        store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>( cf ) );
         return info;
       } else {
         logger::debug("ModuleLoader::loadContainerFactory failed. Can load DLL but can not find Symbol({})", name);

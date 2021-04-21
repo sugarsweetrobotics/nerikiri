@@ -46,7 +46,6 @@ Value OperationBase::fullInfo() const {
   i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(inlets(), [](auto inlet) { return inlet->info(); });
   return i;
 }
-    
 
 Value OperationBase::info() const {
   auto i = Object::info();

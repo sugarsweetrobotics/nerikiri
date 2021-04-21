@@ -97,7 +97,7 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
   //coreBroker_ = std::make_shared<CoreBroker>(this, "coreBroker0");
   try {
     store_.addBrokerFactory(cf);
-    store_.addTopicFactory(topicFactory("topicFactory"));
+    store_.add<TopicFactoryAPI>(topicFactory());
     // store_.addFSMFactory(fsmFactory("fsmFactory"));
 
     setupFSMContainer(*this->store());
@@ -373,11 +373,11 @@ Value Process::getCallbacks() const {
 
 Value Process::fullInfo() const {
   auto inf = info();
-  inf["operations"] = functional::map<Value, std::shared_ptr<OperationAPI>>(store()->operations(), [](auto op) { return op->info(); });
-  inf["operationFactories"] = functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(store()->operationFactories(), [](auto op) { return op->info(); });
+  inf["operations"] = functional::map<Value, std::shared_ptr<OperationAPI>>(store()->list<OperationAPI>(), [](auto op) { return op->info(); });
+  inf["operationFactories"] = functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(store()->list<OperationFactoryAPI>(), [](auto op) { return op->info(); });
   inf["brokers"] = functional::map<Value, std::shared_ptr<BrokerAPI>>(store()->brokers(), [](auto o) { return o->fullInfo(); });  
   inf["brokerFactories"] = functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(store()->brokerFactories(), [](auto op) { return op->info(); });
-  inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->containers(), [](auto c) { return c->info(); });  
+  inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->list<ContainerAPI>(), [](auto c) { return c->info(); });  
   //inf["fsms"] = functional::map<Value, std::shared_ptr<FSMAPI>>(store()->fsms(), [](auto c) { return c->info(); });  
   ///inf["ecs"] = functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(store()->executionContexts(), [](auto c) { return c->info(); });  
   return inf;

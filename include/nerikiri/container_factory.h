@@ -20,7 +20,7 @@ namespace nerikiri {
         /**
          * コンストラクタ
          */
-        ContainerFactory(): ContainerFactoryAPI("ContainerFactory", demangle(typeid(T).name()), "ContainerFactory:"+demangle(typeid(T).name())+".cf") {}
+        ContainerFactory(): ContainerFactoryAPI("ContainerFactory", demangle(typeid(T).name()), demangle(typeid(T).name())) {}
 
 
         /**
@@ -34,11 +34,13 @@ namespace nerikiri {
          * 
          * 
          */
-        virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName) override { 
+        virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName, const Value& info={}) override { 
             logger::info("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
             auto c = std::make_shared<Container<T>>(this, fullName);
-            c->getPoseOperation_ = std::make_shared<ContainerGetPoseOperation>(c);
-            c->setPoseOperation_ = std::make_shared<ContainerSetPoseOperation>(c);
+            c->getPoseOperation_ = std::make_shared<ContainerGetPoseOperation>();
+            c->getPoseOperation_->setOwner(c);
+            c->setPoseOperation_ = std::make_shared<ContainerSetPoseOperation>();
+            c->setPoseOperation_->setOwner(c);
             return c;
         }
     };

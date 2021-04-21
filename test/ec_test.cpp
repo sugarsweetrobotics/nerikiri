@@ -54,18 +54,18 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
     THEN("ExcutionContext is stanby") {
       p->startAsync();
         
-        auto ecc = p->store()->container("OneShotEC0.ec");
+        auto ecc = p->store()->get<ContainerAPI>("OneShotEC0.ec");
         REQUIRE(ecc->isNull() == false);
         
-        auto getter = p->store()->operation("OneShotEC0.ec:get_state.ope");
+        auto getter = p->store()->get<OperationAPI>("OneShotEC0.ec:get_state.ope");
         REQUIRE(getter->isNull() == false);
         
-        auto startOp = p->store()->operation("OneShotEC0.ec:activate_state_started.ope");
+        auto startOp = p->store()->get<OperationAPI>("OneShotEC0.ec:activate_state_started.ope");
         REQUIRE(startOp->isNull() == false);
-        auto stopOp = p->store()->operation("OneShotEC0.ec:activate_state_stopped.ope");
+        auto stopOp = p->store()->get<OperationAPI>("OneShotEC0.ec:activate_state_stopped.ope");
         REQUIRE(stopOp->isNull() == false);
         
-        auto op = p->store()->operation("zero0.ope");
+        auto op = p->store()->get<OperationAPI>("zero0.ope");
         REQUIRE(op->isNull() == false);
         
         AND_THEN("Bind and start EC") {

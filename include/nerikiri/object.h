@@ -94,4 +94,7 @@ namespace nerikiri {
     virtual void invalidate() {}
 
   };
+
+  template<typename T>
+  std::shared_ptr<T> nullObject();
 }

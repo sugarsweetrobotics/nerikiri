@@ -10,7 +10,7 @@ public:
     NullContainerOperationFactory() : ContainerOperationFactoryAPI("NullContainerOperationFactory", "NullOperation", "null") {}
     virtual ~NullContainerOperationFactory() {}
 
-    virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& _fullName, const Value& info=Value::error("")) const override {
+    virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName, const Value& info=Value::error("")) const override {
         return nullOperation();
     }
 };

@@ -219,7 +219,7 @@ public:
         } else if (className == "container") {
             return ObjectFactory::createContainer(*process_->store(), info);
         } else if (className == "containerOperation") {
-            return ObjectFactory::createContainerOperation(*process_->store(), process_->store()->container(Value::string(info.at("containerFullName")))->info(), info);
+            return ObjectFactory::createContainerOperation(*process_->store(), process_->store()->get<ContainerAPI>(Value::string(info.at("containerFullName")))->info(), info);
         } else if (className == "ec") {
             return ObjectFactory::createExecutionContext(*process_->store(), info);
         } else if (className == "fsm") {
@@ -265,19 +265,19 @@ public:
   virtual Value getClassObjectInfos(const std::string& className) const override {
         logger::trace("CoreBroker::getClassObjectInfos({})", className);
         if (className == "operation") {
-            return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->operations(), [](auto op) { return op->info(); });
+            return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->list<OperationAPI>(), [](auto op) { return op->info(); });
         } else if (className == "operationFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->operationFactories(), [](auto op) { return op->info(); });
+            return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->list<OperationFactoryAPI>(), [](auto op) { return op->info(); });
         } else if (className == "container") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->containers(), [](auto o) { return o->info(); });
+            return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->list<ContainerAPI>(), [](auto o) { return o->info(); });
         } else if (className == "connection") {
             return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->connections(), [](auto o) { return o->info(); });
         } else if (className == "containerFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->containerFactories(), [](auto o) { return o->info(); });
+            return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->list<ContainerFactoryAPI>(), [](auto o) { return o->info(); });
         //} else if (className == "ec") {
         //    return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
         } else if (className == "topic") {
-            return nerikiri::functional::map<Value, std::shared_ptr<TopicAPI>>(process_->store()->topics(), [](auto o) { return o->info(); });
+            return nerikiri::functional::map<Value, std::shared_ptr<TopicAPI>>(process_->store()->list<TopicAPI>(), [](auto o) { return o->info(); });
         } else if (className == "ecFactory") {
             return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
         //} else if (className == "fsm") {
@@ -299,23 +299,23 @@ public:
 
   virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const override {
     if (className == "operation") {
-        return process_->store()->operation(fullName)->info();
+        return process_->store()->get<OperationAPI>(fullName)->info();
     } else if (className == "operationFactory") {
-        return process_->store()->operationFactory(fullName)->info();
+        return process_->store()->get<OperationFactoryAPI>(fullName)->info();
     } else if (className == "container") {
-        return process_->store()->container(fullName)->info();
+        return process_->store()->get<ContainerAPI>(fullName)->info();
     } else if (className == "containerFactory") {
-        return process_->store()->containerFactory(fullName)->info();
+        return process_->store()->get<ContainerFactoryAPI>(fullName)->info();
     } else if (className == "containerOperationFactory") {
-        return process_->store()->containerOperationFactory(fullName)->info();
+        return process_->store()->get<ContainerOperationFactoryAPI>(fullName)->info();
     //} else if (className == "ec") {
     //    return process_->store()->executionContext(fullName)->info();
     } else if (className == "ecFactory") {
         return process_->store()->executionContextFactory(fullName)->info();
     } else if (className == "topic") {
-        return process_->store()->topic(fullName)->info();
+        return process_->store()->get<TopicAPI>(fullName)->info();
     } else if (className == "topicFactory") {
-        return process_->store()->topicFactory(fullName)->info();
+        return process_->store()->get<TopicFactoryAPI>(fullName)->info();
     //} else if (className == "fsm") {
     //    return process_->store()->fsm(fullName)->info();
     //} else if (className == "fsmFactory") {
@@ -340,23 +340,23 @@ public:
   virtual ~CoreOperationBroker() {}
 
   virtual Value fullInfo(const std::string& fullName) const override {
-      return process_->store()->operation(fullName)->fullInfo();
+      return process_->store()->get<OperationAPI>(fullName)->fullInfo();
   }
 
   virtual Value call(const std::string& fullName, const Value& value) override {
-      return process_->store()->operation(fullName)->call(value);
+      return process_->store()->get<OperationAPI>(fullName)->call(value);
   }
 
   virtual Value invoke(const std::string& fullName) override {
-      return process_->store()->operation(fullName)->invoke();
+      return process_->store()->get<OperationAPI>(fullName)->invoke();
   }
 
   virtual Value execute(const std::string& fullName) override {
-      return process_->store()->operation(fullName)->execute();
+      return process_->store()->get<OperationAPI>(fullName)->execute();
   }
 
   virtual Value inlets(const std::string& fullName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [](auto il) {
+      return nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [](auto il) {
           return il->info();
       });
   }
@@ -372,26 +372,26 @@ public:
   virtual ~CoreOperationOutletBroker() {}
 
   virtual Value info(const std::string& fullName) const override {
-      return process_->store()->operation(fullName)->outlet()->info();
+      return process_->store()->get<OperationAPI>(fullName)->outlet()->info();
   }
   
   virtual Value get(const std::string& fullName) const override {
-      return process_->store()->operation(fullName)->outlet()->get();
+      return process_->store()->get<OperationAPI>(fullName)->outlet()->get();
   }
 
   virtual Value connections(const std::string& fullName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->operation(fullName)->outlet()->connections(), [](auto c) {
+      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->get<OperationAPI>(fullName)->outlet()->connections(), [](auto c) {
           return c->info();
       });
   }
 
   virtual Value addConnection(const std::string& fullName, const Value& c) override {
       /// FSMからはこちらが呼ばれるのはなんとかしなければならない
-      return process_->store()->operation(fullName)->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(c, process_->store()));
+      return process_->store()->get<OperationAPI>(fullName)->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(c, process_->store()));
   }
   
   virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
-      return process_->store()->operation(fullName)->outlet()->removeConnection(name);
+      return process_->store()->get<OperationAPI>(fullName)->outlet()->removeConnection(name);
   }
 
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
@@ -405,7 +405,7 @@ public:
             return Value::error(logger::error("CoreOperationOutletBroker::{}({}) called. passed connection information is invalid ({})", __func__, fullName, conInfo));
         }
         
-        return process_->store()->operation(fullName)->outlet()->connectTo(inlet, conInfo);
+        return process_->store()->get<OperationAPI>(fullName)->outlet()->connectTo(inlet, conInfo);
         //return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
     }
 
@@ -422,31 +422,31 @@ public:
   virtual ~CoreOperationInletBroker() {}
 
   virtual Value name(const std::string& fullName, const std::string& targetName) const override {
-      return process_->store()->operation(fullName)->inlet(targetName)->name();
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->name();
   }
   
   virtual Value info(const std::string& fullName, const std::string& targetName) const override {
-      return process_->store()->operation(fullName)->inlet(targetName)->info();
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->info();
   }
   
   virtual Value defaultValue(const std::string& fullName, const std::string& targetName) const override {
-      return process_->store()->operation(fullName)->inlet(targetName)->defaultValue();
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->defaultValue();
   }
   
   virtual Value put(const std::string& fullName, const std::string& targetName, const Value& value) const override {
-      return process_->store()->operation(fullName)->inlet(targetName)->put(value);
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->put(value);
   }
   
   virtual Value get(const std::string& fullName, const std::string& targetName) const override {
-      return process_->store()->operation(fullName)->inlet(targetName)->get();
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->get();
   }
   
   virtual Value isUpdated(const std::string& fullName, const std::string& targetName) const override {
-      return process_->store()->operation(fullName)->inlet(targetName)->isUpdated();
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->isUpdated();
   }
   
   virtual Value connections(const std::string& fullName, const std::string& targetName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->operation(fullName)->inlet(targetName)->connections(),
+      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->connections(),
          [](auto c) {
               return c->info();
           });
@@ -455,13 +455,13 @@ public:
 
   virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
       logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, c);
-      return process_->store()->operation(fullName)->inlet(targetName)->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
+      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
   }
   
   
   virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
       logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, name);
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->operation(fullName)->inlets(), [&targetName](auto i) {
+      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [&targetName](auto i) {
           return i->name() == targetName;
       });
       if (inlet) { return inlet.value()->removeConnection(name); }
@@ -471,7 +471,7 @@ public:
   // TODO: 未実装
      virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
          auto outlet = process_->store()->operationProxy(conInfo["outlet"]["operation"])->outlet();
-        return process_->store()->operation(fullName)->inlet(targetName)->connectTo(outlet, conInfo);
+        return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->connectTo(outlet, conInfo);
     }
 
 
@@ -514,7 +514,7 @@ public:
   virtual ~CoreContainerBroker() {}
 
   virtual Value operations(const std::string& containerFullName) const override {
-    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->container(containerFullName)->operations(), [](auto op) {
+    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->get<ContainerAPI>(containerFullName)->operations(), [](auto op) {
         return op->info();
     });
   }

@@ -7,6 +7,11 @@ public:
 
     virtual ~NullOperation() {}
 
+
+    virtual Value setOwner(const std::shared_ptr<Object>& obj)  {
+        return Value::error(logger::error("NullOperation::setOwner() failed. Operation is null."));
+    }
+
     virtual Value fullInfo() const override { 
         return Value::error(logger::error("NullOperation::{}({}) failed. Operation is null.", __func__));
     }

@@ -107,29 +107,29 @@ SCENARIO( "FSM test", "[ec]" ) {
     
       
     p->startAsync();
-    REQUIRE(p->store()->containers().size() == 3); // FSM and EC
+    REQUIRE(p->store()->list<ContainerAPI>().size() == 3); // FSM and EC
 
-    auto fsm = p->store()->container("FSM0.fsm");
+    auto fsm = p->store()->get<ContainerAPI>("FSM0.fsm");
     REQUIRE(fsm->isNull() == false);
       
-    auto ec = p->store()->container("OneShotEC0.ec");
+    auto ec = p->store()->get<ContainerAPI>("OneShotEC0.ec");
     REQUIRE(ec->isNull() == false);
     
-    auto ec_getter = p->store()->operation("OneShotEC0.ec:get_state.ope");
+    auto ec_getter = p->store()->get<OperationAPI>("OneShotEC0.ec:get_state.ope");
     REQUIRE(ec_getter->isNull() == false);
 
-    auto getter = p->store()->operation("FSM0.fsm:get_state.ope");
+    auto getter = p->store()->get<OperationAPI>("FSM0.fsm:get_state.ope");
     REQUIRE(getter->isNull() == false);
 
     auto currentState0 = getter->call({});
     REQUIRE(currentState0.stringValue() == "created");
 
-    auto act_stopped = p->store()->operation("FSM0.fsm:activate_state_stopped.ope");
+    auto act_stopped = p->store()->get<OperationAPI>("FSM0.fsm:activate_state_stopped.ope");
     REQUIRE(act_stopped->isNull() == false);
       
-    REQUIRE(p->store()->operation("FSM0.fsm:activate_state_hoge.ope")->isNull() == true);
+    REQUIRE(p->store()->get<OperationAPI>("FSM0.fsm:activate_state_hoge.ope")->isNull() == true);
       
-    auto act_run = p->store()->operation("FSM0.fsm:activate_state_running.ope");
+    auto act_run = p->store()->get<OperationAPI>("FSM0.fsm:activate_state_running.ope");
     REQUIRE(act_run->isNull() == false);
       
     auto result = act_stopped->execute();
@@ -152,7 +152,7 @@ SCENARIO( "FSM test", "[ec]" ) {
 
     }
       
-    auto add_ope = p->store()->operation(std::string("add0.ope"));
+    auto add_ope = p->store()->get<OperationAPI>(std::string("add0.ope"));
     REQUIRE(add_ope->isNull() == false);
 
     THEN("FSM can bind to operation from state") {
@@ -187,18 +187,18 @@ SCENARIO( "FSM test", "[ec]" ) {
 
             auto curState2 = getter->call({});
             REQUIRE(curState2.stringValue() == "stopped");
-        }
+        } 
     }
 
 
     THEN("FSM can bind from state to operation") {
-        auto container = p->store()->container("MyStruct0.ctn");
+        auto container = p->store()->get<ContainerAPI>("MyStruct0.ctn");
         REQUIRE(container->isNull() == false);
 
-        auto inc = p->store()->operation(std::string("MyStruct0.ctn:inc0.ope"));
+        auto inc = p->store()->get<OperationAPI>(std::string("MyStruct0.ctn:inc0.ope"));
         REQUIRE(inc->isNull() == false);
 
-        auto get = p->store()->operation(std::string("MyStruct0.ctn:get0.ope"));
+        auto get = p->store()->get<OperationAPI>(std::string("MyStruct0.ctn:get0.ope"));
         REQUIRE(get->isNull() == false);
 
         Value conInfo{
@@ -243,7 +243,7 @@ SCENARIO( "FSM test", "[ec]" ) {
   
 
     THEN("FSM can bind EC from state") {
-        auto ecc = p->store()->container("OneShotEC0.ec");
+        auto ecc = p->store()->get<ContainerAPI>("OneShotEC0.ec");
         REQUIRE(ecc->isNull() == false);
         
         Value conInfo{

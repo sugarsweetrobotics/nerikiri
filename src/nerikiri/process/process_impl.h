@@ -93,15 +93,16 @@ namespace nerikiri {
     virtual void stop() override;
     
     virtual ProcessAPI& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) override {
-      store()->addOperationFactory(opf); return *this;
+      //store()->addOperationFactory(opf); return *this;
+      store()->add<OperationFactoryAPI>(opf); return *this;
     }
 
     virtual ProcessAPI& loadContainerFactory(const std::shared_ptr<ContainerFactoryAPI>& cf) override {
-      store()->addContainerFactory(cf); return *this;
+      store()->add<ContainerFactoryAPI>(cf); return *this;
     }
 
     virtual ProcessAPI& loadContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryAPI>& copf) override {
-      store()->addContainerOperationFactory(copf); return *this;
+      store()->add<ContainerOperationFactoryAPI>(copf); return *this;
     }
 
     virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) override {

@@ -37,11 +37,8 @@ std::shared_ptr<TopicAPI> nerikiri::nullTopic() {
 
 class TopicFactory : public TopicFactoryAPI {
 public:
-    TopicFactory(const std::string& fullName) : TopicFactoryAPI("TopicFactory", fullName) {}
+    TopicFactory() : TopicFactoryAPI("TopicFactory", "Topic") {}
     virtual ~TopicFactory() {}
-
-public:
-    virtual std::string topicTypeFullName() const override { return "Topic"; }
 
 public:
     virtual std::shared_ptr<TopicAPI> create(const std::string& fullName) override {
@@ -55,17 +52,17 @@ public:
     NullTopicFactory() : TopicFactoryAPI("NullTopicFactory", "null") {}
     virtual ~NullTopicFactory() {}
 public:
-    virtual std::string topicTypeFullName() const override { return "NullTopic"; }
+    // virtual std::string topicTypeFullName() const override { return "NullTopic"; }
 
 public:
     virtual std::shared_ptr<TopicAPI> create(const std::string& fullName) override {
-        return std::make_shared<NullTopic>(); // Null Topic
+        return nullTopic();
     }
 };
 
 
-std::shared_ptr<TopicFactoryAPI> nerikiri::topicFactory(const std::string& fullName) {
-    return std::make_shared<TopicFactory>(fullName);
+std::shared_ptr<TopicFactoryAPI> nerikiri::topicFactory() {
+    return std::make_shared<TopicFactory>();
 }
 
 std::shared_ptr<TopicFactoryAPI> nerikiri::nullTopicFactory() {

@@ -53,17 +53,17 @@ SCENARIO( "Container test", "[container]" ) {
       
     
     THEN("Container is stanby") {
-      auto c = p->store()->container("MyStruct0.ctn");
+      auto c = p->store()->get<ContainerAPI>("MyStruct0.ctn");
       REQUIRE(c->isNull() == false);
       REQUIRE(c->instanceName() == "MyStruct0.ctn");
 
       AND_THEN("Container operation test") {
-        auto cops = p->store()->operations();
+        auto cops = p->store()->list<OperationAPI>();
         REQUIRE(cops.size() == 3);
 
-        auto getter = p->store()->operation("MyStruct0.ctn:get0.ope");
+        auto getter = p->store()->get<OperationAPI>("MyStruct0.ctn:get0.ope");
         REQUIRE(getter->isNull() != true);
-        auto setter = p->store()->operation("MyStruct0.ctn:set0.ope");
+        auto setter = p->store()->get<OperationAPI>("MyStruct0.ctn:set0.ope");
         REQUIRE(setter->isNull() != true);
         auto v = getter->call({});
         REQUIRE(Value::intValue(v) == 0);

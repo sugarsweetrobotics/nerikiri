@@ -17,9 +17,9 @@ Value topicConnectionInfo(const Value& value) {
 std::shared_ptr<TopicAPI> nerikiri::createTopic(ProcessStore& store, const Value& info) {
     ObjectFactory::createTopic(store, info);
     if (info.isStringValue()) {
-        return store.topic(Value::string(info));
+        return store.get<TopicAPI>(Value::string(info));
     }
-    return store.topic(Value::string(info.at("name")));
+    return store.get<TopicAPI>(Value::string(info.at("name")));
 }
 
 Value nerikiri::publishTopic(ProcessStore& store, const std::shared_ptr<OperationAPI>& op, const Value& pubTopicInfo) {

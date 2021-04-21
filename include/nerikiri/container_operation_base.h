@@ -12,14 +12,25 @@ namespace nerikiri {
         std::shared_ptr<OperationAPI> base_;
         std::shared_ptr<ContainerAPI> container_;
         std::mutex mutex_;
+        Value defaultArgs_;
     public:
-        ContainerOperationBase(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs)
-          : OperationAPI("ContainerOperation", nerikiri::naming::join(container->fullName(), _typeName), _fullName),
-          base_(createOperation(nerikiri::naming::join(container->fullName(), _typeName), _fullName, defaultArgs, [this](auto value) {
+        virtual Value setOwner(const std::shared_ptr<Object>& container) override { 
+            
+            container_ = std::dynamic_pointer_cast<ContainerAPI>(container); 
+            if (!container_) {
+                return Value::error(logger::error("ContainerOperationBase::setOwner(container) failed. Passed argument (info={}) can not be converted to ContainerAPI pointer.", container->info()));
+            }
+            auto _typeName = typeName();
+            setTypeName(nerikiri::naming::join(container->fullName(), _typeName));
+            base_ = createOperation(nerikiri::naming::join(container->fullName(), _typeName), fullName(), defaultArgs_, [this](auto value) {
               return this->call(value);
-          })), container_(container){
-              
-          }
+            });
+            return container_->info();
+        }
+    public:
+        ContainerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs)
+          : OperationAPI("ContainerOperation", _typeName, _fullName), defaultArgs_(defaultArgs)
+           {}
 
         virtual ~ContainerOperationBase() {}
         virtual Value fullInfo() const override { 

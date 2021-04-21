@@ -32,18 +32,18 @@ std::string loadFullName(const std::vector<T>& ts, const Value& info) {
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createOperation({}) called", (info));
-  auto fullName = loadFullName(store.operations(), info);
+  auto fullName = loadFullName(store.list<OperationAPI>(), info);
   logger::info("ObjectFactory::createOperation({})", info);
-  auto op = store.operationFactory(Value::string(info.at("typeName")))->create(fullName);
-  return store.addOperation(op);
+  auto op = store.get<OperationFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
+  return store.add<OperationAPI>(op);
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainer({})", (info));
-  auto fullName = loadFullName(store.containers(), info);
+  auto fullName = loadFullName(store.list<ContainerAPI>(), info);
   logger::info("ObjectFactory::createContainer({})", info);
-  auto c = store.containerFactory(Value::string(info.at("typeName")))->create(fullName);
-  auto v = store.addContainer(c);
+  auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
+  auto v = store.add<ContainerAPI>(c);
   if (v.isError()) return v;
   auto getterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
     {"fullName", "getBasePose.ope"},
@@ -61,9 +61,19 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
 //  const std::string& containerFullName = Value::string(info.at("containerFullName"));
   auto containerFullName = Value::string(cInfo.at("fullName"));
   //auto fullName = Value::string(info.at("fullName)"));
-  auto fullName = nerikiri::naming::join(containerFullName, loadFullName(store.operations(), info));
+  auto fullName = nerikiri::naming::join(containerFullName, loadFullName(store.list<OperationAPI>(), info));
   auto typeName = nerikiri::naming::join(Value::string(cInfo.at("typeName")), Value::string(info.at("typeName")));
-  return store.addOperation(store.containerOperationFactory(typeName)->create(store.container(containerFullName), fullName));
+  auto container = store.get<ContainerAPI>(containerFullName);
+  auto cof = store.get<ContainerOperationFactoryAPI>(typeName);
+  if (cof->isNull()) {
+    return Value::error(logger::error("ObjectFactory::createContainerOperation failed. ContainerOperationFactory({}) is null.", typeName));
+  }
+  auto cop =cof->create(fullName);
+  
+  cop->setOwner(container);
+  return container->addOperation(cop);
+
+  // return store.addOperation(store.containerOperationFactory(typeName)->create(container, fullName));
 }
 
 
@@ -91,7 +101,7 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   logger::info("ObjectFactory::createTopic({})", topicInfo);
-  return store.addTopic(store.topicFactory(Value::string(topicInfo.at("typeName")))->create(Value::string(topicInfo.at("fullName"))));
+  return store.add<TopicAPI>(store.get<TopicFactoryAPI>(Value::string(topicInfo.at("typeName")))->create(Value::string(topicInfo.at("fullName"))));
 }
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
@@ -109,15 +119,17 @@ Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
 }
 
 Value ObjectFactory::deleteOperation(ProcessStore& store, const std::string& fullName)  {
-  return store.deleteOperation(fullName);
+  // return store.deleteOperation(fullName);
+  return store.del<OperationAPI>(fullName);
 }
 
 Value ObjectFactory::deleteContainer(ProcessStore& store, const std::string& fullName)  {
-  return store.deleteContainer(fullName);
+  // return store.deleteContainer(fullName);
+  return store.del<ContainerAPI>(fullName);
 }
 
 Value ObjectFactory::deleteContainerOperation(ProcessStore& store, const std::string& fullName)  {
-  return store.deleteContainerOperation(fullName);
+  //return store.deleteContainerOperation(fullName);
 }
         
 Value ObjectFactory::deleteExecutionContext(ProcessStore& store, const std::string& fullName) {

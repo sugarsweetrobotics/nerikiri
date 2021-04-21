@@ -21,8 +21,8 @@ struct _FSMContainerStruct {
 
 bool 
 nerikiri::setupFSMContainer(nerikiri::ProcessStore& store) {
-    store.addContainerFactory(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_FSMContainerStruct>())));
-    store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
+    store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_FSMContainerStruct>())));
+    store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
         {
           {"typeName", "activate_state"},
           {"defaultArg", {
@@ -47,7 +47,7 @@ nerikiri::setupFSMContainer(nerikiri::ProcessStore& store) {
         }))
     ));
 
-    store.addContainerOperationFactory(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
+    store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
         {
           {"typeName", "get_state"},
           {"defaultArg", {
@@ -76,7 +76,7 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
     
     // ここからStateを実際に作ります．
     const auto name = stateInfo.at("name").stringValue();
-    auto cop = store.containerOperationFactory("_FSMContainerStruct", "activate_state")->create(container, container->fullName() + ":" +  "activate_state_" + name + ".ope", 
+    auto cop = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:activate_state")->create(container->fullName() + ":" +  "activate_state_" + name + ".ope", 
       { {"defaultArg", 
             {
                 {"stateName", name}
@@ -86,6 +86,8 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
         logger::error("createFSM failed. ContainerOperation can not be created");
         return nullOperation();
     }
+    cop->setOwner(container);
+
     container->ptr()->availableStates.push_back(name);
     container->ptr()->transittableStates[name] = stateInfo["transit"].template const_list_map<std::string>([](auto info) {return info.stringValue(); });
     return cop; 
@@ -94,7 +96,8 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
 Value nerikiri::createFSM(ProcessStore& store, const std::string& fullName, const Value& fsmInfo) {
     logger::info("nerikiri::createFSM({})", fsmInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
-    auto container = store.containerFactory("_FSMContainerStruct")->create(fullName);
+    // まずコンテナ作成
+    auto container = store.get<ContainerFactoryAPI>("_FSMContainerStruct")->create(fullName);
     if (container->isNull()) {
         return Value::error(logger::error("ObjectFactory::createFSM failed. NullContainer is returned from factory."));
     }
@@ -114,7 +117,8 @@ Value nerikiri::createFSM(ProcessStore& store, const std::string& fullName, cons
     c->ptr()->fullName = fullName;
     c->ptr()->currentState = defaultStateName;
 
-    auto getter = store.containerOperationFactory("_FSMContainerStruct", "get_state")->create(container, container->fullName() + ":" + "get_state.ope");
+    auto getter = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:get_state")->create(container->fullName() + ":" + "get_state.ope");
+    getter->setOwner(container);
 
     bool failedFlag = false;
     auto ops = fsmInfo["states"].const_list_map<std::shared_ptr<OperationAPI>>([&failedFlag, &store, c, fullName](auto stateInfo) -> std::shared_ptr<OperationAPI> {
@@ -126,10 +130,13 @@ Value nerikiri::createFSM(ProcessStore& store, const std::string& fullName, cons
         return Value::error(logger::error("createFSM failed. Creating States make errors"));
     }
 
-    store.addContainer(c, ".fsm");
-    std::for_each(ops.begin(), ops.end(), [&store](auto op) {
-        store.addOperation(op);
+    // store.addContainer(c, ".fsm");
+    store.add<ContainerAPI>(c);
+    std::for_each(ops.begin(), ops.end(), [&c, &store](auto op) {
+        //store.addOperation(op);
+        c->addOperation(op);
     });
-    store.addOperation(getter);
+    //store.addOperation(getter);
+    c->addOperation(getter);
     return c->info();
 }

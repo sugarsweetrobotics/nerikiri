@@ -103,6 +103,10 @@ namespace nerikiri {
         virtual ~OperationAPI() {}
 
     public:
+        virtual Value setOwner(const std::shared_ptr<Object>& obj)  {
+            return Value::error(logger::error("OperationAPI::setOwner() is not overloaded."));
+        }
+
         virtual Value fullInfo() const = 0;
 
         virtual Value call(const Value& value) = 0;
@@ -123,6 +127,11 @@ namespace nerikiri {
     };
 
     std::shared_ptr<OperationAPI> nullOperation();
+
+
+
+  template<>
+  inline std::shared_ptr<OperationAPI> nullObject() { return nullOperation(); }
     
 
 }

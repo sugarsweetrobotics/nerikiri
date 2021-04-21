@@ -14,7 +14,7 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value
     auto fullName = Value::string(value.at("fullName"));
     std::string brokerTypeName = "CoreBroker";
     if (!value.hasKey("broker")) {
-        return store->operation(fullName);
+        return store->get<OperationAPI>(fullName);
     }
     auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
     auto op = nerikiri::operationProxy(broker, fullName);
@@ -107,7 +107,7 @@ std::string applyConnectionAutoRename(const std::string& name, const int count_h
 
 std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(const Value& value, ProcessStore* store) {
 
-    auto outlet_side_operation = store->operation(Value::string(value.at("outlet").at("operation").at("fullName")));
+    auto outlet_side_operation = store->get<OperationAPI>(Value::string(value.at("outlet").at("operation").at("fullName")));
 
     std::shared_ptr<OperationInletAPI> inlet = nullptr;
     std::shared_ptr<Object> inlet_holder = nullptr;
@@ -133,7 +133,7 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(co
     }*/ else if (value.at("inlet").hasKey("topic")) {
         className = "topic";
         auto inlet_side_topic_info = ObjectFactory::createTopic(*store, value.at("inlet").at("topic"));
-        auto inlet_side_topic = store->topic(Value::string(value.at("inlet").at("topic").at("fullName")));
+        auto inlet_side_topic = store->get<TopicAPI>(Value::string(value.at("inlet").at("topic").at("fullName")));
         inlet = inlet_side_topic->inlet(Value::string(value.at("inlet").at("name")));
         inlet_holder = inlet_side_topic;
     }
@@ -167,7 +167,7 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::incomingOperationConnectionProxy(co
     if (value.at("inlet").hasKey("operation")) {
         auto outlet_side_operationProxy = ProxyBuilder::operationProxy(value.at("outlet").at("operation"), store);
         auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(
-            store->operation(Value::string(value.at("inlet").at("operation").at("fullName")))->inlets(), 
+            store->get<OperationAPI>(Value::string(value.at("inlet").at("operation").at("fullName")))->inlets(), 
             [&value](auto i) { return i->name() == Value::string(value.at("inlet").at("name")); }
         );
         if (!inlet) {

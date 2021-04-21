@@ -41,13 +41,13 @@ SCENARIO( "Connection test", "[ec]" ) {
     
     p->startAsync();
 
-    auto zero0ope = p->store()->operation("zero0.ope");
+    auto zero0ope = p->store()->get<OperationAPI>("zero0.ope");
     REQUIRE(zero0ope->isNull() == false);
-    auto inc0ope = p->store()->operation("inc0.ope");
+    auto inc0ope = p->store()->get<OperationAPI>("inc0.ope");
     REQUIRE(inc0ope->isNull() == false);
-    auto one0ope = p->store()->operation("one0.ope");
+    auto one0ope = p->store()->get<OperationAPI>("one0.ope");
     REQUIRE(one0ope->isNull() == false);
-    auto add0ope = p->store()->operation("add0.ope");
+    auto add0ope = p->store()->get<OperationAPI>("add0.ope");
     REQUIRE(add0ope->isNull() == false);
 
     THEN("Operation Behavior test") {

@@ -8,7 +8,7 @@ public:
 NullOperationFactory() : OperationFactoryAPI("NullOperationFactory", "NullOperation", "null") {}
 virtual ~NullOperationFactory() {}
 
-virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName) const override {
+virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName, const Value& info={}) const override {
     return nullOperation();
 }
 };

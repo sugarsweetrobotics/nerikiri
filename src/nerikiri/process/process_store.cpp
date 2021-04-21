@@ -21,7 +21,7 @@ Value ProcessStore::info() const { return process_->info(); }
 
 std::vector<std::shared_ptr<ConnectionAPI>> ProcessStore::connections() const {
   std::vector<std::shared_ptr<ConnectionAPI>> cons;
-  nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(operations(), [&cons](auto op) {
+  nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(list<OperationAPI>(), [&cons](auto op) {
     auto cs = op->outlet()->connections();
     cons.insert(cons.end(), cs.begin(), cs.end());
   });
@@ -29,29 +29,29 @@ std::vector<std::shared_ptr<ConnectionAPI>> ProcessStore::connections() const {
 }
 
 Value ProcessStore::addBroker(const std::shared_ptr<BrokerAPI>& b) {
-  return add<BrokerAPI>(brokers_, b, ".brk");
+  return addObject<BrokerAPI>(brokers_, b, ".brk");
 }
 
 Value ProcessStore::deleteBroker(const std::string& fullName) {
-  return del<BrokerAPI>(brokers_, fullName);
+  return delObject<BrokerAPI>(brokers_, fullName);
 }
 
 Value ProcessStore::addBrokerFactory(const std::shared_ptr<BrokerFactoryAPI>& bf) {
-  return add<BrokerFactoryAPI>(brokerFactories_, bf, ".bf");
+  return addObject<BrokerFactoryAPI>(brokerFactories_, bf, ".bf");
 }
 
 Value ProcessStore::deleteBrokerFactory(const std::string& fullName) {
-  return del<BrokerFactoryAPI>(brokerFactories_, fullName);
+  return delObject<BrokerFactoryAPI>(brokerFactories_, fullName);
 }
 
 
 
-std::shared_ptr<OperationAPI> ProcessStore::operation(const std::string& fullName) const { 
-  auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
-  if (op) return op.value();;
-  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
-  return nullOperation();
-}
+//std::shared_ptr<OperationAPI> ProcessStore::operation(const std::string& fullName) const { 
+//  auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
+//  if (op) return op.value();;
+//  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
+//  return nullOperation();
+//}
 
 std::shared_ptr<ConnectionAPI> ProcessStore::connection(const std::string& fullName) const { 
   auto op = nerikiri::functional::find<std::shared_ptr<ConnectionAPI>>(connections(), [&fullName](auto op) { return op->fullName() == fullName; });
@@ -60,13 +60,15 @@ std::shared_ptr<ConnectionAPI> ProcessStore::connection(const std::string& fullN
   return nullConnection();
 }
 
+/*
 std::shared_ptr<OperationFactoryAPI> ProcessStore::operationFactory(const std::string& operationTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<OperationFactoryAPI>>(operationFactories(), [&operationTypeFullName](auto f) { return f->typeName() == operationTypeFullName; });
   if (f) return f.value();
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, operationTypeFullName);
   return nullOperationFactory();
 }
-
+*/
+/*
 std::shared_ptr<ContainerAPI> ProcessStore::container(const std::string& fullName) const { 
   auto op = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containers(), [&fullName](auto op) { 
     return op->fullName() == fullName; 
@@ -76,7 +78,8 @@ std::shared_ptr<ContainerAPI> ProcessStore::container(const std::string& fullNam
 
   return nullContainer();
 }
-
+*/
+/*
 std::shared_ptr<ContainerFactoryAPI> ProcessStore::containerFactory(const std::string& containerTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<ContainerFactoryAPI>>(containerFactories(), [&containerTypeFullName] (auto f) {
     return f->typeName() == containerTypeFullName;
@@ -87,12 +90,14 @@ std::shared_ptr<ContainerFactoryAPI> ProcessStore::containerFactory(const std::s
 
   return nullContainerFactory();
 }
-
+*/
+/*
 std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFactory(const std::string& containerOperationTypeFullName) const {
   const auto& [containerTypeFullName, operationTypeFullName] = nerikiri::naming::splitContainerAndOperationName(containerOperationTypeFullName);
   return containerOperationFactory(containerTypeFullName, operationTypeFullName);
 }
-
+*/
+/*
 std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFactory(const std::string& containerTypeFullName, const std::string& operationTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<ContainerOperationFactoryAPI>>(containerOperationFactories(), [&containerTypeFullName, &operationTypeFullName] (auto f) {
     return f->typeName() == nerikiri::naming::join(containerTypeFullName,operationTypeFullName);
@@ -101,6 +106,7 @@ std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFa
   logger::error("ProcessStore::{}({}, {}) called, but not found.", __func__, containerTypeFullName, operationTypeFullName);
   return nullContainerOperationFactory();
 }
+*/
 
 //std::vector<std::shared_ptr<FSMAPI>> ProcessStore::fsms() const {
 //  return {fsms_.begin(), fsms_.end()};
@@ -122,14 +128,15 @@ std::shared_ptr<ContainerOperationFactoryAPI> ProcessStore::containerOperationFa
 //  logger::error("ProcessStore::{}({}) called, but not found.", __func__, fsmTypeFullName);
 //  return nullFSMFactory();
 //}
-
+/*
 std::shared_ptr<TopicAPI> ProcessStore::topic(const std::string& fullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<TopicAPI>>(topics(), [&fullName](auto t) { return t->fullName() == fullName; });
   if (f) return f.value();;
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
   return nullTopic();
 }
-
+*/
+/*
 std::shared_ptr<TopicFactoryAPI> ProcessStore::topicFactory(const std::string& topicTypeFullName) const {
   auto f = nerikiri::functional::find<std::shared_ptr<TopicFactoryAPI>>(topicFactories(), [&topicTypeFullName] (auto f) {
     return f->topicTypeFullName() == topicTypeFullName;
@@ -138,6 +145,7 @@ std::shared_ptr<TopicFactoryAPI> ProcessStore::topicFactory(const std::string& t
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, topicTypeFullName);
   return nullTopicFactory();
 }
+*/
 
 std::shared_ptr<ExecutionContextAPI> ProcessStore::executionContext(const std::string& fullName) const {
   //auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextAPI>>(executionContexts(), [&fullName](auto ec) { return ec->fullName() == fullName; });
@@ -176,7 +184,7 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   if (info.hasKey("broker")) {
     return ProxyBuilder::operationProxy(info, this);
   }
-  return operation(Value::string(info.at("fullName")));
+  return get<OperationAPI>(Value::string(info.at("fullName")));
 }
 
 //std::shared_ptr<FSMAPI> ProcessStore::fsmProxy(const Value& info) {

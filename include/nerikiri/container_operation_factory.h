@@ -21,7 +21,7 @@ namespace nerikiri {
          * @param typeName: オペレーションのtypeName
          */
         ContainerOperationFactory(const std::string& typeName, const Value& defaultArgs, std::function<Value(T&,const Value&)> func)
-          : ContainerOperationFactoryAPI("ContainerOperationFactory", naming::join(nerikiri::demangle(typeid(T).name()), typeName), naming::join(nerikiri::demangle(typeid(T).name()), typeName) + ".cof"), function_(func)
+          : ContainerOperationFactoryAPI("ContainerOperationFactory", naming::join(nerikiri::demangle(typeid(T).name()), typeName), naming::join(nerikiri::demangle(typeid(T).name()), typeName)), function_(func)
         {}
 
         /**
@@ -33,7 +33,7 @@ namespace nerikiri {
         /**
          * 
          */
-        virtual std::shared_ptr<OperationAPI> create(const std::shared_ptr<ContainerAPI>& container, const std::string& fullName, const Value& info=Value::error("")) const override { 
+        virtual std::shared_ptr<OperationAPI> create(const std::string& fullName, const Value& info=Value::error("")) const override { 
             auto defaultArg = defaultArgs_;
             if (info.isError()) {
                 //defaultArg = info["defaultArg"];
@@ -41,7 +41,7 @@ namespace nerikiri {
             if (!info.isError() && info.hasKey("defaultArg")) {
                 defaultArg = Value::merge(defaultArg, info["defaultArg"]);    
             }
-            return std::make_shared<ContainerOperation<T>>(container, typeName(), fullName, defaultArg, function_);
+            return std::make_shared<ContainerOperation<T>>(typeName(), fullName, defaultArg, function_);
         }
     };
 

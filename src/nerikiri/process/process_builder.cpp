@@ -19,7 +19,7 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
 
   config.at("operations").at("precreate").const_list_for_each([&store](auto& oinfo) {
     auto opInfo = ObjectFactory::createOperation(store, oinfo);
-    auto op = store.operation(Value::string(opInfo.at("fullName")));
+    auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
     if (oinfo.hasKey("publish")) {
       oinfo.at("publish").const_list_for_each([&op, &store](auto pubTopicInfo) {
         publishTopic(store, op, pubTopicInfo);
@@ -53,7 +53,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
       info.at("operations").const_list_for_each([&store, &cInfo](auto value) {
         auto opInfo = ObjectFactory::createContainerOperation(store, cInfo, value);
 
-        auto c = store.container(Value::string(cInfo.at("fullName")));
+        auto c = store.get<ContainerAPI>(Value::string(cInfo.at("fullName")));
         auto cop = c->operation(Value::string(opInfo.at("fullName")));
         if (value.hasKey("publish")) {
           value.at("publish").const_list_for_each([&store, &cop](auto topicInfo) {
@@ -278,7 +278,7 @@ void ProcessBuilder::preloadCallbacksOnStarted(ProcessStore& store, const Value&
         value.at("target").const_list_for_each([&store](auto& v) {
           auto opName = v.at("fullName").stringValue();
           auto argument = v.at("argument");
-          store.operation(opName)->call(argument);
+          store.get<OperationAPI>(opName)->call(argument);
         });
       }
     });

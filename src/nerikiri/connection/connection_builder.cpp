@@ -231,7 +231,7 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
 
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& cInfo, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ConnectionBuilder::registerTopicPublisher({}, {}, {})", cInfo, opInfo, topicInfo);
-  auto op = store.operation(nerikiri::naming::join(Value::string(cInfo.at("fullName")), Value::string(opInfo.at("fullName"))));
+  auto op = store.get<OperationAPI>(nerikiri::naming::join(Value::string(cInfo.at("fullName")), Value::string(opInfo.at("fullName"))));
   auto topicInfo2 = ObjectFactory::createTopic(store, topicInfo);
   auto connectionName = "topic_connection_" + Value::string(topicInfo.at("fullName")) + "_" + op->fullName();
   Value connectionInfo {
@@ -256,7 +256,7 @@ Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value
   
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ConnectionBuilder::registerTopicPublisher({}, {})", opInfo, topicInfo);
-  auto op = store.operation(Value::string(opInfo.at("fullName")));
+  auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
   auto topicInfo2 = ObjectFactory::createTopic(store, topicInfo);
   auto connectionName = "topic_connection_" + Value::string(topicInfo.at("fullName")) + "_" + op->fullName();
   Value connectionInfo {

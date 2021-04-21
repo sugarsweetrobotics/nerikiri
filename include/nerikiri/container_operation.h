@@ -50,8 +50,8 @@ namespace nerikiri {
     protected:
         std::function<Value(T&,const Value&)> function_;
     public:
-        ContainerOperation(const std::shared_ptr<ContainerAPI>& container, const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func)
-        : ContainerOperationBase(container, _typeName, _fullName, defaultArgs), function_(func)  {
+        ContainerOperation(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func)
+        : ContainerOperationBase(_typeName, _fullName, defaultArgs), function_(func)  {
         }
 
         virtual ~ContainerOperation() {}
@@ -66,8 +66,8 @@ namespace nerikiri {
     class ContainerGetPoseOperation : public ContainerOperationBase {
     private:
     public:
-        ContainerGetPoseOperation(const std::shared_ptr<ContainerAPI>& container)
-          : ContainerOperationBase(container, "container_get_pose", "container_get_pose.ope", {}) {}
+        ContainerGetPoseOperation()
+          : ContainerOperationBase("container_get_pose", "container_get_pose.ope", {}) {}
         virtual ~ContainerGetPoseOperation() {}
 
         virtual Value call(const Value& value) {
@@ -79,8 +79,8 @@ namespace nerikiri {
 
     class ContainerSetPoseOperation : public ContainerOperationBase {
     public:
-        ContainerSetPoseOperation(const std::shared_ptr<ContainerAPI>& container)
-          : ContainerOperationBase(container, "container_set_pose", "container_set_pose.ope", 
+        ContainerSetPoseOperation()
+          : ContainerOperationBase("container_set_pose", "container_set_pose.ope", 
                 {
                   {"pose", toValue(TimedPose3D())}
                 } 
