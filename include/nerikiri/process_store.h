@@ -39,7 +39,6 @@ namespace nerikiri {
     std::vector<std::shared_ptr<Object>> objects_;
 
     std::vector<std::shared_ptr<OperationAPI>> operationProxies_;
-
     std::vector<std::shared_ptr<ExecutionContextFactoryAPI>> executionContextFactories_;
     
     std::vector<std::shared_ptr<BrokerAPI>> brokers_;

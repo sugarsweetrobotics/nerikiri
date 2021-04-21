@@ -9,6 +9,7 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/src)
 OPTION(BUILD_NK_TEST_HTTP "Http Server Client Test" OFF)
 OPTION(BUILD_NK_TEST_HTTPBROKER "HttpBroker Test" OFF)
 OPTION(BUILD_NK_TEST_OPTION "Option Parser Test" OFF)
+OPTION(BUILD_NK_TEST_TOPIC "Topic Test" ON)
 OPTION(BUILD_NK_TEST_PROCESS "Process Test" OFF)
 OPTION(BUILD_NK_TEST_OPERATION "Operation Test" OFF)
 OPTION(BUILD_NK_TEST_CONTAINER "Container Test" OFF)
@@ -31,6 +32,11 @@ endfunction()
 
 if (${BUILD_NK_TEST_HTTP})
   declare_test(http)
+endif ()
+
+
+if (${BUILD_NK_TEST_TOPIC})
+  declare_test(topic)
 endif ()
 
 if (${BUILD_NK_TEST_GEOMETRY})
