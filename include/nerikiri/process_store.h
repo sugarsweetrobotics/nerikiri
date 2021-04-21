@@ -27,12 +27,13 @@ namespace nerikiri {
 
 
   class Process;
+  class ProcessAPI;
   class BrokerAPI;
   class BrokerFactoryAPI;
 
   class NK_API ProcessStore {
   private:
-    Process* process_;
+    ProcessAPI* process_;
 
     std::vector<std::shared_ptr<DLLProxy>> dllproxies_;
 
@@ -50,9 +51,10 @@ namespace nerikiri {
     std::vector<std::shared_ptr<OperationInletAPI>> inletProxies_;
     std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies_;
 
+    friend class ProcessAPI;
     friend class Process;
   public:
-    ProcessStore(Process* process) : process_(process) {}
+    ProcessStore(ProcessAPI* process) : process_(process) {}
 
     ~ProcessStore() {
       /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
@@ -70,6 +72,7 @@ namespace nerikiri {
      */
     Value info() const ;
 
+    ProcessAPI* process() { return process_; }
 
 
   private:
@@ -111,12 +114,17 @@ namespace nerikiri {
 
     template<typename T>
     Value add(const std::shared_ptr<T>& obj) {
+      logger::trace("ProcessStore::add(objInfo={}) called", obj->info());
       /// 同じ名前がないか確認
       if (!get<T>(obj->fullName())->isNull()) {
         return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is already contained.", obj->className(), obj->fullName()));
       }
+      if (obj->isNull()) {
+        return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is null.", obj->className(), obj->fullName()));
+      }
       objects_.push_back(obj);
       //ref_list<T>().push_back(obj);
+      logger::trace("ProcessStore.add<{}>(obj->info()={}) succeeded.", obj->className(), obj->info());
       return obj->info();
     }
 

@@ -118,7 +118,13 @@ std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
-Value nerikiri::connect(const std::shared_ptr<ProcessAPI>& process, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
+Value nerikiri::connect(ProcessStore& store, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
+  logger::info("nerikiri::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
+  std::string defaultConnectionType = "event";
+  if (options.hasKey("event")) {
+    defaultConnectionType = options["event"].stringValue();
+  }
+  
   Value con0Info{
     {"name", name},
     {"type", "event"},
@@ -127,7 +133,7 @@ Value nerikiri::connect(const std::shared_ptr<ProcessAPI>& process, const std::s
     {"outlet", outlet->info()}
   };
 
-  return process->coreBroker()->connection()->createConnection(con0Info);
+  return store.process()->coreBroker()->connection()->createConnection(con0Info);
 }
 
 class NullConnection : public ConnectionAPI {

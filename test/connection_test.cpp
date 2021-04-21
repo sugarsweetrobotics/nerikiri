@@ -60,7 +60,7 @@ SCENARIO( "Connection test", "[ec]" ) {
     }
 
     THEN("Connect with API") {
-      auto ret = nerikiri::connect(p, "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
+      auto ret = nerikiri::connect(*p->store(), "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
       REQUIRE(ret.isError() == false);
 
       auto con1 = zero0ope->outlet()->connections();

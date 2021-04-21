@@ -24,5 +24,8 @@ namespace nerikiri {
         static void preloadTopics(ProcessStore& store, const Value& config, const std::string& path);
         static void preloadCallbacksOnStarted(ProcessStore& store, const Value& config, const std::string& path);
 
+
+        static Value publishTopic(ProcessStore& store, const Value& opInfo, const Value& topicInfo);
+        static Value subscribeTopic(ProcessStore& store, const Value& opInfo, const std::string& argName, const Value& topicInfo);
     };
 }

@@ -9,7 +9,7 @@ using TopicBase = nerikiri::OperationBase;
 
 class Topic : public TopicBase {
 public:
-    Topic(const std::string& _fullName, const Value& defaultArgs = {}): OperationBase("Topic", "Topic", _fullName, defaultArgs) {}
+    Topic(const std::string& _fullName, const Value& defaultArgs = {{"data", {}}}): OperationBase("Topic", "Topic", _fullName, defaultArgs) {}
     virtual ~Topic() {}
 public:
     virtual Value call(const Value& value) override {
@@ -42,7 +42,7 @@ public:
 
 public:
     virtual std::shared_ptr<TopicAPI> create(const std::string& fullName) override {
-        logger::trace("TopicFactory::create({}) called", fullName);
+        logger::info("TopicFactory::create({}) called", fullName);
         return std::make_shared<Topic>(fullName); 
     }
 };
@@ -56,6 +56,7 @@ public:
 
 public:
     virtual std::shared_ptr<TopicAPI> create(const std::string& fullName) override {
+        logger::error("NullTopicFactory::{}(fullName={}) called. Object is null", __func__, fullName);
         return nullTopic();
     }
 };

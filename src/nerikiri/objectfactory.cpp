@@ -101,7 +101,7 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
 
 Value ObjectFactory::createTopic(ProcessStore& store, const Value& topicInfo) {
   logger::info("ObjectFactory::createTopic({})", topicInfo);
-  return store.add<TopicAPI>(store.get<TopicFactoryAPI>(Value::string(topicInfo.at("typeName")))->create(Value::string(topicInfo.at("fullName"))));
+  return store.add<TopicAPI>(store.get<TopicFactoryAPI>("Topic")->create(Value::string(topicInfo.at("fullName"))));
 }
 
 Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {

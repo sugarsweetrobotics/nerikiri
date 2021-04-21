@@ -7,6 +7,10 @@
 
 bool operationIsCalled = false;
 
+bool operationIncIsCalled = false;
+bool operationZeroIsCalled = false;
+bool operationAddIsCalled = false;
+
 
 auto opf1 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri::OperationFactoryAPI*>(operationFactory(
   nerikiri::Value { 
@@ -18,6 +22,7 @@ auto opf1 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   },
   [](auto arg) {
     operationIsCalled = true;
+    operationIncIsCalled = true;
     return nerikiri::Value(arg.at("arg01").intValue()+1);
   }
 )));
@@ -30,6 +35,7 @@ auto opf2 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   },
   [](auto arg)  {
     operationIsCalled = true;
+    operationZeroIsCalled = true;
     return nerikiri::Value(0);
   }
 )));
@@ -45,6 +51,7 @@ auto opf3 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   },
   [](auto arg)  {
     operationIsCalled = true;
+    operationAddIsCalled = true;
   return nerikiri::Value(arg.at("arg01").intValue()+arg.at("arg02").intValue());
   }
 )));
