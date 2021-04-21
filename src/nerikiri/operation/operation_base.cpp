@@ -61,6 +61,7 @@ std::shared_ptr<OperationInletAPI> OperationBase::inlet(const std::string& name)
   if (name == "__event__")  return event_inlet_;
   auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
   if (i) return i.value();
+  logger::error("OperationBase(typeName={}, fullName={})::inlet(name={}) requested. But argument {} not found.", typeName(), fullName(), name, name);
   return nullOperationInlet();
 }
 

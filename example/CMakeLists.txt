@@ -1,6 +1,4 @@
 
-
-
 set(OPERATIONS)
 function(add_operation NAME)
   add_library(${NAME} SHARED operations/${NAME}.cpp)
@@ -59,21 +57,11 @@ find_package(Threads REQUIRED)
 
 
 
-option(BUILD_SIMPLE_EXAMPLE "Build Simple Operation Examples. This is used in tests" ON)
-option(BUILD_OPENCV_EXAMPLE "Build OpenCV Example" OFF)
-option(BUILD_JOY_EXAMPLE "Build Joy Controller Example" OFF)
-option(BUILD_TURTLESIM_EXAMPLE "Build Turtle Simulator Controller Example" OFF)
+option(BUILD_NK_EXAMPLE_SIMPLE "Build Simple Operation Examples. This is used in tests" ON)
+option(BUILD_NK_EXAMPLE_OPENCV "Build OpenCV Example" OFF)
+option(BUILD_NK_EXAMPLE_JOY "Build Joy Controller Example" OFF)
+option(BUILD_NK_EXAMPLE_TURTLESIM "Build Turtle Simulator Controller Example" OFF)
 
-set(example01_src example01.cpp)
-set(example02_src example02.cpp)
-set(example03_src example03.cpp)
-set(example04_src example04.cpp)
-set(example05_src example05.cpp)
-set(example06_src example06.cpp)
-set(example07_src example07.cpp)
-set(example08_src example08.cpp)
-set(example09_src example09.cpp)
-set(example10_src example10.cpp)
 
 
 set(EXAMPLE_LIBS nerikiri)
@@ -81,25 +69,25 @@ set(EXTRA_MODULES one)
 
 set(EXAMPLES  )
 
-if (BUILD_SIMPLE_EXAMPLE)
+if (BUILD_NK_EXAMPLE_SIMPLE)
   add_subdirectory(simple_example)
-endif (BUILD_SIMPLE_EXAMPLE)
+endif (BUILD_NK_EXAMPLE_SIMPLE) 
 
 
-if (BUILD_TURTLESIM_EXAMPLE)
+if (BUILD_NK_EXAMPLE_TURTLESIM)
   add_subdirectory(turtlesim)
   list(APPEND EXAMPLES turtlesim.nkproj)
-endif (BUILD_TURTLESIM_EXAMPLE)
+endif (BUILD_NK_EXAMPLE_TURTLESIM)
 
-if (BUILD_JOY_EXAMPLE)
+if (BUILD_NK_EXAMPLE_JOY)
   add_subdirectory(joy)
   list(APPEND EXAMPLES keyjoy.nkproj)
-endif (BUILD_JOY_EXAMPLE)
+endif (BUILD_NK_EXAMPLE_JOY)
 
-if (BUILD_OPENCV_EXAMPLE)
+if (BUILD_NK_EXAMPLE_OPENCV)
   add_subdirectory(opencv)
   list(APPEND EXAMPLES opencv.nkproj)
-endif (BUILD_OPENCV_EXAMPLE)
+endif (BUILD_NK_EXAMPLE_OPENCV)
 
 set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
 

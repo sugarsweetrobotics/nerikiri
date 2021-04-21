@@ -45,9 +45,6 @@ namespace nerikiri {
     std::vector<std::shared_ptr<BrokerAPI>> brokers_;
     std::vector<std::shared_ptr<BrokerFactoryAPI>> brokerFactories_;
 
-    //std::vector<std::shared_ptr<TopicAPI>> topics_;
-    //std::vector<std::shared_ptr<TopicFactoryAPI>> topicFactories_;
-
     std::vector<std::shared_ptr<OperationInletAPI>> inletProxies_;
     std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies_;
 
@@ -59,8 +56,6 @@ namespace nerikiri {
     ~ProcessStore() {
       /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
 
-      //topics_.clear();
-      //topicFactories_.clear();
       executionContextFactories_.clear();
       brokers_.clear();
       brokerFactories_.clear();
@@ -219,15 +214,6 @@ namespace nerikiri {
         return {outletProxies_.begin(), outletProxies_.end()};
     }
 
-    /*
-    std::vector<std::shared_ptr<TopicAPI>> topics() const {
-      return {topics_.begin(), topics_.end()};
-    } 
-
-    std::vector<std::shared_ptr<TopicFactoryAPI>> topicFactories() const {
-      return {topicFactories_.begin(), topicFactories_.end()};
-    } */
-
     std::vector<std::shared_ptr<ExecutionContextFactoryAPI>> executionContextFactories() const { 
       return {executionContextFactories_.begin(), executionContextFactories_.end()};
     }
@@ -249,15 +235,6 @@ namespace nerikiri {
     Value deleteOperationProxy(const std::string& fullName) {
       return delObject<OperationAPI>(operationProxies_, fullName);
     }
-    /*
-    Value addTopic(const std::shared_ptr<TopicAPI>& t) {
-      return addObject<TopicAPI>(topics_, t, ".topic");
-    }
-
-    Value addTopicFactory(const std::shared_ptr<TopicFactoryAPI>& f) {
-      return addObject<TopicFactoryAPI>(topicFactories_, f, ".tf");
-    }
-    */
 
     Value addECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ff) {
       return addObject<ExecutionContextFactoryAPI>(executionContextFactories_, ff, ".ecf");
@@ -306,10 +283,6 @@ namespace nerikiri {
 
     std::shared_ptr<ConnectionAPI> connection(const std::string& fullName) const;
 
-    //std::shared_ptr<TopicAPI> topic(const std::string& fullName) const;
-
-    //std::shared_ptr<TopicFactoryAPI> topicFactory(const std::string& topicTypeFullName) const;
-
     std::shared_ptr<ExecutionContextAPI> executionContext(const std::string& fullName) const;
 
     std::shared_ptr<ExecutionContextFactoryAPI> executionContextFactory(const std::string& ecTypeFullName) const;
@@ -321,7 +294,5 @@ namespace nerikiri {
     Value addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy);
 
     Value getCallbacks() const;
-
-    // std::shared_ptr<OperationAPI> getOperationOrTopic(const std::string& fullName);
   };
 }

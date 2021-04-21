@@ -45,6 +45,7 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
   auto v = store.add<ContainerAPI>(c);
   if (v.isError()) return v;
+  /*
   auto getterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
     {"fullName", "getBasePose.ope"},
     {"typeName", "ContainerGetBasePose"}
@@ -53,6 +54,7 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
     {"fullName", "setBasePose.ope"},
     {"typeName", "ContainerSetBasePose"}
   });
+  */
   return v;
 }
 

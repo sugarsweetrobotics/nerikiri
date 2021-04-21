@@ -221,36 +221,47 @@ Value ProcessBuilder::subscribeTopic(ProcessStore& store, const Value& opInfo, c
   return nerikiri::connect(store, connectionName, op->inlet(argName), topic->outlet());
 }
 
+void _parseOperationInfo(ProcessStore& store, const Value& opInfo) {
+  if (opInfo["publish"].isStringValue()) {
+    ProcessBuilder::publishTopic(store, opInfo, {{"fullName", opInfo["publish"]}});
+  }
+  else {
+    opInfo["publish"].const_list_for_each([&opInfo, &store](auto &topicInfo) {
+      if (topicInfo.isStringValue()) {
+        ProcessBuilder::publishTopic(store, opInfo, {{"fullName", topicInfo}});
+      } else {
+        ProcessBuilder::publishTopic(store, opInfo, topicInfo);
+      }
+    });
+    opInfo["subscribe"].const_object_for_each([&opInfo, &store](auto& argName, auto &argInfo) {
+      if (argInfo.isStringValue()) {
+        ProcessBuilder::subscribeTopic(store, opInfo, argName, {{"fullName", argInfo}});
+      } else {
+        argInfo.const_list_for_each([&opInfo, &store, &argName](auto &topicInfo) {
+          if (topicInfo.isStringValue()) {
+            ProcessBuilder::subscribeTopic(store, opInfo, argName, {{"fullName", topicInfo}});
+          } else {
+            ProcessBuilder::subscribeTopic(store, opInfo, argName, topicInfo);
+          }
+        });
+      }
+    });
+  }
+}
 
 void ProcessBuilder::preloadTopics(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("Process::_preloadTopics() entry");
   try {
     std::vector<Value> topicInfos;
     config["operations"]["precreate"].const_list_for_each([&store](auto &opInfo) {
-      if (opInfo["publish"].isStringValue()) {
-        ProcessBuilder::publishTopic(store, opInfo, {{"fullName", opInfo["publish"]}});
-      }
-      else {
-        opInfo["publish"].const_list_for_each([&opInfo, &store](auto &topicInfo) {
-          if (topicInfo.isStringValue()) {
-            ProcessBuilder::publishTopic(store, opInfo, {{"fullName", topicInfo}});
-          } else {
-            ProcessBuilder::publishTopic(store, opInfo, topicInfo);
-          }
-        });
-      }
-      opInfo["subscribe"].const_object_for_each([&opInfo, &store](auto& argName, auto &argInfo) {
-        if (argInfo.isStringValue()) {
-          ProcessBuilder::subscribeTopic(store, opInfo, argName, {{"fullName", argInfo}});
-        } else {
-          argInfo.const_list_for_each([&opInfo, &store, &argName](auto &topicInfo) {
-            if (topicInfo.isStringValue()) {
-              ProcessBuilder::subscribeTopic(store, opInfo, argName, {{"fullName", topicInfo}});
-            } else {
-              ProcessBuilder::subscribeTopic(store, opInfo, argName, topicInfo);
-            }
-          });
-        }
+      _parseOperationInfo(store, opInfo);
+    });
+
+    config.at("containers").at("precreate").const_list_for_each([&store](auto &conInfo) {
+      conInfo.at("operations").const_list_for_each([&conInfo, &store](auto &opInfo_) {
+        Value opInfo = opInfo_;
+        opInfo["fullName"] = conInfo["fullName"].stringValue() + ":" + opInfo_["instanceName"].stringValue();
+        _parseOperationInfo(store, opInfo);
       });
     });
 

@@ -21,7 +21,7 @@ namespace nerikiri {
          * @param typeName: オペレーションのtypeName
          */
         ContainerOperationFactory(const std::string& typeName, const Value& defaultArgs, std::function<Value(T&,const Value&)> func)
-          : ContainerOperationFactoryAPI("ContainerOperationFactory", naming::join(nerikiri::demangle(typeid(T).name()), typeName), naming::join(nerikiri::demangle(typeid(T).name()), typeName)), function_(func)
+          : ContainerOperationFactoryAPI("ContainerOperationFactory", naming::join(nerikiri::demangle(typeid(T).name()), typeName), naming::join(nerikiri::demangle(typeid(T).name()), typeName)), defaultArgs_(defaultArgs), function_(func)
         {}
 
         /**

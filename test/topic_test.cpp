@@ -11,6 +11,97 @@ using namespace nerikiri;
 #include "operations_for_tests.h"
 
 SCENARIO( "Topic Operation test", "[operaion]" ) {
+
+
+
+ GIVEN("Topic connectoin with Container operations") {
+    const std::string jsonStr = R"(
+{
+  "logger": { "logLevel": "WARN" },
+  "operations": {
+        "precreate": [
+            {
+                "typeName": "zero",
+                "fullName": "zero0.ope",
+                "publish": "topic01"
+            }
+        ]
+  },
+  "containers": {
+    "precreate": [
+          {
+            "typeName": "MyStruct",
+            "fullName": "MyStruct0.ctn",
+            "operations": [
+              {
+                "typeName": "set",
+                "instanceName": "set0.ope",
+                "subscribe": {"value": "topic01"}
+              },
+              {
+                "typeName": "inc",
+                "instanceName": "inc0.ope"
+              },
+              {
+                "typeName": "get",
+                "instanceName": "get0.ope"
+              }
+            ]
+          }
+      ]
+   }
+}
+)";
+
+    auto p = nerikiri::process("container_test", jsonStr);
+      
+    p->loadContainerFactory(cf0);
+    p->loadContainerOperationFactory(copf0);
+    p->loadContainerOperationFactory(copf1);
+    p->loadContainerOperationFactory(copf2);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
+    p->loadOperationFactory(opf3);
+    p->loadOperationFactory(opf4);
+    p->startAsync();
+
+    auto zero0ope = p->store()->get<OperationAPI>("zero0.ope");
+    REQUIRE(zero0ope->isNull() == false);
+
+    auto c = p->store()->get<ContainerAPI>("MyStruct0.ctn");
+    REQUIRE(c->isNull() == false);
+
+    auto getter = p->store()->get<OperationAPI>("MyStruct0.ctn:get0.ope");
+    REQUIRE(getter->isNull() != true);
+    auto setter = p->store()->get<OperationAPI>("MyStruct0.ctn:set0.ope");
+    REQUIRE(setter->isNull() != true);
+
+    THEN("Container is stanby") {
+      REQUIRE(c->instanceName() == "MyStruct0.ctn");
+
+      AND_THEN("Container operation test") {
+        auto v = getter->call({});
+        REQUIRE(Value::intValue(v) == 0);
+        auto v2 = setter->call({{"value", 11}});
+        auto v3 = getter->call({});
+        REQUIRE(Value::intValue(v3) == 11);
+      }
+
+      AND_THEN("Connected") {
+        auto v2 = setter->call({{"value", 11}});
+        auto v3 = getter->call({});
+        REQUIRE(Value::intValue(v3) == 11);
+
+        zero0ope->execute();
+
+        auto v4 = getter->call({});
+        REQUIRE(Value::intValue(v4) == 0);
+      }
+    }
+
+  }    
+
+
   GIVEN("Topic connection with the simplest description") {
     const std::string jsonStr = R"(
 {
@@ -128,10 +219,10 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
     }
   }
 
-  GIVEN("Operation basic behavior") {
+  GIVEN("Topic connection with Operation") {
     const std::string jsonStr = R"(
 {
-    "logger": { "logLevel": "OFF" },
+    "logger": { "logLevel": "WARN" },
 
     "operations": {
         "precreate": [
