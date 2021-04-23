@@ -225,7 +225,7 @@ namespace nerikiri {
         virtual std::shared_ptr<const ECBrokerAPI> ec() const { return ec_; }
         
     public:
-        BrokerProxyAPI(const std::string& typeName, const std::string& fullName, 
+        BrokerProxyAPI(const std::string& className, const std::string& typeName, const std::string& fullName, 
             const std::shared_ptr<StoreBrokerAPI>& store, 
             const std::shared_ptr<FactoryBrokerAPI>& factory, 
             const std::shared_ptr<OperationBrokerAPI>& operation, 
@@ -237,7 +237,7 @@ namespace nerikiri {
             //const std::shared_ptr<FSMBrokerAPI>& fsm,
             //const std::shared_ptr<FSMStateBrokerAPI>& fsmState,
             //const std::shared_ptr<OperationInletBrokerAPI>& fsmStateInlet
-        ): Object(typeName, fullName), store_(store), factory_(factory), operation_(operation), operationOutlet_(operationOutlet),
+        ): Object(className, typeName, fullName), store_(store), factory_(factory), operation_(operation), operationOutlet_(operationOutlet),
            operationInlet_(operationInlet), connection_(connection), container_(container), ec_(ec)
            //fsm_(fsm), fsmState_(fsmState), fsmStateInlet_(fsmStateInlet) 
         {}

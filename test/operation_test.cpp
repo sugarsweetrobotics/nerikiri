@@ -31,9 +31,9 @@ SCENARIO( "Operation test", "[operaion]" ) {
 }  
 )";
     auto p = nerikiri::process("operation_test", jsonStr);
-      p->loadOperationFactory(opf1);
-      p->loadOperationFactory(opf2);
-      p->loadOperationFactory(opf3);
+    p->loadOperationFactory(opf1);
+    p->loadOperationFactory(opf2);
+    p->loadOperationFactory(opf3);
     p->startAsync();
 
     auto op = p->store()->get<OperationAPI>("zero0.ope");

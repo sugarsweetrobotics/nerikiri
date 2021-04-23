@@ -71,19 +71,22 @@ Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<Oper
 
 
 
-Value ConnectionBuilder::createInletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& inletBroker) {
+Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& inletBroker) {
+  logger::trace("ConnectionBuilder::createInletConnection(connectionInfo={})", connectionInfo);
   auto value = connectionInfo.at("inlet").at("operation");
-  //auto inletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-  return inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
+  auto outlet = store.outletProxy(connectionInfo["outlet"]);
+  return store.get<OperationAPI>(Value::string(value["fullName"]))->inlet(Value::string(connectionInfo.at("inlet").at("name")))->connectTo(outlet, connectionInfo);
+  //return inletBroker->operationInlet()->addConnection(Value::string(value.at("fullName")), Value::string(connectionInfo.at("inlet").at("name")), connectionInfo);
 }
 
 
-Value ConnectionBuilder::createOutletConnection(ProcessStore* store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& outletBroker/*=nullptr*/) {
-  //auto outlet = ProxyBuilder::operationProxy(connectionInfo.at("outlet").at("operation"), store)->outlet();
- 
+Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& outletBroker/*=nullptr*/) {
+  logger::trace("ConnectionBuilder::createOutletConnection(connectionInfo={})", connectionInfo);
   auto value = connectionInfo.at("outlet").at("operation");
-  //auto outletBroker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-  return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
+  auto inlet = store.inletProxy(connectionInfo["inlet"]);
+  // outlet側から接続を構築する．失敗したらエラーを返す
+  return store.get<OperationAPI>(Value::string(value["fullName"]))->outlet()->connectTo(inlet, connectionInfo);
+  //if (outletConnectionResult.isError()) return outletConnectionResult;
 }
 
 /**

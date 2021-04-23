@@ -346,8 +346,8 @@ public:
     }
 };
 */
-CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& typeName, const std::string& fullName) : 
-  CRUDBrokerProxyAPI(), BrokerProxyAPI(typeName, fullName, 
+CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& className, const std::string& typeName, const std::string& fullName) : 
+  CRUDBrokerProxyAPI(), BrokerProxyAPI(className, typeName, fullName, 
     std::make_shared<CRUDStoreBroker>(this),
     std::make_shared<CRUDFactoryBroker>(this),
     std::make_shared<CRUDOperationBroker>(this),

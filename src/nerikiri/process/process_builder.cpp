@@ -20,11 +20,6 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
   config.at("operations").at("precreate").const_list_for_each([&store](auto& oinfo) {
     auto opInfo = ObjectFactory::createOperation(store, oinfo);
     auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
-    if (oinfo.hasKey("publish")) {
-      oinfo.at("publish").const_list_for_each([&op, &store](auto pubTopicInfo) {
-        // publishTopic(store, op, pubTopicInfo);
-      });
-    }
   });
 
   logger::trace("Process::_preloadOperations() exit");
@@ -52,17 +47,8 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
     if (info.hasKey("operations")) {
       info.at("operations").const_list_for_each([&store, &cInfo](auto value) {
         auto opInfo = ObjectFactory::createContainerOperation(store, cInfo, value);
-
         auto c = store.get<ContainerAPI>(Value::string(cInfo.at("fullName")));
         auto cop = c->operation(Value::string(opInfo.at("fullName")));
-        if (value.hasKey("publish")) {
-          value.at("publish").const_list_for_each([&store, &cop](auto topicInfo) {
-            //ConnectionBuilder::createConnection(cop, ObjectFactory::createTopic(store, topicInfo));
-            // TODO: クリエイトコネクション
-          });
-        }
-        if (value.hasKey("subscribe")) {
-        }
       });
     }
   });

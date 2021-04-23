@@ -75,10 +75,11 @@ std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string&
 }
 
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
-    auto fullName = Value::string(info.at("fullName"));
+  auto fullName = Value::string(info.at("fullName"));
   auto f = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
     if (f) return f.value();
   if (info.hasKey("broker")) {
+    logger::trace("ProcessStore::operationProxy({}) called. Creating OperationProxy....", info);
     return ProxyBuilder::operationProxy(info, this);
   }
   return get<OperationAPI>(Value::string(info.at("fullName")));
@@ -92,23 +93,17 @@ std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
     });
     if (p) return p.value(); // storeにあればそれを使います．
     // なければ作ります．
-    auto operationProxy = this->operationProxy(info["operation"]);
+    logger::trace("ProcessStore::inletProxy({}) called. Creating InletProxy....", info);
+    auto operationInfo = info["operation"];
+    operationInfo["broker"] = info["broker"];
+    auto operationProxy = this->operationProxy(operationInfo);
+    if (operationProxy->isNull()) {
+      logger::error("ProcessStore::inletProxy({}) failed. Created OperationProxy(info={}) is null.", info, operationInfo);
+    }
     auto ip = operationProxy->inlet(Value::string(info["name"]));
     addInletProxy(ip);
     return ip;
-  } /* else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
-    auto p = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inletProxies(), [&info](auto p) {
-      // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
-      return p->info()["ownerFullName"] == info["fsm"]["fullName"] && p->name() == Value::string(info["name"]);
-    });
-    if (p) return p.value(); // storeにあればそれを使います．
-
-    // なければ作ります．
-    auto fsmProxy = this->fsmProxy(info["fsm"]);
-    auto ip = fsmProxy->fsmState(Value::string(info["name"]))->inlet();
-    addInletProxy(ip);
-    return ip;
-  } */
+  } 
     
   logger::error("ProcessStore::inletProxy({}) failed. Invalid Info format", info);
   return nullOperationInlet();  
@@ -123,7 +118,11 @@ std::shared_ptr<OperationOutletAPI> ProcessStore::outletProxy(const Value& info)
     if (p) return p.value(); // storeにあればそれを使います．
 
     // なければ作ります．
+    logger::trace("ProcessStore::outletProxy({}) called. Creating OutletProxy....", info);
     auto operationProxy = this->operationProxy(info["operation"]);
+    if (operationProxy->isNull()) {
+      logger::error("ProcessStore::outletProxy({}) failed. Created OperationProxy(info={}) is null.", info, info["operation"]);
+    }
     auto op = operationProxy->outlet();
     addOutletProxy(op);
     return op;

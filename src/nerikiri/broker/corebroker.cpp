@@ -229,9 +229,9 @@ public:
         } else if (className == "connection") {
             return ConnectionBuilder::createOperationConnection(*process_->store(), info);
         } else if (className == "outletConnection") {
-            return ConnectionBuilder::createOutletConnection(process_->store(), info, process_->coreBroker());
+            return ConnectionBuilder::createOutletConnection(*process_->store(), info, process_->coreBroker());
         } else if (className == "inletConnection") {
-            return ConnectionBuilder::createInletConnection(process_->store(), info, process_->coreBroker());
+            return ConnectionBuilder::createInletConnection(*process_->store(), info, process_->coreBroker());
         }
         return Value::error(logger::error("CoreBroker::createObject({}, {}) failed. Class name is invalid.", className, info));
     }
@@ -395,6 +395,7 @@ public:
   }
 
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
+        logger::trace("CoreOperationOutletBroker({})::{}({}) called.", fullName, __func__, conInfo);
         // TODO:
         std::shared_ptr<nerikiri::OperationInletAPI> inlet = nullptr;
         if (conInfo["inlet"].hasKey("fsm")) {
@@ -726,7 +727,7 @@ public:
  * 
  */
 CoreBroker::CoreBroker(ProcessAPI* process, const std::string& fullName): 
-BrokerProxyAPI("CoreBroker", fullName,
+BrokerProxyAPI("CoreBroker", "CoreBroker", fullName,
     std::make_shared<CoreStoreBroker>(process),
     std::make_shared<CoreFactoryBroker>(process), 
     std::make_shared<CoreOperationBroker>(process),

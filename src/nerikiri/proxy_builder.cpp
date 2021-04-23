@@ -11,17 +11,28 @@ using namespace nerikiri;
 
 
 std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+    logger::trace("ProxyBuilder::operationProxy({}, store) called", value);
     auto fullName = Value::string(value.at("fullName"));
     std::string brokerTypeName = "CoreBroker";
     if (!value.hasKey("broker")) {
+        logger::trace("ProxyBuilder::operationProxy({}) ... Please check. Passed argument 'value' has no 'broker' key object.");
         return store->get<OperationAPI>(fullName);
     }
     auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+    if (broker->isNull()) {
+        logger::error("ProxyBuilder::operationProxy() failed. Broker({}) can not be created.", value["broker"]);
+        return nullOperation();
+    }
     auto op = nerikiri::operationProxy(broker, fullName);
+    if (op->isNull()) {
+        logger::error("ProxyBuilder::operationProxy() failed. OperationProxy({}) with broker({}) can not be created.", fullName, value["broker"]);
+        return nullOperation();
+    }
     Value info = store->addOperationProxy(op);
     if (info.isError()) {
         return store->operationProxy(value);
     }
+    logger::trace("ProxyBuilder::operationProxy() exit");
     return op;
 }
 
@@ -46,6 +57,7 @@ std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, ner
 
 
 std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, const std::shared_ptr<BrokerProxyAPI>& broker) {
+    logger::trace("ProxyBuilder::operationProxy({}, broker='{}') called", value, broker->typeName());
     return nerikiri::operationProxy(broker, Value::string(value.at("fullName")));
 }
 

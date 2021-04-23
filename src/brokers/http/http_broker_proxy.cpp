@@ -39,15 +39,24 @@ class HTTPBrokerProxy : public nerikiri::CRUDBrokerProxyBase {
 private:
   nerikiri::HttpClient_ptr client_;
   const std::string endpoint_;
+  const std::string address_;
+  const int64_t port_;
 public:
-  HTTPBrokerProxy(const std::string& addr, const int64_t port) : CRUDBrokerProxyBase("HTTPBrokerProxy", "httpBrokerProxy"), 
-    client_(nerikiri::client(addr, port)), endpoint_("httpBroker")
+  HTTPBrokerProxy(const std::string& addr, const int64_t port) : CRUDBrokerProxyBase("HTTPBrokerProxy", "HTTPBroker", "httpBrokerProxy"), 
+    client_(nerikiri::client(addr, port)), endpoint_("httpBroker"), address_(addr), port_(port)
   {
     client_->setTimeout(0.5);
   }
 
   virtual ~HTTPBrokerProxy() {}
 
+public:
+  virtual Value info() const override {
+    auto i = nerikiri::CRUDBrokerProxyBase::info();
+    i["port"] = port_;
+    i["host"] = address_;
+    return i;
+  }
 private:
   Value toValue(nerikiri::Response&& res) const {  
     if (res.status != 200) {

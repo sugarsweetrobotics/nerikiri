@@ -278,7 +278,7 @@ class NullBrokerProxy : public BrokerProxyAPI
 private:
 
 public:
-    NullBrokerProxy(): BrokerProxyAPI("NullBrokerProxy", "null", 
+    NullBrokerProxy(): BrokerProxyAPI("NullBrokerProxy", "NullBroker", "null", 
         std::make_shared<NullStoreBroker>(),
         std::make_shared<NullFactoryBroker>(),
         std::make_shared<NullOperationBroker>(),

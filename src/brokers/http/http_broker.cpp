@@ -33,11 +33,11 @@ private:
   std::string endpoint_;
 public:
 
-  HTTPBroker(const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")): 
-    CRUDBrokerBase("HTTPBroker", "httpBroker"),
+  HTTPBroker(const std::string& fullName, const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")):
+    CRUDBrokerBase("HTTPBroker", fullName),
     server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir), endpoint_("httpBroker")
   {
-    logger::trace("HTTPBroker::HTTPBroker()");
+    logger::trace("HTTPBroker::HTTPBroker(fullName={}, address={}, port={}) called", fullName, address, port);
 
     if (!value.isError()) {
       value.const_object_for_each([this](auto k, auto v) {
@@ -104,7 +104,7 @@ public:
 
   virtual bool run(ProcessAPI* process) override {
     std::unique_lock<std::mutex> lock(mutex_);
-    logger::trace("HTTPBroker::run()");
+    logger::info("HTTPBroker::run() called");
 
     server_->baseDirectory(baseDirectory_);
 
@@ -136,22 +136,22 @@ public:
     */
 
     server_->response(endpoint, "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      logger::trace("HTTPBroker::Response(method='GET', url='{}')", req.matches[1]);
       return toResponse(onRead(process, req.matches[1], headerParam(req), this->hostInfo(req)));
     });
 
     server_->response(endpoint, "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      logger::trace("HTTPBroker::Response(method='POST', url='{}')", req.matches[1]);
       return toResponse(onCreate(process, req.matches[1], toValue(req.body)));
     });
 
     server_->response(endpoint, "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      logger::trace("HTTPBroker::Response(method='DELETE', url='{}')", req.matches[1]);
       return toResponse(onDelete(process, req.matches[1]));
     });
 
     server_->response(endpoint, "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
-      logger::trace("HTTPBroker::Response(url='{}')", req.matches[1]);
+      logger::trace("HTTPBroker::Response(method='PUT', url='{}')", req.matches[1]);
       return toResponse(onUpdate(process, req.matches[1], toValue(req.body)));
     });
 
@@ -159,6 +159,7 @@ public:
     for(auto [k, v] : route_) {
       const std::string path = v;
       server_->response(k, "GET", "text/html", [this, path, &process](const nerikiri::Request& req) -> nerikiri::Response {
+        logger::trace("HTTPBroker::Response(method='GET', url='{}')", req.matches[1]);
         const std::string relpath = req.matches[1];
         return nerikiri::Response(path + relpath);
       });
@@ -181,24 +182,49 @@ public:
 
 
 std::shared_ptr<BrokerAPI> HTTPBrokerFactory::create(const Value& value) {
-  if (!value.hasKey("host")) {
-    logger::error("HTTPBrokerFactory::create({}) failed. There is no 'host' value.", value);
-    return std::make_shared<NullBroker>();
-  }
-  if (!value.hasKey("port")) {
-    logger::error("HTTPBrokerFactory::create({}) failed. There is no 'port' value.", value);
-    return std::make_shared<NullBroker>();
-  }
+    if (!value.hasKey("host")) {
+        logger::error("HTTPBrokerFactory::create({}) failed. There is no 'host' value.", value);
+        return std::make_shared<NullBroker>();
+    }
+    if (!value["host"].isStringValue()) {
+      logger::error("HTTPBrokerFactory::create({}) failed. 'host' option must be string value. Failed.", value);
+      return std::make_shared<NullBroker>();
+    }
+    
+    if (!value.hasKey("fullName")) {
+        logger::error("HTTPBrokerFactory::create({}) failed. There is no 'fullName' value.", value);
+        return std::make_shared<NullBroker>();
+    }
+    if (!value["fullName"].isStringValue()) {
+      logger::error("HTTPBrokerFactory::create({}) failed. 'fullName' option must be string value. Failed.", value);
+      return std::make_shared<NullBroker>();
+    }
+    
+    if (!value.hasKey("port")) {
+        logger::error("HTTPBrokerFactory::create({}) failed. There is no 'port' value.", value);
+            return std::make_shared<NullBroker>();
+    }
+    if (!value["port"].isIntValue()) {
+      logger::error("HTTPBrokerFactory::create({}) failed. 'port' option must be integer value. Failed.", value);
+      return std::make_shared<NullBroker>();
+    }
 
-  std::string base_dir = ".";
-  if (value.hasKey("baseDir")) {
-    base_dir = value.at("baseDir").stringValue();
-  }
-  Value routeInfo = {};
-  if (value.hasKey("route")) {
-    routeInfo = value.at("route");
-  }
-  return std::make_shared<HTTPBroker>(value.at("host").stringValue(), value.at("port").intValue(), base_dir, routeInfo);
+    std::string base_dir = ".";
+    if (value.hasKey("baseDir")) {
+        if (!value["baseDir"].isStringValue()) {
+            logger::warn("HTTPBrokerFactory::create({}) warning. 'baseDir' option must be string value. Ignored.", value);
+        }
+        base_dir = value.at("baseDir").stringValue();
+    }
+    Value routeInfo = {};
+    if (value.hasKey("route")) {
+        if (!value["route"].isStringValue()) {
+            logger::warn("HTTPBrokerFactory::create({}) warning. 'route' option must be string value. Ignored.", value);
+        }
+        routeInfo = value.at("route");
+    }
+    
+    return std::make_shared<HTTPBroker>(value["fullName"].stringValue(), value["host"].stringValue(), value["port"].intValue(), base_dir, routeInfo);
 }
 
 

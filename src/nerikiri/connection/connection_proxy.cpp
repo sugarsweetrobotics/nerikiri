@@ -12,9 +12,19 @@ private:
     std::shared_ptr<OperationInletAPI> inletProxy_;
     const std::shared_ptr<BrokerProxyAPI> broker_;
 public:
-    ConnectionProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const Value& info, const ConnectionType type) : ConnectionAPI ("ConnectionProxy", "ConnectionProxy", type), broker_(broker), info_(info) {}
+    ConnectionProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const Value& info, const ConnectionType type) 
+    : ConnectionAPI ("ConnectionProxy", "ConnectionProxy", type), broker_(broker), info_(info) {}
     virtual ~ConnectionProxy() {}
 public:
+
+    virtual Value info() const override {
+        return info_;
+    }
+
+    virtual std::string fullName() const override {
+        //logger::trace("ConnectionProxy::fullName() = {}", info_);
+        return info_["fullName"].stringValue();
+    }
 
     virtual std::shared_ptr<OperationInletAPI> inlet() const {
         // TODO: ここでinletの実体を返さないとdeleteできない．

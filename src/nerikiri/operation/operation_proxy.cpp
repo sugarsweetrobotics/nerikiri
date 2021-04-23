@@ -59,8 +59,16 @@ public:
     }
     */
 
+    virtual Value fullInfo() const override {
+        auto i = broker_->operationInlet()->info(fullName_, name_);
+        i["broker"] = broker_->fullInfo();
+        return i;
+    }
+
     virtual Value info() const override {
-        return broker_->operationInlet()->info(fullName_, name_);
+        auto i = broker_->operationInlet()->info(fullName_, name_);
+        i["broker"] = broker_->fullInfo();
+        return i;
     }
 
     virtual bool isUpdated() const override {
@@ -155,7 +163,9 @@ public:
     }
 
     Value info() const override {
-        return broker_->operationOutlet()->info(fullName_);
+        auto i = broker_->operationOutlet()->info(fullName_);
+        i["broker"] = broker_->fullInfo();
+        return i;
     }
 
 };
@@ -180,6 +190,7 @@ private:
 public:
     OperationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
         fullName_(fullName), outlet_(std::make_shared<OperationOutletProxy>(this, broker, fullName)), inlets_ready_(false) {
+        
         inletInfos_ = broker_->operation()->inlets(fullName_);
         if (inletInfos_.isError()) {
             return;
@@ -198,11 +209,17 @@ public:
     }
 public:
     virtual Value info() const override {
-        return broker_->store()->getObjectInfo("operation", fullName_);
+        logger::trace("OperationProxy::info() called");
+        auto i = broker_->store()->getObjectInfo("operation", fullName_);
+        i["broker"] = broker_->fullInfo();
+        logger::trace("OperationProxy::info() exited");
+        return i;
     }
 
     virtual Value fullInfo() const override {
-        return broker_->operation()->fullInfo(fullName_);
+        auto i = broker_->operation()->fullInfo(fullName_);
+        i["broker"] = broker_->fullInfo();
+        return i;
     }
 
     virtual Value call(const Value& value) override {
@@ -256,5 +273,6 @@ Value OperationInletProxy::executeOwner() {
 
 
 std::shared_ptr<OperationAPI> nerikiri::operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
+    logger::trace("nerikiri::operationProxy(broker='{}', fullName='{}') called.", broker->typeName(), fullName);
     return std::make_shared<OperationProxy>(broker, fullName);
 }
