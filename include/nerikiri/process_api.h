@@ -31,7 +31,7 @@ namespace nerikiri {
         virtual void stop() = 0;    
         virtual bool isRunning() = 0;
 
-        virtual std::shared_ptr<BrokerProxyAPI> coreBroker() = 0;
+        // virtual std::shared_ptr<BrokerProxyAPI> coreBroker() = 0;
 
         virtual ProcessStore* store() = 0;
         virtual const ProcessStore* store() const = 0;

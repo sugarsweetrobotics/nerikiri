@@ -14,7 +14,6 @@ namespace nerikiri {
         virtual ~BrokerFactoryAPI() {}
 
     public:
-        //virtual std::string brokerTypeFullName() const = 0;
         virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
 
         virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) = 0;

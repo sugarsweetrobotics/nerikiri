@@ -51,10 +51,11 @@ public:
      * @param operation
      */
     virtual Value addOperation(const std::shared_ptr<OperationAPI>& _operation) override { 
-        logger::trace("ContainerBase::addOperation({})", _operation ? _operation->fullName() : "nullptr");
+        logger::trace("ContainerBase::addOperation({}) called", _operation ? _operation->fullName() : "nullptr");
         if (!_operation) {
             return Value::error(logger::error("ContainerBase({})::addOperation(op) failed. Passed ContainerOperation is nullptr.", fullName()));
         }
+        logger::info("Container is adding a ContainerOperation(fullName={}, typeName=)", _operation->fullName(), _operation->typeName());
         operations_.push_back((_operation)); 
         return _operation->info();;
     }

@@ -33,15 +33,15 @@ std::string loadFullName(const std::vector<T>& ts, const Value& info) {
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createOperation({}) called", (info));
   auto fullName = loadFullName(store.list<OperationAPI>(), info);
-  logger::info("ObjectFactory::createOperation({})", info);
+  logger::info("ObjectFactory is creating an Operation({})", info);
   auto op = store.get<OperationFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
   return store.add<OperationAPI>(op);
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
-  logger::trace("ObjectFactory::createContainer({})", (info));
+  logger::trace("ObjectFactory::createContainer({}) called", (info));
   auto fullName = loadFullName(store.list<ContainerAPI>(), info);
-  logger::info("ObjectFactory::createContainer({})", info);
+  logger::info("ObjectFactory is creating a Container({})", info);
   auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
   auto v = store.add<ContainerAPI>(c);
   if (v.isError()) return v;
@@ -59,7 +59,7 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
 }
 
 Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& cInfo, const Value& info) {
-  logger::trace("ObjectFactory::createContainerOperation({})", info);
+  logger::trace("ObjectFactory::createContainerOperation({}) called", info);
 //  const std::string& containerFullName = Value::string(info.at("containerFullName"));
   auto containerFullName = Value::string(cInfo.at("fullName"));
   //auto fullName = Value::string(info.at("fullName)"));
@@ -70,8 +70,9 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
   if (cof->isNull()) {
     return Value::error(logger::error("ObjectFactory::createContainerOperation failed. ContainerOperationFactory({}) is null.", typeName));
   }
+
+  logger::info("ObjectFactory is creating a ContainerOperation({})", info);
   auto cop =cof->create(fullName);
-  
   cop->setOwner(container);
   return container->addOperation(cop);
 

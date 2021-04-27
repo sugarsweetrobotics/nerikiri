@@ -11,13 +11,9 @@ public:
     virtual ~NullBrokerFactory() {}
 
 public:
-    //virtual std::string brokerTypeFullName() const override {
-    //    return "NullBroker";
-    //}
-
     virtual std::shared_ptr<BrokerAPI> create(const Value& param) override {
         logger::error("NullBrokerFactory::{}() failed. Object is null.", __func__, param);
-        return std::make_shared<NullBroker>();
+        return nullBroker();
     }
 
     virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) override {

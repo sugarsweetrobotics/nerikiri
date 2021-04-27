@@ -104,7 +104,7 @@ SCENARIO( "Process test", "[process]" ) {
     REQUIRE(zero0proxy->isNull() == false);
 
     WHEN("Connect with API") {
-      auto ret = nerikiri::connect(*p1->store(), "con0", inc0proxy->inlet("arg01"), zero0proxy->outlet());
+      auto ret = nerikiri::connect(p1->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0proxy->inlet("arg01"), zero0proxy->outlet());
       REQUIRE(ret.isError() == false);
 
       auto con1 = zero0ope->outlet()->connections();

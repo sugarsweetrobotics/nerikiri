@@ -71,7 +71,7 @@ Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<Oper
 
 
 
-Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& inletBroker) {
+Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value& connectionInfo, BrokerProxyAPI* inletBroker) {
   logger::trace("ConnectionBuilder::createInletConnection(connectionInfo={})", connectionInfo);
   auto value = connectionInfo.at("inlet").at("operation");
   auto outlet = store.outletProxy(connectionInfo["outlet"]);
@@ -80,7 +80,7 @@ Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value&
 }
 
 
-Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value& connectionInfo, const std::shared_ptr<BrokerProxyAPI>& outletBroker/*=nullptr*/) {
+Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value& connectionInfo, BrokerProxyAPI* outletBroker/*=nullptr*/) {
   logger::trace("ConnectionBuilder::createOutletConnection(connectionInfo={})", connectionInfo);
   auto value = connectionInfo.at("outlet").at("operation");
   auto inlet = store.inletProxy(connectionInfo["inlet"]);
@@ -93,8 +93,9 @@ Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value
  * 接続の作成
  */
 Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
+  logger::trace("ConnectionBuilder::createOperationConnection() called");
   Value connectionInfo = connectionInfo_;
-  logger::trace("ConnectionBuilder::createConnection({}) called", connectionInfo);
+  //logger::trace("ConnectionBuilder::createConnection({}) called", connectionInfo);
   auto inlet = store.inletProxy(connectionInfo["inlet"]);
   auto outlet = store.outletProxy(connectionInfo["outlet"]);
   // 同一ルートがあるかどうか確認．あるならエラー
@@ -130,6 +131,7 @@ Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Va
     }
     return inletConnectionResult;
   }
+  logger::trace("ConnectionBuilder::createOperationConnection() exit");
   return inletConnectionResult;
 }
 

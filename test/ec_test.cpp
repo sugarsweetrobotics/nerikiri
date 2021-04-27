@@ -93,7 +93,7 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
                 }
               }}
             };
-            auto v = p->coreBroker()->connection()->createConnection(conInfo);
+            auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(conInfo);
 
             REQUIRE(startOp->outlet()->connections().size() == 1);
             

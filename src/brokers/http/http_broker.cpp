@@ -34,7 +34,7 @@ private:
 public:
 
   HTTPBroker(const std::string& fullName, const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")):
-    CRUDBrokerBase("HTTPBroker", fullName),
+    CRUDBrokerBase("HTTPBroker", "HTTPBroker", fullName),
     server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir), endpoint_("httpBroker")
   {
     logger::trace("HTTPBroker::HTTPBroker(fullName={}, address={}, port={}) called", fullName, address, port);
@@ -102,7 +102,7 @@ public:
     return info;
   }
 
-  virtual bool run(ProcessAPI* process) override {
+  virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override {
     std::unique_lock<std::mutex> lock(mutex_);
     logger::info("HTTPBroker::run() called");
 
@@ -110,62 +110,38 @@ public:
 
 
     const std::string endpoint = "/" + endpoint_ + "/(.*)";
-    /*
-    server_->response("/broker/info/", "GET", "text/html", [this](const nerikiri::Request& req) -> nerikiri::Response {
-      return response([this, &req](){
-        auto _info = info();
-        for(auto h : req.headers) {
-          if (h.first == "Host") {
-            std::string host = h.second;
-            int64_t port = 80;
-            std::string addr = h.second;
-            size_t pos = host.find(":");
-            if (pos != std::string::npos) {
-              auto port_str = host.substr(pos+1);
-                port = atoi(port_str.c_str());
-                addr = host.substr(0, pos);
-            }
 
-            _info["host"] = Value(addr);
-            _info["port"] = Value(port);
-          }
-        }
-        return _info;
-        });
-    });
-    */
-
-    server_->response(endpoint, "GET", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "GET", "text/html", [this, coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(method='GET', url='{}')", req.matches[1]);
-      return toResponse(onRead(process, req.matches[1], headerParam(req), this->hostInfo(req)));
+      return toResponse(onRead(coreBroker, req.matches[1], headerParam(req), this->hostInfo(req)));
     });
 
-    server_->response(endpoint, "POST", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "POST", "text/html", [this, coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(method='POST', url='{}')", req.matches[1]);
-      return toResponse(onCreate(process, req.matches[1], toValue(req.body)));
+      return toResponse(onCreate(coreBroker, req.matches[1], toValue(req.body)));
     });
 
-    server_->response(endpoint, "DELETE", "text/html", [this, process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "DELETE", "text/html", [this, coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(method='DELETE', url='{}')", req.matches[1]);
-      return toResponse(onDelete(process, req.matches[1]));
+      return toResponse(onDelete(coreBroker, req.matches[1]));
     });
 
-    server_->response(endpoint, "PUT", "text/html", [this, &process](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "PUT", "text/html", [this, &coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
       logger::trace("HTTPBroker::Response(method='PUT', url='{}')", req.matches[1]);
-      return toResponse(onUpdate(process, req.matches[1], toValue(req.body)));
+      return toResponse(onUpdate(coreBroker, req.matches[1], toValue(req.body)));
     });
 
 
     for(auto [k, v] : route_) {
       const std::string path = v;
-      server_->response(k, "GET", "text/html", [this, path, &process](const nerikiri::Request& req) -> nerikiri::Response {
+      server_->response(k, "GET", "text/html", [this, path, &coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
         logger::trace("HTTPBroker::Response(method='GET', url='{}')", req.matches[1]);
         const std::string relpath = req.matches[1];
         return nerikiri::Response(path + relpath);
       });
     }
 
-    CRUDBrokerBase::run(process);
+    CRUDBrokerBase::run(coreBroker);
     server_->runBackground(port_);
     cond_.wait(lock);
     
@@ -173,8 +149,8 @@ public:
     return true;
   }
 
-  virtual void shutdown(ProcessAPI* proc) override {
-    CRUDBrokerBase::shutdown(proc);
+  virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override {
+    CRUDBrokerBase::shutdown(coreBroker);
     cond_.notify_all();
   }
 
@@ -184,29 +160,29 @@ public:
 std::shared_ptr<BrokerAPI> HTTPBrokerFactory::create(const Value& value) {
     if (!value.hasKey("host")) {
         logger::error("HTTPBrokerFactory::create({}) failed. There is no 'host' value.", value);
-        return std::make_shared<NullBroker>();
+        return nullBroker();
     }
     if (!value["host"].isStringValue()) {
       logger::error("HTTPBrokerFactory::create({}) failed. 'host' option must be string value. Failed.", value);
-      return std::make_shared<NullBroker>();
+      return nullBroker();
     }
     
     if (!value.hasKey("fullName")) {
         logger::error("HTTPBrokerFactory::create({}) failed. There is no 'fullName' value.", value);
-        return std::make_shared<NullBroker>();
+        return nullBroker();
     }
     if (!value["fullName"].isStringValue()) {
       logger::error("HTTPBrokerFactory::create({}) failed. 'fullName' option must be string value. Failed.", value);
-      return std::make_shared<NullBroker>();
+      return nullBroker();
     }
     
     if (!value.hasKey("port")) {
         logger::error("HTTPBrokerFactory::create({}) failed. There is no 'port' value.", value);
-            return std::make_shared<NullBroker>();
+            return nullBroker();
     }
     if (!value["port"].isIntValue()) {
       logger::error("HTTPBrokerFactory::create({}) failed. 'port' option must be integer value. Failed.", value);
-      return std::make_shared<NullBroker>();
+      return nullBroker();
     }
 
     std::string base_dir = ".";

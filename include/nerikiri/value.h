@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <sstream>
 #include <map>
 //#include <optional>
 #include <functional>
@@ -323,24 +324,41 @@ namespace nerikiri {
     Value& emplace_back(Value&& val);
      
     Value& operator[](const std::string& key) {
+      if (typecode_ == VALUE_TYPE_OBJECT) {
+        return (*objectvalue_)[key];
+      }
+      _clear();
       typecode_ = VALUE_TYPE_OBJECT;
+      objectvalue_ = new std::map<std::string, Value>();
       return (*objectvalue_)[key];
     }
 
     const Value& operator[](const std::string& key) const {
       if (!isObjectValue()) {
-        throw ValueTypeError("Value::operator[std::string] failed. Value is not Object type.");
+        std::stringstream ss;
+        ss << "Value::operator[string key='" << key << "'] failed. Value is not Object type but "<< this->getTypeString() << ". Value is " << str(*this);
+        static auto v = Value::error(ss.str());
+        return v;
+      //  throw ValueTypeError("Value::operator[std::string] failed. Value is not Object type.");
       }
       return (*objectvalue_)[key];
     }
 
     Value& operator[](const int key) {
       if (!isListValue()) {
-        throw ValueTypeError("Value::operator[int] failed. Value is not List type.");
+        std::stringstream ss;
+        ss << "Value::operator[int key='" << key << "'] failed. Value is not List type but "<< this->getTypeString() << ". Value is " << str(*this);
+        static auto v = Value::error(ss.str());
+        return v;
+        //throw ValueTypeError("Value::operator[int] failed. Value is not List type.");
         //return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But value is " + getTypeString() + " type.");
       }
       if ((*listvalue_).size() <= key) {
-        throw ValueTypeError("Value::operator[int] failed. Value is List type but size range error.");
+        std::stringstream ss;
+        ss << "Value::operator[int key='" << key << "'] failed. Index out of range error. Value is " << str(*this);
+        static auto v = Value::error(ss.str());
+        return v;
+        // throw ValueTypeError("Value::operator[int] failed. Value is List type but size range error.");
         //return Value::error("Value::operator[](" + std::to_string(key) + ") failed. Program tried to access as list access. But list out of bounds.");
       } 
       return (*listvalue_)[key];

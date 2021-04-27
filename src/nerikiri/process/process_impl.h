@@ -74,7 +74,7 @@ namespace nerikiri {
     
     void setExecutablePath(const std::string& path) { path_ = path; }
 
-    virtual std::shared_ptr<BrokerProxyAPI> coreBroker() override { return coreBroker_; }
+    // virtual std::shared_ptr<BrokerProxyAPI> coreBroker() override { return coreBroker_; }
     
     Value getCallbacks() const;
 

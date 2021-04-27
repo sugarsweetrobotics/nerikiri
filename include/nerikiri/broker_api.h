@@ -27,45 +27,20 @@ namespace nerikiri {
     public:
 
     public:
-        BrokerAPI(const std::string& typeName, const std::string& fullName): Object(typeName, fullName) {}
+        BrokerAPI(const std::string& className, const std::string& typeName, const std::string& fullName): Object(className, typeName, fullName) {}
         
         virtual ~BrokerAPI() {}        
         virtual Value fullInfo() const = 0;
 
 
-        virtual bool run(ProcessAPI* process) = 0;
+        virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) = 0;
         
-        virtual void shutdown(ProcessAPI* process) = 0;
+        virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) = 0;
 
         virtual bool isRunning() const = 0;
     };
 
-    class NullBroker : public BrokerAPI {
-    private:
-    public:
 
-    public:
-        NullBroker(): BrokerAPI("NullBroker", "null") {}
-        virtual ~NullBroker() {}
-
-        virtual Value fullInfo() const override {
-            return Value::error(logger::error("NullBroker::{}() failed. Object is null.", __func__));
-        }
-
-        virtual bool run(ProcessAPI* process) override {
-            logger::error("NullBroker::{}() failed. Object is null.", __func__);
-            return false;
-        }
-        
-        virtual void shutdown(ProcessAPI* process) override {
-            logger::error("NullBroker::{}() failed. Object is null.", __func__);
-            return;
-        }
-
-        virtual bool isRunning() const override {
-            logger::error("NullBroker::{}() failed. Object is null.", __func__);
-            return false;
-        }
-    };
+    std::shared_ptr<BrokerAPI> nullBroker();
 
 }

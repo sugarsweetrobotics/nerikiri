@@ -60,7 +60,7 @@ SCENARIO( "Connection test", "[ec]" ) {
     }
 
     THEN("Connect with API") {
-      auto ret = nerikiri::connect(*p->store(), "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
+      auto ret = nerikiri::connect(p->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
       REQUIRE(ret.isError() == false);
 
       auto con1 = zero0ope->outlet()->connections();
@@ -127,7 +127,7 @@ SCENARIO( "Connection test", "[ec]" ) {
 
 
       THEN("Operation can connected") {
-        auto v = p->coreBroker()->connection()->createConnection(con0Info);
+        auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(con0Info);
         REQUIRE(v.isError() == false);
 
         auto con1 = zero0ope->outlet()->connections();
@@ -145,7 +145,7 @@ SCENARIO( "Connection test", "[ec]" ) {
         REQUIRE(Value::intValue(inc0ope->execute(), -1) == 1);
 
         AND_THEN("Exact Same Connection in inlet side fails") {
-          auto v = p->coreBroker()->connection()->createConnection(con0Info);
+          auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(con0Info);
           REQUIRE(v.isError() == true);
         }
 
@@ -175,7 +175,7 @@ SCENARIO( "Connection test", "[ec]" ) {
           };
 
           
-          auto v = p->coreBroker()->connection()->createConnection(con0Info2);
+          auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(con0Info2);
           REQUIRE(v.isError() == true);
 
 
@@ -188,19 +188,19 @@ SCENARIO( "Connection test", "[ec]" ) {
         }
 
         AND_THEN("Double connection") {
-          auto v = p->coreBroker()->connection()->createConnection(con1Info);
+          auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(con1Info);
           REQUIRE(v.isError() == false);
         }
 
         AND_THEN("Same Connection but different name fails") {
           con0Info["name"] = "con3";
-          auto v = p->coreBroker()->connection()->createConnection(con0Info);
+          auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(con0Info);
           REQUIRE(v.isError() == true);
         }
 
         AND_THEN("Different Connection but same name fails") {
           con1Info["name"] = "con0";
-          auto v = p->coreBroker()->connection()->createConnection(con1Info);
+          auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(con1Info);
           REQUIRE(v.isError() == true);
         }
       }

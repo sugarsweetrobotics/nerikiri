@@ -119,73 +119,9 @@ namespace nerikiri {
     };
 
 
-
-
-    class ECBrokerAPI {
-    public:
-        virtual ~ECBrokerAPI() {}
-
-        virtual Value activateStart(const std::string& fullName) const = 0;
-
-        virtual Value activateStop(const std::string& fullName) = 0;
-        /*
-        virtual Value getECBoundOperations(const std::string& fullName) const = 0;
-
-        virtual Value bindOperationToEC(const std::string& ecFullName, const Value& objectInfo) = 0;
-
-        virtual Value unbindOperationFromEC(const std::string& ecFullName, const Value& objectInfo) = 0;
-        */
-    };
-
-/*
-    class FSMBrokerAPI {
-    public:
-        virtual ~FSMBrokerAPI() {}
-
-    public:
-        virtual Value currentFSMState(const std::string& fsmFullName) = 0;
-
-        virtual Value setFSMState(const std::string& fsmFullName, const std::string& stateFullName) = 0;
-
-        virtual Value fsmStates(const std::string& fsmFullName) = 0;
-
-        virtual Value fsmState(const std::string& fsmFullName, const std::string& stateName) = 0;
-    };
-
-    class FSMStateBrokerAPI {
-    public:
-        virtual ~FSMStateBrokerAPI() {}
-
-    public:
-        virtual Value isActive(const std::string& fsmName, const std::string& stateName) = 0;
-
-        virtual Value activate(const std::string& fsmName, const std::string& stateName) = 0;
-
-        virtual Value deactivate(const std::string& fsmName, const std::string& stateName) = 0;
-
-        virtual Value isTransitable(const std::string& fsmName, const std::string& stateName,const std::string& targetStateName) const = 0;
-
-        virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) = 0;
-
-        virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info, const Value& arg) = 0;
-
-        virtual Value bindECState(const std::string& fsmName, const std::string& stateName, const Value& info) = 0;
-
-        virtual Value unbindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) = 0;
-
-        virtual Value unbindECState(const std::string& fsmName, const std::string& stateName, const Value& info) = 0;
-
-        virtual Value boundOperations(const std::string& fsmName, const std::string& stateName) = 0;
-
-        virtual Value boundECStates(const std::string& fsmName, const std::string& stateName) = 0;
-
-        virtual Value inlet(const std::string& fsmName, const std::string& stateName) = 0;
-    };
-*/
     class BrokerProxyAPI : public Object
     {
     private:
-
         const std::shared_ptr<StoreBrokerAPI> store_;
         const std::shared_ptr<FactoryBrokerAPI> factory_;
         const std::shared_ptr<OperationBrokerAPI> operation_;
@@ -193,10 +129,6 @@ namespace nerikiri {
         const std::shared_ptr<OperationInletBrokerAPI> operationInlet_;
         const std::shared_ptr<ConnectionBrokerAPI> connection_;
         const std::shared_ptr<ContainerBrokerAPI> container_;
-        //const std::shared_ptr<FSMBrokerAPI> fsm_;
-        //const std::shared_ptr<FSMStateBrokerAPI> fsmState_;
-        const std::shared_ptr<OperationInletBrokerAPI> fsmStateInlet_;
-        const std::shared_ptr<ECBrokerAPI> ec_;
 
     public:
 
@@ -215,14 +147,6 @@ namespace nerikiri {
         virtual std::shared_ptr<const ConnectionBrokerAPI>  connection() const { return connection_; }
         virtual std::shared_ptr<ContainerBrokerAPI> container() { return container_; }
         virtual std::shared_ptr<const ContainerBrokerAPI>  container() const { return container_; }
-        //virtual std::shared_ptr<FSMBrokerAPI> fsm() { return fsm_; }
-        //virtual std::shared_ptr<const FSMBrokerAPI> fsm() const { return fsm_; }
-        //virtual std::shared_ptr<FSMStateBrokerAPI> fsmState() { return fsmState_; }
-        //virtual std::shared_ptr<const FSMStateBrokerAPI> fsmState() const { return fsmState_; }
-        //virtual std::shared_ptr<OperationInletBrokerAPI> fsmStateInlet() { return fsmStateInlet_; }
-        //virtual std::shared_ptr<const OperationInletBrokerAPI> fsmStateInlet() const { return fsmStateInlet_; }
-        virtual std::shared_ptr<ECBrokerAPI> ec() { return ec_; }
-        virtual std::shared_ptr<const ECBrokerAPI> ec() const { return ec_; }
         
     public:
         BrokerProxyAPI(const std::string& className, const std::string& typeName, const std::string& fullName, 
@@ -232,14 +156,9 @@ namespace nerikiri {
             const std::shared_ptr<OperationOutletBrokerAPI>& operationOutlet, 
             const std::shared_ptr<OperationInletBrokerAPI>& operationInlet, 
             const std::shared_ptr<ConnectionBrokerAPI>& connection,
-            const std::shared_ptr<ContainerBrokerAPI>& container,
-            const std::shared_ptr<ECBrokerAPI>& ec
-            //const std::shared_ptr<FSMBrokerAPI>& fsm,
-            //const std::shared_ptr<FSMStateBrokerAPI>& fsmState,
-            //const std::shared_ptr<OperationInletBrokerAPI>& fsmStateInlet
+            const std::shared_ptr<ContainerBrokerAPI>& container
         ): Object(className, typeName, fullName), store_(store), factory_(factory), operation_(operation), operationOutlet_(operationOutlet),
-           operationInlet_(operationInlet), connection_(connection), container_(container), ec_(ec)
-           //fsm_(fsm), fsmState_(fsmState), fsmStateInlet_(fsmStateInlet) 
+           operationInlet_(operationInlet), connection_(connection), container_(container)
         {}
 
         BrokerProxyAPI(const Value& info) : Object(info) {}

@@ -146,6 +146,15 @@
 
         },
         {
+            "name": "Debug topic_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/topic_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
             "name": "clang++ - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",

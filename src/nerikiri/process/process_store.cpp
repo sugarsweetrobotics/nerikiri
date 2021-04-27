@@ -64,7 +64,7 @@ std::shared_ptr<BrokerAPI> ProcessStore::broker(const std::string& fullName) con
   auto f = nerikiri::functional::find<std::shared_ptr<BrokerAPI>>(brokers(), [&fullName](auto b) { return b->fullName() == fullName; });
   if (f) return f.value();;
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
-  return std::make_shared<NullBroker>();
+  return nullBroker();
 }
 
 std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string& fullName) const {
@@ -95,7 +95,9 @@ std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
     // なければ作ります．
     logger::trace("ProcessStore::inletProxy({}) called. Creating InletProxy....", info);
     auto operationInfo = info["operation"];
-    operationInfo["broker"] = info["broker"];
+    if (info.hasKey("broker")) {
+      operationInfo["broker"] = info["broker"];
+    }
     auto operationProxy = this->operationProxy(operationInfo);
     if (operationProxy->isNull()) {
       logger::error("ProcessStore::inletProxy({}) failed. Created OperationProxy(info={}) is null.", info, operationInfo);

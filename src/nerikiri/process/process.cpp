@@ -205,63 +205,84 @@ void Process::parseConfigFile(const std::string& filepath) {
  * OperationFactoryの読み込み
  */
 void Process::_preloadOperations() {
+  logger::trace("Process::_preloadOperations() called.");
   ProcessBuilder::preloadOperations(store_, config_, path_);
+  logger::trace("Process::_preloadOperations() exit.");
 }
 
 
 void Process::_preloadContainers() {
+  logger::trace("Process::_preloadContainers() called.");
   ProcessBuilder::preloadContainers(store_, config_, path_);
+  logger::trace("Process::_preloadContainers() exit.");
 }
 
 void Process::_preloadFSMs() {
+  logger::trace("Process::_preloadFSMs() called.");
   ProcessBuilder::preloadFSMs(store_, config_, path_);
+  logger::trace("Process::_preloadFSMs() exit.");
 }
 
 void Process::_preloadExecutionContexts() {
+  logger::trace("Process::_preloadExecutionContexts() called.");
   ProcessBuilder::preloadExecutionContexts(store_, config_, path_);
+  logger::trace("Process::_preloadExecutionContexts() exit.");
 }
 
 void Process::_preStartFSMs() {
+  logger::trace("Process::_preStartFSMs() called.");
   ProcessBuilder::preStartFSMs(store_, config_, path_);
+  logger::trace("Process::_preStartFSMs() exit.");
 }
 
 void Process::_preStartExecutionContexts() {
+  logger::trace("Process::_preStartExecutionContexts() called.");
   ProcessBuilder::preStartExecutionContexts(store_, config_, path_);
+  logger::trace("Process::_preStartExecutionContexts() exit.");
 }
 
 void Process::_preloadBrokers() {
+  logger::trace("Process::_preloadBrokers() called.");
   ProcessBuilder::preloadBrokers(store_, config_, path_);
+  logger::trace("Process::_preloadBrokers() exit.");
 }
 
 void Process::_preloadConnections() {
+  logger::trace("Process::_preloadConnections() called.");
   ProcessBuilder::preloadConnections(store_, config_, path_);
+  logger::trace("Process::_preloadConnections() exit.");
 }
 
 
 void Process::_preloadTopics() {
-  ProcessBuilder::preloadTopics(store_, config_, path_);
+  logger::trace("Process::_preloadTopics() called.");
+  ProcessBuilder::preloadTopics(store_, coreBroker_, config_, path_);
+  logger::trace("Process::_preloadTopics() exit.");
 }
 
 void Process::_preloadCallbacksOnStarted() {
+  logger::trace("Process::_preloadCallbacksOnStarted() called.");
   ProcessBuilder::preloadCallbacksOnStarted(store_, config_, path_);
+  logger::trace("Process::_preloadCallbacksOnStarted() called.");
 }
 
 
 Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
-  logger::trace("Process::addSystemEditor()");
+  logger::trace("Process::addSystemEditor() called");
   systemEditors_.emplace(se->name(), std::forward<SystemEditor_ptr>(se));
+  logger::trace("Process::addSystemEditor() exit");
   return *this;
 }
 
-static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, Process* process, std::shared_ptr<BrokerAPI> brk) {
+static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, const std::shared_ptr<BrokerProxyAPI>& broker, std::shared_ptr<BrokerAPI> brk) {
   logger::trace("Creating a thread for broker {}", brk->info());
   std::promise<bool> prms;
   auto ftr = prms.get_future();
-  threads.emplace_back(std::make_shared<std::thread>([brk, process](std::promise<bool> p) {
+  threads.emplace_back(std::make_shared<std::thread>([brk, broker](std::promise<bool> p) {
 				     std::stringstream ss;
 				     ss << std::this_thread::get_id();
 				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->info()));
-				     p.set_value(brk->run(process));
+				     p.set_value(brk->run(broker));
 				     logger::trace("A thread {} finished", ss.str());
 				   }, std::move(prms)));
   return ftr;
@@ -295,7 +316,7 @@ void Process::startAsync() {
   _preStartFSMs();
   _preStartExecutionContexts();
   auto broker_futures = nerikiri::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store()->brokers(), [this](auto& brk) -> std::future<bool> {
-								   return start_broker(this->threads_, this, brk);
+								   return start_broker(this->threads_, coreBroker_, brk);
 								 });
   
   auto systemEditor_futures = nerikiri::map<std::future<bool>, std::string, SystemEditor_ptr>(this->systemEditors_,
@@ -338,7 +359,7 @@ void Process::stop() {
   logger::trace("Process::shutdown()");
   setObjectState("stopping");
   nerikiri::foreach<std::shared_ptr<BrokerAPI> >(store_.brokers_, [this](auto& brk) {
-			      brk->shutdown(this);
+			      brk->shutdown(coreBroker_);
 			    });
   nerikiri::foreach<std::string, SystemEditor_ptr>(systemEditors_, [this](auto& name, auto& se) {
 				      se->shutdown();

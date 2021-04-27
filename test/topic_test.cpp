@@ -12,7 +12,7 @@ using namespace nerikiri;
 
 SCENARIO( "Topic Operation test", "[operaion]" ) {
 
-
+#define DEBUG_LEVEL TRACE
 
  GIVEN("Topic connectoin with Container operations") {
     const std::string jsonStr = R"(
@@ -53,8 +53,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 }
 )";
 
-    auto p = nerikiri::process("container_test", jsonStr);
-      
+    auto p = nerikiri::process("topic_and_container_test", jsonStr);
     p->loadContainerFactory(cf0);
     p->loadContainerOperationFactory(copf0);
     p->loadContainerOperationFactory(copf1);
@@ -105,7 +104,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
   GIVEN("Topic connection with the simplest description") {
     const std::string jsonStr = R"(
 {
-    "logger": { "logLevel": "OFF" },
+    "logger": { "logLevel": "WARN" },
 
     "operations": {
         "precreate": [
@@ -127,7 +126,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 )";
 
 
-    auto p = nerikiri::process("operation_test", jsonStr);
+    auto p = nerikiri::process("topic_connection_test", jsonStr);
     p->loadOperationFactory(opf1);
     p->loadOperationFactory(opf2);
     p->loadOperationFactory(opf3);
@@ -164,7 +163,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
   GIVEN("Topic connection with simple description") {
     const std::string jsonStr = R"(
 {
-    "logger": { "logLevel": "OFF" },
+    "logger": { "logLevel": "WARN" },
 
     "operations": {
         "precreate": [
@@ -186,7 +185,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 )";
 
 
-    auto p = nerikiri::process("operation_test", jsonStr);
+    auto p = nerikiri::process("topic_basic_test", jsonStr);
     p->loadOperationFactory(opf1);
     p->loadOperationFactory(opf2);
     p->loadOperationFactory(opf3);
@@ -245,7 +244,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 }  
 )";
 
-    auto p = nerikiri::process("operation_test", jsonStr);
+    auto p = nerikiri::process("topic_connection_test", jsonStr);
     p->loadOperationFactory(opf1);
     p->loadOperationFactory(opf2);
     p->loadOperationFactory(opf3);

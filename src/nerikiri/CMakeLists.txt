@@ -3,12 +3,13 @@ set(nk_base_srcs
 base64.c
 
 # broker/brokerfactory.cpp
+broker/broker_api.cpp
 broker/broker_proxy_api.cpp
 broker/broker_factory_api.cpp
 broker/crud_broker.cpp
 broker/crud_broker_base.cpp
 broker/crud_broker_proxy_base.cpp
-broker/corebroker.cpp
+broker/core_broker.cpp
 
 container/container_base.cpp
 container/container_operation_base.cpp

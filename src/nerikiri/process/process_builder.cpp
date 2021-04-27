@@ -10,7 +10,7 @@ using namespace nerikiri;
  * OperationFactoryの読み込み
  */
 void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadOperations() entry");
+  logger::trace("ProcessBuilder::preloadOperations() entry");
   config.at("operations").at("preload").const_list_for_each([&store, &config, &path](auto value) {
     ModuleLoader::loadOperationFactory(store, {"./", path}, {
       {"typeName", value}, {"load_paths", config.at("operations").at("load_paths")}
@@ -22,12 +22,12 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
     auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
   });
 
-  logger::trace("Process::_preloadOperations() exit");
+  logger::trace("ProcessBuilder::preloadOperations() exit");
 }
 
 
 void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadContainers() entry");
+  logger::trace("ProcessBuilder::preloadContainers() entry");
   config.at("containers").at("preload").const_list_for_each([&store, &config, &path](auto value) {
     ModuleLoader::loadContainerFactory(store, {"./", path}, {
       {"typeName", value.at("typeName")}, {"load_paths", config.at("containers").at("load_paths")}
@@ -53,7 +53,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
     }
   });
 
-  logger::trace("Process::_preloadContainers() exit");
+  logger::trace("ProcessBuilder::preloadContainers() exit");
 }
 
 void ProcessBuilder::preloadFSMs(ProcessStore& store, const Value& config, const std::string& path) {
@@ -147,7 +147,7 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
 }
 
 void ProcessBuilder::preStartExecutionContexts(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preStartExecutionContexts() entry");
+  logger::trace("ProcessBuilder::preStartExecutionContexts() entry");
   nerikiri::getListValue(config, "ecs.start").const_list_for_each([&store](const auto& value) {
    // store.executionContext(value.stringValue())->start();
    // TODO: ここでECをスタートする
@@ -158,11 +158,11 @@ void ProcessBuilder::preStartExecutionContexts(ProcessStore& store, const Value&
       this->store()->getExecutionContext(value.stringValue())->start();
     });
     */
-  logger::trace("Process::_preStartExecutionContexts() exit");
+  logger::trace("ProcessBuilder::preStartExecutionContexts() exit");
 }
 
 void ProcessBuilder::preloadBrokers(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadBrokers() entry");
+  logger::trace("ProcessBuilder::preloadBrokers() entry");
   config.at("brokers").at("preload").const_list_for_each([&store, &config, &path](auto& value) {
     ModuleLoader::loadBrokerFactory(store, {"./", path}, {
       {"typeName", value}, {"load_paths", config.at("brokers").at("load_paths")}
@@ -172,31 +172,31 @@ void ProcessBuilder::preloadBrokers(ProcessStore& store, const Value& config, co
     ObjectFactory::createBroker(store, value);
   });
 
-  logger::trace("Process::_preloadBrokers() exit");
+  logger::trace("ProcessBuilder::preloadBrokers() exit");
 }
 
 void ProcessBuilder::preloadConnections(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadConnections() entry");
+  logger::trace("ProcessBuilder::_preloadConnections() entry");
   config.at("connections").const_list_for_each([&store](auto& value) {
    // ConnectionBuilder::registerProviderConnection(store(), value);
    /// TODO: ここではStateBindも来るかもしれない
     ConnectionBuilder::createOperationConnection(store, value);
   });
-  logger::trace("Process::_preloadConnections() exit");
+  logger::trace("ProcessBuilder::_preloadConnections() exit");
 }
 
-Value ProcessBuilder::publishTopic(ProcessStore& store, const Value& opInfo, const Value& topicInfo) {
+Value ProcessBuilder::publishTopic(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ProcessBuilder::publishTopic({}, {})", opInfo, topicInfo);
   auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
   auto topicInfo2 = ObjectFactory::createTopic(store, topicInfo);
   auto topic = store.get<TopicAPI>(Value::string(topicInfo.at("fullName")));
   auto connectionName = "topic_connection_" + Value::string(topicInfo.at("fullName")) + "_" + op->fullName();
 
-  return nerikiri::connect(store, connectionName, topic->inlet("data"), op->outlet());
+  return nerikiri::connect(broker, connectionName, topic->inlet("data"), op->outlet());
 }
 
 
-Value ProcessBuilder::subscribeTopic(ProcessStore& store, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
+Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
   logger::trace("ProcessBuilder::subscribeTopic({}, {}, {})", opInfo, argName, topicInfo);
   
   auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
@@ -204,30 +204,30 @@ Value ProcessBuilder::subscribeTopic(ProcessStore& store, const Value& opInfo, c
   auto topic = store.get<TopicAPI>(Value::string(topicInfo.at("fullName")));
   auto connectionName = "topic_connection_" + op->fullName() + "_" + argName + "_" + Value::string(topicInfo.at("fullName"));
 
-  return nerikiri::connect(store, connectionName, op->inlet(argName), topic->outlet());
+  return nerikiri::connect(broker, connectionName, op->inlet(argName), topic->outlet());
 }
 
-void _parseOperationInfo(ProcessStore& store, const Value& opInfo) {
+void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo) {
   if (opInfo["publish"].isStringValue()) {
-    ProcessBuilder::publishTopic(store, opInfo, {{"fullName", opInfo["publish"]}});
+    ProcessBuilder::publishTopic(store, broker, opInfo, {{"fullName", opInfo["publish"]}});
   }
   else {
-    opInfo["publish"].const_list_for_each([&opInfo, &store](auto &topicInfo) {
+    opInfo["publish"].const_list_for_each([&opInfo, &store, &broker](auto &topicInfo) {
       if (topicInfo.isStringValue()) {
-        ProcessBuilder::publishTopic(store, opInfo, {{"fullName", topicInfo}});
+        ProcessBuilder::publishTopic(store, broker, opInfo, {{"fullName", topicInfo}});
       } else {
-        ProcessBuilder::publishTopic(store, opInfo, topicInfo);
+        ProcessBuilder::publishTopic(store, broker, opInfo, topicInfo);
       }
     });
-    opInfo["subscribe"].const_object_for_each([&opInfo, &store](auto& argName, auto &argInfo) {
+    opInfo["subscribe"].const_object_for_each([&opInfo, &store, &broker](auto& argName, auto &argInfo) {
       if (argInfo.isStringValue()) {
-        ProcessBuilder::subscribeTopic(store, opInfo, argName, {{"fullName", argInfo}});
+        ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, {{"fullName", argInfo}});
       } else {
-        argInfo.const_list_for_each([&opInfo, &store, &argName](auto &topicInfo) {
+        argInfo.const_list_for_each([&opInfo, &store, &broker, &argName](auto &topicInfo) {
           if (topicInfo.isStringValue()) {
-            ProcessBuilder::subscribeTopic(store, opInfo, argName, {{"fullName", topicInfo}});
+            ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, {{"fullName", topicInfo}});
           } else {
-            ProcessBuilder::subscribeTopic(store, opInfo, argName, topicInfo);
+            ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, topicInfo);
           }
         });
       }
@@ -235,19 +235,23 @@ void _parseOperationInfo(ProcessStore& store, const Value& opInfo) {
   }
 }
 
-void ProcessBuilder::preloadTopics(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadTopics() entry");
+void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& config, const std::string& path) {
+  logger::trace("ProcessBuilder::preloadTopics() entry");
   try {
     std::vector<Value> topicInfos;
-    config["operations"]["precreate"].const_list_for_each([&store](auto &opInfo) {
-      _parseOperationInfo(store, opInfo);
+    config["operations"]["precreate"].const_list_for_each([&store, &broker](auto &opInfo) {
+      _parseOperationInfo(store, broker, opInfo);
     });
 
-    config.at("containers").at("precreate").const_list_for_each([&store](auto &conInfo) {
-      conInfo.at("operations").const_list_for_each([&conInfo, &store](auto &opInfo_) {
+    config.at("containers").at("precreate").const_list_for_each([&store, &broker](auto &conInfo) {
+      conInfo.at("operations").const_list_for_each([&conInfo, &store, &broker](auto &opInfo_) {
         Value opInfo = opInfo_;
-        opInfo["fullName"] = conInfo["fullName"].stringValue() + ":" + opInfo_["instanceName"].stringValue();
-        _parseOperationInfo(store, opInfo);
+        auto fullNameValue = conInfo["fullName"];
+        if (!conInfo["fullName"].isStringValue()) {
+          fullNameValue = conInfo["instanceName"];
+        }
+        opInfo["fullName"] = fullNameValue.stringValue() + ":" + opInfo_["instanceName"].stringValue();
+        _parseOperationInfo(store, broker, opInfo);
       });
     });
 
@@ -303,9 +307,9 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const Value& config, con
     **/
 
   } catch (nerikiri::ValueTypeError& e) {
-    logger::debug("Process::_preloadTopics(). ValueTypeException:{}", e.what());
+    logger::debug("ProcessBuilder::preloadTopics(). ValueTypeException:{}", e.what());
   } 
-  logger::trace("Process::_preloadTopics() exit");
+  logger::trace("ProcessBuilder::preloadTopics() exit");
 
 }
 

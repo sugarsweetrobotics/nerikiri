@@ -84,7 +84,7 @@ public:
     auto v = inlet_->put(value);
     if (this->isEvent()) {
       logger::trace(" - executing owner operation({})", inlet_->ownerFullName());
-      return inlet_->executeOwner(); //owner()->execute();
+      return inlet_->executeOwner();
     }
     return v;
   }
@@ -118,7 +118,7 @@ std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
-Value nerikiri::connect(ProcessStore& store, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
+Value nerikiri::connect(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
   logger::info("nerikiri::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
   std::string defaultConnectionType = "event";
   if (options.hasKey("event")) {
@@ -133,7 +133,8 @@ Value nerikiri::connect(ProcessStore& store, const std::string& name, const std:
     {"outlet", outlet->info()}
   };
 
-  return store.process()->coreBroker()->connection()->createConnection(con0Info);
+  return broker->connection()->createConnection(con0Info);
+  //return store.process()->coreBroker()->connection()->createConnection(con0Info);
 }
 
 class NullConnection : public ConnectionAPI {

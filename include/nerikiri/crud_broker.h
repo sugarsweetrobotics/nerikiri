@@ -11,21 +11,21 @@ namespace nerikiri {
     class CRUDBrokerBase : public BrokerAPI {
     private:
     public:
-        CRUDBrokerBase(const std::string& typeName, const std::string& fullName) : BrokerAPI(typeName, fullName) {}
+        CRUDBrokerBase(const std::string& className, const std::string& typeName, const std::string& fullName) : BrokerAPI(className, typeName, fullName) {}
         virtual ~CRUDBrokerBase() {}
 
     public:
 
-        virtual bool run(ProcessAPI* process) override;
+        virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override;
         
-        virtual void shutdown(ProcessAPI* process) override;
+        virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override;
 
         virtual bool isRunning() const override;
 
-        Value onCreate(ProcessAPI* process, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
-        Value onRead(ProcessAPI* process, const std::string& fullPath, const Value& ancillaryInfo={}, const Value& brokerInfo={}) ;
-        Value onUpdate(ProcessAPI* process, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
-        Value onDelete(ProcessAPI* process, const std::string& fullPath, const Value& ancillaryInfo={}) ;
+        Value onCreate(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
+        Value onRead(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& ancillaryInfo={}, const Value& brokerInfo={}) ;
+        Value onUpdate(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
+        Value onDelete(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& ancillaryInfo={}) ;
     };
 
 

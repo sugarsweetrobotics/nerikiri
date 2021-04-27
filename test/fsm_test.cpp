@@ -179,7 +179,8 @@ SCENARIO( "FSM test", "[ec]" ) {
             }
           }}
         };
-        auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        //auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(conInfo);
         REQUIRE(add_ope->outlet()->connections().size() == 1);
 
         AND_THEN("Run Operation and FSM State Change") {
@@ -224,7 +225,7 @@ SCENARIO( "FSM test", "[ec]" ) {
             }
           }}
         };
-        auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(conInfo);
         REQUIRE(act_run->outlet()->connections().size() == 1);
 
         AND_THEN("Activate State and Operation is called") {
@@ -270,7 +271,7 @@ SCENARIO( "FSM test", "[ec]" ) {
           }}
         };
         
-        auto v = p->coreBroker()->connection()->createConnection(conInfo);
+        auto v = p->store()->brokerFactory("CoreBroker")->createProxy("")->connection()->createConnection(conInfo);
         REQUIRE(act_run->outlet()->connections().size() == 1);
 
         AND_THEN("FSM State change and EC state change.") {

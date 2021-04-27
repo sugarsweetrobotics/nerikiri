@@ -172,107 +172,6 @@ public:
 
 };
 
-class NullECBroker : public ECBrokerAPI {
-public:
-    virtual ~NullECBroker() {}
-
-
-    virtual Value activateStart(const std::string& fullName) const override {
-        return Value::error(logger::error("NullECBroker::{}({}) called. Object is null.", __func__, fullName));
-    }
-
-    virtual Value activateStop(const std::string& fullName) override {
-        return Value::error(logger::error("NullECBroker::{}({}) called. Object is null.", __func__, fullName));
-    }
-};
-
-/*
-class NullFSMBroker : public FSMBrokerAPI {
-public:
-    virtual ~NullFSMBroker() {}
-
-    virtual Value currentFSMState(const std::string& fsmFullName) override {
-        return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
-    }
-
-    virtual Value setFSMState(const std::string& fsmFullName, const std::string& stateFullName) override {
-        return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
-    }
-
-    virtual Value fsmStates(const std::string& fsmFullName) override {
-        return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
-    }
-
-    virtual Value fsmState(const std::string& fsmFullName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMBroker::{}({}) called. Object is null.", __func__, fsmFullName));
-    }
-};
-*/
-/*
-class NullFSMStateBroker : public FSMStateBrokerAPI {
-public:
-    virtual ~NullFSMStateBroker() {}
-
-public:
-    virtual Value isActive(const std::string& fsmName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value activate(const std::string& fsmName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value deactivate(const std::string& fsmName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value isTransitable(const std::string& fsmName, const std::string& stateName,const std::string& targetStateName) const override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info, const Value& arg) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value bindECState(const std::string& fsmName, const std::string& stateName, const Value& info) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value unbindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value unbindECState(const std::string& fsmName, const std::string& stateName, const Value& info) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value boundOperations(const std::string& fsmName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value boundECStates(const std::string& fsmName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value inlet(const std::string& fsmName, const std::string& stateName) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-    
-    /*
-    virtual Value bindOperation(const std::string& fsmName, const std::string& stateName, const Value& info) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));
-    }
-
-    virtual Value addConnection(const std::string& fsmName, const std::string& stateName, const Value& c) override {
-        return Value::error(logger::error("NullFSMStateBroker::{}({}, {}) called. Object is null.", __func__, fsmName, stateName));       
-    }
-    
-};
-*/
 class NullBrokerProxy : public BrokerProxyAPI
 {
 private:
@@ -285,11 +184,7 @@ public:
         std::make_shared<NullOperationOutletBroker>(),
         std::make_shared<NullOperationInletBroker>(),
         std::make_shared<NullConnectionBroker>(),
-        std::make_shared<NullContainerBroker>(),
-        std::make_shared<NullECBroker>()
-        //std::make_shared<NullFSMBroker>(),
-        //std::make_shared<NullFSMStateBroker>(),
-        //std::make_shared<NullOperationInletBroker>()
+        std::make_shared<NullContainerBroker>()
     ) {}
     virtual ~NullBrokerProxy() {}
 public:
@@ -304,9 +199,6 @@ public:
         
     }
 };
-
-
-
 
 std::shared_ptr<BrokerProxyAPI> nerikiri::nullBrokerProxy() {
     return std::make_shared<NullBrokerProxy>();

@@ -109,7 +109,7 @@ namespace nerikiri {
 
     template<typename T>
     Value add(const std::shared_ptr<T>& obj) {
-      logger::trace("ProcessStore::add(objInfo={}) called", obj->info());
+      logger::trace("ProcessStore::add<{}>(objInfo={}) called",  obj->className(), obj->info());
       /// 同じ名前がないか確認
       if (!get<T>(obj->fullName())->isNull()) {
         return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is already contained.", obj->className(), obj->fullName()));
@@ -119,7 +119,7 @@ namespace nerikiri {
       }
       objects_.push_back(obj);
       //ref_list<T>().push_back(obj);
-      logger::trace("ProcessStore.add<{}>(obj->info()={}) succeeded.", obj->className(), obj->info());
+      logger::info("ProcessStore.add<{}>(obj->info()={}) succeeded.", obj->className(), obj->info());
       return obj->info();
     }
 
