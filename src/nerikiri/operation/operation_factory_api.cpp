@@ -5,12 +5,12 @@ using namespace nerikiri;
 
 class NullOperationFactory : public OperationFactoryAPI {
 public:
-NullOperationFactory() : OperationFactoryAPI("NullOperationFactory", "NullOperation", "null") {}
-virtual ~NullOperationFactory() {}
+    NullOperationFactory() : OperationFactoryAPI("NullOperationFactory", "NullOperation", "null") {}
+    virtual ~NullOperationFactory() {}
 
-virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName, const Value& info={}) const override {
-    return nullOperation();
-}
+    virtual std::shared_ptr<Object> create(const std::string& _fullName, const Value& info={}) const override {
+        return nullOperation();
+    }
 };
 
 std::shared_ptr<OperationFactoryAPI> nerikiri::nullOperationFactory() {

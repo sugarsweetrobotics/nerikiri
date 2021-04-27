@@ -34,7 +34,7 @@ Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createOperation({}) called", (info));
   auto fullName = loadFullName(store.list<OperationAPI>(), info);
   logger::info("ObjectFactory is creating an Operation({})", info);
-  auto op = store.get<OperationFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
+  auto op = store.get<OperationFactoryAPI>(Value::string(info.at("typeName")))->create<OperationAPI>(fullName);
   return store.add<OperationAPI>(op);
 }
 
@@ -42,7 +42,7 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainer({}) called", (info));
   auto fullName = loadFullName(store.list<ContainerAPI>(), info);
   logger::info("ObjectFactory is creating a Container({})", info);
-  auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create(fullName);
+  auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create<ContainerAPI>(fullName);
   auto v = store.add<ContainerAPI>(c);
   if (v.isError()) return v;
   /*

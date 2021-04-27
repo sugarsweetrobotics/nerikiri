@@ -3,15 +3,14 @@
 #include <nerikiri/operation_api.h>
 #include <nerikiri/operation.h>
 
+#include <nerikiri/factory_api.h>
 
 namespace nerikiri {
 
-  class OperationFactoryAPI : public Object {
+  class OperationFactoryAPI : public FactoryAPI {
   public:
-    OperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName): Object(className, typeName, fullName) {}
+    OperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName): FactoryAPI(className, typeName, fullName) {}
     virtual ~OperationFactoryAPI() {}
-
-    virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName, const Value& info={}) const = 0;
   };
 
   std::shared_ptr<OperationFactoryAPI> nullOperationFactory();

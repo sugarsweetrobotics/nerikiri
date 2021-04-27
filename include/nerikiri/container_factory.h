@@ -34,7 +34,7 @@ namespace nerikiri {
          * 
          * 
          */
-        virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName, const Value& info={}) override { 
+        virtual std::shared_ptr<Object> create(const std::string& fullName, const Value& info={}) const override { 
             logger::info("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
             auto c = std::make_shared<Container<T>>(this, fullName);
             c->getPoseOperation_ = std::make_shared<ContainerGetPoseOperation>();

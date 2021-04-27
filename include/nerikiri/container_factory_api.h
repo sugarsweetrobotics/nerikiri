@@ -1,16 +1,17 @@
 #pragma once
 
 #include <nerikiri/container_api.h>
+#include <nerikiri/factory_api.h>
 
 namespace nerikiri {
 
 
-    class ContainerFactoryAPI : public Object {
+    class ContainerFactoryAPI : public FactoryAPI {
     public:
-      ContainerFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
+      ContainerFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : FactoryAPI(className, typeName, fullName) {}
       virtual ~ContainerFactoryAPI() {}
 
-      virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName, const Value& info={}) = 0;
+      // virtual std::shared_ptr<ContainerAPI> create(const std::string& fullName, const Value& info={}) = 0;
     };
 
 

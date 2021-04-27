@@ -11,7 +11,7 @@ namespace nerikiri {
     class ContainerFactoryBase;
 
     //class OperationBase;
-    std::shared_ptr<ContainerAPI> containerBase(ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName);
+    std::shared_ptr<ContainerAPI> containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName);
 
     /**
      * Containerテンプレートクラス
@@ -28,7 +28,7 @@ namespace nerikiri {
         
 
     public:
-        Container(ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
+        Container(const ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
           ,_ptr(std::make_shared<T>())
         {}
         virtual ~Container() {}

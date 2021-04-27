@@ -20,7 +20,7 @@ using namespace nerikiri;
 class ContainerBase : public ContainerAPI {
 protected:
     std::vector<std::shared_ptr<OperationAPI>> operations_;
-    ContainerFactoryAPI* parentFactory_;
+    const ContainerFactoryAPI* parentFactory_;
 
     
     nerikiri::TimedPose3D pose_;
@@ -34,7 +34,7 @@ public:
     /**
      * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
      */
-    ContainerBase(ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) :  
+    ContainerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) :  
         ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory)
     {
     }
@@ -110,6 +110,6 @@ public:
 
 
 
-std::shared_ptr<ContainerAPI> nerikiri::containerBase(ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) {
+std::shared_ptr<ContainerAPI> nerikiri::containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) {
     return std::make_shared<ContainerBase>(parentFactory, className, typeName, fullName);
 }
