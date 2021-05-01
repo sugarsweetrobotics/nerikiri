@@ -1,6 +1,12 @@
 #include <nerikiri/operation_factory.h>
+#include <nerikiri/operation.h>
 
 using namespace nerikiri;
+
+
+namespace nerikiri {
+    std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
+}
 
 class OperationFactory : public OperationFactoryAPI{
 private:
@@ -9,7 +15,7 @@ private:
 public:
     OperationFactory(const Value& info, const std::function<Value(const Value&)>& func) : OperationFactory(Value::string(info.at("typeName")), info.at("defaultArg"), func){}
     OperationFactory(const std::string& typeName, const Value& defaultArgs, const std::function<Value(const Value&)>& func):
-        OperationFactoryAPI("OperationFactory", typeName, typeName), defaultArgs_(defaultArgs), function_(func) {}
+        OperationFactoryAPI(typeName, typeName), defaultArgs_(defaultArgs), function_(func) {}
     virtual ~OperationFactory() {}
 
     virtual std::shared_ptr<Object> create(const std::string& _fullName, const Value& info={}) const override {

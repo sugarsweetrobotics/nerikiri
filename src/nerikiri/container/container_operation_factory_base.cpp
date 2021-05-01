@@ -14,7 +14,7 @@ public:
       ContainerOperationFactoryAPI(className, nerikiri::naming::join(containerTypeFullName, operationTypeFullName), nerikiri::naming::join(containerTypeFullName, fullName)), /*containerTypeFullName_(containerTypeFullName), operationTypeFullName_(operationTypeFullName),*/ defaultArgs_(defaultArgs) {}
     virtual ~ContainerOperationFactoryBase() {}
 public:
-    virtual std::shared_ptr<OperationAPI> create(const std::string& _fullName, const Value& info=Value::error("")) const override {
+    virtual std::shared_ptr<Object> create(const std::string& _fullName, const Value& info=Value::error("")) const override {
         return nullOperation();
     }
 };

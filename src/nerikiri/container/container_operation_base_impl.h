@@ -7,7 +7,7 @@
 using namespace nerikiri;
 
 
-    
+    /*
 class ContainerOperationBase : public OperationBase {
 
 private:
@@ -22,3 +22,4 @@ public:
         return Value::error(logger::error("ContainerOperationBase::call called. But this function must be overwritten."));
     }
 };
+ */

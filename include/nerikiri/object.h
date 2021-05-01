@@ -7,10 +7,19 @@
 
 namespace nerikiri {
 
+  template<class Cls> 
+  inline static std::string nullClsNameString() { return std::string("Null") + Cls::classNameString; }
+  template<class Cls> 
+  inline const std::string factoryClsNameString() { return Cls::classNameString + std::string("Factory"); }
+  template<class Cls> 
+  inline const std::string nullFactoryClsNameString() { return std::string("Null") +  Cls::classNameString + "Factory"; }
+
 
   /**
    */
   class Object {
+  public:
+    static constexpr char classNameString[] = "Object"; 
   private:
     ClassName className_;
     TypeName  typeName_;
@@ -24,6 +33,9 @@ namespace nerikiri {
 
     Object(const Value& info);
 
+    /**
+     * create null object
+     */
     Object();
 
     virtual ~Object();
@@ -36,12 +48,12 @@ namespace nerikiri {
     
     virtual ClassName className() const { 
       return className_;
-      //return info_.at("className").stringValue();
     }
+
+    virtual void setClassName(const std::string& className) { className_ = className; }
 
     virtual TypeName typeName() const { 
       return typeName_;
-      //return info_.at("typeName").stringValue();
     }
 
     virtual void setTypeName(const std::string& typeName) { typeName_ = typeName; }
@@ -95,6 +107,14 @@ namespace nerikiri {
 
   };
 
+  //static char* const Object_className = "Object";
+
+    //static char const Object_className[7] = "Object";
   template<typename T>
   std::shared_ptr<T> nullObject();
+
+  inline std::shared_ptr<Object> createNullObject() { return std::make_shared<Object>(); }
+
+  template<>
+  inline std::shared_ptr<Object> nullObject() { return createNullObject(); }
 }

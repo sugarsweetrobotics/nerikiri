@@ -76,10 +76,10 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
     //if (c->ptr()->ec->isNull()) {
     //    return Value::error(logger::error("ObjectFactory::createEC failed. Failed to create ExecutionContext(typeName={})", Value::string(ecInfo.at("typeName"))));
     //}
-    auto getter = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:get_state")->create(container->fullName() + ":" + "get_state.ope");
+    auto getter = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:get_state")->create<OperationAPI>(container->fullName() + ":" + "get_state.ope");
     getter->setOwner(container);
 
-    auto stop_cop = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:activate_state")->create(container->fullName() + ":" +  "activate_state_" + "stopped" + ".ope", 
+    auto stop_cop = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:activate_state")->create<OperationAPI>(container->fullName() + ":" +  "activate_state_" + "stopped" + ".ope", 
       { {"defaultArg", 
             { {"stateName", "stopped"} }
       }});
@@ -88,7 +88,7 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
         return Value::error(logger::error("createEC failed. ContainerOperation can not be created"));
     }
 
-    auto start_cop = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:activate_state")->create(container->fullName() + ":" +  "activate_state_" + "started" + ".ope", 
+    auto start_cop = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:activate_state")->create<OperationAPI>(container->fullName() + ":" +  "activate_state_" + "started" + ".ope", 
       { {"defaultArg", 
             { {"stateName", "started"} }
       }});

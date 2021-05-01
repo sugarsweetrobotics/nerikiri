@@ -65,6 +65,7 @@ operation/operation_proxy.cpp
 operation/operation_inlet_base.cpp
 operation/operation_outlet_base.cpp
 object.cpp
+factory_api.cpp
 objectfactory.cpp
 
 proxy_builder.cpp

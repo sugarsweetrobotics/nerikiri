@@ -4,7 +4,7 @@
 #include <cmath>
 #include <sstream>
 
-
+#include <nerikiri/value.h>
 
 namespace nerikiri {
 
@@ -208,5 +208,51 @@ namespace nerikiri {
             asin(2.0 * (q0q2 - q1q3)),
             atan2(2.0 * (q1q2 + q0q3), q0q0 + q1q1 - q2q2 - q3q3)};
     }
+
+
+
+
+    inline TimedPose3D toTimedPose3D(const Value& value) {
+        return TimedPose3D{
+                    Time{Value::intValue(value["tm"]["sec"]), Value::intValue(value["tm"]["nsec"])},
+                    Pose3D{
+                        Point3D{
+                            value["pose"]["position"]["x"].doubleValue(),
+                            value["pose"]["position"]["y"].doubleValue(),
+                            value["pose"]["position"]["z"].doubleValue()
+                        },
+                        Orientation3D{
+                            value["pose"]["orientation"]["x"].doubleValue(),
+                            value["pose"]["orientation"]["y"].doubleValue(),
+                            value["pose"]["orientation"]["z"].doubleValue(),
+                            value["pose"]["orientation"]["w"].doubleValue()
+                        }
+                    }
+                };
+    }
+
+    inline Value toValue(const TimedPose3D& pose) {
+        return {
+                {"tm", {
+                    {"sec", (int64_t)pose.tm.sec},
+                    {"nsec", (int64_t)pose.tm.nsec}
+                }},
+                {"pose", {
+                    {"position", {
+                        {"x", pose.pose.position.x},
+                        {"y", pose.pose.position.y},
+                        {"z", pose.pose.position.z}
+                    }},
+                    {"orientation", {
+                        {"x", pose.pose.orientation.x},
+                        {"y", pose.pose.orientation.y},
+                        {"z", pose.pose.orientation.z},
+                        {"w", pose.pose.orientation.w}
+                    }}
+                }}
+            };
+    }
+    
+
 
 }

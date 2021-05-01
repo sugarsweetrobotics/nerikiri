@@ -33,7 +33,7 @@ namespace nerikiri {
         /**
          * 
          */
-        virtual std::shared_ptr<OperationAPI> create(const std::string& fullName, const Value& info=Value::error("")) const override { 
+        virtual std::shared_ptr<Object> create(const std::string& fullName, const Value& info=Value::error("")) const override { 
             auto defaultArg = defaultArgs_;
             if (info.isError()) {
                 //defaultArg = info["defaultArg"];

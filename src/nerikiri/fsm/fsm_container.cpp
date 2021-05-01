@@ -76,7 +76,7 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
     
     // ここからStateを実際に作ります．
     const auto name = stateInfo.at("name").stringValue();
-    auto cop = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:activate_state")->create(container->fullName() + ":" +  "activate_state_" + name + ".ope", 
+    auto cop = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:activate_state")->create<OperationAPI>(container->fullName() + ":" +  "activate_state_" + name + ".ope", 
       { {"defaultArg", 
             {
                 {"stateName", name}
@@ -117,7 +117,7 @@ Value nerikiri::createFSM(ProcessStore& store, const std::string& fullName, cons
     c->ptr()->fullName = fullName;
     c->ptr()->currentState = defaultStateName;
 
-    auto getter = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:get_state")->create(container->fullName() + ":" + "get_state.ope");
+    auto getter = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:get_state")->create<OperationAPI>(container->fullName() + ":" + "get_state.ope");
     getter->setOwner(container);
 
     bool failedFlag = false;

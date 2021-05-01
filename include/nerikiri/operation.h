@@ -5,8 +5,14 @@
 #include <mutex>
 #include <thread>
 #include <nerikiri/operation_api.h>
-//#include "operation_base.h"
+#include <nerikiri/operation_factory_api.h>
 
 namespace nerikiri {
-  std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
+
+
+  void* operationFactory(const Value& info, std::function<Value(const Value&)>&& func);
+
+  // std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
+
+
 }

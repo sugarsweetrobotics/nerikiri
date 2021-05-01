@@ -5,7 +5,7 @@
 #include <string>
 #include <nerikiri/container.h>
 #include <nerikiri/container_operation.h>
-#include <nerikiri/container_factory_api.h>
+// #include <nerikiri/container_factory_api.h>
 
 namespace nerikiri {
 
@@ -20,7 +20,7 @@ namespace nerikiri {
         /**
          * コンストラクタ
          */
-        ContainerFactory(): ContainerFactoryAPI("ContainerFactory", demangle(typeid(T).name()), demangle(typeid(T).name())) {}
+        ContainerFactory(): ContainerFactoryAPI(demangle(typeid(T).name()), demangle(typeid(T).name())) {}
 
 
         /**

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <nerikiri/container_factory_api.h>
+// #include <nerikiri/container_factory_api.h>
+#include <nerikiri/container_api.h>
 #include <nerikiri/container_operation_factory_api.h>
 #include <nerikiri/geometry.h>
 
@@ -60,3 +61,6 @@ namespace nerikiri {
 
 
 }
+
+//#include <nerikiri/container_operation.h>
+//#include <nerikiri/container_factory.h>

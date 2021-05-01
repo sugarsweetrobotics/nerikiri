@@ -72,7 +72,7 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
   }
 
   logger::info("ObjectFactory is creating a ContainerOperation({})", info);
-  auto cop =cof->create(fullName);
+  auto cop = cof->create<OperationAPI>(fullName);
   cop->setOwner(container);
   return container->addOperation(cop);
 

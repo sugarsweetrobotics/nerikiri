@@ -2,8 +2,7 @@
 
 #include <string>
 #include <nerikiri/object.h>
-//#include <nerikiri/operation_inlet_api.h>
-//#include <nerikiri/operation_outlet_api.h>
+#include <nerikiri/factory_api.h>
 
 namespace nerikiri {
     class OperationAPI;
@@ -97,6 +96,11 @@ namespace nerikiri {
      */
     class OperationAPI : public Object {
     public:
+    
+        static constexpr char classNameString[] = "Operation"; 
+        static constexpr char nullClassNameString[] = "NullOperation"; 
+        static constexpr char factoryClassNameString[] = "OperationFactory"; 
+        static constexpr char nullFactoryClassNameString[] = "NullOperationFactory";
 
         OperationAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
 
@@ -128,10 +132,16 @@ namespace nerikiri {
 
     std::shared_ptr<OperationAPI> nullOperation();
 
+    template<>
+    inline std::shared_ptr<OperationAPI> nullObject() { return nullOperation(); }
 
-
-  template<>
-  inline std::shared_ptr<OperationAPI> nullObject() { return nullOperation(); }
+    using OperationFactoryAPI = FactoryBase<OperationAPI>;
     
+    using NullOperationFactory = NullFactory<OperationAPI>;
+
+    template<>
+    inline std::shared_ptr<OperationFactoryAPI> nullObject<OperationFactoryAPI>() { return std::make_shared<NullOperationFactory>(); }
+
+        
 
 }

@@ -7,11 +7,11 @@
 
 namespace nerikiri {
 
-    class OperationOutletAPI;
-    class OperationInletAPI;
-    class ContainerFactoryAPI;
 
     class ContainerAPI : public Object {
+    public:
+        static constexpr char classNameString[] = "Container"; 
+        
     public:
         std::shared_ptr<OperationAPI> getPoseOperation_;
         std::shared_ptr<OperationAPI> setPoseOperation_;
@@ -37,12 +37,17 @@ namespace nerikiri {
 
         virtual Value deleteOperation(const std::string& fullName) = 0;
         
-        friend class ContainerFactoryAPI;
     };
 
     std::shared_ptr<ContainerAPI> nullContainer();
 
-
     template<>
     inline std::shared_ptr<ContainerAPI> nullObject() { return nullContainer(); }
+
+
+    using ContainerFactoryAPI = FactoryBase<ContainerAPI>;
+    using NullContainerFactory = NullFactory<ContainerAPI>;
+
+    template<>
+    inline std::shared_ptr<ContainerFactoryAPI> nullObject() { return std::make_shared<NullContainerFactory>(); }
 }
