@@ -1,5 +1,5 @@
 /***
- * base64.h
+ * broker_api.h
  * @author Yuki Suga
  * @copyright SUGAR SWEET ROBOTICS, 2020
  * @brief Brokerのインターフェース定義
