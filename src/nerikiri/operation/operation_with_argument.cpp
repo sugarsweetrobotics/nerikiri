@@ -1,7 +1,7 @@
 
 #include <nerikiri/functional.h>
 #include <nerikiri/operation_api.h>
-#include <nerikiri/operation_with_argument.h>
+//#include <nerikiri/operation_with_argument.h>
 
 using namespace nerikiri;
 
@@ -61,6 +61,11 @@ public:
     //virtual Value putToArgument(const std::string& key, const Value& value) override { return operation_->putToArgument(key, value); }
 };
 
+namespace nerikiri {
+
+
+     std::shared_ptr<OperationAPI> operationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v);
+}
 
 std::shared_ptr<OperationAPI> nerikiri::operationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v) {
     return std::make_shared<OperationWithArgument>(op, v);

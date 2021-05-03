@@ -3,8 +3,6 @@
 #include <nerikiri/functional.h>
 #include <nerikiri/process_store.h>
 #include <nerikiri/container.h>
-#include <nerikiri/container_factory.h>
-#include <nerikiri/container_operation_factory.h>
 #include <nerikiri/logger.h>
 #include "nerikiri/ec/ec_container.h"
 #include <nerikiri/ec.h>

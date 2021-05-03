@@ -3,8 +3,10 @@
 #include <mutex>
 #include <thread>
 
+#include <nerikiri/operation_api.h>
+#include <nerikiri/container_api.h>
 #include <nerikiri/operation.h>
-#include <nerikiri/container.h>
+//#include <nerikiri/container.h>
 
 namespace nerikiri {
 
@@ -29,7 +31,7 @@ namespace nerikiri {
            {}
 
         virtual ~ContainerOperationBase() {}
-        
+
         virtual Value fullInfo() const override { 
             auto i = base_->fullInfo(); 
             i["ownerContainerFullName"] = container_->fullName();

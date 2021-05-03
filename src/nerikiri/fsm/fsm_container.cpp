@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <nerikiri/functional.h>
 #include <nerikiri/container.h>
-#include <nerikiri/container_factory.h>
-#include <nerikiri/container_operation_factory.h>
 #include <nerikiri/logger.h>
 #include "nerikiri/fsm/fsm_container.h"
 
