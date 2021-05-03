@@ -1,9 +1,6 @@
 #include <nerikiri/proxy_builder.h>
 
-
-// #include <nerikiri/fsm_proxy.h>
-// #include <nerikiri/ec_proxy.h>
-#include <nerikiri/operation_proxy.h>
+#include <nerikiri/operation.h>
 #include <nerikiri/objectfactory.h>
 
 using namespace nerikiri;

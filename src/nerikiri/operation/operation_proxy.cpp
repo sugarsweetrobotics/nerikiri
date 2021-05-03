@@ -1,4 +1,4 @@
-#include <nerikiri/operation_proxy.h>
+#include <nerikiri/operation.h>
 #include <nerikiri/connection_proxy.h>
 #include <nerikiri/functional.h>
 
