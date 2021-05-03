@@ -1,5 +1,5 @@
 //#include "nerikiri/nerikiri.h"
-#include "nerikiri/container_factory.h"
+#include <nerikiri/container.h>
 #include "JoyController.h"
 
 using namespace nerikiri;

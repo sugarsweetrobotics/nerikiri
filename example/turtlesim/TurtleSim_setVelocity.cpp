@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/container_operation_factory.h"
+#include <nerikiri/nerikiri.h>
+#include <nerikiri/container.h>
 
 #include "TurtleSim.h"
 

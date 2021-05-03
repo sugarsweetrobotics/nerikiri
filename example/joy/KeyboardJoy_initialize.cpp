@@ -1,6 +1,5 @@
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/container_operation_factory.h"
-
+#include <nerikiri/nerikiri.h>
+#include <nerikiri/container.h>
 #include "KeyboardJoy.h"
 
 using namespace nerikiri;
