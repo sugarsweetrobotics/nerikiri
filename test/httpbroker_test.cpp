@@ -112,11 +112,11 @@ SCENARIO( "Broker test", "[broker]" ) {
 
 
       THEN("Simple Operation Call") {
-        auto ope1 = p->store()->operation("zero0.ope");
+        auto ope1 = p->store()->get<OperationAPI>("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-        auto ope2 = p->store()->operation("inc0.ope");
+        auto ope2 = p->store()->get<OperationAPI>("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
@@ -140,11 +140,11 @@ SCENARIO( "Broker test", "[broker]" ) {
       }
 
       THEN("HTTPBroker EC and Operation") {
-        auto ope1 = p->store()->operation("zero0.ope");
+        auto ope1 = p->store()->get<OperationAPI>("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-        auto ope2 = p->store()->operation("inc0.ope");
+        auto ope2 = p->store()->get<OperationAPI>("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
@@ -153,11 +153,11 @@ SCENARIO( "Broker test", "[broker]" ) {
 
 
       THEN("HTTPBroker Connection") {
-        auto ope1 = p->store()->operation("zero0.ope");
+        auto ope1 = p->store()->get<OperationAPI>("zero0.ope");
         REQUIRE(ope1->isNull() == false);
         REQUIRE(Value::intValue(ope1->call({}), -1) == 0);
 
-        auto ope2 = p->store()->operation("inc0.ope");
+        auto ope2 = p->store()->get<OperationAPI>("inc0.ope");
         REQUIRE(ope2->isNull() == false);
         REQUIRE(Value::intValue(ope2->call({{"arg01", 3}}), -1) == 4);
 
