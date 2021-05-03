@@ -8,7 +8,10 @@
 
 using namespace nerikiri;
 
+namespace nerikiri {
+    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
 
+}
 
 std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
     logger::trace("ProxyBuilder::operationProxy({}, store) called", value);

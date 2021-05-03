@@ -5,7 +5,6 @@
 #include <mutex>
 #include <thread>
 #include <nerikiri/operation_api.h>
-#include <nerikiri/operation_factory_api.h>
 
 namespace nerikiri {
 

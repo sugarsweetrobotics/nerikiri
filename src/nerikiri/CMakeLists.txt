@@ -56,7 +56,7 @@ os.cpp
 operation/operation.cpp 
 operation/operation_base.cpp
 operation/operation_api.cpp
-operation/operation_factory_api.cpp
+# operation/operation_factory_api.cpp
 operation/operation_factory.cpp
 operation/operation_outlet_api.cpp
 operation/operation_inlet_api.cpp

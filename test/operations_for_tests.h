@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "nerikiri/operation_factory.h"
+#include "nerikiri/operation.h"
 #include "nerikiri/ec.h"
 #include "nerikiri/container_factory.h"
 #include "nerikiri/container_operation_factory.h"

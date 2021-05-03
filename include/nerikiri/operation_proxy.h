@@ -9,6 +9,6 @@ namespace nerikiri {
 
     // std::shared_ptr<OperationAPI> operationProxy(ProcessStore* store, const Value& operationInfo);
 
-    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
+    // std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
 
 }

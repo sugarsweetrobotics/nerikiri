@@ -1,4 +1,3 @@
-#include <nerikiri/operation_factory.h>
 #include <nerikiri/operation.h>
 
 using namespace nerikiri;

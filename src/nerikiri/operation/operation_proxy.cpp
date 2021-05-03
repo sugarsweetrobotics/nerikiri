@@ -269,8 +269,10 @@ Value OperationInletProxy::executeOwner() {
 
 ///-------------- Operation Inlet
 
+namespace nerikiri {
+    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
 
-
+}
 
 std::shared_ptr<OperationAPI> nerikiri::operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
     logger::trace("nerikiri::operationProxy(broker='{}', fullName='{}') called.", broker->typeName(), fullName);

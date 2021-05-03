@@ -4,7 +4,7 @@
 #include "nerikiri/logger.h"
 #include "nerikiri/nerikiri.h"
 #include "nerikiri/process.h"
-#include "nerikiri/operation_factory.h"
+#include "nerikiri/operation.h"
 //#include "nerikiri/connection_builder.h"
 
 #include "operations_for_tests.h"

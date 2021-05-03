@@ -4,7 +4,7 @@
 #include "moduleloader.h"
 
 #include <nerikiri/container_operation_factory_api.h>
-#include <nerikiri/operation_factory.h>
+#include <nerikiri/operation.h>
 
 
 using namespace nerikiri;

@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include <nerikiri/object.h>
-#include <nerikiri/operation_factory_api.h>
+#include <nerikiri/operation.h>
 #include <nerikiri/ec.h>
 
 #include <nerikiri/broker_proxy_api.h>
