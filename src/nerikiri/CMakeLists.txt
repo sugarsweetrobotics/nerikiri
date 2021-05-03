@@ -11,14 +11,17 @@ broker/crud_broker_base.cpp
 broker/crud_broker_proxy_base.cpp
 broker/core_broker.cpp
 
-container/container_base.cpp
-container/container_operation_base.cpp
-container/container_factory_base.cpp
 container/container_api.cpp
-container/container.cpp 
-container/container_factory_api.cpp
+container/container_base.cpp
+container/container_base.h
+container/container_factory_base.cpp
+container/container_factory_base.h
+container/container_operation_base.cpp
 container/container_operation_factory_api.cpp
 container/container_operation_factory_base.cpp
+container/container_operation_factory_base.h
+container/container.cpp 
+# container/container_factory_api.cpp
 
 
 connection/connection_proxy.cpp

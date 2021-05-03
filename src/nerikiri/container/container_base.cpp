@@ -4,10 +4,7 @@
 #include <nerikiri/functional.h>
 
 #include <nerikiri/container_api.h>
-#include "container_operation_base.h"
 #include "container_factory_base.h"
-
-#include "container_operation_base_impl.h"
 
 
 using namespace nerikiri;

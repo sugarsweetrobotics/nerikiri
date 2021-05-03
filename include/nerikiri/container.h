@@ -2,17 +2,17 @@
 
 #include <nerikiri/container_api.h>
 #include <nerikiri/geometry.h>
-#include <nerikiri/container_operation_base.h>
 
 namespace nerikiri {
 
 
-    class ContainerOperationBase;
+    // class ContainerOperationBase;
     class ContainerOperationFactoryBase;
     class ContainerFactoryBase;
 
     //class OperationBase;
     std::shared_ptr<ContainerAPI> containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName);
+    std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func);
 
     /**
      * Containerテンプレートクラス
@@ -58,6 +58,7 @@ namespace nerikiri {
         std::shared_ptr<T>& operator->() { return ptr(); }
     };
 
+/*
     template<typename T>
     class ContainerOperation : public ContainerOperationBase {
     protected:
@@ -75,37 +76,158 @@ namespace nerikiri {
             return this->function_(*(c->ptr()), value);
         }
     };
+*/
 
-    class ContainerGetPoseOperation : public ContainerOperationBase {
+    template<typename T>
+    class ContainerOperation : public OperationAPI {
     private:
+        static constexpr char classNameString[] = "ContainerOperation"; 
+    protected:
+        std::function<Value(T&,const Value&)> function_;
+        std::shared_ptr<OperationAPI> base_;
+        std::mutex mutex_;
+        Value defaultArgs_;
     public:
-        ContainerGetPoseOperation()
-          : ContainerOperationBase("container_get_pose", "container_get_pose.ope", {}) {}
-        virtual ~ContainerGetPoseOperation() {}
+        virtual Value setOwner(const std::shared_ptr<Object>& container) override { return base_->setOwner(container); }
+        virtual const std::shared_ptr<Object> getOwner() const override { return base_->getOwner(); }
 
-        virtual Value call(const Value& value) {
-            std::lock_guard<std::mutex> lock(this->mutex_);
-            auto pose = this->container_->getPose();
-            return toValue(pose);
+    public:
+        ContainerOperation(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func)
+         : OperationAPI("ContainerOperation", _typeName, _fullName), 
+            base_(containerOperationBase(_typeName, _fullName, defaultArgs, [this](const Value& v) {return this->call(v); })),
+            defaultArgs_(defaultArgs),
+            function_(func)
+           {}
+
+        virtual ~ContainerOperation() {}
+
+        virtual Value call(const Value& value) override {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto c = std::static_pointer_cast<Container<T>>(getOwner());
+            if (!c) {
+                logger::error("ContainerOperation::call failed. Invalid owner container pointer. Can not convert to {}. ", nerikiri::demangle(typeid(T).name()));
+            }
+            return this->function_(*(c->ptr()), value);
         }
+
+        virtual Value info() const override {
+            return base_->info();
+        }
+
+        virtual Value fullInfo() const override { 
+            auto i = base_->fullInfo(); 
+            i["ownerContainerFullName"] = getOwner()->fullName();
+            return i;
+        }
+
+        virtual Value invoke() override { return base_->invoke(); }
+
+        virtual Value execute() override { return base_->execute(); }
+
+        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return base_->outlet(); }
+
+        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return base_->inlet(name); }
+    
+        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return base_->inlets(); }        
     };
 
-    class ContainerSetPoseOperation : public ContainerOperationBase {
+
+    class ContainerGetPoseOperation : public OperationAPI {
+    private:  
+        std::mutex mutex_;
+        std::shared_ptr<OperationAPI> base_;
+
+    public:
+        ContainerGetPoseOperation()
+          : OperationAPI("ContainerOperation", "container_get_pose", "container_get_pose.ope"),
+          base_(containerOperationBase("container_get_pose", "container_get_pose.ope", {}, [this](const Value& v) {return this->call(v); }))
+             {}
+        virtual ~ContainerGetPoseOperation() {}
+
+        virtual Value setOwner(const std::shared_ptr<Object>& container) override { return base_->setOwner(container); }
+        virtual const std::shared_ptr<Object> getOwner() const override { return base_->getOwner(); }
+
+        virtual Value call(const Value& value) override  {
+            std::lock_guard<std::mutex> lock(this->mutex_);
+
+            auto c = std::static_pointer_cast<ContainerAPI>(getOwner());
+            if (!c) {
+
+            }
+            auto pose = c->getPose();
+            return toValue(pose);
+        }
+
+
+        virtual Value info() const override { return base_->info(); }
+
+        virtual Value fullInfo() const override { 
+            auto i = base_->fullInfo(); 
+            i["ownerContainerFullName"] = getOwner()->fullName();
+            return i;
+        }
+
+        virtual Value invoke() override { return base_->invoke(); }
+
+        virtual Value execute() override { return base_->execute(); }
+
+        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return base_->outlet(); }
+
+        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return base_->inlet(name); }
+    
+        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return base_->inlets(); }
+    };
+
+    class ContainerSetPoseOperation : public OperationAPI {
+    private:
+        std::mutex mutex_;
+        Value defaultArgs_;
+        std::shared_ptr<OperationAPI> base_;
     public:
         ContainerSetPoseOperation()
-          : ContainerOperationBase("container_set_pose", "container_set_pose.ope", 
+          : OperationAPI("ContainerOperation", "container_set_pose", "container_set_pose.ope"),
+          defaultArgs_( 
                 {
                   {"pose", toValue(TimedPose3D())}
                 } 
-          ) {}
+          ),
+          base_(containerOperationBase("container_get_pose", "container_get_pose.ope", {}, [this](const Value& v) {return this->call(v); }))
+           {}
         virtual ~ContainerSetPoseOperation() {}
+        
+        virtual Value setOwner(const std::shared_ptr<Object>& container) override { return base_->setOwner(container); }
+        virtual const std::shared_ptr<Object> getOwner() const override { return base_->getOwner(); }
 
-        virtual Value call(const Value& value) {
+        virtual Value call(const Value& value) override {
             std::lock_guard<std::mutex> lock(this->mutex_);
+            auto c = std::static_pointer_cast<ContainerAPI>(getOwner());
+            if (!c) {
+
+            }
+
             auto pose = toTimedPose3D(value["pose"]);
-            this->container_->setPose(pose);
+            c->setPose(pose);
             return value;
         }
+
+
+        virtual Value info() const override { return base_->info(); }
+
+        virtual Value fullInfo() const override { 
+            auto i = base_->fullInfo(); 
+            i["ownerContainerFullName"] = getOwner()->fullName();
+            return i;
+        }
+
+        virtual Value invoke() override { return base_->invoke(); }
+
+        virtual Value execute() override { return base_->execute(); }
+
+        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return base_->outlet(); }
+
+        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return base_->inlet(name); }
+    
+        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return base_->inlets(); }
     };
 
 

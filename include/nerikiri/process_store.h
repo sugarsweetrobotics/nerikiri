@@ -9,8 +9,6 @@
 #include <nerikiri/operation_api.h>
 #include <nerikiri/container_api.h>
 
-#include <nerikiri/container_factory_api.h>
-#include <nerikiri/container_operation_factory_api.h>
 #include <nerikiri/ec_api.h>
 #include <nerikiri/ec_factory_api.h>
 #include "nerikiri/broker_api.h"
