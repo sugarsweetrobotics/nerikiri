@@ -63,6 +63,8 @@ namespace nerikiri {
         VALUE_TYPE_ERROR,
     };
     VALUE_TYPE_CODE typecode_;
+  public:
+    VALUE_TYPE_CODE getTypeCode() const { return typecode_; }
 
     std::string getTypeString() const {
       if (isBoolValue()) return "bool";

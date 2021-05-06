@@ -39,14 +39,18 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
 }
 
 Value ModuleLoader::loadContainerOperationFactory(ProcessStore& store, std::vector<std::string> search_paths, const Value& info) {
-  logger::trace("ModuleLoader::loadContainerOperationFactory({})", (info));
+  Value v = Value::list();
+  for ( auto s : search_paths) { v.push_back(s); }
+  logger::trace("ModuleLoader::loadContainerOperationFactory(search_paths={}, info={})", v, info);
   auto name = info.at("container_name").stringValue() + "_" + info.at("typeName").stringValue();
   if (info.hasKey("load_paths")) {
     info.at("load_paths").const_list_for_each([&search_paths](auto& value) {
       search_paths.push_back(value.stringValue());
     });
   }
+  Value search_paths_info = Value::list();
   for(auto& p : search_paths) {
+    search_paths_info.push_back(p);
     auto dllproxy = createDLLProxy(p, name);
     if (!dllproxy->isNull()) {
       store.addDLLProxy(dllproxy);
@@ -62,7 +66,7 @@ Value ModuleLoader::loadContainerOperationFactory(ProcessStore& store, std::vect
       logger::debug("ModuleLoader::loadContainerOperationFactory failed. Can not load DLL file {}, {}", p, name);
     }
   }
-  return Value::error(logger::error("Process::loadContainerOperationFactory failed. Can not load DLL ({})", str(info)));
+  return Value::error(logger::error("ModuleLoader::loadContainerOperationFactory(search_paths={}, info={}) failed. Can not load DLL (fileName={})", search_paths_info, info, name));
 }
 
 Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::string> search_paths, const Value& info) {
@@ -122,7 +126,6 @@ Value ModuleLoader::loadExecutionContextFactory(ProcessStore& store, std::vector
 }
 
 Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::string> search_paths, const Value& info_) {
-  
   logger::trace("ModuleLoader::loadBrokerFactory({}) entry", (info_));
   auto name = Value::string(info_.at("typeName"));
   info_.at("load_paths").const_list_for_each([&search_paths](auto& value) {

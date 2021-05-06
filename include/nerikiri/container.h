@@ -256,7 +256,7 @@ namespace nerikiri {
          * 
          */
         virtual std::shared_ptr<Object> create(const std::string& fullName, const Value& info={}) const override { 
-            logger::info("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
+            logger::trace("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
             auto c = std::make_shared<Container<T>>(this, fullName);
             c->getPoseOperation_ = std::make_shared<ContainerGetPoseOperation>();
             c->getPoseOperation_->setOwner(c);
@@ -271,7 +271,7 @@ namespace nerikiri {
      */
     template<typename T>
     void* containerFactory() {
-        logger::info("nerikiri::containerFactory<{}> called.", demangle(typeid(T).name()));
+        logger::trace("nerikiri::containerFactory<{}> called.", demangle(typeid(T).name()));
         return new ContainerFactory<T>(); 
     }
 
@@ -319,6 +319,7 @@ namespace nerikiri {
      */
     template<typename T>
     void* containerOperationFactory(const Value& info, const std::function<Value(T&,const Value&)>& func) { 
+        logger::trace("nerikiri::containerOperationFactory<{}> called.", demangle(typeid(T).name()));
         return new ContainerOperationFactory<T>(Value::string(info["typeName"]), info["defaultArg"], func);
     }
 

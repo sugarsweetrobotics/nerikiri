@@ -55,5 +55,5 @@ add_operation(cv_flip)
 set(OPENCV_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
 
 INSTALL(TARGETS ${CONTAINERS} ${OPERATIONS} DESTINATION share/nerikiri/example/opencv)
-INSTALL(FILES opencv.nkshelf DESTINATION share/nerikiri/example/opencv)
+INSTALL(FILES opencv.nkshelf opencv.nkproj DESTINATION share/nerikiri/example/opencv)
 

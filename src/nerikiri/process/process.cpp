@@ -213,7 +213,7 @@ void Process::_preloadOperations() {
 
 void Process::_preloadContainers() {
   logger::trace("Process::_preloadContainers() called.");
-  ProcessBuilder::preloadContainers(store_, config_, path_);
+  ProcessBuilder::preloadContainers(store_, config_, env_dictionary_["${ProjectDirectory}"]);
   logger::trace("Process::_preloadContainers() exit.");
 }
 

@@ -27,7 +27,7 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
 
 
 void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("ProcessBuilder::preloadContainers() entry");
+  logger::trace("ProcessBuilder::preloadContainers(path={}) entry", path);
   config.at("containers").at("preload").const_list_for_each([&store, &config, &path](auto value) {
     ModuleLoader::loadContainerFactory(store, {"./", path}, {
       {"typeName", value.at("typeName")}, {"load_paths", config.at("containers").at("load_paths")}
@@ -35,7 +35,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
     if (value.hasKey("operations")) {
       value.at("operations").const_list_for_each([&config, &store, &value, &path](auto& v) {
         ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
-          {"typeName", v}, {"container_name", value.at("typeName")}, {"load_paths", config.at("containers").hasKey("load_paths")}
+          {"typeName", v}, {"container_name", value.at("typeName")}, {"load_paths", config["containers"]["load_paths"] }
         });
       });
     }
@@ -57,7 +57,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
 }
 
 void ProcessBuilder::preloadFSMs(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadFSMs() entry");
+  logger::trace("ProcessBuilder::_preloadFSMs() entry");
   config.at("fsms").at("precreate").const_list_for_each([&store](auto& value) {
     ObjectFactory::createFSM(store, value);
   });
@@ -66,7 +66,7 @@ void ProcessBuilder::preloadFSMs(ProcessStore& store, const Value& config, const
 
 
 void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preloadExecutionContexts() entry");
+  logger::trace("ProcessBuilder::_preloadExecutionContexts() entry");
   config.at("ecs").at("preload").const_list_for_each([&store, &config, &path](auto& value) {
     ModuleLoader::loadExecutionContextFactory(store, {"./", path}, {
       {"typeName", value}, {"load_paths", config.at("ecs").at("load_paths")}
@@ -162,10 +162,10 @@ void ProcessBuilder::preStartExecutionContexts(ProcessStore& store, const Value&
 }
 
 void ProcessBuilder::preloadBrokers(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("ProcessBuilder::preloadBrokers() entry");
+  logger::trace("ProcessBuilder::preloadBrokers(info={}) entry", config["brokers"]);
   config.at("brokers").at("preload").const_list_for_each([&store, &config, &path](auto& value) {
     ModuleLoader::loadBrokerFactory(store, {"./", path}, {
-      {"typeName", value}, {"load_paths", config.at("brokers").at("load_paths")}
+      {"typeName", value}, {"load_paths", config["brokers"]["load_paths"]}
     });
   });
   config.at("brokers").at("precreate").const_list_for_each([&store](auto& value) {
@@ -208,6 +208,7 @@ Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<
 }
 
 void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo) {
+  logger::trace("{} _parseOperationInfo(info={}) called.", __FILE__, opInfo);
   if (opInfo["publish"].isStringValue()) {
     ProcessBuilder::publishTopic(store, broker, opInfo, {{"fullName", opInfo["publish"]}});
   }

@@ -11,14 +11,14 @@
         "precreate": [
             {
                 "typeName": "cv_flip",
-                "instanceName": "cv_flip0.ope"
+                "fullName": "cv_flip0.ope"
             },
             {
                 "typeName": "cv_drawRects",
-                "instanceName": "cv_drawRects0.ope",
+                "fullName": "cv_drawRects0.ope",
                 "subscribe": {
-                    "image": ["::image"],
-                    "rects": ["::rects"]
+                    "image": ["image"],
+                    "rects": ["rects"]
                 }
             }
         ]
@@ -37,7 +37,7 @@
                     {
                         "typeName": "capture",
                         "instanceName": "capture0.ope",
-                        "publish": ["::image"]
+                        "publish": ["image"]
                     }
                 ]
             },
@@ -53,9 +53,9 @@
                         "typeName": "detectMultiScale",
                         "instanceName": "detectMultiScale0.ope",
                         "subscribe": {
-                            "image": ["::image"]
+                            "image": ["image"]
                         },
-                        "publish": ["::rects"]
+                        "publish": ["rects"]
                     }
                 ]
             }

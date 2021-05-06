@@ -18,7 +18,7 @@
         "precreate": [ 
           {
             "typeName": "HTTPBroker",
-            "instanceName": "HTTPBroker0.brk",
+            "fullName": "HTTPBroker0.brk",
             "host": "0.0.0.0",
             "port": 8080,
             "baseDir": "${ProjectDirectory}/../systemeditor",
@@ -33,7 +33,7 @@
         "precreate": [
           {
             "typeName": "TimerEC",
-            "instanceName": "TimerEC0.ec",
+            "fullName": "TimerEC0.ec",
             "rate": 30.0
           }
         ],
@@ -105,7 +105,7 @@
         "precreate": [
             {
                 "typeName": "GenericFSM",
-                "instanceName": "FSM0.fsm",
+                "fullName": "FSM0.fsm",
                 "states" : [
                     {
                       "name": "stopped",

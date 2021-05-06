@@ -8,7 +8,7 @@
     },
 
     "containers": {
-      "load_paths": [ "${ShelfDirectory}", "../build/lib", "../build/lib/Debug}" ],
+      "load_paths": [ "${ShelfDirectory}", "../build/lib", "../build/lib/Debug" ],
         "preload": [{
             "typeName": "OpenCVCamera",
             "operations": ["initialize", "capture"]

@@ -118,18 +118,20 @@ namespace nerikiri {
       }
       objects_.push_back(obj);
       //ref_list<T>().push_back(obj);
-      logger::info("ProcessStore.add<{}>(obj->info()={}) succeeded.", obj->className(), obj->info());
+      logger::debug("ProcessStore.add<{}>(obj->info()={}) succeeded.", obj->className(), obj->info());
       return obj->info();
     }
 
     template<typename T>
-    Value del(const std::string& fullName) {
+    Value del(const std::string& fullName) {      
+      logger::trace("ProcessStore::del<>(obj->fullName()={}) called", fullName);
+
       /// 同じ名前がないか確認
       std::shared_ptr<T> c = get<T>(fullName);
       if (c->isNull()) {
         return Value::error(logger::warn("ProcessStore.del<>({}) failed. Object is not found.", fullName));
       }
-
+      logger::debug("ProcessStore.del<>(obj->fullName()={}) succeeded.", fullName);
       objects_.erase(std::remove_if(objects_.begin(), objects_.end(),
                               [&fullName](auto c){return c->fullName() == fullName; }), objects_.end());
       return c->info();

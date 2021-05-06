@@ -1,5 +1,6 @@
 
 set(OPERATIONS)
+
 function(add_operation NAME)
   add_library(${NAME} SHARED operations/${NAME}.cpp)
   add_dependencies(${NAME} nerikiri)
@@ -32,9 +33,7 @@ function(add_container DIRNAME NAME)
   set_target_properties(${NAME} PROPERTIES PREFIX "")
   set(CONTAINERS ${NAME} ${CONTAINERS})
   set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
-
 endfunction(add_container)
-
 
 function(add_example NAME)
   add_executable(${NAME} ${NAME}.cpp)
@@ -55,19 +54,16 @@ endfunction(add_example)
 find_package(Threads REQUIRED)
 
 
-
-
 option(BUILD_NK_EXAMPLE_SIMPLE "Build Simple Operation Examples. This is used in tests" ON)
 option(BUILD_NK_EXAMPLE_OPENCV "Build OpenCV Example" OFF)
 option(BUILD_NK_EXAMPLE_JOY "Build Joy Controller Example" OFF)
 option(BUILD_NK_EXAMPLE_TURTLESIM "Build Turtle Simulator Controller Example" OFF)
 
 
-
 set(EXAMPLE_LIBS nerikiri)
 set(EXTRA_MODULES one)
 
-set(EXAMPLES  )
+set(EXAMPLES brokers.nkshelf ecs.nkshelf )
 
 if (BUILD_NK_EXAMPLE_SIMPLE)
   add_subdirectory(simple_example)

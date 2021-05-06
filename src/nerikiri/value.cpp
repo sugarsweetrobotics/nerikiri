@@ -323,9 +323,15 @@ std::string nerikiri::str(const nerikiri::Value& value) {
   if (value.isNull()) {
       return "{}";
   }
+  if (value.isBoolValue()) {
+    return value.boolValue() ? "true" : "false";
+  }
   if (value.isError()) {
   return "{\"Error\": \"Value is error('" + value.getErrorMessage() + "').\"}";
       //throw ValueTypeError(value.getErrorMessage());
   }
-  return "{\"Error\": \"Value is not supported type.\"}";
+  std::stringstream ss;
+
+  ss << "{\"Error\": \"nerikiri::str(Value&) function Error. Value is not supported type. Type code is " << (int32_t)value.getTypeCode() << "\"}";
+  return ss.str();
 }
