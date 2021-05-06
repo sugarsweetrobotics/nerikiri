@@ -103,8 +103,8 @@ SCENARIO( "Process test", "[process]" ) {
     auto zero0proxy = p1->store()->operationProxy(zero0opeInfo);
     REQUIRE(zero0proxy->isNull() == false);
 
+    REQUIRE(inc0ope->inlet("arg01")->isNull() == false);
     WHEN("Connect with API") {
-      REQUIRE(inc0proxy->inlet("arg01")->isNull() == false);
       auto ret = nerikiri::connect(p1->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0proxy->inlet("arg01"), zero0proxy->outlet());
       REQUIRE(ret.isError() == false);
 

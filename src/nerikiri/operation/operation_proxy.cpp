@@ -190,7 +190,6 @@ private:
 public:
     OperationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
         fullName_(fullName), outlet_(std::make_shared<OperationOutletProxy>(this, broker, fullName)), inlets_ready_(false) {
-        
         inletInfos_ = broker_->operation()->inlets(fullName_);
         if (inletInfos_.isError()) {
             return;
