@@ -1,4 +1,4 @@
-
+#include <iostream>
 #include <algorithm>
 #include <nerikiri/functional.h>
 #include <nerikiri/process_store.h>
@@ -11,6 +11,7 @@ using namespace nerikiri;
 
 struct _ECContainerStruct {
     std::string fullName;
+    std::string typeName;
     std::shared_ptr<ExecutionContextAPI> ec;
     std::string currentState;
     const std::vector<std::string> availableStates;
@@ -20,7 +21,10 @@ struct _ECContainerStruct {
 
 bool 
 nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
-    store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>())));
+  store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>({
+	    {"className", "ECContainer"}
+	  }))));
+    
     store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
         {
           {"typeName", "activate_state"},
@@ -68,8 +72,12 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
 
     auto defaultStateName = "stopped";
 
+    std::cout << "Execution" << " c" << std::endl;
     c->ptr()->fullName = fullName;
+    c->setClassName("ExecutionContext");
+    c->setTypeName(ecInfo["typeName"].stringValue());
     c->ptr()->currentState = defaultStateName;
+    /// ここでECの本体を設定する
     c->ptr()->ec = store.executionContextFactory(Value::string(ecInfo.at("typeName")))->create(ecInfo);
     //if (c->ptr()->ec->isNull()) {
     //    return Value::error(logger::error("ObjectFactory::createEC failed. Failed to create ExecutionContext(typeName={})", Value::string(ecInfo.at("typeName"))));
@@ -97,10 +105,7 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
 
     store.add<ContainerAPI>(c);
     c->addOperation(start_cop);
-    //store.addOperation(start_cop);
     c->addOperation(stop_cop);
     c->addOperation(getter);
-    //store.addOperation(stop_cop);
-    //store.addOperation(getter);
     return c->info();
 }

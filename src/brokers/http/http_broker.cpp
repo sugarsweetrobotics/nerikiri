@@ -69,7 +69,11 @@ public:
   }
 
   nerikiri::Value toValue(const std::string& body) {
-    return nerikiri::json::toValue(body);
+    try {
+      return nerikiri::json::toValue(body);
+    } catch (nerikiri::json::JSONParseError& e) {
+      return Value::error(logger::error("nerikir::toValue(\"{}\") failed. JSONParseError", body));
+    }
   }
   
   virtual Value fullInfo() const override {

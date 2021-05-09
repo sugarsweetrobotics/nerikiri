@@ -394,11 +394,11 @@ Value Process::getCallbacks() const {
 
 Value Process::fullInfo() const {
   auto inf = info();
-  inf["operations"] = functional::map<Value, std::shared_ptr<OperationAPI>>(store()->list<OperationAPI>(), [](auto op) { return op->info(); });
+  inf["operations"] = functional::map<Value, std::shared_ptr<OperationAPI>>(store()->list<OperationAPI>(), [](auto op) { return op->fullInfo(); });
   inf["operationFactories"] = functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(store()->list<OperationFactoryAPI>(), [](auto op) { return op->info(); });
   inf["brokers"] = functional::map<Value, std::shared_ptr<BrokerAPI>>(store()->brokers(), [](auto o) { return o->fullInfo(); });  
   inf["brokerFactories"] = functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(store()->brokerFactories(), [](auto op) { return op->info(); });
-  inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->list<ContainerAPI>(), [](auto c) { return c->info(); });  
+  inf["containers"] = functional::map<Value, std::shared_ptr<ContainerAPI>>(store()->list<ContainerAPI>(), [](auto c) { return c->fullInfo(); });  
   //inf["fsms"] = functional::map<Value, std::shared_ptr<FSMAPI>>(store()->fsms(), [](auto c) { return c->info(); });  
   ///inf["ecs"] = functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(store()->executionContexts(), [](auto c) { return c->info(); });  
   return inf;

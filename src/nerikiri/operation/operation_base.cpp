@@ -42,8 +42,8 @@ std::shared_ptr<OperationOutletAPI> OperationBase::outlet() const  { return outl
 
 Value OperationBase::fullInfo() const {
   auto i = info();
-  i["outlet"] = outlet()->info();
-  i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(inlets(), [](auto inlet) { return inlet->info(); });
+  i["outlet"] = outlet()->fullInfo();
+  i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(inlets(), [](auto inlet) { return inlet->fullInfo(); });
   return i;
 }
 

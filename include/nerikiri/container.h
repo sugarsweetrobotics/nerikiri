@@ -27,7 +27,8 @@ namespace nerikiri {
         virtual void setPose(const TimedPose3D& pose) override { base_->setPose(pose); }
         virtual void setPose(TimedPose3D&& pose) override { base_->setPose(std::move(pose)); }
         
-
+        virtual void setTypeName(const std::string& typeName) override { base_->setTypeName(typeName); }
+        virtual void setClassName(const std::string& className) override { base_->setClassName(className); }
     public:
         Container(const ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
           ,_ptr(std::make_shared<T>())
@@ -236,12 +237,14 @@ namespace nerikiri {
      */
     template<typename T>
     class ContainerFactory : public ContainerFactoryAPI {
+    private:
+      const Value defaultInfo_;
     public:
 
         /**
          * コンストラクタ
          */
-        ContainerFactory(): ContainerFactoryAPI(demangle(typeid(T).name()), demangle(typeid(T).name())) {}
+      ContainerFactory(const Value& info={}): ContainerFactoryAPI(demangle(typeid(T).name()), demangle(typeid(T).name())), defaultInfo_(info) {}
 
 
         /**
@@ -262,6 +265,10 @@ namespace nerikiri {
             c->getPoseOperation_->setOwner(c);
             c->setPoseOperation_ = std::make_shared<ContainerSetPoseOperation>();
             c->setPoseOperation_->setOwner(c);
+
+	    if (defaultInfo_.hasKey("className")) {
+	      c->setClassName(defaultInfo_["className"].stringValue());
+	    }
             return c;
         }
     };
@@ -270,9 +277,9 @@ namespace nerikiri {
      * ContainerFactoryの生成．ユーザはこの関数を使ってContainerFactoryを定義，アクセスできる
      */
     template<typename T>
-    void* containerFactory() {
+    void* containerFactory(const Value& info={}) {
         logger::trace("nerikiri::containerFactory<{}> called.", demangle(typeid(T).name()));
-        return new ContainerFactory<T>(); 
+        return new ContainerFactory<T>(info); 
     }
 
 
