@@ -75,17 +75,32 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
   config.at("ecs").at("precreate").const_list_for_each([&store](auto& value) {
     ObjectFactory::createExecutionContext(store, value);
   });
+
+  config.at("ecs").at("bind").const_object_for_each([&store](auto ecName, auto value) {
+    auto ec = store.get<ContainerAPI>(ecName);
+    if (ec->isNull()) {
+      logger::error("ProcessBuilder::preloadExecutionContext failed. Loading Precreated EC named '{}' failed. Not found.", ecName);
+      return;
+    }
+    auto activate_started_ope = ec->operation("activate_state_started.ope");
+    if (activate_started_ope->isNull()) {
+      logger::error("ProcessBuilder::preloadExecutionContext failed. Loading Precreated EC's activation function named '{}' failed. Not found.", ecName + ":activate_state_started.ope");
+      return;
+    }
+    value.const_list_for_each([&store, &ec, &activate_started_ope](auto& v) {
+      auto opProxy =  store.operationProxy(v);
+      nerikiri::connect(coreBroker(store), ec->fullName() + "_bind_" + Value::string(v["fullName"]), 
+        opProxy->inlet("__event__"), activate_started_ope->outlet(), {});
+      //ec->bind(store.operation(Value::string(v.at("fullName"))));
+    });
+  });
   /*
   
   config.at("ecs").at("precreate").const_list_for_each([&store](auto& value) {
     ObjectFactory::createExecutionContext(store, value);
   });
 
-  config.at("ecs").at("bind").const_object_for_each([&store](auto key, auto value) {
-    value.const_list_for_each([&store, &key](auto& v) {
-      store.executionContext(key)->bind(store.operation(Value::string(v.at("fullName"))));
-    });
-  });
+  
   */
   logger::trace("Process::_preloadExecutionContexts() exit");
 }
@@ -96,6 +111,47 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
  */
 void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("Process::_preStartFSMs() entry");
+  config.at("fsms").at("bind").const_list_for_each([&store](const auto& bindInfo) {
+   // bindInfos.const_object_for_each([&store](auto& bindInfo) {
+     {
+      auto fullName = Value::string(bindInfo["fullName"]);
+      auto state    = Value::string(bindInfo["state"]);
+      auto fsm = store.get<ContainerAPI>(fullName);
+      auto stateOp = store.get<OperationAPI>(fullName + ":activate_state_" + state + ".ope");
+      bindInfo["operations"].const_list_for_each([&store, &stateOp](auto& opInfo) {
+        auto name = stateOp->fullName() + "_state_connection_" + Value::string(opInfo["fullName"]);
+        Value option = {};
+        if (opInfo.hasKey("argument")) {
+          option["argument"] = opInfo["argument"];
+        }
+        nerikiri::connect(coreBroker(store), name, store.operationProxy(opInfo)->inlet("__argument__"), stateOp->outlet(), option);
+      });
+      bindInfo["ecs"].const_list_for_each([&store](auto& ecInfo) {
+        
+      });
+    //});
+     }
+  });
+    /*
+    auto fsmInfo = bindInfo.at("fsm");
+    auto opInfo = bindInfo.at("operation");
+    store.fsm(Value::string(fsmInfo.at("fullName")))->fsmState(Value::string(fsmInfo.at("state")))->bind(
+      store.operation(Value::string(opInfo.at("fullName"))),
+      opInfo.at("argument")
+    );
+    */
+    /*
+    if (opInfo.hasKey("argument")) {
+      this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
+        this->store()->getAllOperation(opInfo), opInfo.at("argument")
+      );
+    } else {
+      this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
+        this->store()->getAllOperation(opInfo)
+      );
+    }
+    *
+  }); 
     /* 
     config.at("fsms").at("bind").at("operations").const_list_for_each([&store](auto& bindInfo) {
       auto fsmInfo = bindInfo.at("fsm");

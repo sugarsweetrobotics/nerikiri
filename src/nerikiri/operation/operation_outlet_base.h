@@ -42,8 +42,8 @@ namespace nerikiri {
             {"ownerFullName", operation_->fullName()},
             {"connections", {
                 nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
-            }},
-            {"operation", operation_->info()}
+            }}//,
+            //{"operation", operation_->info()}
         };
     }
 

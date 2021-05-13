@@ -355,6 +355,10 @@ public:
         return op->info();
     });
   }
+
+  virtual Value fullInfo(const std::string& containerFullName) const override {
+    return process_->store()->get<ContainerAPI>(containerFullName)->fullInfo();
+  }
 };
 
 

@@ -25,11 +25,14 @@
 namespace nerikiri {
 
 
+
   class Process;
   class ProcessAPI;
   class BrokerAPI;
+  class BrokerProxyAPI;
   class BrokerFactoryAPI;
 
+  std::shared_ptr<BrokerProxyAPI> coreBroker(ProcessStore& store);
   class NK_API ProcessStore {
   private:
     ProcessAPI* process_;
@@ -296,4 +299,6 @@ namespace nerikiri {
 
     Value getCallbacks() const;
   };
+
+
 }

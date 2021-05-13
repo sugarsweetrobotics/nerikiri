@@ -20,10 +20,7 @@
 namespace nerikiri {
 
   class OperationInletBase : public OperationInletAPI {
-  public:
-    OperationInletBase(const std::string& name, OperationAPI* operation, const Value& defaultValue);
-    virtual ~OperationInletBase() {}
-  private:
+  protected:
     const std::string name_;
     const Value default_;
     OperationAPI* operation_;
@@ -32,6 +29,9 @@ namespace nerikiri {
     ConnectionContainer connections_;
     std::shared_ptr<NewestValueBuffer> buffer_;
     std::mutex argument_mutex_;
+  public:
+    OperationInletBase(const std::string& name, OperationAPI* operation, const Value& defaultValue);
+    virtual ~OperationInletBase() {}
 
   public:
     //virtual OperationAPI* owner() override { return operation_; }

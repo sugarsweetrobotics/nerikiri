@@ -71,8 +71,6 @@ Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const
     }
 
     auto defaultStateName = "stopped";
-
-    std::cout << "Execution" << " c" << std::endl;
     c->ptr()->fullName = fullName;
     c->setClassName("ExecutionContext");
     c->setTypeName(ecInfo["typeName"].stringValue());

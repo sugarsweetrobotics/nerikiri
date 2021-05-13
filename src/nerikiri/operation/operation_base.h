@@ -1,37 +1,18 @@
 #pragma once
 
-//#include <map>
-//#include <functional>
-//#include <thread>
-//#include <mutex>
-
-//#include "nerikiri/nerikiri.h"
-//#include "nerikiri/object.h"
 #include "nerikiri/operation_api.h"
 
-//#include "nerikiri/connection.h"
-//#include "nerikiri/functional.h"
-
-//#include "newest_value_buffer.h"
-
-//#include "operation_inlet_base.h"
-
 namespace nerikiri {
-
-  //class Process;
-
-  //using Process_ptr = Process*;
-
 
   class OperationInletBase;
   class OperationOutletBase;
 
   class OperationBase : public OperationAPI {
   protected:
-    //const std::string& operationTypeName_;
+    std::shared_ptr<OperationInletBase> event_inlet_; //< 引数に影響なし
+    std::shared_ptr<OperationInletBase> argument_inlet_; //< 全引数に影響する接続につかうinlet
     std::vector<std::shared_ptr<OperationInletBase>> inlets_;
     std::shared_ptr<OperationOutletBase> outlet_;
-    std::shared_ptr<OperationInletBase> event_inlet_;
   public:
 
     virtual Value fullInfo() const override;
@@ -45,12 +26,10 @@ namespace nerikiri {
   public:
     OperationBase(const std::string& className, const std::string& typeName, const std::string& fullName, const Value& defaultArg = {});
 
-    // OperationBase(const OperationBase& op);
-
     virtual ~OperationBase();
 
   public:
-
+    // callはこのクラスの継承先クラスで実装する
     // virtual Value call() override { return {}; } 
 
     virtual Value invoke() override;

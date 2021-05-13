@@ -41,7 +41,9 @@
             "TimerEC0.ec": [
                 {
                     "fullName": "OpenCVCamera0.ctn:capture0.ope",
-                    "broker": "CoreBroker"
+                    "broker": {
+                        "typeName": "CoreBroker"
+                    }
                 }
             ]
         }
@@ -50,10 +52,12 @@
 
 
     "fsms": {
-        "bind": {        
-            "operations": [
-                {
-                    "operation": {
+        "bind": [
+            {
+                "fullName" : "FSM0.fsm",
+                "state" : "running",
+                "operations" : [
+                    {
                         "fullName": "OpenCVCamera0.ctn:initialize0.ope",
                         "argument":  {
                             "cameraId": 0,
@@ -61,47 +65,31 @@
                             "height": 240
                         }
                     },
-                    "fsm": {
-                        "fullName": "FSM0.fsm",
-                        "state": "running"
-                    }
-                },
-                {
-                    "operation": {
+                    {
                         "fullName": "OpenCVCascadeClassifier0.ctn:initialize0.ope",
                         "argument":  {
                             "parameterFilePath": "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml"
                         }
-                    },
-                    "fsm": {
-                        "fullName": "FSM0.fsm",
-                        "state": "running"
                     }
-                }
-            ],
-            "ecs": [
-                {
-                    "ec": {
+                ],
+                "ecs" : [
+                    {
                         "fullName": "TimerEC0.ec",
                         "state": "started"
-                    },
-                    "fsm": {
-                        "fullName": "FSM0.fsm",
-                        "state": "running"
                     }
-                },
-                {
-                    "ec": {
+                ]
+            },
+            {
+                "fullName" : "FSM0.fsm",
+                "state": "stopped",
+                "ecs" : [
+                    {
                         "fullName": "TimerEC0.ec",
                         "state": "stopped"
-                    },
-                    "fsm": {
-                        "fullName": "FSM0.fsm",
-                        "state": "stopped"
                     }
-                }
-            ]
-        }, 
+                ]
+            }
+        ],  
         "precreate": [
             {
                 "typeName": "GenericFSM",
@@ -114,7 +102,6 @@
                     { 
                         "name": "running",
                         "transit": ["stopped"]
-                       
                     }
                 ],
                 "defaultState": "stopped"

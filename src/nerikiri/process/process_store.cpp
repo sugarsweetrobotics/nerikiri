@@ -111,6 +111,12 @@ std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
   return nullOperationInlet();  
 }
 
+
+std::shared_ptr<BrokerProxyAPI> nerikiri::coreBroker(ProcessStore& store) {
+  return store.brokerFactory("CoreBroker")->createProxy("");
+}
+
+
 std::shared_ptr<OperationOutletAPI> ProcessStore::outletProxy(const Value& info) {
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
     auto p = nerikiri::functional::find<std::shared_ptr<OperationOutletAPI>>(outletProxies(), [&info](auto p) {

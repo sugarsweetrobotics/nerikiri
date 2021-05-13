@@ -147,6 +147,15 @@ namespace nerikiri {
     }
 
     template<typename V>
+    bool for_any(const std::vector<V>& vec, std::function<bool(const V&)> func) {
+      bool flag = true;
+      for(const auto& v : vec) {
+        flag = flag || func(v);
+      }
+      return flag;
+    }
+
+    template<typename V>
     void for_each(const std::vector<V>& vec, std::function<void(const V&)> func) {
       for(const auto& v : vec) {
         func(v);

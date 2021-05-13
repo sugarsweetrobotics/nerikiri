@@ -111,6 +111,7 @@ namespace nerikiri {
         virtual ~ContainerBrokerAPI() {}
 
         virtual Value operations(const std::string& containerFullName)  const = 0;
+        virtual Value fullInfo(const std::string& containerFullName) const = 0;
     };
 
     class ContainerOperationBrokerAPI {

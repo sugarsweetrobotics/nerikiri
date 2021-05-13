@@ -5,6 +5,7 @@
 #include "operation_base.h"
 #include "operation_inlet_base.h"
 #include "operation_outlet_base.h"
+#include "argument_inlet.h"
 
 using namespace nerikiri;
 
@@ -31,6 +32,7 @@ Value OperationInputBase::collectValues() {
 OperationBase::OperationBase(const std::string& className, const std::string& typeName, const std::string& fullName, const Value& defaultArgs /*= {}*/):
   OperationAPI(className, typeName, fullName), outlet_(std::make_shared<OperationOutletBase>(this)) {
   event_inlet_ = std::make_shared<OperationInletBase>("__event__", this, Value({}));
+  argument_inlet_ = std::make_shared<ArgumentInlet>("__argument__", this, Value({}));
   defaultArgs.const_object_for_each([this](const std::string& key, const Value& value) {
     inlets_.emplace_back(std::make_shared<OperationInletBase>(key, this, value));
   });
@@ -59,6 +61,7 @@ Value OperationBase::info() const {
 
 std::shared_ptr<OperationInletAPI> OperationBase::inlet(const std::string& name) const {
   if (name == "__event__")  return event_inlet_;
+  if (name == "__argument__")  return argument_inlet_;
   auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
   if (i) return i.value();
   logger::error("OperationBase(typeName={}, fullName={})::inlet(name={}) requested. But argument {} not found.", typeName(), fullName(), name, name);
@@ -69,11 +72,15 @@ std::vector<std::shared_ptr<OperationInletAPI>> OperationBase::inlets() const {
   return {inlets_.begin(), inlets_.end()};
 }
 
-
+/**
+ * invoke　
+ */
 Value OperationBase::invoke() {
   logger::trace("OperationBase({})::invoke() called", fullName());
   try {
-    if (nerikiri::functional::for_all<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return inlet->isUpdated(); })) {
+    /// TODO: ここの論理はおかしいかもしれない．
+    /// もし，一つでもインレット（引数）がアップデートされていたらcollectValuesでデータを集めてcallします．
+    if (nerikiri::functional::for_any<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return inlet->isUpdated(); })) {
       logger::trace("OperationBase({})::invoke() inlet updated. Collecting data and calling...", fullName());
       return call(
         nerikiri::functional::map<std::pair<std::string, Value>, std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) {

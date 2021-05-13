@@ -113,6 +113,10 @@ Value nerikiri::createFSM(ProcessStore& store, const std::string& fullName, cons
     auto defaultStateName = Value::string(fsmInfo.at("defaultState"));
 
     c->ptr()->fullName = fullName;
+
+    c->setClassName("FSM");
+    c->setTypeName("FSM");
+
     c->ptr()->currentState = defaultStateName;
 
     auto getter = store.get<ContainerOperationFactoryAPI>("_FSMContainerStruct:get_state")->create<OperationAPI>(container->fullName() + ":" + "get_state.ope");

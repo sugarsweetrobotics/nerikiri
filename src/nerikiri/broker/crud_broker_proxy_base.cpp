@@ -185,6 +185,10 @@ public:
     virtual Value operations(const std::string& containerFullName) const override {
         return broker_->readResource("containers/" + containerFullName + "/operations");
     }
+
+    virtual Value fullInfo(const std::string& containerFullName) const override {
+        return broker_->readResource("containers/" + containerFullName + "/fullInfo");
+    }
 };
 
 CRUDBrokerProxyBase::CRUDBrokerProxyBase(const std::string& className, const std::string& typeName, const std::string& fullName) : 

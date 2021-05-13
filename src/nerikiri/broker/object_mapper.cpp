@@ -98,7 +98,11 @@ Value ObjectMapper::readResource(const std::shared_ptr<const BrokerProxyAPI>& co
 
     if (std::regex_match(path, match, std::regex("containers/([^/]*)/operations$"))) {  
       return coreBroker->container()->operations(match[1]);
-    }
+    } else if (std::regex_match(path, match, std::regex("containers/([^/]*)/fullInfo$"))) {
+      auto v = coreBroker->container()->fullInfo(match[1]);
+      if (!receiverBrokerInfo.isNull() && !v.isError()) v["broker"] = receiverBrokerInfo;
+      return v;
+    } 
 
     return Value::error(logger::error("ObjectMapper::readResource({}) failed. No route matched", path));
 }

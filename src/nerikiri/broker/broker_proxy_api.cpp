@@ -170,6 +170,10 @@ public:
         return Value::error(logger::error("NullContainerBroker::{}({}) called. Object is null.", __func__, containerFullName));
     }
 
+    virtual Value fullInfo(const std::string& containerFullName) const override {
+        return Value::error(logger::error("NullContainerBroker::{}() called. Object is null.", __func__, containerFullName));
+    }
+
 };
 
 class NullBrokerProxy : public BrokerProxyAPI
