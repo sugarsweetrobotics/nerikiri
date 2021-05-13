@@ -112,7 +112,6 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
 void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("Process::_preStartFSMs() entry");
   config.at("fsms").at("bind").const_list_for_each([&store](const auto& bindInfo) {
-   // bindInfos.const_object_for_each([&store](auto& bindInfo) {
      {
       auto fullName = Value::string(bindInfo["fullName"]);
       auto state    = Value::string(bindInfo["state"]);
@@ -126,10 +125,16 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
         }
         nerikiri::connect(coreBroker(store), name, store.operationProxy(opInfo)->inlet("__argument__"), stateOp->outlet(), option);
       });
-      bindInfo["ecs"].const_list_for_each([&store](auto& ecInfo) {
-        
+      bindInfo["ecs"].const_list_for_each([&store, &stateOp](auto& ecInfo) {
+        auto name = stateOp->fullName() + "_state_connection_" + Value::string(ecInfo["fullName"]) + "_" + Value::string(ecInfo["state"]) ;
+        Value ecStateOpInfo {
+          {"fullName", Value::string(ecInfo["fullName"]) + ":activate_state_" + Value::string(ecInfo["state"]) + ".ope"}
+        };
+        if (ecInfo.hasKey("broker")) {
+          ecStateOpInfo["broker"] = ecInfo["broker"];
+        }
+        nerikiri::connect(coreBroker(store), name, store.operationProxy(ecStateOpInfo)->inlet("__event__"), stateOp->outlet());
       });
-    //});
      }
   });
     /*

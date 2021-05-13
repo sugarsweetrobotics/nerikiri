@@ -20,11 +20,12 @@ namespace nerikiri {
     
     virtual Value put(const Value& value) override {  
         logger::trace("ArgumentInlet::put({}) called", value);
-        for(auto i : operation_->inlets()) {
+        for(const auto& i : operation_->inlets()) {
             if (value.hasKey(i->name())) {
                 i->put(value[i->name()]);
             }
         }
+        return value;
     }
 
   };
