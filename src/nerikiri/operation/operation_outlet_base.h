@@ -50,25 +50,14 @@ namespace nerikiri {
     virtual Value put(Value&& v);
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
-
-    virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& con) override {
-      if (con->isNull()) {
-        return Value::error(logger::error("OperationBase::addConnection() failed. Passing connection is null"));
-      }
-      auto v = connections_.addConnection(con);
-      if (v.isError()) {
-        logger::error("OperationOutletBase::addConnection failed: {}", v.getErrorMessage());
-        return v;
-      }
-      return v;
-    }
     
     virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override;
     
     virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override;
-
+    /*
     virtual Value removeConnection(const std::string& _fullName) override {
       return connections_.removeConnection(_fullName);
     }
+    */
   };
 }

@@ -234,6 +234,7 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
     // return outletBroker->operationOutlet()->addConnection(Value::string(value.at("fullName")), connectionInfo);
 //}
 
+/*
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& cInfo, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ConnectionBuilder::registerTopicPublisher({}, {}, {})", cInfo, opInfo, topicInfo);
   auto op = store.get<OperationAPI>(nerikiri::naming::join(Value::string(cInfo.at("fullName")), Value::string(opInfo.at("fullName"))));
@@ -257,8 +258,8 @@ Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value
   };
   return op->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(connectionInfo, &store));
 }
-
-  
+*/
+  /*
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ConnectionBuilder::registerTopicPublisher({}, {})", opInfo, topicInfo);
   auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
@@ -282,6 +283,7 @@ Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value
   };
   return op->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(connectionInfo, &store));
 }
+*/
 /*
 Value ConnectionBuilder::registerOperationProviderConnection(ProcessStore* store, const Value& ci, BrokerAPI* receiverBroker) {
     logger::trace("ConnectionBuilder::registerOperationProviderConnection({})", (ci));
@@ -417,9 +419,10 @@ Value ConnectionBuilder::deleteConnection(ProcessStore* store, const std::string
 
   auto info = con->info();
 
-  auto v_in = con->inlet()->removeConnection(connectionFullName);
+  
+  //auto v_in = con->inlet()->removeConnection(connectionFullName);
 
-  auto v_out = con->outlet()->removeConnection(connectionFullName);
+  //auto v_out = con->outlet()->removeConnection(connectionFullName);
   
 
   //store->deleteConnection(connectionFullName);

@@ -143,9 +143,11 @@ public:
         });
     }
 
+    /*
     Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
-        auto value = broker_->operationOutlet()->addConnection(fullName_, c->info());
+    //    auto value = broker_->operationOutlet()->addConnection(fullName_, c->info());
     }
+    */
 
 
     virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override {
@@ -158,9 +160,11 @@ public:
         return broker_->operationOutlet()->disconnectFrom(fullName_, inlet->info());
     }
 
+    /*
     Value removeConnection(const std::string& _fullName) override {
-        return broker_->operationOutlet()->removeConnection(fullName_, _fullName);
+    //    return broker_->operationOutlet()->removeConnection(fullName_, _fullName);
     }
+    */
 
     Value info() const override {
         auto i = broker_->operationOutlet()->info(fullName_);

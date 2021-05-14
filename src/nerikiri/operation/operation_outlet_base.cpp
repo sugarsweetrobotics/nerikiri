@@ -50,9 +50,16 @@ Value OperationOutletBase::put(Value&& v) {
 }
 
 Value OperationOutletBase::connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo_) {
-  // TODO: 未実装
-  // return addConnection( createConnection(name, connectionType(Value::string(connectionInfo_.at("type"))), inlet, operation_->outlet(), nullptr) );
-    return addConnection( createConnection(Value::string(connectionInfo_["name"]), connectionType(Value::string(connectionInfo_["type"])), inlet, operation_->outlet(), nullptr));
+  auto con = createConnection(Value::string(connectionInfo_["name"]), connectionType(Value::string(connectionInfo_["type"])), inlet, operation_->outlet(), nullptr);
+  if (con->isNull()) {
+    return Value::error(logger::error("OperationBase::addConnection() failed. Passing connection is null"));
+  }
+  auto v = connections_.addConnection(con);
+  if (v.isError()) {
+    logger::error("OperationOutletBase::addConnection failed: {}", v.getErrorMessage());
+    return v;
+  }
+  return v;
 }
     
 Value OperationOutletBase::disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) {

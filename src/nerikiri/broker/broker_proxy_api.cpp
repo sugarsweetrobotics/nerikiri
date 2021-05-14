@@ -75,13 +75,13 @@ public:
         return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
     }
 
-    virtual Value addConnection(const std::string& fullName, const Value& c) override {
-        return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
-    }
+    //virtual Value addConnection(const std::string& fullName, const Value& c) override {
+    //    return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
+    //}
     
-    virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
-        return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
-    }
+    //virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
+    //    return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));
+    //}
 
     virtual Value info(const std::string& fullName) const override {
         return Value::error(logger::error("NullOperationOutletBroker::{}({}) called. Object is null.", __func__, fullName));

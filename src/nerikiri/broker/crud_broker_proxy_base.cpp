@@ -85,13 +85,13 @@ public:
         return broker_->readResource("operations/" + fullName + "/outlet/connections");
     }
 
-    virtual Value addConnection(const std::string& fullName, const Value& c) override {
-        return broker_->createResource("operations/" + fullName + "/outlet/connections", c);
-    }
+    //virtual Value addConnection(const std::string& fullName, const Value& c) override {
+    //    return broker_->createResource("operations/" + fullName + "/outlet/connections", c);
+    //}
     
-    virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
-        return broker_->deleteResource("operations/" + fullName + "/outlet/connections/" + name);
-    }
+    //virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
+    //    return broker_->deleteResource("operations/" + fullName + "/outlet/connections/" + name);
+    //}
 
     virtual Value info(const std::string& fullName) const override {
         return broker_->readResource("operations/" + fullName + "/outlet/info");

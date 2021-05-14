@@ -26,7 +26,7 @@ public:
         return info_["fullName"].stringValue();
     }
 
-    virtual std::shared_ptr<OperationInletAPI> inlet() const {
+    virtual std::shared_ptr<OperationInletAPI> inlet() const override {
         // TODO: ここでinletの実体を返さないとdeleteできない．
         if (info_.at("inlet").hasKey("operation")) {
             return nerikiri::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("operation").at("fullName")), Value::string(info_.at("inlet").at("name")));
@@ -36,15 +36,20 @@ public:
         return nullOperationInlet();
     }
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const {
+    virtual std::shared_ptr<OperationOutletAPI> outlet() const override {
         // TODO: ここでoutletの実体を返さないとdeleteできない．
         return nerikiri::operationOutletProxy(nullptr, broker_, Value::string(info_.at("outlet").at("ownerFullName")));
 
     }
 
-    virtual Value pull() {}
+    virtual Value pull() override {
+        return Value::error(logger::error("ConnectionProxy::pull() is not implemented"));
+    }
 
-    virtual Value put(const Value& value) {}
+    virtual Value put(const Value& value) override {
+        return Value::error(logger::error("ConnectionProxy::put() is not implemented"));
+
+    }
 };
 
 std::shared_ptr<ConnectionAPI> nerikiri::connectionProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const Value& info) {

@@ -221,14 +221,14 @@ public:
       });
   }
 
-  virtual Value addConnection(const std::string& fullName, const Value& c) override {
-      /// FSMからはこちらが呼ばれるのはなんとかしなければならない
-      return process_->store()->get<OperationAPI>(fullName)->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(c, process_->store()));
-  }
+  //virtual Value addConnection(const std::string& fullName, const Value& c) override {
+  //    /// FSMからはこちらが呼ばれるのはなんとかしなければならない
+  //    return process_->store()->get<OperationAPI>(fullName)->outlet()->addConnection(ProxyBuilder::outgoingOperationConnectionProxy(c, process_->store()));
+  //}
   
-  virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
-      return process_->store()->get<OperationAPI>(fullName)->outlet()->removeConnection(name);
-  }
+  //virtual Value removeConnection(const std::string& fullName, const std::string& name) override {
+  //    return process_->store()->get<OperationAPI>(fullName)->outlet()->removeConnection(name);
+  //}
 
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
         logger::trace("CoreOperationOutletBroker({})::{}({}) called.", fullName, __func__, conInfo);
