@@ -34,7 +34,7 @@ public:
 
     virtual Value execute() override {
         argument_.const_object_for_each([this](auto key, auto value) {
-            auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(operation_->inlets(), [&key, value] (auto inlet) {
+            auto inlet = nerikiri::functional::find<std::shared_ptr<InletAPI>>(operation_->inlets(), [&key, value] (auto inlet) {
                 return inlet->name() == key;
             });
             if (!inlet) {
@@ -48,15 +48,15 @@ public:
     }
 
     
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return operation_->outlet(); }
+    virtual std::shared_ptr<OutletAPI> outlet() const override { return operation_->outlet(); }
 
-    virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
-        auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+    virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override {
+        auto i = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
         if (i) return i.value();
         return nullOperationInlet();
     }
 
-    virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return operation_->inlets(); }
+    virtual std::vector<std::shared_ptr<InletAPI>> inlets() const override { return operation_->inlets(); }
 
     //virtual Value putToArgument(const std::string& key, const Value& value) override { return operation_->putToArgument(key, value); }
 };

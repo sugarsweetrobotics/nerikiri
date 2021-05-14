@@ -5,8 +5,8 @@
 
 namespace nerikiri {
 
-    class OperationInletAPI;
-    class OperationOutletAPI;
+    class InletAPI;
+    class OutletAPI;
 
     class ConnectionAPI : public Object {
     private:
@@ -41,9 +41,9 @@ namespace nerikiri {
         bool isPull() const { return type_ == PULL; }
         bool isPush() const { return type_ == PUSH; }
 
-        virtual std::shared_ptr<OperationInletAPI> inlet() const =0;
+        virtual std::shared_ptr<InletAPI> inlet() const =0;
 
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const =0;
+        virtual std::shared_ptr<OutletAPI> outlet() const =0;
 
         virtual Value pull() =0;
 

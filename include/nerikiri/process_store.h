@@ -45,8 +45,8 @@ namespace nerikiri {
     std::vector<std::shared_ptr<BrokerAPI>> brokers_;
     std::vector<std::shared_ptr<BrokerFactoryAPI>> brokerFactories_;
 
-    std::vector<std::shared_ptr<OperationInletAPI>> inletProxies_;
-    std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies_;
+    std::vector<std::shared_ptr<InletAPI>> inletProxies_;
+    std::vector<std::shared_ptr<OutletAPI>> outletProxies_;
 
     friend class ProcessAPI;
     friend class Process;
@@ -208,11 +208,11 @@ namespace nerikiri {
         return {operationProxies_.begin(), operationProxies_.end()};
     }
 
-    std::vector<std::shared_ptr<OperationInletAPI>> inletProxies() const {
+    std::vector<std::shared_ptr<InletAPI>> inletProxies() const {
         return {inletProxies_.begin(), inletProxies_.end()};
     }
 
-    std::vector<std::shared_ptr<OperationOutletAPI>> outletProxies() const {
+    std::vector<std::shared_ptr<OutletAPI>> outletProxies() const {
         return {outletProxies_.begin(), outletProxies_.end()};
     }
 
@@ -254,12 +254,12 @@ namespace nerikiri {
     /**
      * InletProxyをStoreに追加
      */
-    Value addInletProxy(const std::shared_ptr<OperationInletAPI>& inlet) {
+    Value addInletProxy(const std::shared_ptr<InletAPI>& inlet) {
       inletProxies_.push_back(inlet); //add<OperationInletAPI>(inletProxies_, inlet, "");
       return inlet->info();
     }
 
-    Value addOutletProxy(const std::shared_ptr<OperationOutletAPI>& outlet) {
+    Value addOutletProxy(const std::shared_ptr<OutletAPI>& outlet) {
       outletProxies_.push_back(outlet);
       return outlet->info(); //return add<OperationOutletAPI>(outletProxies_, outlet, "");
     }
@@ -272,13 +272,13 @@ namespace nerikiri {
     /**
      * InletProxyを取得する
      */
-    std::shared_ptr<OperationInletAPI> inletProxy(const Value& info);
+    std::shared_ptr<InletAPI> inletProxy(const Value& info);
 
     /**
      * OutletProxyを取得する
      * 
      */
-    std::shared_ptr<OperationOutletAPI> outletProxy(const Value& info);
+    std::shared_ptr<OutletAPI> outletProxy(const Value& info);
 
 
     //-------- getter ---------

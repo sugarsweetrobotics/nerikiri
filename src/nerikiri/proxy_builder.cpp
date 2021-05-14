@@ -121,13 +121,13 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(co
 
     auto outlet_side_operation = store->get<OperationAPI>(Value::string(value.at("outlet").at("operation").at("fullName")));
 
-    std::shared_ptr<OperationInletAPI> inlet = nullptr;
+    std::shared_ptr<InletAPI> inlet = nullptr;
     std::shared_ptr<Object> inlet_holder = nullptr;
     auto className = "operation";
     if (value.at("inlet").hasKey("operation")) {
         // Check the same connection route is already connected
         auto inlet_side_operationProxy = ProxyBuilder::operationProxy(value.at("inlet").at("operation"), store);
-        auto inlet_opt = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlet_side_operationProxy->inlets(), 
+        auto inlet_opt = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlet_side_operationProxy->inlets(), 
             [&value](auto i) { return i->name() == Value::string(value.at("inlet").at("name")); }
         );
         if (!inlet_opt) {
@@ -178,7 +178,7 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(co
 std::shared_ptr<ConnectionAPI> ProxyBuilder::incomingOperationConnectionProxy(const Value& value, ProcessStore* store) {
     if (value.at("inlet").hasKey("operation")) {
         auto outlet_side_operationProxy = ProxyBuilder::operationProxy(value.at("outlet").at("operation"), store);
-        auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(
+        auto inlet = nerikiri::functional::find<std::shared_ptr<InletAPI>>(
             store->get<OperationAPI>(Value::string(value.at("inlet").at("operation").at("fullName")))->inlets(), 
             [&value](auto i) { return i->name() == Value::string(value.at("inlet").at("name")); }
         );

@@ -19,7 +19,7 @@
 
 namespace nerikiri {
 
-  class OperationInletBase : public OperationInletAPI {
+  class OperationInletBase : public InletAPI {
   protected:
     const std::string name_;
     const Value default_;
@@ -75,9 +75,9 @@ namespace nerikiri {
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
 
-    virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override;
+    virtual Value connectTo(const std::shared_ptr<OutletAPI>& outlet, const Value& connectionInfo) override;
     
-    virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) override;
+    virtual Value disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) override;
 
     //virtual Value removeConnection(const std::string& _fullName) override {
     //  return connections_.removeConnection(_fullName);

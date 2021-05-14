@@ -9,7 +9,7 @@ using namespace nerikiri;
 class ConnectionProxy : public ConnectionAPI {
 private:
     const Value info_;
-    std::shared_ptr<OperationInletAPI> inletProxy_;
+    std::shared_ptr<InletAPI> inletProxy_;
     const std::shared_ptr<ClientProxyAPI> broker_;
 public:
     ConnectionProxy(const std::shared_ptr<ClientProxyAPI>& broker, const Value& info, const ConnectionType type) 
@@ -26,7 +26,7 @@ public:
         return info_["fullName"].stringValue();
     }
 
-    virtual std::shared_ptr<OperationInletAPI> inlet() const override {
+    virtual std::shared_ptr<InletAPI> inlet() const override {
         // TODO: ここでinletの実体を返さないとdeleteできない．
         if (info_.at("inlet").hasKey("operation")) {
             return nerikiri::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("operation").at("fullName")), Value::string(info_.at("inlet").at("name")));
@@ -36,7 +36,7 @@ public:
         return nullOperationInlet();
     }
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override {
+    virtual std::shared_ptr<OutletAPI> outlet() const override {
         // TODO: ここでoutletの実体を返さないとdeleteできない．
         return nerikiri::operationOutletProxy(nullptr, broker_, Value::string(info_.at("outlet").at("ownerFullName")));
 

@@ -20,19 +20,25 @@ ec_api.h
 ec.h
 
 factory_api.h 
+
 geometry.h 
 logger.h 
 nerikiri.h 
 object.h 
+
 operation_api.h 
 operation.h 
+
 process_api.h 
 process_store.h 
 process.h 
+
 systemeditor.h 
+
 topic_api.h 
 topic_factory_api.h 
 topic.h 
+
 value.h 
 )
 

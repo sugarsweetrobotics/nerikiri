@@ -192,7 +192,7 @@ public:
   }
 
   virtual Value inlets(const std::string& fullName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [](auto il) {
+      return nerikiri::functional::map<Value, std::shared_ptr<InletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [](auto il) {
           return il->info();
       });
   }
@@ -233,7 +233,7 @@ public:
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
         logger::trace("CoreOperationOutletBroker({})::{}({}) called.", fullName, __func__, conInfo);
         // TODO:
-        std::shared_ptr<nerikiri::OperationInletAPI> inlet = nullptr;
+        std::shared_ptr<nerikiri::InletAPI> inlet = nullptr;
         if (conInfo["inlet"].hasKey("fsm")) {
             inlet = process_->store()->operationProxy(conInfo["inlet"]["fsm"])->inlet(conInfo["inlet"]["name"].stringValue());
         } else if (conInfo["inlet"].hasKey("operation")) {

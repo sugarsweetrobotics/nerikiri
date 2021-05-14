@@ -6,7 +6,7 @@
 namespace nerikiri {
 
 
-  class OperationOutletBase  : public OperationOutletAPI {
+  class OperationOutletBase  : public OutletAPI {
   public:
     OperationOutletBase(OperationAPI* operation): operation_(operation) {}
     virtual ~OperationOutletBase() {}
@@ -51,9 +51,9 @@ namespace nerikiri {
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
     
-    virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override;
+    virtual Value connectTo(const std::shared_ptr<InletAPI>& inlet, const Value& connectionInfo) override;
     
-    virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override;
+    virtual Value disconnectFrom(const std::shared_ptr<InletAPI>& inlet) override;
     /*
     virtual Value removeConnection(const std::string& _fullName) override {
       return connections_.removeConnection(_fullName);

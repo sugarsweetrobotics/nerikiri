@@ -13,7 +13,7 @@ using namespace nerikiri;
 /**
  * inletOwnerClassName must be "operation" or "fsm"
  */
-static bool check_the_same_route_connection_exists(const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet) {
+static bool check_the_same_route_connection_exists(const std::shared_ptr<OutletAPI>& outlet, const std::shared_ptr<InletAPI>& inlet) {
     auto flag = false;
     nerikiri::functional::for_each<std::shared_ptr<ConnectionAPI>>(outlet->connections(), [&flag, &inlet](auto con) {
         if ((con->inlet()->ownerFullName() == Value::string(inlet->info().at("ownerFullName"))) && 
@@ -53,7 +53,7 @@ static std::string renameConnectionName(const std::vector<std::shared_ptr<Connec
   return _name;
 }
 
-Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) {
+Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<OutletAPI>& outlet, const std::shared_ptr<InletAPI>& inlet, const Value& connectionInfo) {
   logger::trace("ConnectionBuilder::connect({}, {}, {}) called", outlet->info(), inlet->info(), connectionInfo);
 
   if (check_the_same_route_connection_exists(outlet, inlet)) {

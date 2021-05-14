@@ -67,7 +67,7 @@ Value OperationInletBase::put(const Value& value) {
 
 
 
-Value OperationInletBase::connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) {  
+Value OperationInletBase::connectTo(const std::shared_ptr<OutletAPI>& outlet, const Value& connectionInfo) {  
   auto con = createConnection(Value::string(connectionInfo["name"]), connectionType(Value::string(connectionInfo.at("type"))), operation_->inlet(this->name()), outlet, nullptr);
   auto v = connections_.addConnection(con);
   if (v.isError()) {
@@ -77,6 +77,6 @@ Value OperationInletBase::connectTo(const std::shared_ptr<OperationOutletAPI>& o
   return v;
 }
     
-Value OperationInletBase::disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) {
+Value OperationInletBase::disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) {
   
 }

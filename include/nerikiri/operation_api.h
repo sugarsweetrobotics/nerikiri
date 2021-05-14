@@ -8,15 +8,15 @@ namespace nerikiri {
     class OperationAPI;
     class ConnectionAPI;
 
-    class OperationInletAPI;
+    class InletAPI;
 
     /**
      * 
      * 
      */
-    class OperationOutletAPI {
+    class OutletAPI {
     public:
-        virtual ~OperationOutletAPI() {}
+        virtual ~OutletAPI() {}
 
     public:
 
@@ -32,9 +32,9 @@ namespace nerikiri {
 
         //virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) = 0;
 
-        virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) = 0;
+        virtual Value connectTo(const std::shared_ptr<InletAPI>& inlet, const Value& connectionInfo) = 0;
 
-        virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) = 0;
+        virtual Value disconnectFrom(const std::shared_ptr<InletAPI>& inlet) = 0;
 
         //virtual Value removeConnection(const std::string& _fullName) = 0;
 
@@ -43,15 +43,15 @@ namespace nerikiri {
         virtual Value fullInfo() const { return info(); }
     };
 
-    std::shared_ptr<OperationOutletAPI> nullOperationOutlet();
+    std::shared_ptr<OutletAPI> nullOperationOutlet();
     
     /**
      * 
      * 
      */
-    class OperationInletAPI {
+    class InletAPI {
     public:
-        virtual ~OperationInletAPI() {}
+        virtual ~InletAPI() {}
     public:
 
         virtual bool isNull() const = 0;
@@ -80,14 +80,14 @@ namespace nerikiri {
 
         // virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) = 0;
 
-        virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) = 0;
+        virtual Value connectTo(const std::shared_ptr<OutletAPI>& outlet, const Value& connectionInfo) = 0;
 
-        virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) = 0;
+        virtual Value disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) = 0;
 
         // virtual Value removeConnection(const std::string& _fullName) = 0;
     };
 
-    std::shared_ptr<OperationInletAPI> nullOperationInlet();
+    std::shared_ptr<InletAPI> nullOperationInlet();
 
     /**
      * 
@@ -127,11 +127,11 @@ namespace nerikiri {
 
         virtual Value execute() = 0;
 
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const = 0;
+        virtual std::shared_ptr<OutletAPI> outlet() const = 0;
 
-        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const = 0;
+        virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const = 0;
     
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const = 0;
+        virtual std::vector<std::shared_ptr<InletAPI>> inlets() const = 0;
     };
 
     std::shared_ptr<OperationAPI> nullOperation();

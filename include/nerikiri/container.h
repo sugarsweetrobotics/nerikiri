@@ -125,11 +125,11 @@ namespace nerikiri {
 
         virtual Value execute() override { return base_->execute(); }
 
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return base_->outlet(); }
+        virtual std::shared_ptr<OutletAPI> outlet() const override { return base_->outlet(); }
 
-        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return base_->inlet(name); }
+        virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override { return base_->inlet(name); }
     
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return base_->inlets(); }        
+        virtual std::vector<std::shared_ptr<InletAPI>> inlets() const override { return base_->inlets(); }        
     };
 
 
@@ -174,11 +174,11 @@ namespace nerikiri {
 
         virtual Value execute() override { return operation_base_->execute(); }
 
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return operation_base_->outlet(); }
+        virtual std::shared_ptr<OutletAPI> outlet() const override { return operation_base_->outlet(); }
 
-        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return operation_base_->inlet(name); }
+        virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override { return operation_base_->inlet(name); }
     
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return operation_base_->inlets(); }
+        virtual std::vector<std::shared_ptr<InletAPI>> inlets() const override { return operation_base_->inlets(); }
     };
 
     class ContainerSetPoseOperation : public OperationAPI {
@@ -228,11 +228,11 @@ namespace nerikiri {
 
         virtual Value execute() override { return operation_base_->execute(); }
 
-        virtual std::shared_ptr<OperationOutletAPI> outlet() const override { return operation_base_->outlet(); }
+        virtual std::shared_ptr<OutletAPI> outlet() const override { return operation_base_->outlet(); }
 
-        virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override { return operation_base_->inlet(name); }
+        virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override { return operation_base_->inlet(name); }
     
-        virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override { return operation_base_->inlets(); }
+        virtual std::vector<std::shared_ptr<InletAPI>> inlets() const override { return operation_base_->inlets(); }
     };
 
 

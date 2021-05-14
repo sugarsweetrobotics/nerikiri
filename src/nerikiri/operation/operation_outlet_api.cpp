@@ -6,7 +6,7 @@ using namespace nerikiri;
 
 
 
-  class NullOperationOutlet : public OperationOutletAPI {
+  class NullOperationOutlet : public OutletAPI {
   private:
     std::shared_ptr<OperationAPI> owner_;
   public:
@@ -43,11 +43,11 @@ using namespace nerikiri;
     }
     */
 
-    virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override {
+    virtual Value connectTo(const std::shared_ptr<InletAPI>& inlet, const Value& connectionInfo) override {
         return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationInlet is null.", __func__));
     }
 
-    virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override {
+    virtual Value disconnectFrom(const std::shared_ptr<InletAPI>& inlet) override {
         return Value::error(logger::error("NullOperationOutlet::{}() failed. OperationInlet is null.", __func__));
     }
 
@@ -68,4 +68,4 @@ using namespace nerikiri;
   };
 
   
-  std::shared_ptr<OperationOutletAPI> nerikiri::nullOperationOutlet() { return std::make_shared<NullOperationOutlet>(); }
+  std::shared_ptr<OutletAPI> nerikiri::nullOperationOutlet() { return std::make_shared<NullOperationOutlet>(); }

@@ -85,9 +85,9 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   return get<OperationAPI>(Value::string(info.at("fullName")));
 }
 
-std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
+std::shared_ptr<InletAPI> ProcessStore::inletProxy(const Value& info) {
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
-    auto p = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inletProxies(), [&info](auto p) {
+    auto p = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["operation"]["fullName"] && p->name() == Value::string(info["name"]);
     });
@@ -117,9 +117,9 @@ std::shared_ptr<ClientProxyAPI> nerikiri::coreBroker(ProcessStore& store) {
 }
 
 
-std::shared_ptr<OperationOutletAPI> ProcessStore::outletProxy(const Value& info) {
+std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
-    auto p = nerikiri::functional::find<std::shared_ptr<OperationOutletAPI>>(outletProxies(), [&info](auto p) {
+    auto p = nerikiri::functional::find<std::shared_ptr<OutletAPI>>(outletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["operation"]["fullName"];
     });

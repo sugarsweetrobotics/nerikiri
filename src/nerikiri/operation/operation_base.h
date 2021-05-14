@@ -17,11 +17,11 @@ namespace nerikiri {
 
     virtual Value fullInfo() const override;
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override;
+    virtual std::shared_ptr<OutletAPI> outlet() const override;
 
-    virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override;
+    virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override;
     
-    virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override;
+    virtual std::vector<std::shared_ptr<InletAPI>> inlets() const override;
       
   public:
     OperationBase(const std::string& className, const std::string& typeName, const std::string& fullName, const Value& defaultArg = {});

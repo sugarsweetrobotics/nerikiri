@@ -9,7 +9,7 @@ using namespace nerikiri;
 
 class OperationProxy;
 
-class OperationInletProxy: public OperationInletAPI {
+class OperationInletProxy: public InletAPI {
 private:
     const std::shared_ptr<ClientProxyAPI> broker_;
     OperationAPI* owner_;
@@ -86,13 +86,13 @@ public:
     //}
 
 
-    virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
+    virtual Value connectTo(const std::shared_ptr<OutletAPI>& outlet, const Value& connectionInfo) override {
         // TODO: connect imple
         return broker_->operationInlet()->connectTo(fullName_, name_, connectionInfo);
     }
 
 
-    virtual Value disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) override {
+    virtual Value disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) override {
         // TODO: connect imple
     }
 
@@ -104,13 +104,13 @@ public:
 };
 
 
-std::shared_ptr<OperationInletAPI> nerikiri::operationInletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName, const std::string& name) {
+std::shared_ptr<InletAPI> nerikiri::operationInletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName, const std::string& name) {
     return std::make_shared<OperationInletProxy>(owner, broker, fullName, name);
 } 
 
 
 
-class OperationOutletProxy : public OperationOutletAPI {
+class OperationOutletProxy : public OutletAPI {
 private:
     const std::shared_ptr<ClientProxyAPI> broker_;
     OperationAPI* owner_;
@@ -150,12 +150,12 @@ public:
     */
 
 
-    virtual Value connectTo(const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo) override {
+    virtual Value connectTo(const std::shared_ptr<InletAPI>& inlet, const Value& connectionInfo) override {
         // TODO: connect imple
         return broker_->operationOutlet()->connectTo(fullName_, connectionInfo);
     }
 
-    virtual Value disconnectFrom(const std::shared_ptr<OperationInletAPI>& inlet) override {
+    virtual Value disconnectFrom(const std::shared_ptr<InletAPI>& inlet) override {
         // TODO: connect imple
         return broker_->operationOutlet()->disconnectFrom(fullName_, inlet->info());
     }
@@ -175,7 +175,7 @@ public:
 };
 
 
-std::shared_ptr<OperationOutletAPI> nerikiri::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
+std::shared_ptr<OutletAPI> nerikiri::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<OperationOutletProxy>(owner, broker, fullName);
 } 
 
@@ -189,9 +189,9 @@ private:
 
     bool inlets_ready_;
     Value inletInfos_;
-    std::shared_ptr<OperationInletAPI> event_inlet_;
-    std::shared_ptr<OperationInletAPI> argument_inlet_;
-    std::vector<std::shared_ptr<OperationInletAPI>> inlets_;
+    std::shared_ptr<InletAPI> event_inlet_;
+    std::shared_ptr<InletAPI> argument_inlet_;
+    std::vector<std::shared_ptr<InletAPI>> inlets_;
 public:
     OperationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
         fullName_(fullName), outlet_(std::make_shared<OperationOutletProxy>(this, broker, fullName)), inlets_ready_(false) {
@@ -239,23 +239,23 @@ public:
         return broker_->operation()->execute(fullName_);
     }
 
-    virtual std::shared_ptr<OperationOutletAPI> outlet() const override {
-         return std::dynamic_pointer_cast<OperationOutletAPI>(outlet_);
+    virtual std::shared_ptr<OutletAPI> outlet() const override {
+         return std::dynamic_pointer_cast<OutletAPI>(outlet_);
     }
  
-    virtual std::shared_ptr<OperationInletAPI> inlet(const std::string& name) const override {
+    virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override {
         if (name == "__event__") { 
             return event_inlet_;
         }
         else if (name == "__argument__") { 
             return argument_inlet_;
         }
-      auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+      auto i = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
       if (i) return i.value();
       return nullOperationInlet();
     }
     
-    virtual std::vector<std::shared_ptr<OperationInletAPI>> inlets() const override {
+    virtual std::vector<std::shared_ptr<InletAPI>> inlets() const override {
         if (inlets_ready_) {
             return inlets_;
         }

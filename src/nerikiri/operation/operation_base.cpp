@@ -40,12 +40,12 @@ OperationBase::OperationBase(const std::string& className, const std::string& ty
 
 OperationBase::~OperationBase() {}
 
-std::shared_ptr<OperationOutletAPI> OperationBase::outlet() const  { return outlet_; }
+std::shared_ptr<OutletAPI> OperationBase::outlet() const  { return outlet_; }
 
 Value OperationBase::fullInfo() const {
   auto i = info();
   i["outlet"] = outlet()->fullInfo();
-  i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<OperationInletAPI>>(inlets(), [](auto inlet) { return inlet->fullInfo(); });
+  i["inlets"] = nerikiri::functional::map<Value, std::shared_ptr<InletAPI>>(inlets(), [](auto inlet) { return inlet->fullInfo(); });
   return i;
 }
 
@@ -59,16 +59,16 @@ Value OperationBase::info() const {
   return i;
 }
 
-std::shared_ptr<OperationInletAPI> OperationBase::inlet(const std::string& name) const {
+std::shared_ptr<InletAPI> OperationBase::inlet(const std::string& name) const {
   if (name == "__event__")  return event_inlet_;
   if (name == "__argument__")  return argument_inlet_;
-  auto i = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+  auto i = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
   if (i) return i.value();
   logger::error("OperationBase(typeName={}, fullName={})::inlet(name={}) requested. But argument {} not found.", typeName(), fullName(), name, name);
   return nullOperationInlet();
 }
 
-std::vector<std::shared_ptr<OperationInletAPI>> OperationBase::inlets() const { 
+std::vector<std::shared_ptr<InletAPI>> OperationBase::inlets() const { 
   return {inlets_.begin(), inlets_.end()};
 }
 
