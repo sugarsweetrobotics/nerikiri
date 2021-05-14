@@ -59,7 +59,7 @@ SCENARIO( "Container test", "[container]" ) {
 
       AND_THEN("Container operation test") {
         auto cops = p->store()->list<OperationAPI>();
-        REQUIRE(cops.size() == 3);
+        REQUIRE(cops.size() == 5);
 
         auto getter = p->store()->get<OperationAPI>("MyStruct0.ctn:get0.ope");
         REQUIRE(getter->isNull() != true);
