@@ -32,7 +32,7 @@ SCENARIO( "Process test", "[process]" ) {
       "precreate": [
         {
             "typeName": "HTTPBroker",
-            "port": 8080,
+            "port": 18080,
             "host": "0.0.0.0",
             "fullName": "HTTPBroker0.brk"
         }
@@ -59,7 +59,7 @@ SCENARIO( "Process test", "[process]" ) {
       "precreate": [
         {
             "typeName": "HTTPBroker",
-            "port": 8081,
+            "port": 18081,
             "host": "0.0.0.0",
             "fullName": "HTTPBroker0.brk"
         }
