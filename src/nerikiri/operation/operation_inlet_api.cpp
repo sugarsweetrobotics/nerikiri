@@ -64,9 +64,9 @@ public:
         return {};
     }
 
-    virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
-        return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
-    }
+    //virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
+    //    return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
+    //}
 
     virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
         return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
@@ -76,9 +76,9 @@ public:
         return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
     }
 
-    virtual Value removeConnection(const std::string& _fullName) override {
-        return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
-    }
+    //virtual Value removeConnection(const std::string& _fullName) override {
+    //    return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));
+    //}
 
     virtual Value executeOwner() override {
         return Value::error(logger::error("NullOperationInlet::{}() failed. OperationInlet is null.", __func__));

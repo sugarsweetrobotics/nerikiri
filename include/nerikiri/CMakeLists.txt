@@ -1,8 +1,7 @@
 set(nk_public_headers
 
 broker_api.h 
-broker_factory_api.h 
-broker_proxy_api.h 
+client_proxy_api.h 
 
 connection_api.h
 connection_proxy.h

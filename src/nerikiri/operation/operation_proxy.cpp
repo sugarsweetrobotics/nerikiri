@@ -81,9 +81,9 @@ public:
         });
     }
 
-    virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
-        return broker_->operationInlet()->defaultValue(fullName_, name_);
-    }
+    //virtual Value addConnection(const std::shared_ptr<ConnectionAPI>& c) override {
+    //    return broker_->operationInlet()->defaultValue(fullName_, name_);
+    //}
 
 
     virtual Value connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) override {
@@ -97,9 +97,9 @@ public:
     }
 
     
-    virtual Value removeConnection(const std::string& _fullName) override {
-        return broker_->operationInlet()->defaultValue(fullName_, name_);
-    }
+    //virtual Value removeConnection(const std::string& _fullName) override {
+    //    return broker_->operationInlet()->defaultValue(fullName_, name_);
+    //}
  
 };
 

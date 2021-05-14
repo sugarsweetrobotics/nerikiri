@@ -8,16 +8,12 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
-#include "nerikiri/logger.h"
-#include "nerikiri/value.h"
 #include "nerikiri/object.h"
-
 #include <nerikiri/process_api.h>
 
 namespace nerikiri {
-    
-    class ProcessAPI;
     
     /**
      * Brokerの基本クラス
@@ -29,9 +25,7 @@ namespace nerikiri {
     public:
         BrokerAPI(const std::string& className, const std::string& typeName, const std::string& fullName): Object(className, typeName, fullName) {}
         
-        virtual ~BrokerAPI() {}        
-        virtual Value fullInfo() const = 0;
-
+        virtual ~BrokerAPI() {}
 
         virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) = 0;
         
@@ -43,4 +37,18 @@ namespace nerikiri {
 
     std::shared_ptr<BrokerAPI> nullBroker();
 
+
+
+    class BrokerFactoryAPI : public Object {
+    private:
+    public:
+        BrokerFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
+        virtual ~BrokerFactoryAPI() {}
+    public:
+        virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
+
+        virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) = 0;
+    };
+
+    std::shared_ptr<BrokerFactoryAPI> nullBrokerFactory();
 }

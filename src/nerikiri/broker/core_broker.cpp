@@ -290,20 +290,20 @@ public:
   }
   
 
-  virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
-      logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, c);
-      return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
-  }
+  //virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
+  //    logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, c);
+  //    return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->addConnection(ProxyBuilder::incomingOperationConnectionProxy(c, process_->store()));
+  //}
   
   
-  virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
-      logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, name);
-      auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [&targetName](auto i) {
-          return i->name() == targetName;
-      });
-      if (inlet) { return inlet.value()->removeConnection(name); }
-      return Value::error(logger::error("CoreOperationInletBroker::removeConnection({}, {}) failed. Inlet can not be found.", fullName, targetName));
-  }
+  //virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
+  //    logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, name);
+  //    auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [&targetName](auto i) {
+  //        return i->name() == targetName;
+  //    });
+  //    if (inlet) { return inlet.value()->removeConnection(name); }
+  //    return Value::error(logger::error("CoreOperationInletBroker::removeConnection({}, {}) failed. Inlet can not be found.", fullName, targetName));
+  //}
   
   // TODO: 未実装
      virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {

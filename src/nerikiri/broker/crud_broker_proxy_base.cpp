@@ -141,13 +141,13 @@ public:
         return broker_->readResource("operations/" + fullName + "/inlets/" + targetName + "/connections");
     }
 
-    virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
-        return broker_->createResource("operations/" + fullName + "/inlets/" + targetName + "/connections", c);
-    }
+    //virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) override {
+    //    return broker_->createResource("operations/" + fullName + "/inlets/" + targetName + "/connections", c);
+    //}
     
-    virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
-        return broker_->deleteResource("operations/" + fullName + "/inlets/" + targetName + "/connections/" + name);
-    }
+    //virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
+    //    return broker_->deleteResource("operations/" + fullName + "/inlets/" + targetName + "/connections/" + name);
+    //}
 
 
     virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {

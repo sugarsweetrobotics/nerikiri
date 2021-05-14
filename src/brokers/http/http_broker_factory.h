@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nerikiri/broker_factory_api.h>
+#include <nerikiri/broker_api.h>
 
 /**
  * 

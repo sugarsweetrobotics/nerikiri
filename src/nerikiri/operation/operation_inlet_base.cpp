@@ -68,7 +68,13 @@ Value OperationInletBase::put(const Value& value) {
 
 
 Value OperationInletBase::connectTo(const std::shared_ptr<OperationOutletAPI>& outlet, const Value& connectionInfo) {  
-  return addConnection( createConnection(Value::string(connectionInfo["name"]), connectionType(Value::string(connectionInfo.at("type"))), operation_->inlet(this->name()), outlet, nullptr));
+  auto con = createConnection(Value::string(connectionInfo["name"]), connectionType(Value::string(connectionInfo.at("type"))), operation_->inlet(this->name()), outlet, nullptr);
+  auto v = connections_.addConnection(con);
+  if (v.isError()) {
+    logger::error("OperationInletBase::addConnection failed: {}", v.getErrorMessage());
+    return v;
+  }
+  return v;
 }
     
 Value OperationInletBase::disconnectFrom(const std::shared_ptr<OperationOutletAPI>& outlet) {

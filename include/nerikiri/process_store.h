@@ -12,7 +12,6 @@
 #include <nerikiri/ec_api.h>
 #include <nerikiri/ec_factory_api.h>
 #include "nerikiri/broker_api.h"
-#include "nerikiri/broker_factory_api.h"
 
 #include "nerikiri/connection.h"
 //#include "nerikiri/connectiondictionary.h"

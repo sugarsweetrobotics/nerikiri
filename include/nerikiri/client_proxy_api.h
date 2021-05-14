@@ -87,9 +87,9 @@ namespace nerikiri {
 
         virtual Value connections(const std::string& fullName, const std::string& targetName) const = 0;
 
-        virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) = 0;
+        //virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) = 0;
         
-        virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) = 0;
+        //virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) = 0;
 
         virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) = 0;
 

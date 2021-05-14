@@ -5,7 +5,7 @@
 #include <map>
 
 #include <nerikiri/crud_broker.h>
-#include <nerikiri/broker_factory_api.h>
+#include <nerikiri/broker_api.h>
 #include "http_broker_factory.h"
 #include "http_client.h"
 #include "http_client.h"
