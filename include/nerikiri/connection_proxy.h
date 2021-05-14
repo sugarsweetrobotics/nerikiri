@@ -7,5 +7,5 @@
 
 namespace nerikiri {
     
-    std::shared_ptr<ConnectionAPI> connectionProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const Value& info);
+    std::shared_ptr<ConnectionAPI> connectionProxy(const std::shared_ptr<ClientProxyAPI>& broker, const Value& info);
 }

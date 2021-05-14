@@ -27,9 +27,9 @@ namespace nerikiri {
         
         virtual ~BrokerAPI() {}
 
-        virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) = 0;
+        virtual bool run(const std::shared_ptr<ClientProxyAPI>& coreBroker) = 0;
         
-        virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) = 0;
+        virtual void shutdown(const std::shared_ptr<ClientProxyAPI>& coreBroker) = 0;
 
         virtual bool isRunning() const = 0;
     };
@@ -47,7 +47,7 @@ namespace nerikiri {
     public:
         virtual std::shared_ptr<BrokerAPI> create(const Value& param) = 0;
 
-        virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) = 0;
+        virtual std::shared_ptr<ClientProxyAPI> createProxy(const Value& param) = 0;
     };
 
     std::shared_ptr<BrokerFactoryAPI> nullBrokerFactory();

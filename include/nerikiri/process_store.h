@@ -28,10 +28,10 @@ namespace nerikiri {
   class Process;
   class ProcessAPI;
   class BrokerAPI;
-  class BrokerProxyAPI;
+  class ClientProxyAPI;
   class BrokerFactoryAPI;
 
-  std::shared_ptr<BrokerProxyAPI> coreBroker(ProcessStore& store);
+  std::shared_ptr<ClientProxyAPI> coreBroker(ProcessStore& store);
   class NK_API ProcessStore {
   private:
     ProcessAPI* process_;

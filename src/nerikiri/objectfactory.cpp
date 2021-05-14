@@ -86,7 +86,7 @@ Value ObjectFactory::createBroker(ProcessStore& store, const Value& info) {
   return store.addBroker(store.brokerFactory(Value::string(info.at("typeName")))->create(info));
 }
 
-std::shared_ptr<BrokerProxyAPI> ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
+std::shared_ptr<ClientProxyAPI> ObjectFactory::createBrokerProxy(ProcessStore& store, const Value& bi) {
   logger::trace("ObjectFactory::createBrokerProxy({})", bi);
   return store.brokerFactory(Value::string(bi.at("typeName")))->createProxy(Value::string(bi.at("fullName")));
 }

@@ -7,7 +7,7 @@ namespace nerikiri {
 
     class ProcessAPI;
 
-    class CoreBroker : public BrokerProxyAPI {
+    class CoreBroker : public ClientProxyAPI {
     protected:
         ProcessAPI* process_;
 

@@ -274,7 +274,7 @@ Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
   return *this;
 }
 
-static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, const std::shared_ptr<BrokerProxyAPI>& broker, std::shared_ptr<BrokerAPI> brk) {
+static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, const std::shared_ptr<ClientProxyAPI>& broker, std::shared_ptr<BrokerAPI> brk) {
   logger::trace("Creating a thread for broker {}", brk->info());
   std::promise<bool> prms;
   auto ftr = prms.get_future();

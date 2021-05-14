@@ -112,7 +112,7 @@ std::shared_ptr<OperationInletAPI> ProcessStore::inletProxy(const Value& info) {
 }
 
 
-std::shared_ptr<BrokerProxyAPI> nerikiri::coreBroker(ProcessStore& store) {
+std::shared_ptr<ClientProxyAPI> nerikiri::coreBroker(ProcessStore& store) {
   return store.brokerFactory("CoreBroker")->createProxy("");
 }
 

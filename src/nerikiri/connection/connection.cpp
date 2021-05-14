@@ -118,7 +118,7 @@ std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
-Value nerikiri::connect(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
+Value nerikiri::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<OperationInletAPI>& inlet, const std::shared_ptr<OperationOutletAPI>& outlet, const Value& options) {
   logger::info("nerikiri::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
   std::string defaultConnectionType = "event";
   if (options.hasKey("event")) {

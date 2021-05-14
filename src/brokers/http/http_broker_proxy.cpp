@@ -99,7 +99,7 @@ public:
 };
 
 
-std::shared_ptr<BrokerProxyAPI> HTTPBrokerFactory::createProxy(const Value& value) {
+std::shared_ptr<ClientProxyAPI> HTTPBrokerFactory::createProxy(const Value& value) {
   logger::trace("HTTPBrokerFactory::createProxy({})", value);
   if (value.hasKey("host") && value.hasKey("port")) {
       auto address = value.at("host").stringValue();

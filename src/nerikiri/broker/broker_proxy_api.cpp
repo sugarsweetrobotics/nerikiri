@@ -176,12 +176,12 @@ public:
 
 };
 
-class NullBrokerProxy : public BrokerProxyAPI
+class NullBrokerProxy : public ClientProxyAPI
 {
 private:
 
 public:
-    NullBrokerProxy(): BrokerProxyAPI("NullBrokerProxy", "NullBroker", "null", 
+    NullBrokerProxy(): ClientProxyAPI("NullBrokerProxy", "NullBroker", "null", 
         std::make_shared<NullStoreBroker>(),
         std::make_shared<NullFactoryBroker>(),
         std::make_shared<NullOperationBroker>(),
@@ -204,6 +204,6 @@ public:
     }
 };
 
-std::shared_ptr<BrokerProxyAPI> nerikiri::nullBrokerProxy() {
+std::shared_ptr<ClientProxyAPI> nerikiri::nullBrokerProxy() {
     return std::make_shared<NullBrokerProxy>();
 }

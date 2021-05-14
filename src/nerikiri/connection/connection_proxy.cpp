@@ -10,9 +10,9 @@ class ConnectionProxy : public ConnectionAPI {
 private:
     const Value info_;
     std::shared_ptr<OperationInletAPI> inletProxy_;
-    const std::shared_ptr<BrokerProxyAPI> broker_;
+    const std::shared_ptr<ClientProxyAPI> broker_;
 public:
-    ConnectionProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const Value& info, const ConnectionType type) 
+    ConnectionProxy(const std::shared_ptr<ClientProxyAPI>& broker, const Value& info, const ConnectionType type) 
     : ConnectionAPI ("ConnectionProxy", "ConnectionProxy", type), broker_(broker), info_(info) {}
     virtual ~ConnectionProxy() {}
 public:
@@ -52,7 +52,7 @@ public:
     }
 };
 
-std::shared_ptr<ConnectionAPI> nerikiri::connectionProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const Value& info) {
+std::shared_ptr<ConnectionAPI> nerikiri::connectionProxy(const std::shared_ptr<ClientProxyAPI>& broker, const Value& info) {
     auto typ = Value::string(info.at("type"));
     auto typeFlag = ConnectionAPI::ConnectionType::PULL;
     if (typ == "PULL") {}

@@ -6,7 +6,7 @@
 namespace nerikiri {
 
 
-    class CRUDBrokerProxyBase : public CRUDBrokerProxyAPI, public BrokerProxyAPI {
+    class CRUDBrokerProxyBase : public CRUDBrokerProxyAPI, public ClientProxyAPI {
     private:
     public:
         CRUDBrokerProxyBase(const std::string& className, const std::string& typeName, const std::string& fullName);

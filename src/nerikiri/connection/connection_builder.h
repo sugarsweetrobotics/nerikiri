@@ -19,8 +19,8 @@ namespace nerikiri {
         static Value connect(ProcessStore& store, const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const Value& connectionInfo);
 
         static Value connect(const std::shared_ptr<OperationOutletAPI>& outlet, const std::shared_ptr<OperationInletAPI>& inlet, const ConnectionAPI::ConnectionType& type);
-        static Value createInletConnection(ProcessStore& store, const Value& connectionInfo, BrokerProxyAPI* receiverBroker/*=nullptr*/);
-        static Value createOutletConnection(ProcessStore& store, const Value& connectionInfo, BrokerProxyAPI* receiverBroker/*=nullptr*/);
+        static Value createInletConnection(ProcessStore& store, const Value& connectionInfo, ClientProxyAPI* receiverBroker/*=nullptr*/);
+        static Value createOutletConnection(ProcessStore& store, const Value& connectionInfo, ClientProxyAPI* receiverBroker/*=nullptr*/);
 
 
         //static Value createConnection(ProcessStore& store, const Value& connectionInfo, BrokerAPI* receiverBroker=nullptr);

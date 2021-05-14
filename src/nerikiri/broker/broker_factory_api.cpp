@@ -16,7 +16,7 @@ public:
         return nullBroker();
     }
 
-    virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) override {
+    virtual std::shared_ptr<ClientProxyAPI> createProxy(const Value& param) override {
         logger::error("NullBrokerFactory::{}() failed. Object is null.", __func__, param);
         return nullBrokerProxy();
     }

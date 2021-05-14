@@ -106,7 +106,7 @@ public:
     return info;
   }
 
-  virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override {
+  virtual bool run(const std::shared_ptr<ClientProxyAPI>& coreBroker) override {
     std::unique_lock<std::mutex> lock(mutex_);
     logger::info("HTTPBroker::run() called");
 
@@ -153,7 +153,7 @@ public:
     return true;
   }
 
-  virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override {
+  virtual void shutdown(const std::shared_ptr<ClientProxyAPI>& coreBroker) override {
     CRUDBrokerBase::shutdown(coreBroker);
     cond_.notify_all();
   }

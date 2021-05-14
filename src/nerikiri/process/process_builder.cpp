@@ -246,7 +246,7 @@ void ProcessBuilder::preloadConnections(ProcessStore& store, const Value& config
   logger::trace("ProcessBuilder::_preloadConnections() exit");
 }
 
-Value ProcessBuilder::publishTopic(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo, const Value& topicInfo) {
+Value ProcessBuilder::publishTopic(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ProcessBuilder::publishTopic({}, {})", opInfo, topicInfo);
   auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
   auto topicInfo2 = ObjectFactory::createTopic(store, topicInfo);
@@ -257,7 +257,7 @@ Value ProcessBuilder::publishTopic(ProcessStore& store, const std::shared_ptr<Br
 }
 
 
-Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
+Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
   logger::trace("ProcessBuilder::subscribeTopic({}, {}, {})", opInfo, argName, topicInfo);
   
   auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
@@ -268,7 +268,7 @@ Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<
   return nerikiri::connect(broker, connectionName, op->inlet(argName), topic->outlet());
 }
 
-void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& opInfo) {
+void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& opInfo) {
   logger::trace("{} _parseOperationInfo(info={}) called.", __FILE__, opInfo);
   if (opInfo["publish"].isStringValue()) {
     ProcessBuilder::publishTopic(store, broker, opInfo, {{"fullName", opInfo["publish"]}});
@@ -297,7 +297,7 @@ void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<BrokerProxyA
   }
 }
 
-void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<BrokerProxyAPI>& broker, const Value& config, const std::string& path) {
+void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& config, const std::string& path) {
   logger::trace("ProcessBuilder::preloadTopics() entry");
   try {
     std::vector<Value> topicInfos;

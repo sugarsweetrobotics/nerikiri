@@ -71,7 +71,7 @@ Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<Oper
 
 
 
-Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value& connectionInfo, BrokerProxyAPI* inletBroker) {
+Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value& connectionInfo, ClientProxyAPI* inletBroker) {
   logger::trace("ConnectionBuilder::createInletConnection(connectionInfo={})", connectionInfo);
   auto value = connectionInfo.at("inlet").at("operation");
   auto outlet = store.outletProxy(connectionInfo["outlet"]);
@@ -80,7 +80,7 @@ Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value&
 }
 
 
-Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value& connectionInfo, BrokerProxyAPI* outletBroker/*=nullptr*/) {
+Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value& connectionInfo, ClientProxyAPI* outletBroker/*=nullptr*/) {
   logger::trace("ConnectionBuilder::createOutletConnection(connectionInfo={})", connectionInfo);
   auto value = connectionInfo.at("outlet").at("operation");
   auto inlet = store.inletProxy(connectionInfo["inlet"]);

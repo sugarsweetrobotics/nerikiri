@@ -30,7 +30,7 @@ public:
     return nullBroker();
   }
 
-  virtual std::shared_ptr<BrokerProxyAPI> createProxy(const Value& param) override {
+  virtual std::shared_ptr<ClientProxyAPI> createProxy(const Value& param) override {
       return coreBroker_;
   }
 };
@@ -43,9 +43,9 @@ std::shared_ptr<BrokerFactoryAPI> nerikiri::coreBrokerFactory(ProcessAPI* proces
 class CoreFactoryBroker : public FactoryBrokerAPI {
 private:
   ProcessAPI* process_;
-  BrokerProxyAPI* coreBroker_;
+  ClientProxyAPI* coreBroker_;
 public:
-  CoreFactoryBroker(ProcessAPI* proc, BrokerProxyAPI* coreBroker) : process_(proc), coreBroker_(coreBroker) {}
+  CoreFactoryBroker(ProcessAPI* proc, ClientProxyAPI* coreBroker) : process_(proc), coreBroker_(coreBroker) {}
   virtual ~CoreFactoryBroker() {}
 
   virtual Value createObject(const std::string& className, const Value& info={}) override {
@@ -366,7 +366,7 @@ public:
  * 
  */
 CoreBroker::CoreBroker(ProcessAPI* process, const std::string& fullName): 
-BrokerProxyAPI("CoreBroker", "CoreBroker", fullName,
+ClientProxyAPI("CoreBroker", "CoreBroker", fullName,
     std::make_shared<CoreStoreBroker>(process),
     std::make_shared<CoreFactoryBroker>(process, this), 
     std::make_shared<CoreOperationBroker>(process),

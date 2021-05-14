@@ -11,7 +11,7 @@
 using namespace nerikiri;
 
 
-Value ObjectMapper::createResource(const std::shared_ptr<BrokerProxyAPI>& coreBroker, const std::string& _path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
+Value ObjectMapper::createResource(const std::shared_ptr<ClientProxyAPI>& coreBroker, const std::string& _path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
   auto path = _path;
     if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
 
@@ -48,7 +48,7 @@ Value ObjectMapper::createResource(const std::shared_ptr<BrokerProxyAPI>& coreBr
 /**
  * 
  */
-Value ObjectMapper::readResource(const std::shared_ptr<const BrokerProxyAPI>& coreBroker, const std::string& _path, const Value& params, const Value& receiverBrokerInfo) {
+Value ObjectMapper::readResource(const std::shared_ptr<const ClientProxyAPI>& coreBroker, const std::string& _path, const Value& params, const Value& receiverBrokerInfo) {
     auto path = _path;
     if (path.length() == 0) 
       return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
@@ -113,7 +113,7 @@ Value ObjectMapper::readResource(const std::shared_ptr<const BrokerProxyAPI>& co
  * 
  * 
  */
-Value ObjectMapper::updateResource(const std::shared_ptr<BrokerProxyAPI>& coreBroker, const std::string& path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
+Value ObjectMapper::updateResource(const std::shared_ptr<ClientProxyAPI>& coreBroker, const std::string& path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
   logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
   std::smatch match;
 
@@ -154,7 +154,7 @@ Value ObjectMapper::updateResource(const std::shared_ptr<BrokerProxyAPI>& coreBr
  * 
  * 
  */
-Value ObjectMapper::deleteResource(const std::shared_ptr<BrokerProxyAPI>& coreBroker, const std::string& _path, const Value& params, BrokerAPI* receiverBroker) {
+Value ObjectMapper::deleteResource(const std::shared_ptr<ClientProxyAPI>& coreBroker, const std::string& _path, const Value& params, BrokerAPI* receiverBroker) {
   auto path = _path;
   if (path.length() == 0) 
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));

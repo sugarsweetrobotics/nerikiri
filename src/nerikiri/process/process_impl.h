@@ -26,7 +26,7 @@ namespace nerikiri {
    
     Value config_;
 
-    std::shared_ptr<BrokerProxyAPI> coreBroker_;
+    std::shared_ptr<ClientProxyAPI> coreBroker_;
     ProcessStore store_;
    
     std::map<std::string, SystemEditor_ptr> systemEditors_;

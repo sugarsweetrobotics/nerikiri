@@ -6,7 +6,7 @@
 using namespace nerikiri;
 
 namespace nerikiri {
-    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
+    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
 
 }
 
@@ -56,7 +56,7 @@ std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, ner
 
 
 
-std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, const std::shared_ptr<BrokerProxyAPI>& broker) {
+std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, const std::shared_ptr<ClientProxyAPI>& broker) {
     logger::trace("ProxyBuilder::operationProxy({}, broker='{}') called", value, broker->typeName());
     return nerikiri::operationProxy(broker, Value::string(value.at("fullName")));
 }

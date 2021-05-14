@@ -16,16 +16,16 @@ namespace nerikiri {
 
     public:
 
-        virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override;
+        virtual bool run(const std::shared_ptr<ClientProxyAPI>& coreBroker) override;
         
-        virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override;
+        virtual void shutdown(const std::shared_ptr<ClientProxyAPI>& coreBroker) override;
 
         virtual bool isRunning() const override;
 
-        Value onCreate(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
-        Value onRead(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& ancillaryInfo={}, const Value& brokerInfo={}) ;
-        Value onUpdate(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
-        Value onDelete(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullPath, const Value& ancillaryInfo={}) ;
+        Value onCreate(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
+        Value onRead(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullPath, const Value& ancillaryInfo={}, const Value& brokerInfo={}) ;
+        Value onUpdate(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo={}) ;
+        Value onDelete(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullPath, const Value& ancillaryInfo={}) ;
     };
 
 

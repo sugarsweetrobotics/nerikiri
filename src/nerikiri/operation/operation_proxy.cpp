@@ -11,7 +11,7 @@ class OperationProxy;
 
 class OperationInletProxy: public OperationInletAPI {
 private:
-    const std::shared_ptr<BrokerProxyAPI> broker_;
+    const std::shared_ptr<ClientProxyAPI> broker_;
     OperationAPI* owner_;
     std::shared_ptr<OperationProxy> ownerProxy_;
     const std::string fullName_;
@@ -19,7 +19,7 @@ private:
 public:
     virtual ~OperationInletProxy() {}
 
-    OperationInletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName, const std::string& name) : 
+    OperationInletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName, const std::string& name) : 
       owner_(owner), broker_(broker), fullName_(fullName), name_(name), ownerProxy_(nullptr) {}
 
     virtual bool isNull() const override {
@@ -104,7 +104,7 @@ public:
 };
 
 
-std::shared_ptr<OperationInletAPI> nerikiri::operationInletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName, const std::string& name) {
+std::shared_ptr<OperationInletAPI> nerikiri::operationInletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName, const std::string& name) {
     return std::make_shared<OperationInletProxy>(owner, broker, fullName, name);
 } 
 
@@ -112,12 +112,12 @@ std::shared_ptr<OperationInletAPI> nerikiri::operationInletProxy(OperationAPI* o
 
 class OperationOutletProxy : public OperationOutletAPI {
 private:
-    const std::shared_ptr<BrokerProxyAPI> broker_;
+    const std::shared_ptr<ClientProxyAPI> broker_;
     OperationAPI* owner_;
     const std::string fullName_;
     std::shared_ptr<OperationAPI> ownerProxy_;
 public:
-    OperationOutletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : owner_(owner), broker_(broker), fullName_(fullName), ownerProxy_(nullptr) {}
+    OperationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) : owner_(owner), broker_(broker), fullName_(fullName), ownerProxy_(nullptr) {}
     virtual ~OperationOutletProxy() {}
     
     // virtual OperationAPI* owner() override { return owner_; }
@@ -175,14 +175,14 @@ public:
 };
 
 
-std::shared_ptr<OperationOutletAPI> nerikiri::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
+std::shared_ptr<OperationOutletAPI> nerikiri::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<OperationOutletProxy>(owner, broker, fullName);
 } 
 
 
 class OperationProxy : public OperationAPI {
 private:
-    const std::shared_ptr<BrokerProxyAPI> broker_;
+    const std::shared_ptr<ClientProxyAPI> broker_;
     const std::string fullName_;
 
     const std::shared_ptr<OperationOutletProxy> outlet_;
@@ -193,7 +193,7 @@ private:
     std::shared_ptr<OperationInletAPI> argument_inlet_;
     std::vector<std::shared_ptr<OperationInletAPI>> inlets_;
 public:
-    OperationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
+    OperationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) : OperationAPI("OperationProxy", "Proxy", fullName), broker_(broker),
         fullName_(fullName), outlet_(std::make_shared<OperationOutletProxy>(this, broker, fullName)), inlets_ready_(false) {
         inletInfos_ = broker_->operation()->inlets(fullName_);
         if (inletInfos_.isError()) {
@@ -278,11 +278,11 @@ Value OperationInletProxy::executeOwner() {
 ///-------------- Operation Inlet
 
 namespace nerikiri {
-    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName);
+    std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
 
 }
 
-std::shared_ptr<OperationAPI> nerikiri::operationProxy(const std::shared_ptr<BrokerProxyAPI>& broker, const std::string& fullName) {
+std::shared_ptr<OperationAPI> nerikiri::operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
     logger::trace("nerikiri::operationProxy(broker='{}', fullName='{}') called.", broker->typeName(), fullName);
     return std::make_shared<OperationProxy>(broker, fullName);
 }

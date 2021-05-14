@@ -120,7 +120,7 @@ namespace nerikiri {
     };
 
 
-    class BrokerProxyAPI : public Object
+    class ClientProxyAPI : public Object
     {
     private:
         const std::shared_ptr<StoreBrokerAPI> store_;
@@ -150,7 +150,7 @@ namespace nerikiri {
         virtual std::shared_ptr<const ContainerBrokerAPI>  container() const { return container_; }
         
     public:
-        BrokerProxyAPI(const std::string& className, const std::string& typeName, const std::string& fullName, 
+        ClientProxyAPI(const std::string& className, const std::string& typeName, const std::string& fullName, 
             const std::shared_ptr<StoreBrokerAPI>& store, 
             const std::shared_ptr<FactoryBrokerAPI>& factory, 
             const std::shared_ptr<OperationBrokerAPI>& operation, 
@@ -162,9 +162,9 @@ namespace nerikiri {
            operationInlet_(operationInlet), connection_(connection), container_(container)
         {}
 
-        BrokerProxyAPI(const Value& info) : Object(info) {}
+        ClientProxyAPI(const Value& info) : Object(info) {}
 
-        virtual ~BrokerProxyAPI() {}
+        virtual ~ClientProxyAPI() {}
     public:
 
         virtual Value getProcessInfo() const = 0;
@@ -172,7 +172,7 @@ namespace nerikiri {
         virtual Value getProcessFullInfo() const = 0;
     };
 
-    std::shared_ptr<BrokerProxyAPI> nullBrokerProxy();
+    std::shared_ptr<ClientProxyAPI> nullBrokerProxy();
 
 
 }

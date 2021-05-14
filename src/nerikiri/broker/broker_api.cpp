@@ -17,12 +17,12 @@ public:
         return Value::error(logger::error("NullBroker::{}() failed. Object is null.", __func__));
     }
 
-    virtual bool run(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override {
+    virtual bool run(const std::shared_ptr<ClientProxyAPI>& coreBroker) override {
         logger::error("NullBroker::{}() failed. Object is null.", __func__);
         return false;
     }
     
-    virtual void shutdown(const std::shared_ptr<BrokerProxyAPI>& coreBroker) override {
+    virtual void shutdown(const std::shared_ptr<ClientProxyAPI>& coreBroker) override {
         logger::error("NullBroker::{}() failed. Object is null.", __func__);
         return;
     }

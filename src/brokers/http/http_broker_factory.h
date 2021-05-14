@@ -17,6 +17,6 @@ public:
 public:
   virtual std::shared_ptr<nerikiri::BrokerAPI> create(const nerikiri::Value& value) override;
   
-  virtual std::shared_ptr<nerikiri::BrokerProxyAPI> createProxy(const nerikiri::Value& value) override;
+  virtual std::shared_ptr<nerikiri::ClientProxyAPI> createProxy(const nerikiri::Value& value) override;
 
 };

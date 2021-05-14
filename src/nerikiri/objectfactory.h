@@ -25,7 +25,7 @@ namespace nerikiri {
 
         static Value createBroker(ProcessStore& store, const Value& ci);
 
-        static std::shared_ptr<BrokerProxyAPI>  createBrokerProxy(ProcessStore& store, const Value& ci);
+        static std::shared_ptr<ClientProxyAPI>  createBrokerProxy(ProcessStore& store, const Value& ci);
 
         static Value createExecutionContext(ProcessStore& store, const Value& value);
 
