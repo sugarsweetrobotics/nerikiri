@@ -40,7 +40,7 @@ std::shared_ptr<BrokerFactoryAPI> nerikiri::coreBrokerFactory(ProcessAPI* proces
     return std::make_shared<CoreBrokerFactory>(std::make_shared<CoreBroker>(process, fullName));
 }
 
-class CoreFactoryBroker : public FactoryBrokerAPI {
+class CoreFactoryBroker : public FactoryClientAPI {
 private:
   ProcessAPI* process_;
   ClientProxyAPI* coreBroker_;
@@ -91,7 +91,7 @@ public:
     }
 };
 
-class CoreStoreBroker : public StoreBrokerAPI {
+class CoreStoreBroker : public StoreClientAPI {
 private:
   ProcessAPI* process_;
 public:
@@ -168,7 +168,7 @@ public:
 };
 
 
-class CoreOperationBroker : public OperationBrokerAPI {
+class CoreOperationBroker : public OperationClientAPI {
 private:
   ProcessAPI* process_;
 public:
@@ -200,7 +200,7 @@ public:
 };
 
 
-class CoreOperationOutletBroker : public OperationOutletBrokerAPI {
+class CoreOperationOutletBroker : public OutletClientAPI {
 private:
   ProcessAPI* process_;
 public:
@@ -251,7 +251,7 @@ public:
     }
 };
 
-class CoreOperationInletBroker : public OperationInletBrokerAPI {
+class CoreOperationInletBroker : public InletClientAPI {
 private:
   ProcessAPI* process_;
 public:
@@ -319,7 +319,7 @@ public:
 };
 
 
-class CoreConnectionBroker : public ConnectionBrokerAPI {
+class CoreConnectionBroker : public ConnectionClientAPI {
 private:
   ProcessAPI* process_;
 public:
@@ -343,7 +343,7 @@ public:
 };
 
 
-class CoreContainerBroker : public ContainerBrokerAPI {
+class CoreContainerBroker : public ContainerClientAPI {
 private:
   ProcessAPI* process_;
 public:

@@ -4,7 +4,7 @@
 
 using namespace nerikiri;
 
-class NullFactoryBroker : public FactoryBrokerAPI {
+class NullFactoryBroker : public FactoryClientAPI {
 public:
     virtual ~NullFactoryBroker() {}
 public:
@@ -17,7 +17,7 @@ public:
     }
 };
 
-class NullStoreBroker : public StoreBrokerAPI {
+class NullStoreBroker : public StoreClientAPI {
 public:
     virtual ~NullStoreBroker() {}
 
@@ -35,9 +35,9 @@ public:
 };
 
 
-class NullOperationBroker : public OperationBrokerAPI {
+class NullOperationBroker : public OperationClientAPI {
 public:
-    NullOperationBroker() : OperationBrokerAPI()  {}
+    NullOperationBroker() : OperationClientAPI()  {}
     virtual ~NullOperationBroker() {}
 
     virtual Value fullInfo(const std::string& fullName) const override {
@@ -62,7 +62,7 @@ public:
     }
 };
 
-class NullOperationOutletBroker : public OperationOutletBrokerAPI {
+class NullOperationOutletBroker : public OutletClientAPI {
 public:
     NullOperationOutletBroker(){}
     virtual ~NullOperationOutletBroker() {}
@@ -96,7 +96,7 @@ public:
     }
 };
 
-class NullOperationInletBroker : public OperationInletBrokerAPI {
+class NullOperationInletBroker : public InletClientAPI {
 public:
     NullOperationInletBroker() {}
     virtual ~NullOperationInletBroker() {}
@@ -147,7 +147,7 @@ public:
 };
 
 
-class NullConnectionBroker : public ConnectionBrokerAPI {
+class NullConnectionBroker : public ConnectionClientAPI {
 public:
     virtual ~NullConnectionBroker() {}
 
@@ -162,7 +162,7 @@ public:
 };
 
 
-class NullContainerBroker : public ContainerBrokerAPI {
+class NullContainerBroker : public ContainerClientAPI {
 public:
     virtual ~NullContainerBroker() {}
 

@@ -4,12 +4,12 @@
 using namespace nerikiri;
 
 
-class CRUDFactoryBroker : public FactoryBrokerAPI {
+class CRUDFactoryBroker : public FactoryClientAPI {
 private:
     CRUDBrokerProxyAPI* broker_;
 public:
     virtual ~CRUDFactoryBroker() {}
-    CRUDFactoryBroker(CRUDBrokerProxyAPI* broker) : FactoryBrokerAPI(), broker_(broker) {}
+    CRUDFactoryBroker(CRUDBrokerProxyAPI* broker) : FactoryClientAPI(), broker_(broker) {}
 
 public:
     virtual Value createObject(const std::string& className, const Value& info={}) {
@@ -21,11 +21,11 @@ public:
     }
 };
 
-class CRUDStoreBroker : public StoreBrokerAPI {
+class CRUDStoreBroker : public StoreClientAPI {
 private:
     CRUDBrokerProxyAPI* broker_;
 public:
-    CRUDStoreBroker (CRUDBrokerProxyAPI* broker) : StoreBrokerAPI(), broker_(broker) {}
+    CRUDStoreBroker (CRUDBrokerProxyAPI* broker) : StoreClientAPI(), broker_(broker) {}
     virtual ~CRUDStoreBroker() {}
 
     virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const {
@@ -42,11 +42,11 @@ public:
 };
 
 
-class CRUDOperationBroker : public OperationBrokerAPI {
+class CRUDOperationBroker : public OperationClientAPI {
 private:
     CRUDBrokerProxyAPI* broker_;
 public:
-    CRUDOperationBroker (CRUDBrokerProxyAPI* broker) : OperationBrokerAPI(), broker_(broker) {}
+    CRUDOperationBroker (CRUDBrokerProxyAPI* broker) : OperationClientAPI(), broker_(broker) {}
     virtual ~CRUDOperationBroker() {}
 
     
@@ -71,7 +71,7 @@ public:
     }
 };
 
-class CRUDOperationOutletBroker : public OperationOutletBrokerAPI {
+class CRUDOperationOutletBroker : public OutletClientAPI {
     CRUDBrokerProxyAPI* broker_;
 public:
     CRUDOperationOutletBroker(CRUDBrokerProxyAPI* broker) : broker_(broker) {}
@@ -107,7 +107,7 @@ public:
 
 };
 
-class CRUDOperationInletBroker : public OperationInletBrokerAPI {
+class CRUDOperationInletBroker : public InletClientAPI {
     CRUDBrokerProxyAPI* broker_;
 public:
     CRUDOperationInletBroker(CRUDBrokerProxyAPI* broker) : broker_(broker) {}
@@ -161,7 +161,7 @@ public:
 
 };
 
-class CRUDConnectionBroker : public ConnectionBrokerAPI {
+class CRUDConnectionBroker : public ConnectionClientAPI {
     CRUDBrokerProxyAPI* broker_;
 public:
     CRUDConnectionBroker(CRUDBrokerProxyAPI* broker) : broker_(broker) {}
@@ -176,7 +176,7 @@ public:
 };
 
 
-class CRUDContainerBroker : public ContainerBrokerAPI {
+class CRUDContainerBroker : public ContainerClientAPI {
     CRUDBrokerProxyAPI* broker_;
 public:
     CRUDContainerBroker(CRUDBrokerProxyAPI* broker) : broker_(broker) {}

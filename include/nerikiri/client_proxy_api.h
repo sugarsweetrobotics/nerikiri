@@ -9,9 +9,9 @@ namespace nerikiri {
 
    
 
-    class FactoryBrokerAPI {
+    class FactoryClientAPI {
     public:
-        virtual ~FactoryBrokerAPI() {}
+        virtual ~FactoryClientAPI() {}
 
     public:
         virtual Value createObject(const std::string& className, const Value& info={}) = 0;
@@ -20,9 +20,9 @@ namespace nerikiri {
     };
 
 
-    class StoreBrokerAPI {
+    class StoreClientAPI {
     public:
-        virtual ~StoreBrokerAPI() {}
+        virtual ~StoreClientAPI() {}
 
         virtual Value getObjectInfo(const std::string& className, const std::string& fullName) const = 0;
 
@@ -32,10 +32,10 @@ namespace nerikiri {
     };
 
 
-    class OperationBrokerAPI {
+    class OperationClientAPI {
     public:
-        OperationBrokerAPI()  {}
-        virtual ~OperationBrokerAPI() {}
+        OperationClientAPI()  {}
+        virtual ~OperationClientAPI() {}
 
         virtual Value fullInfo(const std::string& fullName) const = 0;
 
@@ -48,9 +48,9 @@ namespace nerikiri {
         virtual Value inlets(const std::string& fullName) const = 0;
     };
 
-    class OperationOutletBrokerAPI {
+    class OutletClientAPI {
     public:
-        virtual ~OperationOutletBrokerAPI() {}
+        virtual ~OutletClientAPI() {}
 
         //virtual Value ownerFullName() const  = 0;
 
@@ -69,9 +69,9 @@ namespace nerikiri {
         virtual Value disconnectFrom(const std::string& fullName, const Value& inletInfo) = 0;
     };
 
-    class OperationInletBrokerAPI {
+    class InletClientAPI {
     public:
-        virtual ~OperationInletBrokerAPI() {}
+        virtual ~InletClientAPI() {}
 
         virtual Value name(const std::string& fullName, const std::string& targetName) const = 0;
         
@@ -97,67 +97,67 @@ namespace nerikiri {
     };
 
 
-    class ConnectionBrokerAPI {
+    class ConnectionClientAPI {
     public:
-        virtual ~ConnectionBrokerAPI() {}
+        virtual ~ConnectionClientAPI() {}
     public:
         virtual Value createConnection(const Value& connectionInfo) = 0;
         virtual Value deleteConnection(const std::string& fullName) = 0;
    };
 
 
-    class ContainerBrokerAPI {  
+    class ContainerClientAPI {  
     public:
-        virtual ~ContainerBrokerAPI() {}
+        virtual ~ContainerClientAPI() {}
 
         virtual Value operations(const std::string& containerFullName)  const = 0;
         virtual Value fullInfo(const std::string& containerFullName) const = 0;
     };
 
-    class ContainerOperationBrokerAPI {
-    public:
-        virtual ~ContainerOperationBrokerAPI() {}
-    };
+    ///class ContainerOperationBrokerAPI {
+   // public:
+    //    virtual ~ContainerOperationBrokerAPI() {}
+    //};
 
 
     class ClientProxyAPI : public Object
     {
     private:
-        const std::shared_ptr<StoreBrokerAPI> store_;
-        const std::shared_ptr<FactoryBrokerAPI> factory_;
-        const std::shared_ptr<OperationBrokerAPI> operation_;
-        const std::shared_ptr<OperationOutletBrokerAPI> operationOutlet_;
-        const std::shared_ptr<OperationInletBrokerAPI> operationInlet_;
-        const std::shared_ptr<ConnectionBrokerAPI> connection_;
-        const std::shared_ptr<ContainerBrokerAPI> container_;
+        const std::shared_ptr<StoreClientAPI> store_;
+        const std::shared_ptr<FactoryClientAPI> factory_;
+        const std::shared_ptr<OperationClientAPI> operation_;
+        const std::shared_ptr<OutletClientAPI> operationOutlet_;
+        const std::shared_ptr<InletClientAPI> operationInlet_;
+        const std::shared_ptr<ConnectionClientAPI> connection_;
+        const std::shared_ptr<ContainerClientAPI> container_;
 
     public:
 
 
-        virtual std::shared_ptr<FactoryBrokerAPI> factory() { return factory_; }
-        virtual std::shared_ptr<const FactoryBrokerAPI> factory() const { return factory_; }
-        virtual std::shared_ptr<StoreBrokerAPI>   store() { return store_; }
-        virtual std::shared_ptr<const StoreBrokerAPI>   store() const { return store_; }
-        virtual std::shared_ptr<OperationBrokerAPI>   operation() { return operation_; }
-        virtual std::shared_ptr<const OperationBrokerAPI>   operation() const { return operation_; }
-        virtual std::shared_ptr<OperationOutletBrokerAPI>   operationOutlet() { return operationOutlet_; }
-        virtual std::shared_ptr<const OperationOutletBrokerAPI>   operationOutlet() const { return operationOutlet_; }
-        virtual std::shared_ptr<OperationInletBrokerAPI>   operationInlet() { return operationInlet_; }
-        virtual std::shared_ptr<const OperationInletBrokerAPI>   operationInlet() const { return operationInlet_; }
-        virtual std::shared_ptr<ConnectionBrokerAPI> connection() { return connection_; }
-        virtual std::shared_ptr<const ConnectionBrokerAPI>  connection() const { return connection_; }
-        virtual std::shared_ptr<ContainerBrokerAPI> container() { return container_; }
-        virtual std::shared_ptr<const ContainerBrokerAPI>  container() const { return container_; }
+        virtual std::shared_ptr<FactoryClientAPI> factory() { return factory_; }
+        virtual std::shared_ptr<const FactoryClientAPI> factory() const { return factory_; }
+        virtual std::shared_ptr<StoreClientAPI>   store() { return store_; }
+        virtual std::shared_ptr<const StoreClientAPI>   store() const { return store_; }
+        virtual std::shared_ptr<OperationClientAPI>   operation() { return operation_; }
+        virtual std::shared_ptr<const OperationClientAPI>   operation() const { return operation_; }
+        virtual std::shared_ptr<OutletClientAPI>   operationOutlet() { return operationOutlet_; }
+        virtual std::shared_ptr<const OutletClientAPI>   operationOutlet() const { return operationOutlet_; }
+        virtual std::shared_ptr<InletClientAPI>   operationInlet() { return operationInlet_; }
+        virtual std::shared_ptr<const InletClientAPI>   operationInlet() const { return operationInlet_; }
+        virtual std::shared_ptr<ConnectionClientAPI> connection() { return connection_; }
+        virtual std::shared_ptr<const ConnectionClientAPI>  connection() const { return connection_; }
+        virtual std::shared_ptr<ContainerClientAPI> container() { return container_; }
+        virtual std::shared_ptr<const ContainerClientAPI>  container() const { return container_; }
         
     public:
         ClientProxyAPI(const std::string& className, const std::string& typeName, const std::string& fullName, 
-            const std::shared_ptr<StoreBrokerAPI>& store, 
-            const std::shared_ptr<FactoryBrokerAPI>& factory, 
-            const std::shared_ptr<OperationBrokerAPI>& operation, 
-            const std::shared_ptr<OperationOutletBrokerAPI>& operationOutlet, 
-            const std::shared_ptr<OperationInletBrokerAPI>& operationInlet, 
-            const std::shared_ptr<ConnectionBrokerAPI>& connection,
-            const std::shared_ptr<ContainerBrokerAPI>& container
+            const std::shared_ptr<StoreClientAPI>& store, 
+            const std::shared_ptr<FactoryClientAPI>& factory, 
+            const std::shared_ptr<OperationClientAPI>& operation, 
+            const std::shared_ptr<OutletClientAPI>& operationOutlet, 
+            const std::shared_ptr<InletClientAPI>& operationInlet, 
+            const std::shared_ptr<ConnectionClientAPI>& connection,
+            const std::shared_ptr<ContainerClientAPI>& container
         ): Object(className, typeName, fullName), store_(store), factory_(factory), operation_(operation), operationOutlet_(operationOutlet),
            operationInlet_(operationInlet), connection_(connection), container_(container)
         {}
