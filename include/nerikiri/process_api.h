@@ -7,7 +7,7 @@
 #include <nerikiri/operation.h>
 #include <nerikiri/ec.h>
 
-#include <nerikiri/broker_proxy_api.h>
+#include <nerikiri/client_proxy_api.h>
 
 #include <nerikiri/process_store.h>
 

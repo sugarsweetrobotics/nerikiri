@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nerikiri/broker_proxy_api.h>
+#include <nerikiri/client_proxy_api.h>
 #include <nerikiri/crud_broker_proxy_api.h>
 
 namespace nerikiri {

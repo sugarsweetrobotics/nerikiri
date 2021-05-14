@@ -1,6 +1,6 @@
 
 
-#include <nerikiri/broker_proxy_api.h>
+#include <nerikiri/client_proxy_api.h>
 
 using namespace nerikiri;
 

@@ -4,7 +4,7 @@
 
 #include "nerikiri/operation_api.h"
 #include "nerikiri/broker_api.h"
-#include "nerikiri/broker_proxy_api.h"
+#include "nerikiri/client_proxy_api.h"
 #include "nerikiri/value.h"
 #include "nerikiri/process_store.h"
 
