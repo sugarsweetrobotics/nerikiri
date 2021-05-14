@@ -5,7 +5,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 
-#include "nerikiri/json.h"
+#include "nerikiri/utils/json.h"
 #include "nerikiri/base64.h"
 #include "nerikiri/logger.h"
 

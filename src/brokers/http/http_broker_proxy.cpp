@@ -24,7 +24,7 @@
 */
 
 #include <nerikiri/crud_broker_proxy_base.h>
-#include <nerikiri/json.h>
+#include <nerikiri/utils/json.h>
 #include "http_client.h"
 #include "http_client.h"
 #include "http_server.h"

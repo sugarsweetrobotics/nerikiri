@@ -6,8 +6,8 @@
 #include <nerikiri/process.h>
 
 #include "nerikiri/argparse.h"
-#include "nerikiri/os.h"
-#include "nerikiri/signal.h"
+#include "nerikiri/utils/os.h"
+#include "nerikiri/utils/signal.h"
 
 #include "processconfigparser.h"
 #include "nerikiri/objectfactory.h"

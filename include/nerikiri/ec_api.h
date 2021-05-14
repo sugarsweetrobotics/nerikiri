@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <nerikiri/object.h>
 
 namespace nerikiri {
 
@@ -20,4 +21,24 @@ namespace nerikiri {
     };
 
     std::shared_ptr<ExecutionContextAPI> nullEC();
+
+    /**
+     * 
+     */
+    class ExecutionContextFactoryAPI : public Object {
+    public:
+        ExecutionContextFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName)
+         : Object(className, typeName, fullName) {}
+        virtual ~ExecutionContextFactoryAPI() {}
+
+        /**
+         * 
+         */
+        virtual std::shared_ptr<ExecutionContextAPI> create(const Value& value) const = 0;
+    };
+
+    /**
+     * 
+     */
+    std::shared_ptr<ExecutionContextFactoryAPI> nullECFactory();
 }

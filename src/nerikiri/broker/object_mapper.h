@@ -3,7 +3,7 @@
 #include <string>
 #include "nerikiri/value.h"
 #include "nerikiri/process_store.h"
-#include "nerikiri/core_broker.h"
+#include "nerikiri/client_proxy_api.h"
 namespace nerikiri {
 
     class Path {

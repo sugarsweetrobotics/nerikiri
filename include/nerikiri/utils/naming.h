@@ -4,7 +4,7 @@
 #include <vector>
 #include <typeinfo>
 
-#include <nerikiri/stringutil.h>
+#include <nerikiri/utils/stringutil.h>
 #ifdef __APPLE__
 #include <cxxabi.h>
 #elif WIN32

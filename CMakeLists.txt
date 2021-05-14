@@ -39,6 +39,7 @@ add_subdirectory(apps)
 add_subdirectory(test)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${nk_public_headers}")
+message(${nk_public_util_headers})
 set(INCLUDE_INSTALL_DIR include/ )
 set(RUNTIME_INSTALL_DIR bin/ )
 set(LIB_INSTALL_DIR lib/ )
@@ -48,6 +49,8 @@ INSTALL(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR}
         LIBRARY DESTINATION ${LIB_INSTALL_DIR}
         PUBLIC_HEADER DESTINATION include/${PROJECT_NAME})
+
+INSTALL(FILES ${nk_public_util_headers} DESTINATION include/${PROJECT_NAME}/utils )
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(cmake/${PROJECT_NAME}Config.cmake.in

@@ -1,10 +1,10 @@
 
 #include <sstream>
 #include "nerikiri/nerikiri.h"
-#include "nerikiri/functional.h"
+#include "nerikiri/utils/functional.h"
 #include "nerikiri/logger.h"
-#include "nerikiri/signal.h"
-#include "nerikiri/naming.h"
+#include "nerikiri/utils/signal.h"
+#include "nerikiri/utils/naming.h"
 
 #include "process_impl.h"
 

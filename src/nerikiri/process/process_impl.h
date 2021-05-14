@@ -9,7 +9,7 @@
 #include "nerikiri/nerikiri.h"
 
 #include <nerikiri/process_api.h>
-#include "nerikiri/core_broker.h"
+#include "nerikiri/broker/core_broker.h"
 #include "nerikiri/systemeditor.h"
 #include "nerikiri/process_store.h"
 

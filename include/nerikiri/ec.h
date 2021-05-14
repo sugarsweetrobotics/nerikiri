@@ -6,7 +6,6 @@
 #include <nerikiri/logger.h>
 
 #include <nerikiri/ec_api.h>
-#include <nerikiri/ec_factory_api.h>
 
 namespace nerikiri {
 

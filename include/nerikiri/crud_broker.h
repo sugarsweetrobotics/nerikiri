@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nerikiri/json.h>
+#include <nerikiri/utils/json.h>
 #include <nerikiri/process_api.h>
 #include <nerikiri/broker_api.h>
 

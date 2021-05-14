@@ -2,7 +2,7 @@
 
 #include <nerikiri/nerikiri.h>
 #include <nerikiri/value.h>
-#include <nerikiri/naming.h>
+#include <nerikiri/utils/naming.h>
 #include <nerikiri/logger.h>
 
 namespace nerikiri {

@@ -11,7 +11,7 @@
 #include "nerikiri/operation_api.h"
 
 #include "nerikiri/connection.h"
-#include "nerikiri/functional.h"
+#include "nerikiri/utils/functional.h"
 
 #include "newest_value_buffer.h"
 

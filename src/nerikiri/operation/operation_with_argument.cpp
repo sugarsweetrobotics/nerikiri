@@ -1,5 +1,5 @@
 
-#include <nerikiri/functional.h>
+#include <nerikiri/utils/functional.h>
 #include <nerikiri/operation_api.h>
 //#include <nerikiri/operation_with_argument.h>
 

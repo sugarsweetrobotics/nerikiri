@@ -18,7 +18,7 @@
 //#include <iostream>
 
 #include <nerikiri/nerikiri.h>
-#include <nerikiri/stringutil.h>
+#include <nerikiri/utils/stringutil.h>
 
 namespace nerikiri {
 

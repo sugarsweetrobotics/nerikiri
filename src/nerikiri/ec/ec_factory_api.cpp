@@ -1,4 +1,4 @@
-#include <nerikiri/ec_factory_api.h>
+#include <nerikiri/ec_api.h>
 
 using namespace nerikiri;
 

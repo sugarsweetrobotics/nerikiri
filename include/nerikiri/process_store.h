@@ -3,14 +3,13 @@
 #include <memory>
 
 #include "nerikiri/nerikiri.h"
-#include <nerikiri/functional.h>
-#include "nerikiri/dllproxy.h"
+#include <nerikiri/utils/functional.h>
+#include "nerikiri/utils/dllproxy.h"
 
 #include <nerikiri/operation_api.h>
 #include <nerikiri/container_api.h>
 
 #include <nerikiri/ec_api.h>
-#include <nerikiri/ec_factory_api.h>
 #include "nerikiri/broker_api.h"
 
 #include "nerikiri/connection.h"

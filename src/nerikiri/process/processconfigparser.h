@@ -3,11 +3,11 @@
 #include <cstdio>
 
 #include "nerikiri/value.h"
-#include "nerikiri/json.h"
+#include "nerikiri/utils/json.h"
 #include "nerikiri/logger.h"
-#include "nerikiri/functional.h"
-#include "nerikiri/os.h"
-#include "nerikiri/stringutil.h"
+#include "nerikiri/utils/functional.h"
+#include "nerikiri/utils/os.h"
+#include "nerikiri/utils/stringutil.h"
 
 namespace nerikiri {
 
