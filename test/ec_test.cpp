@@ -46,9 +46,9 @@ SCENARIO( "ExecutionContext test", "[ec]" ) {
 
     auto p = nerikiri::process("ec_tset", jsonStr);
     
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
-    p->loadOperationFactory(opf3);
+    p->load(opf1);
+    p->load(opf2);
+    p->load(opf3);
     p->loadECFactory(ecf1);
 
     THEN("ExcutionContext is stanby") {

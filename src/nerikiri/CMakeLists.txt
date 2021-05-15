@@ -72,7 +72,8 @@ factory_api.cpp
 objectfactory.cpp
 
 proxy_builder.cpp
-process/process.cpp 
+process/process_impl.h
+process/process_impl.cpp 
 process/process_store.cpp 
 process/processconfigparser.cpp
 process/process_builder.cpp

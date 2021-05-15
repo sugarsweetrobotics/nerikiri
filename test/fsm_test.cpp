@@ -100,10 +100,10 @@ SCENARIO( "FSM test", "[ec]" ) {
 
     auto p = nerikiri::process("fsm_test", jsonStr);
       
-    p->loadOperationFactory(opf3);
-    p->loadContainerFactory(cf0);
-    p->loadContainerOperationFactory(copf1);
-    p->loadContainerOperationFactory(copf2);
+    p->load(opf3);
+    p->load(cf0);
+    p->load(copf1);
+    p->load(copf2);
     
       
     p->startAsync();

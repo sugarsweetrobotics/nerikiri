@@ -36,13 +36,11 @@ namespace nerikiri {
         virtual ProcessStore* store() = 0;
         virtual const ProcessStore* store() const = 0;
 
-        virtual ProcessAPI& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) = 0;
-
-        virtual ProcessAPI& loadContainerFactory(const std::shared_ptr<ContainerFactoryAPI>& cf) = 0;
-
-        virtual ProcessAPI& loadContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryAPI>& copf) = 0;
+        virtual ProcessAPI& load(const std::shared_ptr<FactoryAPI>& f) = 0;
 
         virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) = 0; 
+
+        virtual ProcessAPI& conductProcess(const Value& brokerInfo) = 0;
     };
 
 }

@@ -34,10 +34,10 @@ SCENARIO( "Connection test", "[ec]" ) {
     auto p = nerikiri::process("ec_tset", jsonStr);
 
     
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
-    p->loadOperationFactory(opf3);
-    p->loadOperationFactory(opf4);
+    p->load(opf1);
+    p->load(opf2);
+    p->load(opf3);
+    p->load(opf4);
     
     p->startAsync();
 

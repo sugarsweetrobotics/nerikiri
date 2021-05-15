@@ -13,6 +13,99 @@
 using namespace nerikiri;
 
 SCENARIO( "Process test", "[process]" ) {
+
+  GIVEN("Process basic behavior") {
+    const std::string jsonStr1 = R"(
+{
+    "logger": { "logLevel": "WARN" },
+
+    "operations": {
+        "precreate": [
+            {
+                "typeName": "inc",
+                "fullName": "inc0.ope"
+            }
+        ]
+    }, 
+    "brokers": {
+      "load_paths": ["lib", "lib/Debug", "build/lib", "build/lib/Debug"],
+      "preload": ["HTTPBroker"],
+      "precreate": [
+        {
+            "typeName": "HTTPBroker",
+            "port": 18082,
+            "host": "0.0.0.0",
+            "fullName": "HTTPBroker0.brk"
+        }
+      ]
+    }
+}  
+)";
+
+    const std::string jsonStr2 = R"(
+{
+    "logger": { "logLevel": "WARN" },
+
+    "operations": {
+        "precreate": [
+            {
+                "typeName": "zero",
+                "fullName": "zero0.ope"
+            }
+        ]
+    }, 
+    "brokers": {
+      "load_paths": ["lib", "lib/Debug", "build/lib", "build/lib/Debug"],
+      "preload": ["HTTPBroker"],
+      "precreate": [
+        {
+            "typeName": "HTTPBroker",
+            "port": 18083,
+            "host": "0.0.0.0",
+            "fullName": "HTTPBroker0.brk"
+        }
+      ]
+    }
+}  
+)";
+
+    auto p1 = nerikiri::process("process_1", jsonStr1);
+    p1->load(opf1);
+    p1->load(opf2);
+    p1->load(opf3);
+    p1->startAsync();
+
+
+    auto p2 = nerikiri::process("process_2", jsonStr2);
+    p2->load(opf1);
+    p2->load(opf2);
+    p2->load(opf3);
+    //p2->loadOperationFactory(opf1);
+    //p2->loadOperationFactory(opf2);
+    //p2->loadOperationFactory(opf3);
+    p2->startAsync();
+
+    
+    WHEN("One process2 is Conductor process") {
+
+      auto brk1 = p1->store()->broker("HTTPBroker0.brk");
+      REQUIRE(brk1->isNull() == false);
+      //p2->conductProcess(brk1->fullInfo());
+
+      THEN("Can Find operation in process1") {
+
+      }
+
+      THEN("Can find operations in process2") {
+        
+      }
+    }
+    
+    p1->stop();
+    p2->stop();
+
+  };
+
   GIVEN("Process basic behavior") {
     const std::string jsonStr1 = R"(
 {
@@ -69,18 +162,34 @@ SCENARIO( "Process test", "[process]" ) {
 )";
 
     auto p1 = nerikiri::process("process_1", jsonStr1);
-    p1->loadOperationFactory(opf1);
-    p1->loadOperationFactory(opf2);
-    p1->loadOperationFactory(opf3);
+    p1->load(opf1);
+    p1->load(opf2);
+    p1->load(opf3);
     p1->startAsync();
 
 
     auto p2 = nerikiri::process("process_2", jsonStr2);
-
-    p2->loadOperationFactory(opf1);
-    p2->loadOperationFactory(opf2);
-    p2->loadOperationFactory(opf3);
+    p2->load(opf1);
+    p2->load(opf2);
+    p2->load(opf3);
     p2->startAsync();
+
+    /*
+    WHEN("One process2 is Conductor process") {
+
+      auto brk1 = p1->store()->broker("HTTPBroker0.brk");
+      REQUIRE(brk1->isNull() == false);
+      p2->conductProcess(brk1->fullInfo());
+
+      THEN("Can Find operation in process1") {
+
+      }
+
+      THEN("Can find operations in process2") {
+        
+      }
+    }
+    */
 
 
     auto inc0ope = p1->store()->get<OperationAPI>("inc0.ope");

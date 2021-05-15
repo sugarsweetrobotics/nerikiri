@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <nerikiri/object.h>
 
 namespace nerikiri {
@@ -40,5 +41,9 @@ namespace nerikiri {
         }
     };
 
-    //std::shared_ptr<FactoryAPI> nullFactory();
+    inline std::shared_ptr<FactoryAPI> nullFactory() { return std::make_shared<NullFactory<Object>>(); }
+
+    template<>
+    inline std::shared_ptr<FactoryAPI> nullObject<FactoryAPI>() { return nullFactory(); }
+
 }

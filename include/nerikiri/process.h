@@ -6,6 +6,7 @@
 #include <nerikiri/nerikiri.h>
 #include <nerikiri/value.h>
 #include <nerikiri/process_api.h>
+#include <nerikiri/client_proxy_api.h>
 
 namespace nerikiri {
   
@@ -16,4 +17,5 @@ namespace nerikiri {
   std::shared_ptr<ProcessAPI> process(const std::string& name, const Value& config);
 
   std::shared_ptr<ProcessAPI> process(const std::string& name, const std::string& jsonStr);
+
 }

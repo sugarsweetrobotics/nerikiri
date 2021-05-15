@@ -54,14 +54,14 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 )";
 
     auto p = nerikiri::process("topic_and_container_test", jsonStr);
-    p->loadContainerFactory(cf0);
-    p->loadContainerOperationFactory(copf0);
-    p->loadContainerOperationFactory(copf1);
-    p->loadContainerOperationFactory(copf2);
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
-    p->loadOperationFactory(opf3);
-    p->loadOperationFactory(opf4);
+    p->load(cf0);
+    p->load(copf0);
+    p->load(copf1);
+    p->load(copf2);
+    p->load(opf1);
+    p->load(opf2);
+    p->load(opf3);
+    p->load(opf4);
     p->startAsync();
 
     auto zero0ope = p->store()->get<OperationAPI>("zero0.ope");
@@ -127,10 +127,10 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 
 
     auto p = nerikiri::process("topic_connection_test", jsonStr);
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
-    p->loadOperationFactory(opf3);
-    p->loadOperationFactory(opf4);
+    p->load(opf1);
+    p->load(opf2);
+    p->load(opf3);
+    p->load(opf4);
     
     p->startAsync();
 
@@ -186,10 +186,10 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 
 
     auto p = nerikiri::process("topic_basic_test", jsonStr);
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
-    p->loadOperationFactory(opf3);
-    p->loadOperationFactory(opf4);
+    p->load(opf1);
+    p->load(opf2);
+    p->load(opf3);
+    p->load(opf4);
     
     p->startAsync();
 
@@ -245,10 +245,10 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 )";
 
     auto p = nerikiri::process("topic_connection_test", jsonStr);
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
-    p->loadOperationFactory(opf3);
-    p->loadOperationFactory(opf4);
+    p->load(opf1);
+    p->load(opf2);
+    p->load(opf3);
+    p->load(opf4);
     
     p->startAsync();
 

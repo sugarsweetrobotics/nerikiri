@@ -44,10 +44,10 @@ SCENARIO( "Container test", "[container]" ) {
 
     auto p = nerikiri::process("container_test", jsonStr);
       
-      p->loadContainerFactory(cf0);
-      p->loadContainerOperationFactory(copf0);
-      p->loadContainerOperationFactory(copf1);
-      p->loadContainerOperationFactory(copf2);
+      p->load(cf0);
+      p->load(copf0);
+      p->load(copf1);
+      p->load(copf2);
       
     p->startAsync();
       
