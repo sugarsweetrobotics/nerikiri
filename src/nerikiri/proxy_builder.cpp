@@ -7,6 +7,7 @@ using namespace nerikiri;
 
 namespace nerikiri {
     std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
+    std::shared_ptr<ContainerAPI> containerProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
 
 }
 
@@ -60,6 +61,40 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value
     logger::trace("ProxyBuilder::operationProxy({}, broker='{}') called", value, broker->typeName());
     return nerikiri::operationProxy(broker, Value::string(value.at("fullName")));
 }
+
+
+std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const nerikiri::Value& value, const std::shared_ptr<ClientProxyAPI>& broker) {
+    logger::trace("ProxyBuilder::containerProxy({}, broker='{}') called", value, broker->typeName());
+    return nerikiri::containerProxy(broker, Value::string(value.at("fullName")));
+}
+
+
+std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+    logger::trace("ProxyBuilder::containerProxy({}, store) called", value);
+    auto fullName = Value::string(value.at("fullName"));
+    std::string brokerTypeName = "CoreBroker";
+    if (!value.hasKey("broker")) {
+        logger::trace("ProxyBuilder::containerProxy({}) ... Please check. Passed argument 'value' has no 'broker' key object.");
+        return store->get<ContainerAPI>(fullName);
+    }
+    auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+    if (broker->isNull()) {
+        logger::error("ProxyBuilder::containerProxy() failed. Broker({}) can not be created.", value["broker"]);
+        return nullContainer();
+    }
+    auto op = nerikiri::containerProxy(broker, fullName);
+    if (op->isNull()) {
+        logger::error("ProxyBuilder::containerProxy() failed. ContainerProxy({}) with broker({}) can not be created.", fullName, value["broker"]);
+        return nullContainer();
+    }
+    Value info = store->addContainerProxy(op);
+    if (info.isError()) {
+        return store->containerProxy(value);
+    }
+    logger::trace("ProxyBuilder::containerProxy() exit");
+    return op;
+}
+
 
 
 /*

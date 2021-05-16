@@ -94,6 +94,7 @@ public:
 
     virtual Value disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) override {
         // TODO: connect imple
+    //    return broker_->operationInlet()->defaultValue(fullName_, name_);
     }
 
     
@@ -223,6 +224,7 @@ public:
 
     virtual Value fullInfo() const override {
         auto i = broker_->operation()->fullInfo(fullName_);
+        if (i.isError()) return i;
         i["broker"] = broker_->fullInfo();
         return i;
     }

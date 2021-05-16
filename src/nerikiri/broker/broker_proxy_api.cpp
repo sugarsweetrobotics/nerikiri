@@ -193,6 +193,14 @@ public:
     virtual ~NullBrokerProxy() {}
 public:
 
+    /// URLスキーム文字列を返す
+    virtual std::string scheme() const override {
+        return "null://";
+    }
+    virtual std::string domain() const override {
+        return "localhost/";
+    }
+
     virtual Value getProcessInfo() const override {
         return Value::error(logger::error("NullBrokerProxy::{} failed. Object is null.", __func__));
         

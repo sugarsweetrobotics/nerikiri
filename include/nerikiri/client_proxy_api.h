@@ -8,6 +8,13 @@
 namespace nerikiri {
 
    
+    class ProcessClientAPI {
+    public:
+        virtual ~ProcessClientAPI() {}
+
+    public:
+        
+    };
 
     class FactoryClientAPI {
     public:
@@ -87,10 +94,6 @@ namespace nerikiri {
 
         virtual Value connections(const std::string& fullName, const std::string& targetName) const = 0;
 
-        //virtual Value addConnection(const std::string& fullName, const std::string& targetName, const Value& c) = 0;
-        
-        //virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) = 0;
-
         virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) = 0;
 
         virtual Value disconnectFrom(const std::string& fullName, const std::string& targetName, const Value& outletInfo) = 0;
@@ -113,11 +116,6 @@ namespace nerikiri {
         virtual Value operations(const std::string& containerFullName)  const = 0;
         virtual Value fullInfo(const std::string& containerFullName) const = 0;
     };
-
-    ///class ContainerOperationBrokerAPI {
-   // public:
-    //    virtual ~ContainerOperationBrokerAPI() {}
-    //};
 
 
     class ClientProxyAPI : public Object
@@ -166,6 +164,12 @@ namespace nerikiri {
 
         virtual ~ClientProxyAPI() {}
     public:
+
+        /// URLスキーム文字列を返す
+        virtual std::string scheme() const = 0;
+
+        /// URLドメイン文字列を返す
+        virtual std::string domain() const = 0;
 
         virtual Value getProcessInfo() const = 0;
 

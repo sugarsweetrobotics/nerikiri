@@ -21,6 +21,8 @@ container/container_operation_factory_api.cpp
 container/container_operation_factory_base.cpp
 container/container_operation_factory_base.h
 container/container.cpp 
+container/container_proxy.cpp 
+container/container_proxy.h
 # container/container_factory_api.cpp
 
 

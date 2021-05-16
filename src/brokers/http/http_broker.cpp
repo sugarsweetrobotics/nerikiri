@@ -25,6 +25,7 @@ class HTTPBroker : public CRUDBrokerBase {
 private:
   nerikiri::HttpServer_ptr server_;
   std::string address_;
+  std::string allow_;
   int32_t port_;
   std::string baseDirectory_;
   std::condition_variable cond_;
@@ -33,9 +34,9 @@ private:
   std::string endpoint_;
 public:
 
-  HTTPBroker(const std::string& fullName, const std::string& address, const int32_t port, const std::string& base_dir=".", const Value& value=Value::error("null")):
+  HTTPBroker(const std::string& fullName, const std::string& address, const int32_t port, const std::string& allow, const std::string& base_dir=".", const Value& value=Value::error("null")):
     CRUDBrokerBase("HTTPBroker", "HTTPBroker", fullName),
-    server_(nerikiri::server()), address_(address), port_(port), baseDirectory_(base_dir), endpoint_("httpBroker")
+    server_(nerikiri::server()), address_(address), port_(port), allow_(allow), baseDirectory_(base_dir), endpoint_("httpBroker")
   {
     logger::trace("HTTPBroker::HTTPBroker(fullName={}, address={}, port={}) called", fullName, address, port);
 
@@ -48,6 +49,14 @@ public:
 
   virtual ~HTTPBroker() {
     logger::trace("HTTPBroker::~HTTPBroker()");
+  }
+
+  virtual std::string scheme() const override {
+      return "http://";
+  }
+
+  virtual std::string domain() const override {
+      return address_ + ":" + std::to_string(port_) + "/";
   }
 
   nerikiri::Response toResponse(const Value& value) const {
@@ -80,6 +89,7 @@ public:
     auto i = info();
     i["port"] = port_;
     i["host"] = address_;
+    i["allow"] = allow_;
     i["baseDirectory"] = baseDirectory_;
     return i;
   }
@@ -171,6 +181,12 @@ std::shared_ptr<BrokerAPI> HTTPBrokerFactory::create(const Value& value) {
       return nullBroker();
     }
     
+    
+    if (value.hasKey("allow") && !value["allow"].isStringValue()) {
+      logger::error("HTTPBrokerFactory::create({}) failed. 'allow' option must be string value. Failed.", value);
+      return nullBroker();
+    }
+
     if (!value.hasKey("fullName")) {
         logger::error("HTTPBrokerFactory::create({}) failed. There is no 'fullName' value.", value);
         return nullBroker();
@@ -204,7 +220,7 @@ std::shared_ptr<BrokerAPI> HTTPBrokerFactory::create(const Value& value) {
         routeInfo = value.at("route");
     }
     
-    return std::make_shared<HTTPBroker>(value["fullName"].stringValue(), value["host"].stringValue(), value["port"].intValue(), base_dir, routeInfo);
+    return std::make_shared<HTTPBroker>(value["fullName"].stringValue(), value["host"].stringValue(), value["port"].intValue(), Value::string(value["allow"], "0.0.0.0"), base_dir, routeInfo);
 }
 
 

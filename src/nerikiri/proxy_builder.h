@@ -13,6 +13,9 @@ namespace nerikiri {
     static std::shared_ptr<OperationAPI> operationProxy(const Value& info, ProcessStore* store);
     static std::shared_ptr<OperationAPI> operationProxy(const Value& info, const std::shared_ptr<ClientProxyAPI>& brokerProxy);
 
+    static std::shared_ptr<ContainerAPI> containerProxy(const Value& info, ProcessStore* store);
+    static std::shared_ptr<ContainerAPI> containerProxy(const Value& info, const std::shared_ptr<ClientProxyAPI>& brokerProxy);
+
     //static std::shared_ptr<ECStateAPI> ecStateProxy(const Value& info, ProcessStore* store);
     //static std::shared_ptr<ECStateAPI> ecStateProxy(const Value& info, const std::shared_ptr<BrokerProxyAPI>& brokerProxy);
 

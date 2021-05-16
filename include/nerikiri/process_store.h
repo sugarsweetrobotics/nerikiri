@@ -31,6 +31,9 @@ namespace nerikiri {
   class BrokerFactoryAPI;
 
   std::shared_ptr<ClientProxyAPI> coreBroker(ProcessStore& store);
+
+  std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& proxy, const std::string& fullName);
+
   class NK_API ProcessStore {
   private:
     ProcessAPI* process_;
@@ -40,6 +43,8 @@ namespace nerikiri {
     std::vector<std::shared_ptr<Object>> objects_;
 
     std::vector<std::shared_ptr<OperationAPI>> operationProxies_;
+    std::vector<std::shared_ptr<ContainerAPI>> containerProxies_;
+
     std::vector<std::shared_ptr<ExecutionContextFactoryAPI>> executionContextFactories_;
     
     std::vector<std::shared_ptr<BrokerAPI>> brokers_;
@@ -47,6 +52,8 @@ namespace nerikiri {
 
     std::vector<std::shared_ptr<InletAPI>> inletProxies_;
     std::vector<std::shared_ptr<OutletAPI>> outletProxies_;
+
+    std::vector<std::shared_ptr<ClientProxyAPI>> followerProxies_;
 
     friend class ProcessAPI;
     friend class Process;
@@ -68,7 +75,23 @@ namespace nerikiri {
     Value info() const ;
 
     ProcessAPI* process() { return process_; }
+  public:
+    bool addFollowerClientProxy(const std::shared_ptr<ClientProxyAPI>& followerProxy) {
+      logger::trace("ProcessStore::addFollowerClientProxy() called");
+      followerProxies_.push_back(followerProxy);
+      return true;
+    }
 
+    bool removeFollowerClientProxy(const std::shared_ptr<ClientProxyAPI>& followerProxy) {
+      logger::trace("ProcessStore::removeFollowerClientProxy() called");
+      for (auto it = followerProxies_.begin(); it != followerProxies_.end();++it) {
+        if (it->get() == followerProxy.get()) {
+          it = followerProxies_.erase(it);
+          return true;
+        } 
+      }
+      return false;
+    }
 
   private:
 
@@ -76,8 +99,23 @@ namespace nerikiri {
     std::vector<std::shared_ptr<T>>& ref_list();
 
   public:
+    /**
+     * 登録中のオブジェクトのリストを作成
+     * @param T T型にdynamic_pointer_castできるオブジェクトのみをリスト化する
+     * 
+     */
     template<typename T>
     std::vector<std::shared_ptr<T>> list() const {
+      std::vector<std::shared_ptr<T>> ops;// = {objects_.begin(), objects_.end()};
+      for(auto& o : objects_) {
+        auto op = std::dynamic_pointer_cast<T>(o);
+        if (op) { ops.emplace_back(op); }
+      }
+      return ops;
+    }
+
+    template<typename T>
+    std::vector<std::shared_ptr<T>> local_list() const {
       std::vector<std::shared_ptr<T>> ops;// = {objects_.begin(), objects_.end()};
       for(auto& o : objects_) {
         auto op = std::dynamic_pointer_cast<T>(o);
@@ -100,11 +138,64 @@ namespace nerikiri {
       return ops;
     }
 
+
+
   public:
+    /**
+     * 登録されているObjectをT型に変換して返す
+     * 
+     * fullNameは，/から開始した場合は絶対パス．
+     * /から始まらない場合は，ローカルプロセスから検索を始めるので時間がかかる
+     * 
+     */
     template<typename T>
     std::shared_ptr<T> get(const std::string& fullName) const {
-      for(auto& e : list<T>()) { if (e->fullName() == fullName) return e; }
+      /// 最初が / だったら
+      if (fullName.at(0) == '/') {
+        std::string fn = fullName.substr(1);
+        /// まだ / を含んでいるなら，最初の要素はドメイン．
+        if (fn.find('/') == std::string::npos) {
+          auto tokens = nerikiri::stringSplit(fn, '/');
+          if (tokens.size() != 2) { // / で分割して2つにならないということは，ドメインよりも多くの要素があって，現状は対応不可能
+            return nullObject<T>();
+          }
+          /// /で区切って２つになるパターン．最初の要素がドメイン．二つ目がfullNameだ
+          for(auto p : followerProxies_) {
+            if (p->domain() == tokens[0]) {
+              auto info = p->getProcessFullInfo();
+            }
+          }
+        } else {
+          /// / がなければローカルなObjectを指しているので返す
+          for(auto& e : list<T>()) { if (e->fullName() == fullName) return e; }
+          /// 見つからなければnullを返さなくてはならない．他のホストは検索しない
+          return nullObject<T>();
+        }
+      } else { /// この場合はfullNameだけで他のホストも全力で検索して最初に見つかったやつを返す
+
+        for(auto& e : list<T>()) { if (e->fullName() == fullName) return e; }
+        for(auto& f : followerProxies_) {
+          auto p = this->proxy<T>(fullName, f);
+          if (!p->isNull()) {
+            return p;
+          }
+        }
+      }
       return nullObject<T>();
+    }
+
+    template<typename T>
+    std::shared_ptr<T> proxy(const std::string& fullName, const std::shared_ptr<ClientProxyAPI>& clientProxy = nullptr) const {
+      /// Proxyを作成するが，もし相手側が存在しなければnullObjectを返さなくてはならない　
+      return nullObject<T>();
+    }
+
+    template<>
+    std::shared_ptr<OperationAPI> proxy(const std::string& fullName, const std::shared_ptr<ClientProxyAPI>& clientProxy) const {
+      /// Proxyを作成するが，もし相手側が存在しなければnullObjectを返さなくてはならない　
+      auto op = nerikiri::operationProxy(clientProxy, fullName);
+      if (op->fullInfo().isError()) return nullOperation();
+      return op;
     }
 
     template<typename T>
@@ -216,6 +307,11 @@ namespace nerikiri {
         return {outletProxies_.begin(), outletProxies_.end()};
     }
 
+    std::vector<std::shared_ptr<ContainerAPI>> containerProxies() const {
+        return {containerProxies_.begin(), containerProxies_.end()};
+    }
+
+
     std::vector<std::shared_ptr<ExecutionContextFactoryAPI>> executionContextFactories() const { 
       return {executionContextFactories_.begin(), executionContextFactories_.end()};
     }
@@ -236,6 +332,14 @@ namespace nerikiri {
 
     Value deleteOperationProxy(const std::string& fullName) {
       return delObject<OperationAPI>(operationProxies_, fullName);
+    }
+
+    Value addContainerProxy(const std::shared_ptr<ContainerAPI>& o) {
+      return addObject<ContainerAPI>(containerProxies_, o, ".ctn");
+    }
+
+    Value deleteContainerProxy(const std::string& fullName) {
+      return delObject<ContainerAPI>(containerProxies_, fullName);
     }
 
     Value addECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ff) {
@@ -279,6 +383,8 @@ namespace nerikiri {
      * 
      */
     std::shared_ptr<OutletAPI> outletProxy(const Value& info);
+
+    std::shared_ptr<ContainerAPI> containerProxy(const Value& info);
 
 
     //-------- getter ---------

@@ -50,6 +50,15 @@ public:
 
   virtual ~HTTPBrokerProxy() {}
 
+
+  virtual std::string scheme() const override {
+      return "http://";
+  }
+
+  virtual std::string domain() const override {
+      return address_ + ":" + std::to_string(port_) + "/";
+  }
+
 public:
   virtual Value info() const override {
     auto i = nerikiri::CRUDBrokerProxyBase::info();
@@ -83,12 +92,12 @@ public:
     }
 
     virtual Value readResource(const std::string& path) const override {
-      logger::debug("HTTPBrokerProxyImpl::readResource({})", path);
+      logger::debug("HTTPBrokerProxyImpl(addr={}, port={})::readResource({})", address_, (int32_t)port_, path);
       return toValue(client_->request("/" + endpoint_ + "/" + path, "GET"));
     }
 
     virtual Value updateResource(const std::string& path, const Value& value) override {
-      logger::debug("HTTPBrokerProxyImpl::updateResource({})", path);
+      logger::debug("HTTPBrokerProxyImpl(addr={}, port={})::updateResource({})", address_, (int32_t)port_, path);
       return toValue(client_->request("/" + endpoint_ + "/" + path, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
     }
 

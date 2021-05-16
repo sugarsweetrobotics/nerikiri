@@ -18,11 +18,65 @@
 namespace nerikiri {
 
   class ProcessProxy : public ProcessAPI {
+  private:
+    const std::shared_ptr<ClientProxyAPI> proxy_;
+    const std::string name_;
+
+  public:
+    ProcessProxy(const std::string& name, const std::shared_ptr<ClientProxyAPI>& proxy)
+     : ProcessAPI("Process", "Proxy", name), name_(name), proxy_(proxy) {}
+    virtual ~ProcessProxy() {}
+    
+
+        virtual int32_t start() {
+
+        }
+
+        virtual void startAsync() {
+
+        }
+
+        virtual int32_t wait() {
+
+        }
+
+        virtual Value fullInfo() const {
+
+        }
+
+        virtual void stop() {
+          
+        }
+
+        virtual bool isRunning() {
+          
+        }
+        // virtual std::shared_ptr<BrokerProxyAPI> coreBroker() = 0;
+
+        virtual ProcessStore* store() {
+
+        }
+
+        virtual const ProcessStore* store() const {
+
+        }
+
+        virtual ProcessAPI& load(const std::shared_ptr<FactoryAPI>& f) {
+
+        }
+
+        virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) {
+
+        }
+
+        virtual ProcessAPI& conductProcess(const Value& brokerInfo) {
+
+        }
 
   };
 
   inline std::shared_ptr<ProcessAPI> processProxy(const std::string& name, const std::shared_ptr<ClientProxyAPI>& clientProxy) {
-
+    return std::make_shared<ProcessProxy>(name, clientProxy);
   }
 
   
@@ -126,7 +180,7 @@ namespace nerikiri {
     }
 
   private:
-    std::vector<std::shared_ptr<ProcessAPI>> followers_;
+  
   public:
     virtual ProcessAPI& conductProcess(const Value& brokerInfo) override {
       logger::trace("ProcessImpl::conductProcess({}) called", brokerInfo);
@@ -136,7 +190,9 @@ namespace nerikiri {
         fullName = Value::string(brokerInfo["fullName"], Value::string(brokerInfo["typeName"])+std::to_string(count++));
       } while (store()->broker(fullName)->isNull());
       logger::trace("ProcessImpl::conductProcess() exit.");
-      return addFollowerProcess(processProxy(fullName, store()->brokerFactory(Value::string(brokerInfo["typeName"]))->createProxy(brokerInfo)));
+      store()->addFollowerClientProxy(store()->brokerFactory(Value::string(brokerInfo["typeName"]))->createProxy(brokerInfo));
+      // return addFollowerProcess(processProxy(fullName, store()->brokerFactory(Value::string(brokerInfo["typeName"]))->createProxy(brokerInfo)));
+      return *this;
     }
 
     virtual ProcessAPI& addFollowerProcess(const std::shared_ptr<ProcessAPI>& proc) {
@@ -144,7 +200,9 @@ namespace nerikiri {
         logger::error("ProcessImpl::addFollowerProcess() failed. proc is null");
         return *this;
       }
-      followers_.push_back(proc);
+
+
+
       return *this;
     }
 

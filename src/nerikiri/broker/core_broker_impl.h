@@ -20,6 +20,15 @@ namespace nerikiri {
 
     virtual ~CoreBroker();
 
+        /// URLスキーム文字列を返す
+        virtual std::string scheme() const override {
+            return "";
+        }
+
+        virtual std::string domain() const override {
+            return "";
+        }
+        
         virtual Value getProcessInfo() const override;
         virtual Value getProcessFullInfo() const override;
     };

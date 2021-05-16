@@ -153,6 +153,17 @@ std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
 }
 
 
+std::shared_ptr<ContainerAPI> ProcessStore::containerProxy(const Value& info) {
+  auto fullName = Value::string(info.at("fullName"));
+  auto f = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containerProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+    if (f) return f.value();
+  if (info.hasKey("broker")) {
+    logger::trace("ProcessStore::containerProxy({}) called. Creating ContainerProxy....", info);
+    return ProxyBuilder::containerProxy(info, this);
+  }
+  return get<ContainerAPI>(Value::string(info.at("fullName")));
+}
+
 Value ProcessStore::addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy) {
   dllproxies_.push_back(dllproxy);
   return Value{{"STATUS", "OK"}};

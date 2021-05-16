@@ -27,6 +27,24 @@ namespace nerikiri {
         
         virtual ~BrokerAPI() {}
 
+        /// URLスキーム文字列を返す
+        virtual std::string scheme() const = 0;
+
+        /// URLドメイン文字列を返す
+        virtual std::string domain() const = 0;
+
+        bool isScheme(const std::string& shm) const {
+            return shm == scheme();
+        }
+
+        bool isDomain(const std::string& dom) const {
+            std::string arg_dom = dom;
+            if (arg_dom.at(arg_dom.length()-1) == '/') arg_dom = arg_dom + "/";
+            std::string self_dom = domain();
+            if (self_dom.at(self_dom.length()-1) == '/') self_dom = self_dom + "/";
+            return self_dom == arg_dom;
+        }
+
         virtual bool run(const std::shared_ptr<ClientProxyAPI>& coreBroker) = 0;
         
         virtual void shutdown(const std::shared_ptr<ClientProxyAPI>& coreBroker) = 0;

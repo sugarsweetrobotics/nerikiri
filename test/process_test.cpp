@@ -34,7 +34,8 @@ SCENARIO( "Process test", "[process]" ) {
         {
             "typeName": "HTTPBroker",
             "port": 18082,
-            "host": "0.0.0.0",
+            "host": "127.0.0.1",
+            "allow": "0.0.0.0",
             "fullName": "HTTPBroker0.brk"
         }
       ]
@@ -44,7 +45,7 @@ SCENARIO( "Process test", "[process]" ) {
 
     const std::string jsonStr2 = R"(
 {
-    "logger": { "logLevel": "WARN" },
+    "logger": { "logLevel": "TRACE" },
 
     "operations": {
         "precreate": [
@@ -61,7 +62,8 @@ SCENARIO( "Process test", "[process]" ) {
         {
             "typeName": "HTTPBroker",
             "port": 18083,
-            "host": "0.0.0.0",
+            "host": "127.0.0.1",
+            "allow": "0.0.0.0",
             "fullName": "HTTPBroker0.brk"
         }
       ]
@@ -80,24 +82,33 @@ SCENARIO( "Process test", "[process]" ) {
     p2->load(opf1);
     p2->load(opf2);
     p2->load(opf3);
-    //p2->loadOperationFactory(opf1);
-    //p2->loadOperationFactory(opf2);
-    //p2->loadOperationFactory(opf3);
     p2->startAsync();
 
-    
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
     WHEN("One process2 is Conductor process") {
 
       auto brk1 = p1->store()->broker("HTTPBroker0.brk");
       REQUIRE(brk1->isNull() == false);
-      //p2->conductProcess(brk1->fullInfo());
+      p2->conductProcess(brk1->fullInfo());
 
       THEN("Can Find operation in process1") {
+        auto inc0ope = p1->store()->get<OperationAPI>("inc0.ope");
+        REQUIRE(inc0ope->isNull() == false);
 
-      }
+        auto inc0proxy = p2->store()->get<OperationAPI>("inc0.ope");
+        REQUIRE(inc0proxy->isNull() == false);
 
-      THEN("Can find operations in process2") {
-        
+        operationIncIsCalled = false;
+
+        Value v = inc0proxy->call({{"arg01", 1}});
+        REQUIRE(operationIncIsCalled == true);
+        REQUIRE(v.isError() == false);
+        REQUIRE(v.isIntValue() == true);
+        REQUIRE(v.intValue() == 2);
+
+        auto zero0ope = p2->store()->get<OperationAPI>("zero0.ope");
+        REQUIRE(zero0ope->isNull() == false);
       }
     }
     
@@ -126,7 +137,7 @@ SCENARIO( "Process test", "[process]" ) {
         {
             "typeName": "HTTPBroker",
             "port": 18080,
-            "host": "0.0.0.0",
+            "host": "localhost",
             "fullName": "HTTPBroker0.brk"
         }
       ]
@@ -153,7 +164,7 @@ SCENARIO( "Process test", "[process]" ) {
         {
             "typeName": "HTTPBroker",
             "port": 18081,
-            "host": "0.0.0.0",
+            "host": "localhost",
             "fullName": "HTTPBroker0.brk"
         }
       ]
@@ -173,6 +184,7 @@ SCENARIO( "Process test", "[process]" ) {
     p2->load(opf2);
     p2->load(opf3);
     p2->startAsync();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     /*
     WHEN("One process2 is Conductor process") {
