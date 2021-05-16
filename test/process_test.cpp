@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <juiz/logger.h>
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/process.h>
 
 #include <thread>

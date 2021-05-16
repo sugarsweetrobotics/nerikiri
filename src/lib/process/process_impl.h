@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 
 #include <juiz/process_api.h>
 #include "../broker/core_broker.h"

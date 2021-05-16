@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/container.h>
 
 #include "TurtleSim.h"

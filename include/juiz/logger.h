@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/value.h>
 
 namespace juiz::logger {

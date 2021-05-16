@@ -1,6 +1,6 @@
 
 #include <sstream>
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/utils/functional.h>
 #include <juiz/logger.h>
 #include <juiz/utils/signal.h>

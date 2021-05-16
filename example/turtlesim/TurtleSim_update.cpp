@@ -2,7 +2,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/container.h>
 
 #include "TurtleSim.h"

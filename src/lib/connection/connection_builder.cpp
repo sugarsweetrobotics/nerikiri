@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/logger.h>
 #include "../objectfactory.h"
 

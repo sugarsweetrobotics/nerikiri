@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <juiz/logger.h>
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/ec.h>
 #include <juiz/operation.h>
 #include <juiz/process.h>

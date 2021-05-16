@@ -6,7 +6,7 @@
 #include <thread>
 #include <mutex>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/object.h>
 #include <juiz/operation_api.h>
 

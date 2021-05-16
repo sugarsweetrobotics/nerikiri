@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 #include <cstdio>
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/value.h>
 
 namespace juiz::json {

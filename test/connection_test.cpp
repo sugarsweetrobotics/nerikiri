@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <juiz/logger.h>
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/process.h>
 #include <juiz/operation.h>
 //#include "nerikiri/connection_builder.h"

@@ -1,4 +1,4 @@
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/operation.h>
 #include <opencv2/opencv.hpp>
 

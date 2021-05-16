@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/value.h>
 #include <juiz/process_api.h>
 #include <juiz/client_proxy_api.h>

@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/utils/functional.h>
 #include <juiz/utils/dllproxy.h>
 

@@ -13,7 +13,7 @@
 #include <functional>
 #include <cstdlib>
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/utils/stringutil.h>
 
 namespace juiz {

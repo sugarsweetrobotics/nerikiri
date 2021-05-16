@@ -1,5 +1,5 @@
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/container.h>
 
 #include "MyStruct.h"

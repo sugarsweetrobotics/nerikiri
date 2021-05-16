@@ -1,6 +1,6 @@
 #pragma once
 
-#include <juiz/nerikiri.h>
+#include <juiz/juiz.h>
 #include <juiz/value.h>
 #include <juiz/utils/naming.h>
 #include <juiz/logger.h>
