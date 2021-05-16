@@ -6,7 +6,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* createTurtleSim() {
+    JUIZ_OPERATION  void* createTurtleSim() {
         return containerFactory<TurtleSim>();
     }
 

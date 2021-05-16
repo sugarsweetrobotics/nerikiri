@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* TurtleSim_spawn() {
+    JUIZ_OPERATION  void* TurtleSim_spawn() {
         return containerOperationFactory<TurtleSim>(
             {
               {"typeName", "spawn"},

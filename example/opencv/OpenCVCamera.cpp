@@ -6,7 +6,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* createOpenCVCamera() {
+    JUIZ_OPERATION  void* createOpenCVCamera() {
         return containerFactory<OpenCVCamera>();
     }
 }

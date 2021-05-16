@@ -1,4 +1,4 @@
-#include <nerikiri/null_connection.h>
+#include <juiz/null_connection.h>
 
 using namespace juiz;
 

@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION void* add() {
+    JUIZ_OPERATION void* add() {
         return operationFactory({ {"typeName", "add"},
               {"defaultArg", {
                 {"arg01", 0},

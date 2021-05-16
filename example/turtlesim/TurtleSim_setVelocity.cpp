@@ -9,7 +9,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* TurtleSim_setVelocity() {
+    JUIZ_OPERATION  void* TurtleSim_setVelocity() {
         return containerOperationFactory<TurtleSim>(
             {
               {"typeName", "setVelocity"},

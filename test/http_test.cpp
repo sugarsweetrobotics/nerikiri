@@ -1,8 +1,8 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include <iostream>
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/process.h"
+#include "juiz/juiz.h"
+#include "juiz/process.h"
 
 
 using namespace juiz;

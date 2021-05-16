@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* MyStruct_intGetter() {
+    JUIZ_OPERATION  void* MyStruct_intGetter() {
         return containerOperationFactory<MyStruct>(
             {
               {"typeName", "intGetter"},

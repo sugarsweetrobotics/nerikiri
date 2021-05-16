@@ -14,7 +14,7 @@
 using namespace juiz;
 
 extern "C" {
-    NK_OPERATION  void* createHTTPBroker();
+    JUIZ_OPERATION  void* createHTTPBroker();
 };
 
 /**

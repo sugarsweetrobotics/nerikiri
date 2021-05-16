@@ -6,7 +6,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* createOpenCVCascadeClassifier() {
+    JUIZ_OPERATION  void* createOpenCVCascadeClassifier() {
         return containerFactory<OpenCVCascadeClassifier>();
     }
 }

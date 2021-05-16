@@ -22,7 +22,7 @@ foreach(a IN ITEMS ${nk_util_headers})
 endforeach()
 
 foreach(a IN ITEMS ${nk_public_util_headers})
-  set(nk_public_util_hdrs ${nk_public_util_hdrs} include/nerikiri/utils/${a})
+  set(nk_public_util_hdrs ${nk_public_util_hdrs} include/juiz/utils/${a})
 endforeach()
 
 set(nk_public_util_hdrs_ ${nk_public_util_hdrs} PARENT_SCOPE)

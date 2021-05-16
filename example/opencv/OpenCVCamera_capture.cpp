@@ -7,12 +7,12 @@ using namespace juiz;
 
 extern "C" {
 
-	NK_OPERATION  void* OpenCVCamera_capture();
+	JUIZ_OPERATION  void* OpenCVCamera_capture();
 }
 
 
 
-    NK_OPERATION  void* OpenCVCamera_capture() {
+    JUIZ_OPERATION  void* OpenCVCamera_capture() {
         return containerOperationFactory<OpenCVCamera>(
         {
           {"typeName", "capture"},

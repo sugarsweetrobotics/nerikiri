@@ -23,7 +23,7 @@ factory_api.h
 
 geometry.h 
 logger.h 
-nerikiri.h 
+juiz.h 
 object.h 
 
 operation_api.h 
@@ -55,7 +55,7 @@ foreach(a IN ITEMS ${nk_headers})
 endforeach()
 
 foreach(a IN ITEMS ${nk_public_headers})
-  set(nk_public_hdrs ${nk_public_hdrs} include/nerikiri/${a})
+  set(nk_public_hdrs ${nk_public_hdrs} include/juiz/${a})
 endforeach()
 
 set(nk_public_hdrs_ ${nk_public_hdrs} PARENT_SCOPE)

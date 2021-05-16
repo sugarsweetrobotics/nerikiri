@@ -8,7 +8,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* TurtleSim_getPose() {
+    JUIZ_OPERATION  void* TurtleSim_getPose() {
         return containerOperationFactory<TurtleSim>(
             {
               {"typeName", "getPose"},

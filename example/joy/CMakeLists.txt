@@ -14,8 +14,8 @@ endif (APPLE)
 
 function(add_operation NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
-  add_dependencies(${NAME} nerikiri)
-  target_link_libraries(${NAME} nerikiri ${EXT_LIBS})
+  add_dependencies(${NAME} juiz)
+  target_link_libraries(${NAME} juiz ${EXT_LIBS})
   set_target_properties(${NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -31,8 +31,8 @@ endfunction(add_operation)
 set(CONTAINERS)
 function(add_container NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
-  add_dependencies(${NAME} nerikiri)
-  target_link_libraries(${NAME} nerikiri ${EXT_LIBS})
+  add_dependencies(${NAME} juiz)
+  target_link_libraries(${NAME} juiz ${EXT_LIBS})
 
   set_target_properties(${NAME}
     PROPERTIES
@@ -62,6 +62,6 @@ add_container(KeyboardJoy_update)
 set(JOY_MODULES ${OPERATIONS} ${CONTAINERS} PARENT_SCOPE)
 
 
-INSTALL(TARGETS ${CONTAINERS} ${OPERATIONS} DESTINATION share/nerikiri/example/joy)
-INSTALL(FILES joy.nkshelf DESTINATION share/nerikiri/example/joy)
+INSTALL(TARGETS ${CONTAINERS} ${OPERATIONS} DESTINATION share/juiz/example/joy)
+INSTALL(FILES joy.nkshelf DESTINATION share/juiz/example/joy)
 

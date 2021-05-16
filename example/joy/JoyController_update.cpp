@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* JoyController_update() {
+    JUIZ_OPERATION  void* JoyController_update() {
         return containerOperationFactory<JoyController>(
         {
           {"typeName", "update"},

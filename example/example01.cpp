@@ -1,13 +1,13 @@
 #include <iostream>
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/process.h"
-//#include "nerikiri/http/httpbroker.h"
-#include "nerikiri/systemeditor.h"
-#include "nerikiri/containers/container.h"
-#include "nerikiri/containers/containeroperation.h"
-#include "nerikiri/containers/containeroperationfactory.h"
-#include "nerikiri/ec.h"
+#include "juiz/juiz.h"
+#include "juiz/process.h"
+//#include "juiz/http/httpbroker.h"
+#include "juiz/systemeditor.h"
+#include "juiz/containers/container.h"
+#include "juiz/containers/containeroperation.h"
+#include "juiz/containers/containeroperationfactory.h"
+#include "juiz/ec.h"
 
 using namespace std::literals::string_literals;
 

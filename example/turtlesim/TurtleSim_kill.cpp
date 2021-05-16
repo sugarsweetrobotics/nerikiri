@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* TurtleSim_kill() {
+    JUIZ_OPERATION  void* TurtleSim_kill() {
         return containerOperationFactory<TurtleSim>(
             {
               {"typeName", "kill"},

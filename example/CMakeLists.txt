@@ -3,7 +3,7 @@ set(OPERATIONS)
 
 function(add_operation NAME)
   add_library(${NAME} SHARED operations/${NAME}.cpp)
-  add_dependencies(${NAME} nerikiri)
+  add_dependencies(${NAME} juiz)
 
   set_target_properties(${NAME}
     PROPERTIES
@@ -21,7 +21,7 @@ endfunction(add_operation)
 set(CONTAINERS)
 function(add_container DIRNAME NAME)
   add_library(${NAME} SHARED containers/${DIRNAME}/${NAME}.cpp)
-  add_dependencies(${NAME} nerikiri)
+  add_dependencies(${NAME} juiz)
 
   set_target_properties(${NAME}
     PROPERTIES
@@ -47,46 +47,46 @@ function(add_example NAME)
   )
 
   set_target_properties(${NAME} PROPERTIES PREFIX "")
-  add_dependencies(${NAME} nerikiri)
+  add_dependencies(${NAME} juiz)
   add_dependencies(${NAME} ${OPERATIONS})
 endfunction(add_example)
 
 find_package(Threads REQUIRED)
 
 
-option(BUILD_NK_EXAMPLE_SIMPLE "Build Simple Operation Examples. This is used in tests" ON)
-option(BUILD_NK_EXAMPLE_OPENCV "Build OpenCV Example" OFF)
-option(BUILD_NK_EXAMPLE_JOY "Build Joy Controller Example" OFF)
-option(BUILD_NK_EXAMPLE_TURTLESIM "Build Turtle Simulator Controller Example" OFF)
+option(BUILD_JUIZ_EXAMPLE_SIMPLE "Build Simple Operation Examples. This is used in tests" ON)
+option(BUILD_JUIZ_EXAMPLE_OPENCV "Build OpenCV Example" OFF)
+option(BUILD_JUIZ_EXAMPLE_JOY "Build Joy Controller Example" OFF)
+option(BUILD_JUIZ_EXAMPLE_TURTLESIM "Build Turtle Simulator Controller Example" OFF)
 
 
-set(EXAMPLE_LIBS nerikiri)
+set(EXAMPLE_LIBS juiz)
 set(EXTRA_MODULES one)
 
 set(EXAMPLES brokers.nkshelf ecs.nkshelf )
 
-if (BUILD_NK_EXAMPLE_SIMPLE)
+if (BUILD_JUIZ_EXAMPLE_SIMPLE)
   add_subdirectory(simple_example)
-endif (BUILD_NK_EXAMPLE_SIMPLE) 
+endif (BUILD_JUIZ_EXAMPLE_SIMPLE) 
 
 
-if (BUILD_NK_EXAMPLE_TURTLESIM)
+if (BUILD_JUIZ_EXAMPLE_TURTLESIM)
   add_subdirectory(turtlesim)
   list(APPEND EXAMPLES turtlesim.nkproj)
-endif (BUILD_NK_EXAMPLE_TURTLESIM)
+endif (BUILD_JUIZ_EXAMPLE_TURTLESIM)
 
-if (BUILD_NK_EXAMPLE_JOY)
+if (BUILD_JUIZ_EXAMPLE_JOY)
   add_subdirectory(joy)
   list(APPEND EXAMPLES keyjoy.nkproj)
-endif (BUILD_NK_EXAMPLE_JOY)
+endif (BUILD_JUIZ_EXAMPLE_JOY)
 
-if (BUILD_NK_EXAMPLE_OPENCV)
+if (BUILD_JUIZ_EXAMPLE_OPENCV)
   add_subdirectory(opencv)
   list(APPEND EXAMPLES opencv.nkproj)
-endif (BUILD_NK_EXAMPLE_OPENCV)
+endif (BUILD_JUIZ_EXAMPLE_OPENCV)
 
 set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
 
-INSTALL(FILES ${EXAMPLES} DESTINATION share/nerikiri/example/)
+INSTALL(FILES ${EXAMPLES} DESTINATION share/juiz/example/)
 
 

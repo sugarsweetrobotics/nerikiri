@@ -5,7 +5,7 @@
 using namespace juiz;
 
 extern "C" {
-    NK_OPERATION  void* createTimerEC();
+    JUIZ_OPERATION  void* createTimerEC();
 };
 
 

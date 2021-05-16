@@ -7,12 +7,12 @@ using namespace juiz;
 
 extern "C" {
 
-	NK_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale();
+	JUIZ_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale();
 
 }
 
 
-    NK_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale() {
+    JUIZ_OPERATION  void* OpenCVCascadeClassifier_detectMultiScale() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
           {"typeName", "detectMultiScale"},

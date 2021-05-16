@@ -8,7 +8,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* MyStruct_addInt() {
+    JUIZ_OPERATION  void* MyStruct_addInt() {
         return containerOperationFactory<MyStruct>(
             {
               {"typeName", "addInt"},

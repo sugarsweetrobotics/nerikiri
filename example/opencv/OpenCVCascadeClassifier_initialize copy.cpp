@@ -1,5 +1,5 @@
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/containeroperationfactory.h"
+#include "juiz/juiz.h"
+#include "juiz/containeroperationfactory.h"
 
 #include "OpenCVCascadeClassifier.h"
 
@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* OpenCVCascadeClassifier_initialize() {
+    JUIZ_OPERATION  void* OpenCVCascadeClassifier_initialize() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
           {"typeName", "initialize"},

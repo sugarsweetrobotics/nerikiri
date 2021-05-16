@@ -1,8 +1,8 @@
 
 #include "webi/webi.h"
-#include "nerikiri/logger.h"
+#include "juiz/logger.h"
 
-#include "nerikiri/systemeditor.h"
+#include "juiz/systemeditor.h"
 
 
 using namespace juiz;

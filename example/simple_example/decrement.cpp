@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION void* decrement() {
+    JUIZ_OPERATION void* decrement() {
         return operationFactory({ {"typeName", "decrement"},
               {"defaultArg", {
                 {"arg01", 0}

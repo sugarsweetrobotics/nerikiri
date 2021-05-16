@@ -1,7 +1,7 @@
 
 #include <juiz/utils/functional.h>
 #include <juiz/operation_api.h>
-//#include <nerikiri/operation_with_argument.h>
+//#include <juiz/operation_with_argument.h>
 
 using namespace juiz;
 

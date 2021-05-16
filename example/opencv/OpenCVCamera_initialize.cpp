@@ -6,10 +6,10 @@
 using namespace juiz;
 
 extern "C" {
-	NK_OPERATION  void* OpenCVCamera_initialize();
+	JUIZ_OPERATION  void* OpenCVCamera_initialize();
 
 }
-    NK_OPERATION  void* OpenCVCamera_initialize() {
+    JUIZ_OPERATION  void* OpenCVCamera_initialize() {
         return containerOperationFactory<OpenCVCamera>(
         {
           {"typeName", "initialize"},

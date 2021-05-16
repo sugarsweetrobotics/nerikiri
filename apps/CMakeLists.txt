@@ -4,7 +4,7 @@ find_package(Threads REQUIRED)
 
 function(add_app NAME)
   add_executable(${NAME} ${NAME}.cpp)
-  target_link_libraries(${NAME} nerikiri Threads::Threads)
+  target_link_libraries(${NAME} juiz Threads::Threads)
 
   set_target_properties(${NAME}
     PROPERTIES

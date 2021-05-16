@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* KeyboardJoy_get() {
+    JUIZ_OPERATION  void* KeyboardJoy_get() {
         return containerOperationFactory<KeyboardJoy>(
         {
           {"typeName", "get"},

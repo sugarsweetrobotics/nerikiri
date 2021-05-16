@@ -1,5 +1,5 @@
 /**
- * nerikiriで使う基本的なデータ型
+ * juizで使う基本的なデータ型
  */
 
 #pragma once

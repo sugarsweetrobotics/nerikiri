@@ -6,7 +6,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* KeyboardJoy_initialize() {
+    JUIZ_OPERATION  void* KeyboardJoy_initialize() {
         return containerOperationFactory<KeyboardJoy>(
         {
           {"typeName", "initialize"},

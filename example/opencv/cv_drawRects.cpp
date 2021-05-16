@@ -6,12 +6,12 @@ using namespace juiz;
 
 extern "C" {
 
-	NK_OPERATION void* cv_drawRects();
+	JUIZ_OPERATION void* cv_drawRects();
 
 }
 
 
-    NK_OPERATION void* cv_drawRects() {
+    JUIZ_OPERATION void* cv_drawRects() {
         return operationFactory(
         {
           {"typeName", "cv_drawRects"},

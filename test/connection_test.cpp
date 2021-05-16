@@ -5,7 +5,7 @@
 #include <juiz/juiz.h>
 #include <juiz/process.h>
 #include <juiz/operation.h>
-//#include "nerikiri/connection_builder.h"
+//#include "juiz/connection_builder.h"
 
 #include "operations_for_tests.h"
 

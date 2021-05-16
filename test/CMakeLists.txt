@@ -19,12 +19,12 @@ OPTION(BUILD_NK_TEST_CONNECTION "Connection Test" ON)
 OPTION(BUILD_NK_TEST_HTTPBROKER "HTTP Broker Test" ON)
 OPTION(BUILD_NK_TEST_GEOMETRY "Geometry Test" ON)
 
-set(EXAMPLE_LIBS nerikiri)
+set(EXAMPLE_LIBS juiz)
 
 function(declare_test arg1)
   add_executable(${arg1}_test ${arg1}_test.cpp)
-  target_link_libraries(${arg1}_test nerikiri Catch2::Catch2WithMain)
-  add_dependencies(${arg1}_test nerikiri ${EXAMPLE_MODULES})
+  target_link_libraries(${arg1}_test juiz Catch2::Catch2WithMain)
+  add_dependencies(${arg1}_test juiz ${EXAMPLE_MODULES})
   add_test(NAME ${arg1}_test COMMAND $<TARGET_FILE:${arg1}_test>
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
   )

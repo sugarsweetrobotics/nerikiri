@@ -6,7 +6,7 @@
 #include <juiz/process_api.h>
 #include <juiz/process_store.h>
 
-// #include "nerikiri/connection_builder.h"
+// #include "juiz/connection_builder.h"
 
 using namespace juiz;
 

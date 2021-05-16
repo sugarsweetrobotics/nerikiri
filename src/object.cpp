@@ -1,5 +1,5 @@
 
-#include "nerikiri/object.h"
+#include "juiz/object.h"
 
 
 

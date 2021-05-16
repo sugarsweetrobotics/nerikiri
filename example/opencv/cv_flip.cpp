@@ -5,11 +5,11 @@
 using namespace juiz;
 
 extern "C" {
-	NK_OPERATION  void* cv_flip();
+	JUIZ_OPERATION  void* cv_flip();
 }
 
 
-    NK_OPERATION  void* cv_flip() {
+    JUIZ_OPERATION  void* cv_flip() {
         return operationFactory(
         {
           {"typeName", "cv_flip"},

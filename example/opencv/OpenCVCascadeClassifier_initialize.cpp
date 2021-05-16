@@ -7,11 +7,11 @@ using namespace juiz;
 
 extern "C" {
 
-	NK_OPERATION  void* OpenCVCascadeClassifier_initialize();
+	JUIZ_OPERATION  void* OpenCVCascadeClassifier_initialize();
 }
 
 
-    NK_OPERATION  void* OpenCVCascadeClassifier_initialize() {
+    JUIZ_OPERATION  void* OpenCVCascadeClassifier_initialize() {
         return containerOperationFactory<OpenCVCascadeClassifier>(
         {
           {"typeName", "initialize"},

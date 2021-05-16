@@ -10,7 +10,7 @@ function(add_broker NAME)
   cmake_parse_arguments(ADD_BROKER "" "" "SRCS;LIBS" ${ARGN})
   add_library(${NAME} SHARED ${ADD_BROKER_SRCS})
   message(${ADD_BROKER_SRCS})
-  target_link_libraries(${NAME} nerikiri ${ADD_BROKER_LIBS})
+  target_link_libraries(${NAME} juiz ${ADD_BROKER_LIBS})
   set_target_properties(${NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -28,4 +28,4 @@ add_broker(HTTPBroker
   SRCS http_broker.cpp http_broker_proxy.cpp http_client_cpphttplib.cpp http_server_cpphttplib.cpp
 )
 
-install(TARGETS HTTPBroker DESTINATION share/nerikiri/brokers)
+install(TARGETS HTTPBroker DESTINATION share/juiz/brokers)

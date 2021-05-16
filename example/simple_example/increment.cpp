@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* increment() {
+    JUIZ_OPERATION  void* increment() {
         return operationFactory(
             {
                 {"typeName", "increment"},

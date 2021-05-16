@@ -17,12 +17,12 @@ endif()
 #  set(CMAKE_CXX_COMPILER "g++")
 # set(CMAKE_CXX_COMPILER "clang++")
 
-project(nerikiri LANGUAGES CXX C VERSION ${JUIZ_VERSION})
+project(juiz LANGUAGES CXX C VERSION ${JUIZ_VERSION})
 
 enable_testing()
 
-option(BUILD_NK_EXAMPLE "Build Example" OFF)
-option(BUILD_NK_TEST "Build JUIZ's Test" OFF)
+option(BUILD_JUIZ_EXAMPLE "Build Example" OFF)
+option(BUILD_JUIZ_TEST "Build JUIZ's Test" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -57,4 +57,4 @@ namespace juiz {
     std::shared_ptr<ConnectionAPI> nullConnection();
 }
 
-// #include <nerikiri/null_connection.h>
+// #include <juiz/null_connection.h>

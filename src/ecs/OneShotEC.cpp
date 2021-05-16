@@ -3,7 +3,7 @@
 using namespace juiz;
 
 extern "C" {
-    NK_OPERATION void* createOneShotEC();
+    JUIZ_OPERATION void* createOneShotEC();
 };
 
 

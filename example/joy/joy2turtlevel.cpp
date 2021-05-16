@@ -7,7 +7,7 @@ using namespace juiz;
 
 extern "C" {
 
-    NK_OPERATION  void* joy2turtlevel() {
+    JUIZ_OPERATION  void* joy2turtlevel() {
         return operationFactory(
             {
                 {"typeName", "joy2turtlevel"},

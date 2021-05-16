@@ -9,7 +9,7 @@ using namespace juiz::logger;
 
 static LOG_LEVEL g_loglevel = logger::LOG_INFO;
 static auto startTime = std::chrono::system_clock::now();
-static std::string g_logFileName = "nerikiri.log";
+static std::string g_logFileName = "juiz.log";
 static bool init = false;
 static std::ofstream g_logFile;
 
