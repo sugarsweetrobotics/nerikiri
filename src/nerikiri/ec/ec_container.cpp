@@ -1,11 +1,11 @@
 #include <iostream>
 #include <algorithm>
-#include <nerikiri/utils/functional.h>
-#include <nerikiri/process_store.h>
-#include <nerikiri/container.h>
-#include <nerikiri/logger.h>
-#include "nerikiri/ec/ec_container.h"
-#include <nerikiri/ec.h>
+#include <juiz/utils/functional.h>
+#include <juiz/process_store.h>
+#include <juiz/container.h>
+#include <juiz/logger.h>
+#include "../ec/ec_container.h"
+#include <juiz/ec.h>
 
 using namespace nerikiri;
 

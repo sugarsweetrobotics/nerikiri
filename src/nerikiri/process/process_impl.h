@@ -6,12 +6,12 @@
 #include <vector>
 #include <functional>
 
-#include "nerikiri/nerikiri.h"
+#include <juiz/nerikiri.h>
 
-#include <nerikiri/process_api.h>
-#include "nerikiri/broker/core_broker.h"
-#include "nerikiri/systemeditor.h"
-#include "nerikiri/process_store.h"
+#include <juiz/process_api.h>
+#include "../broker/core_broker.h"
+#include "juiz/systemeditor.h"
+#include <juiz/process_store.h>
 
 #include "process_builder.h"
 

@@ -1,15 +1,15 @@
 
 #include <sstream>
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/utils/functional.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/utils/signal.h"
-#include "nerikiri/utils/naming.h"
+#include <juiz/nerikiri.h>
+#include <juiz/utils/functional.h>
+#include <juiz/logger.h>
+#include <juiz/utils/signal.h>
+#include <juiz/utils/naming.h>
 
 #include "process_impl.h"
 
-#include "nerikiri/broker_api.h"
-#include <nerikiri/proxy_builder.h>
+#include <juiz/broker_api.h>
+#include "../proxy_builder.h"
 #include <iostream>
 
 using namespace nerikiri;

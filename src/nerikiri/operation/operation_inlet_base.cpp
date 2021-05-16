@@ -1,5 +1,5 @@
 #include "operation_inlet_base.h"
-#include <nerikiri/connection.h>
+#include <juiz/connection.h>
 
 
 using namespace nerikiri;

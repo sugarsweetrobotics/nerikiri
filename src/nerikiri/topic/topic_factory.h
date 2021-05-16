@@ -1,7 +1,7 @@
 #pragma once
 
-#include <nerikiri/process_store.h>
-#include <nerikiri/topic_api.h>
+#include <juiz/process_store.h>
+#include <juiz/topic_api.h>
 
 namespace nerikiri {
 

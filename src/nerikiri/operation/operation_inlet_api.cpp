@@ -1,6 +1,6 @@
 
-#include <nerikiri/operation_api.h>
-#include <nerikiri/logger.h>
+#include <juiz/operation_api.h>
+#include <juiz/logger.h>
 
 using namespace nerikiri;
 

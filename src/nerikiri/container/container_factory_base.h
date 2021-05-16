@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "container_base.h"
-#include <nerikiri/container_api.h>
+#include <juiz/container_api.h>
 
 
 namespace nerikiri {

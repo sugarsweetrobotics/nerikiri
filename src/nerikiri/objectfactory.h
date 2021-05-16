@@ -2,11 +2,11 @@
 
 #include <memory>
 
-#include "nerikiri/operation_api.h"
-#include "nerikiri/broker_api.h"
-#include "nerikiri/client_proxy_api.h"
-#include "nerikiri/value.h"
-#include "nerikiri/process_store.h"
+#include <juiz/operation_api.h>
+#include <juiz/broker_api.h>
+#include <juiz/client_proxy_api.h>
+#include <juiz/value.h>
+#include <juiz/process_store.h>
 
 
 namespace nerikiri {

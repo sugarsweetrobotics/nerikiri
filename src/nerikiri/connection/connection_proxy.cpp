@@ -1,7 +1,7 @@
-#include <nerikiri/connection_proxy.h>
-#include <nerikiri/operation_api.h>
+#include <juiz/connection_proxy.h>
+#include <juiz/operation_api.h>
 
-#include "nerikiri/operation/operation_proxy.h"
+#include "../operation/operation_proxy.h"
 
 using namespace nerikiri;
 

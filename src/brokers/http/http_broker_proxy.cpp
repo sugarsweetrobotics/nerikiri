@@ -6,25 +6,8 @@
 
 #include "http_broker_factory.h"
 
-/*
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/json.h"
-
-#include "nerikiri/process.h"
-#include "nerikiri/objectmapper.h"
-*/
-
-
-/*
-#include "nerikiri/broker_api.h"
-#include "nerikiri/abstractbrokerproxy.h"
-#include "nerikiri/broker_factory_api.h"
-#include "nerikiri/nullbrokerproxy.h"
-*/
-
-#include <nerikiri/crud_broker_proxy_base.h>
-#include <nerikiri/utils/json.h>
+#include <juiz/crud_broker_proxy_base.h>
+#include <juiz/utils/json.h>
 #include "http_client.h"
 #include "http_client.h"
 #include "http_server.h"

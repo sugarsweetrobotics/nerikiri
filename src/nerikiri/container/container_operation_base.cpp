@@ -1,7 +1,5 @@
 
-//#include "container_operation_base_impl.h"
-#include <nerikiri/container.h>
-//#include <nerikiri/container_operation_base.h>
+#include <juiz/container.h>
 
 using namespace nerikiri;
 

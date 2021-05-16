@@ -2,12 +2,12 @@
 
 #include <cstdio>
 
-#include "nerikiri/value.h"
-#include "nerikiri/utils/json.h"
-#include "nerikiri/logger.h"
-#include "nerikiri/utils/functional.h"
-#include "nerikiri/utils/os.h"
-#include "nerikiri/utils/stringutil.h"
+#include <juiz/value.h>
+#include <juiz/utils/json.h>
+#include <juiz/logger.h>
+#include <juiz/utils/functional.h>
+#include <juiz/utils/os.h>
+#include <juiz/utils/stringutil.h>
 
 namespace nerikiri {
 

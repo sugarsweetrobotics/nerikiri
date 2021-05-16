@@ -6,16 +6,16 @@
 #include <thread>
 #include <mutex>
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/object.h"
-#include "nerikiri/operation_api.h"
+#include <juiz/nerikiri.h>
+#include <juiz/object.h>
+#include <juiz/operation_api.h>
 
-#include "nerikiri/connection.h"
-#include "nerikiri/utils/functional.h"
+#include <juiz/connection.h>
+#include <juiz/utils/functional.h>
 
 #include "newest_value_buffer.h"
 
-#include "nerikiri/operation_api.h"
+#include <juiz/operation_api.h>
 
 namespace nerikiri {
 

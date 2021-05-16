@@ -1,10 +1,10 @@
 
 #include <iostream>
 #include <memory>
-#include "nerikiri/logger.h"
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/process.h"
-#include "nerikiri/operation.h"
+#include <juiz/logger.h>
+#include <juiz/nerikiri.h>
+#include <juiz/process.h>
+#include <juiz/operation.h>
 // #include "nerikiri/connection_builder.h"
 
 #include "operations_for_tests.h"

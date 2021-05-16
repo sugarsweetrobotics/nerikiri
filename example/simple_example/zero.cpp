@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/operation.h"
+#include <juiz/nerikiri.h>
+#include <juiz/operation.h>
 
 using namespace nerikiri;
 

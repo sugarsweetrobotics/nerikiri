@@ -1,5 +1,5 @@
-#include <nerikiri/logger.h>
-#include <nerikiri/utils/dllproxy.h>
+#include <juiz/logger.h>
+#include <juiz/utils/dllproxy.h>
 #ifdef WIN32
 #include <Windows.h>
 #else

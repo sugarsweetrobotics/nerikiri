@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include <nerikiri/connection.h>
+#include <juiz/connection.h>
 #include "operation_outlet_base.h"
 
 using namespace nerikiri;

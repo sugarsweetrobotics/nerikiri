@@ -1,9 +1,9 @@
 #include "container_proxy.h"
 
-#include <nerikiri/container_api.h>
-#include <nerikiri/client_proxy_api.h>
+#include <juiz/container_api.h>
+#include <juiz/client_proxy_api.h>
 
-#include "nerikiri/operation/operation_proxy.h"
+#include "../operation/operation_proxy.h"
 
 using namespace nerikiri;
 

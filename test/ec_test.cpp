@@ -1,10 +1,10 @@
 
 #include <iostream>
-#include "nerikiri/logger.h"
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/ec.h"
-#include "nerikiri/operation.h"
-#include "nerikiri/process.h"
+#include <juiz/logger.h>
+#include <juiz/nerikiri.h>
+#include <juiz/ec.h>
+#include <juiz/operation.h>
+#include <juiz/process.h>
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"

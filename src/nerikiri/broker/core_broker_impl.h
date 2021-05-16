@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <nerikiri/client_proxy_api.h>
+#include <juiz/client_proxy_api.h>
 
 namespace nerikiri {
 

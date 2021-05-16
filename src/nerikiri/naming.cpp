@@ -1,4 +1,4 @@
-#include <nerikiri/utils/naming.h>
+#include <juiz/utils/naming.h>
 
 using namespace nerikiri;
 

@@ -1,6 +1,6 @@
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/container.h"
+#include <juiz/nerikiri.h>
+#include <juiz/container.h>
 
 #include "MyStruct.h"
 

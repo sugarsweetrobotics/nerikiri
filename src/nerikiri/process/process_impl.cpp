@@ -2,12 +2,12 @@
 #include <iostream>
 #include <future>
 
-#include <nerikiri/utils/os.h>
-#include <nerikiri/utils/signal.h>
-#include <nerikiri/process.h>
+#include <juiz/utils/os.h>
+#include <juiz/utils/signal.h>
+#include <juiz/process.h>
 
-#include "nerikiri/argparse.h"
-#include "nerikiri/objectfactory.h"
+#include "../argparse.h"
+#include "../objectfactory.h"
 
 #include "process_impl.h"
 #include "processconfigparser.h"

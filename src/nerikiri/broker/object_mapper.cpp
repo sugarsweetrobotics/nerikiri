@@ -1,10 +1,10 @@
 #include <regex>
 
-#include <nerikiri/logger.h>
+#include <juiz/logger.h>
 #include "object_mapper.h"
 //#include "../process/process_impl.h"
-#include <nerikiri/process_api.h>
-#include "nerikiri/process_store.h"
+#include <juiz/process_api.h>
+#include <juiz/process_store.h>
 
 // #include "nerikiri/connection_builder.h"
 

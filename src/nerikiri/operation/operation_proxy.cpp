@@ -1,6 +1,6 @@
-#include <nerikiri/operation.h>
-#include <nerikiri/connection_proxy.h>
-#include <nerikiri/utils/functional.h>
+#include <juiz/operation.h>
+#include <juiz/connection_proxy.h>
+#include <juiz/utils/functional.h>
 
 #include "operation_proxy.h"
 

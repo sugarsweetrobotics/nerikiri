@@ -1,9 +1,9 @@
 #include <string>
 #include <vector>
 
-#include <nerikiri/utils/functional.h>
+#include <juiz/utils/functional.h>
 
-#include <nerikiri/container_api.h>
+#include <juiz/container_api.h>
 #include "container_factory_base.h"
 
 

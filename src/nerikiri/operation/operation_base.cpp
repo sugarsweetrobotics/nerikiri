@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include <nerikiri/logger.h>
-#include <nerikiri/utils/functional.h>
+#include <juiz/logger.h>
+#include <juiz/utils/functional.h>
 #include "operation_base.h"
 #include "operation_inlet_base.h"
 #include "operation_outlet_base.h"

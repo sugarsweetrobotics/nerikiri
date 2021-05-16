@@ -1,5 +1,5 @@
-#include <nerikiri/topic.h>
-#include "nerikiri/operation/operation_base.h"
+#include <juiz/topic.h>
+#include "../operation/operation_base.h"
 
 
 using namespace nerikiri;

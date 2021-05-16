@@ -1,4 +1,4 @@
-#include <nerikiri/crud_broker_proxy_base.h>
+#include <juiz/crud_broker_proxy_base.h>
 
 
 using namespace nerikiri;

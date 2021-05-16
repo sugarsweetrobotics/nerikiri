@@ -1,7 +1,7 @@
 
 #include <iostream>
-#include "nerikiri/logger.h"
-#include "nerikiri/process.h"
+#include <juiz/logger.h>
+#include <juiz/process.h>
 
 
 #include "operations_for_tests.h"

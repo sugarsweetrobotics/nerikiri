@@ -1,5 +1,5 @@
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/process.h"
+#include <juiz/nerikiri.h>
+#include <juiz/process.h>
 
 
 int main(const int argc, const char* argv[]) {

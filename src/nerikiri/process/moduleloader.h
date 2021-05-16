@@ -3,8 +3,8 @@
 #include <vector>
 #include <string>
 
-#include "nerikiri/value.h"
-#include "nerikiri/process_store.h"
+#include <juiz/value.h>
+#include <juiz/process_store.h>
 
 namespace nerikiri {
 

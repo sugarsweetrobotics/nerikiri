@@ -1,5 +1,5 @@
-#include <nerikiri/nerikiri.h>
-#include <nerikiri/container.h>
+#include <juiz/nerikiri.h>
+#include <juiz/container.h>
 #include <iostream>
 #include "JoyController.h"
 

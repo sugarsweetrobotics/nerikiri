@@ -1,10 +1,10 @@
 
-#include "nerikiri/logger.h"
-#include "nerikiri/objectfactory.h"
+#include <juiz/logger.h>
+#include "./objectfactory.h"
 
 
-#include "nerikiri/fsm/fsm_container.h"
-#include "nerikiri/ec/ec_container.h"
+#include "./fsm/fsm_container.h"
+#include "./ec/ec_container.h"
 
 
 using namespace nerikiri;

@@ -2,8 +2,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include <nerikiri/nerikiri.h>
-#include <nerikiri/container.h>
+#include <juiz/nerikiri.h>
+#include <juiz/container.h>
 
 #include "TurtleSim.h"
 

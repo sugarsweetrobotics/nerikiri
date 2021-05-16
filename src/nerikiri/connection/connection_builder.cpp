@@ -1,12 +1,12 @@
 #include <sstream>
 
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/logger.h"
-#include <nerikiri/objectfactory.h>
+#include <juiz/nerikiri.h>
+#include <juiz/logger.h>
+#include "../objectfactory.h"
 
 
-#include <nerikiri/proxy_builder.h>
-#include "nerikiri/connection/connection_builder.h"
+#include "../proxy_builder.h"
+#include "../connection/connection_builder.h"
 
 
 using namespace nerikiri;

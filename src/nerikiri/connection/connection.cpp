@@ -1,8 +1,8 @@
-#include "nerikiri/logger.h"
+#include <juiz/logger.h>
 
-#include <nerikiri/operation_api.h>
-#include "nerikiri/connection.h"
-#include <nerikiri/process_api.h>
+#include <juiz/operation_api.h>
+#include <juiz/connection.h>
+#include <juiz/process_api.h>
 
 using namespace nerikiri;
 

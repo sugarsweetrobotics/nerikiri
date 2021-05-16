@@ -1,10 +1,6 @@
-#include "nerikiri/logger.h"
-#include "nerikiri/utils/functional.h"
-#include "nerikiri/utils/naming.h"
+#include <juiz/logger.h>
+#include <juiz/utils/functional.h>
+#include <juiz/utils/naming.h>
 
-#include "nerikiri/container.h"
-//#include "nerikiri/container_factory.h"
-//#include "nerikiri/container_operation.h"
-//#include "nerikiri/container_operation_factory.h"
-
+#include <juiz/container.h>
 using namespace nerikiri;

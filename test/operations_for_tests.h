@@ -1,8 +1,8 @@
 #pragma once
 #include <memory>
-#include "nerikiri/operation.h"
-#include "nerikiri/ec.h"
-#include "nerikiri/container.h"
+#include <juiz/operation.h>
+#include <juiz/ec.h>
+#include <juiz/container.h>
 
 bool operationIsCalled = false;
 

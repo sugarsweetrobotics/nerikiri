@@ -9,8 +9,8 @@
 #else
 #include <unistd.h> /* environ */
 #endif
-#include "nerikiri/utils/stringutil.h"
-#include "nerikiri/utils/os.h"
+#include <juiz/utils/stringutil.h>
+#include <juiz/utils/os.h>
 
 
 std::vector<std::string> nerikiri::getEnv(const std::string& key) {

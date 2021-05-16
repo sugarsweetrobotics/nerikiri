@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include <nerikiri/value.h>
+#include <juiz/value.h>
 
-#include <nerikiri/logger.h>
-#include <nerikiri/utils/functional.h>
+#include <juiz/logger.h>
+#include <juiz/utils/functional.h>
 #include "operation_base.h"
-#include <nerikiri/operation.h>
+#include <juiz/operation.h>
 
 using namespace nerikiri;
 

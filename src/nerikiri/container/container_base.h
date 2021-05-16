@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <nerikiri/container_api.h>
+#include <juiz/container_api.h>
 
 namespace nerikiri {
     // class ContainerFactoryAPI;

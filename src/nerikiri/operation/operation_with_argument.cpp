@@ -1,6 +1,6 @@
 
-#include <nerikiri/utils/functional.h>
-#include <nerikiri/operation_api.h>
+#include <juiz/utils/functional.h>
+#include <juiz/operation_api.h>
 //#include <nerikiri/operation_with_argument.h>
 
 using namespace nerikiri;

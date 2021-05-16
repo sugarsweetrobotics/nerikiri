@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nerikiri/value.h"
+#include <juiz/value.h>
 
 namespace nerikiri {
 

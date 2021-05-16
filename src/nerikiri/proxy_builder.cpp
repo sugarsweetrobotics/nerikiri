@@ -1,7 +1,7 @@
-#include <nerikiri/proxy_builder.h>
+#include "./proxy_builder.h"
 
-#include <nerikiri/operation.h>
-#include <nerikiri/objectfactory.h>
+#include <juiz/operation.h>
+#include "./objectfactory.h"
 
 using namespace nerikiri;
 
@@ -91,7 +91,7 @@ std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const nerikiri::Value
     if (info.isError()) {
         return store->containerProxy(value);
     }
-    logger::trace("ProxyBuilder::containerProxy() exit");
+    logger::trace("ProxyBuilder::conainerProxy() exit");
     return op;
 }
 

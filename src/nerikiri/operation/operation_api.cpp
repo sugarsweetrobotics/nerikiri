@@ -1,4 +1,4 @@
-#include <nerikiri/operation_api.h>
+#include <juiz/operation_api.h>
 using namespace nerikiri;
 
 class NullOperation : public OperationAPI {

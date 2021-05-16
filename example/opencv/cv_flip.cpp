@@ -1,5 +1,5 @@
-#include <nerikiri/nerikiri.h>
-#include <nerikiri/operation.h>
+#include <juiz/nerikiri.h>
+#include <juiz/operation.h>
 #include <opencv2/opencv.hpp>
 
 using namespace nerikiri;

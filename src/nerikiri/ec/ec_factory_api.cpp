@@ -1,4 +1,4 @@
-#include <nerikiri/ec_api.h>
+#include <juiz/ec_api.h>
 
 using namespace nerikiri;
 

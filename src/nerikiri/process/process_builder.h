@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include <nerikiri/process_store.h>
-#include <nerikiri/value.h>
+#include <juiz/process_store.h>
+#include <juiz/value.h>
 
 namespace nerikiri {
 

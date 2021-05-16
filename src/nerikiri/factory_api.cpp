@@ -1,6 +1,6 @@
 
 #include <memory>
-#include <nerikiri/factory_api.h>
+#include <juiz/factory_api.h>
 
 using namespace nerikiri;
 

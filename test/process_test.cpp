@@ -3,11 +3,11 @@
 #include "catch2/catch_all.hpp"
 
 #include <iostream>
-#include "nerikiri/logger.h"
-#include "nerikiri/nerikiri.h"
-#include "nerikiri/process.h"
+#include <juiz/logger.h>
+#include <juiz/nerikiri.h>
+#include <juiz/process.h>
 
-
+#include <thread>
 #include "operations_for_tests.h"
 
 using namespace nerikiri;

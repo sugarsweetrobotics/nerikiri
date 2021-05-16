@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nerikiri/process_store.h>
+#include <juiz/process_store.h>
 namespace nerikiri {
     bool setupFSMContainer(ProcessStore& store);
 

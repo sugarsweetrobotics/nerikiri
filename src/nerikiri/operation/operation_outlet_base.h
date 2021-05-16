@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nerikiri/operation_api.h>
+#include <juiz/operation_api.h>
 #include "newest_value_buffer.h"
 #include "connection_container.h"
 namespace nerikiri {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <nerikiri/value.h>
-#include <nerikiri/operation_api.h>
-#include <nerikiri/process_store.h>
+#include <juiz/value.h>
+#include <juiz/operation_api.h>
+#include <juiz/process_store.h>
 
 namespace nerikiri {
 

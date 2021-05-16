@@ -1,10 +1,10 @@
-#include <nerikiri/logger.h>
-#include <nerikiri/utils/dllproxy.h>
+#include <juiz/logger.h>
+#include <juiz/utils/dllproxy.h>
 
 #include "moduleloader.h"
 
-#include <nerikiri/container_api.h>
-#include <nerikiri/operation.h>
+#include <juiz/container_api.h>
+#include <juiz/operation.h>
 
 
 using namespace nerikiri;

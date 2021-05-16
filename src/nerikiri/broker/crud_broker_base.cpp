@@ -1,7 +1,6 @@
-#include <nerikiri/crud_broker.h>
-
+#include <juiz/crud_broker.h>
+#include <juiz/process_api.h>
 #include "object_mapper.h"
-#include <nerikiri/process_api.h>
 
 using namespace nerikiri;
 

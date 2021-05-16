@@ -2,8 +2,8 @@
 #include <regex>
 #include <sstream>
 
-#include <nerikiri/value.h>
-#include <nerikiri/logger.h>
+#include <juiz/value.h>
+#include <juiz/logger.h>
 
 
 using namespace nerikiri;

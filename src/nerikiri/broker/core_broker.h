@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include <nerikiri/broker_api.h>
+#include <juiz/broker_api.h>
 
 namespace nerikiri {
   class ProcessAPI;

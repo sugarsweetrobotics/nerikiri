@@ -1,5 +1,5 @@
-#include <nerikiri/ec_api.h>
-#include <nerikiri/logger.h>
+#include <juiz/ec_api.h>
+#include <juiz/logger.h>
 
 using namespace nerikiri;
 

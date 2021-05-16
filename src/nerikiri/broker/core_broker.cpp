@@ -1,17 +1,14 @@
 // #include <utility>
 
-#include "nerikiri/process_api.h"
-#include "nerikiri/broker/core_broker.h"
-#include "nerikiri/operation.h"
-#include "nerikiri/connection.h"
-#include "nerikiri/objectfactory.h"
-#include "nerikiri/connection/connection_builder.h"
-
-#include <nerikiri/proxy_builder.h>
-
+#include <juiz/process_api.h>
+#include <juiz/operation.h>
+#include <juiz/connection.h>
+#include <juiz/container.h>
+#include "core_broker.h"
 #include "core_broker_impl.h"
-
-#include <nerikiri/container.h>
+#include "../proxy_builder.h"
+#include "../objectfactory.h"
+#include "../connection/connection_builder.h"
 
 using namespace nerikiri;
 
