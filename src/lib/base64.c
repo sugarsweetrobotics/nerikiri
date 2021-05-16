@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "nerikiri/base64.h"
+#include "./base64.h"
 
 static const char BASE64_TABLE[] = {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"

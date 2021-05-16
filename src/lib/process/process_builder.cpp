@@ -1,9 +1,9 @@
 
 #include "process_builder.h"
 #include "moduleloader.h"
-#include <nerikiri/objectfactory.h>
-#include "nerikiri/connection/connection_builder.h"
-#include "nerikiri/topic/topic_factory.h"
+#include "../objectfactory.h"
+#include "../connection/connection_builder.h"
+#include "../topic/topic_factory.h"
 
 using namespace juiz;
 /**

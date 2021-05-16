@@ -1,6 +1,6 @@
 #include "topic_factory.h"
 
-#include <nerikiri/objectfactory.h>
+#include "../objectfactory.h"
 using namespace juiz;
 
 
