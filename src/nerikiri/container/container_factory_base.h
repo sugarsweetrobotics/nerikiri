@@ -8,7 +8,7 @@
 #include <juiz/container_api.h>
 
 
-namespace nerikiri {
+namespace juiz {
 
     class ContainerOperationFactoryBase;
 

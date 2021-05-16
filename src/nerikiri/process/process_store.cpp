@@ -12,8 +12,8 @@
 #include "../proxy_builder.h"
 #include <iostream>
 
-using namespace nerikiri;
-using namespace nerikiri::logger;
+using namespace juiz;
+using namespace juiz::logger;
 
 
 Value ProcessStore::info() const { return process_->info(); }
@@ -21,7 +21,7 @@ Value ProcessStore::info() const { return process_->info(); }
 
 std::vector<std::shared_ptr<ConnectionAPI>> ProcessStore::connections() const {
   std::vector<std::shared_ptr<ConnectionAPI>> cons;
-  nerikiri::functional::for_each<std::shared_ptr<OperationAPI>>(list<OperationAPI>(), [&cons](auto op) {
+  juiz::functional::for_each<std::shared_ptr<OperationAPI>>(list<OperationAPI>(), [&cons](auto op) {
     auto cs = op->outlet()->connections();
     cons.insert(cons.end(), cs.begin(), cs.end());
   });
@@ -45,14 +45,14 @@ Value ProcessStore::deleteBrokerFactory(const std::string& fullName) {
 }
 
 std::shared_ptr<ConnectionAPI> ProcessStore::connection(const std::string& fullName) const { 
-  auto op = nerikiri::functional::find<std::shared_ptr<ConnectionAPI>>(connections(), [&fullName](auto op) { return op->fullName() == fullName; });
+  auto op = juiz::functional::find<std::shared_ptr<ConnectionAPI>>(connections(), [&fullName](auto op) { return op->fullName() == fullName; });
   if (op) return op.value();;
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
   return nullConnection();
 }
 
 std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactory(const std::string& ecTypeFullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<ExecutionContextFactoryAPI>>(executionContextFactories(), [&ecTypeFullName] (auto f) {
+  auto f = juiz::functional::find<std::shared_ptr<ExecutionContextFactoryAPI>>(executionContextFactories(), [&ecTypeFullName] (auto f) {
     return f->typeName() == ecTypeFullName;
   });
   if (f) return f.value();
@@ -61,14 +61,14 @@ std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactor
 }
 
 std::shared_ptr<BrokerAPI> ProcessStore::broker(const std::string& fullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<BrokerAPI>>(brokers(), [&fullName](auto b) { return b->fullName() == fullName; });
+  auto f = juiz::functional::find<std::shared_ptr<BrokerAPI>>(brokers(), [&fullName](auto b) { return b->fullName() == fullName; });
   if (f) return f.value();;
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
   return nullBroker();
 }
 
 std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string& fullName) const {
-  auto f = nerikiri::functional::find<std::shared_ptr<BrokerFactoryAPI>>(brokerFactories(), [&fullName](auto f) { return f->typeName() == fullName; });
+  auto f = juiz::functional::find<std::shared_ptr<BrokerFactoryAPI>>(brokerFactories(), [&fullName](auto f) { return f->typeName() == fullName; });
   if (f) return f.value();;
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
   return nullBrokerFactory();
@@ -76,7 +76,7 @@ std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string&
 
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   auto fullName = Value::string(info.at("fullName"));
-  auto f = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+  auto f = juiz::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
     if (f) return f.value();
   if (info.hasKey("broker")) {
     logger::trace("ProcessStore::operationProxy({}) called. Creating OperationProxy....", info);
@@ -87,7 +87,7 @@ std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
 
 std::shared_ptr<InletAPI> ProcessStore::inletProxy(const Value& info) {
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
-    auto p = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inletProxies(), [&info](auto p) {
+    auto p = juiz::functional::find<std::shared_ptr<InletAPI>>(inletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["operation"]["fullName"] && p->name() == Value::string(info["name"]);
     });
@@ -112,14 +112,14 @@ std::shared_ptr<InletAPI> ProcessStore::inletProxy(const Value& info) {
 }
 
 
-std::shared_ptr<ClientProxyAPI> nerikiri::coreBroker(ProcessStore& store) {
+std::shared_ptr<ClientProxyAPI> juiz::coreBroker(ProcessStore& store) {
   return store.brokerFactory("CoreBroker")->createProxy("");
 }
 
 
 std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
-    auto p = nerikiri::functional::find<std::shared_ptr<OutletAPI>>(outletProxies(), [&info](auto p) {
+    auto p = juiz::functional::find<std::shared_ptr<OutletAPI>>(outletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["operation"]["fullName"];
     });
@@ -135,7 +135,7 @@ std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
     addOutletProxy(op);
     return op;
   } /* else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
-    auto p = nerikiri::functional::find<std::shared_ptr<OperationOutletAPI>>(outletProxies(), [&info](auto p) {
+    auto p = juiz::functional::find<std::shared_ptr<OperationOutletAPI>>(outletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["fsm"]["fullName"];
     });
@@ -155,7 +155,7 @@ std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
 
 std::shared_ptr<ContainerAPI> ProcessStore::containerProxy(const Value& info) {
   auto fullName = Value::string(info.at("fullName"));
-  auto f = nerikiri::functional::find<std::shared_ptr<ContainerAPI>>(containerProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+  auto f = juiz::functional::find<std::shared_ptr<ContainerAPI>>(containerProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
     if (f) return f.value();
   if (info.hasKey("broker")) {
     logger::trace("ProcessStore::containerProxy({}) called. Creating ContainerProxy....", info);

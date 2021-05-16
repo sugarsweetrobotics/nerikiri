@@ -8,7 +8,7 @@
 
 // #include "nerikiri/connection_builder.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 Value ObjectMapper::createResource(const std::shared_ptr<ClientProxyAPI>& coreBroker, const std::string& _path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {

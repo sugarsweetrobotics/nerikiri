@@ -7,7 +7,7 @@
 #include "../ec/ec_container.h"
 #include <juiz/ec.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 struct _ECContainerStruct {
     std::string fullName;
@@ -20,7 +20,7 @@ struct _ECContainerStruct {
 
 
 bool 
-nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
+juiz::setupECContainer(juiz::ProcessStore& store) {
   store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>({
 	    {"className", "ECContainer"}
 	  }))));
@@ -58,8 +58,8 @@ nerikiri::setupECContainer(nerikiri::ProcessStore& store) {
     return true;
 }
 
-Value nerikiri::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo) {
-    logger::info("nerikiri::createEC({})", ecInfo);
+Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo) {
+    logger::info("juiz::createEC({})", ecInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
     auto container = store.get<ContainerFactoryAPI>("_ECContainerStruct")->create(fullName);
     if (container->isNull()) {

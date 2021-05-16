@@ -7,9 +7,9 @@
 #include "operation_base.h"
 #include <juiz/operation.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
-namespace nerikiri {
+namespace juiz {
 
     std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
 
@@ -35,6 +35,6 @@ public:
 };
 
 
-std::shared_ptr<OperationAPI> nerikiri::createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)>& func) {
+std::shared_ptr<OperationAPI> juiz::createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)>& func) {
     return std::make_shared<Operation>(operationTypeName, _fullName, defaultArgs, func);
 }

@@ -6,7 +6,7 @@
 #include <juiz/logger.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 /**
@@ -92,7 +92,7 @@ Value Value::object() {
 }
 
 Value Value::merge(const Value& v1, const Value& v2) {
-  return nerikiri::merge(v1, v2);
+  return juiz::merge(v1, v2);
 }
 
 
@@ -228,7 +228,7 @@ void Value::const_object_for_each(const std::function<void(const std::string&, c
 }
 
   
-Value nerikiri::merge(const Value& v1, const Value& v2) {
+Value juiz::merge(const Value& v1, const Value& v2) {
   if((v1.typecode_ == v2.typecode_) && (v1.typecode_ == Value::VALUE_TYPE_LIST)) {
     std::vector<Value> result;
     result.insert(result.end(), v2.listvalue_->begin(), v2.listvalue_->end());
@@ -263,7 +263,7 @@ Value nerikiri::merge(const Value& v1, const Value& v2) {
 }
 
 
-nerikiri::Value nerikiri::lift(const nerikiri::Value& v) {
+juiz::Value juiz::lift(const juiz::Value& v) {
   if (v.isError()) return v;
   if (!v.isListValue()) return v;
   if (v.listValue().size() == 0) return v;
@@ -278,24 +278,24 @@ nerikiri::Value nerikiri::lift(const nerikiri::Value& v) {
   return vlist;
 }
 
-Value nerikiri::replaceAll(const nerikiri::Value& value, const std::string& pattern, const std::string& substring) {
+Value juiz::replaceAll(const juiz::Value& value, const std::string& pattern, const std::string& substring) {
   if (value.isStringValue()) {
       return std::regex_replace(value.stringValue(), std::regex(pattern.c_str()), substring);
   }
   if (value.isListValue()) {
       return value.const_list_map<Value>([pattern, substring](auto v) {
-      return nerikiri::replaceAll(v, pattern, substring);
+      return juiz::replaceAll(v, pattern, substring);
       });
   }
   if (value.isObjectValue()) {
       return value.const_object_map<std::pair<std::string,Value>>([pattern, substring](auto key, auto v) {
-      return std::make_pair(key, nerikiri::replaceAll(v, pattern, substring));
+      return std::make_pair(key, juiz::replaceAll(v, pattern, substring));
       });
   }
   return value;
 }
 
-std::string nerikiri::str(const nerikiri::Value& value) {
+std::string juiz::str(const juiz::Value& value) {
   if (value.isIntValue()) return std::to_string(value.intValue());
   if (value.isDoubleValue()) return std::to_string(value.doubleValue());
   if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
@@ -332,6 +332,6 @@ std::string nerikiri::str(const nerikiri::Value& value) {
   }
   std::stringstream ss;
 
-  ss << "{\"Error\": \"nerikiri::str(Value&) function Error. Value is not supported type. Type code is " << (int32_t)value.getTypeCode() << "\"}";
+  ss << "{\"Error\": \"juiz::str(Value&) function Error. Value is not supported type. Type code is " << (int32_t)value.getTypeCode() << "\"}";
   return ss.str();
 }

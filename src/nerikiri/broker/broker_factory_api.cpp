@@ -2,7 +2,7 @@
 #include <juiz/broker_api.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 class NullBrokerFactory : public BrokerFactoryAPI {
@@ -23,6 +23,6 @@ public:
 
 };
 
-std::shared_ptr<BrokerFactoryAPI> nerikiri::nullBrokerFactory() {
+std::shared_ptr<BrokerFactoryAPI> juiz::nullBrokerFactory() {
     return std::make_shared<NullBrokerFactory>();
 }

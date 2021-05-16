@@ -4,7 +4,7 @@
 #include <juiz/broker_api.h>
 #include <juiz/process_store.h>
 
-namespace nerikiri {
+namespace juiz {
 
 
 

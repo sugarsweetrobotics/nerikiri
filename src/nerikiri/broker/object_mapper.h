@@ -4,7 +4,7 @@
 #include <juiz/value.h>
 #include <juiz/process_store.h>
 #include <juiz/client_proxy_api.h>
-namespace nerikiri {
+namespace juiz {
 
     class Path {
     public:

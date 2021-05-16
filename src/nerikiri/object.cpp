@@ -1,7 +1,7 @@
 #include <juiz/object.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 Object::Object(const std::string& className, const std::string& typeName, const std::string& fullName):
  fullName_(fullName), className_(className), typeName_(typeName)
@@ -35,20 +35,20 @@ fullName_(fullName), className_(""), typeName_(typeName)
 Object::Object(const Value& info) : info_(info){
     info_["state"] = "created";
     if (!info_.hasKey("typeName")) {
-        nerikiri::logger::error("Object::Object(const Value& v={}): Error. No typeName member is included in the argument 'info'", info);
+        juiz::logger::error("Object::Object(const Value& v={}): Error. No typeName member is included in the argument 'info'", info);
     } else if (!info_.hasKey("instanceName")) {
     if (info_.hasKey("fullName")) {
-        nerikiri::logger::warn("Object::Object(const Value& v={}): Warning. No instanceName member is included in the argument 'info', but info has fullName member, so the instanceName of this object is now '{}'", info, info.at("fullName"));
+        juiz::logger::warn("Object::Object(const Value& v={}): Warning. No instanceName member is included in the argument 'info', but info has fullName member, so the instanceName of this object is now '{}'", info, info.at("fullName"));
         info_["instanceName"] = info_["fullName"];
     } else {
-        nerikiri::logger::error("Object::Object(const Value& v={}): Error. No instanceName member is included in the argument 'info'", info);
+        juiz::logger::error("Object::Object(const Value& v={}): Error. No instanceName member is included in the argument 'info'", info);
     }
     } else if (!info_.hasKey("fullName")) {
     if (info_.hasKey("instanceName")) {
-        nerikiri::logger::warn("Object::Object(const Value& v={}): Warning. No fullName member is included in the argument 'info', but info has instanceName member, so the fullName of this object is now '{}'", info, info.at("instanceName"));
+        juiz::logger::warn("Object::Object(const Value& v={}): Warning. No fullName member is included in the argument 'info', but info has instanceName member, so the fullName of this object is now '{}'", info, info.at("instanceName"));
         info_["fullName"] = info_["instanceName"];
     } else {
-        nerikiri::logger::error("Object::Object(const Value& v={}): Error. No fullName member is included in the argument 'info'", info);
+        juiz::logger::error("Object::Object(const Value& v={}): Error. No fullName member is included in the argument 'info'", info);
     }
     }
     fullName_ = Value::string(info_["fullName"]);

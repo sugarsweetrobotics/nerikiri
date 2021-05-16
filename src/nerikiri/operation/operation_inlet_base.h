@@ -17,7 +17,7 @@
 #include "connection_container.h"
 #include "../operation/operation_base.h"
 
-namespace nerikiri {
+namespace juiz {
 
   class OperationInletBase : public InletAPI {
   protected:
@@ -70,7 +70,7 @@ namespace nerikiri {
     virtual bool isUpdated() const override { 
       if(argument_updated_) return true;
       // どの接続もPull型でないならupdateしない
-      return nerikiri::functional::for_all<std::shared_ptr<ConnectionAPI>>(connections(), [](auto c) { return !c->isPull(); }); 
+      return juiz::functional::for_all<std::shared_ptr<ConnectionAPI>>(connections(), [](auto c) { return !c->isPull(); }); 
     }
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }

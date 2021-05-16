@@ -7,7 +7,7 @@
 #include <juiz/operation.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::string> search_paths, const Value& info) {
   logger::trace("ModuleLoader::loadOperationFactory({})",(info));

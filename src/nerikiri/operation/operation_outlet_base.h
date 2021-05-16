@@ -3,7 +3,7 @@
 #include <juiz/operation_api.h>
 #include "newest_value_buffer.h"
 #include "connection_container.h"
-namespace nerikiri {
+namespace juiz {
 
 
   class OperationOutletBase  : public OutletAPI {
@@ -41,7 +41,7 @@ namespace nerikiri {
         return {
             {"ownerFullName", operation_->fullName()},
             {"connections", {
-                nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
+                juiz::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) { return c->info(); })
             }}//,
             //{"operation", operation_->info()}
         };

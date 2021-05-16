@@ -1,6 +1,6 @@
 #include <juiz/ec_api.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 /**
  * 
@@ -17,6 +17,6 @@ public:
     }
 };
 
-std::shared_ptr<ExecutionContextFactoryAPI> nerikiri::nullECFactory() {
+std::shared_ptr<ExecutionContextFactoryAPI> juiz::nullECFactory() {
     return std::make_shared<NullExecutionContextFactory>();
 }

@@ -1,7 +1,7 @@
 #include <juiz/ec_api.h>
 #include <juiz/logger.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 class NullExecutionContext : public ExecutionContextAPI {
 public:
@@ -32,6 +32,6 @@ public:
     }
 };
 
-std::shared_ptr<ExecutionContextAPI> nerikiri::nullEC() {
+std::shared_ptr<ExecutionContextAPI> juiz::nullEC() {
     return std::make_shared<NullExecutionContext>();
 }

@@ -2,7 +2,7 @@
 
 #include <juiz/operation_api.h>
 
-namespace nerikiri {
+namespace juiz {
 
   class OperationInletBase;
   class OperationOutletBase;

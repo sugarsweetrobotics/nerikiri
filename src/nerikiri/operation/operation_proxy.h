@@ -3,7 +3,7 @@
 #include <string>
 
 
-namespace nerikiri {
+namespace juiz {
     class InletAPI;
     class OperationAPI;
     class ClientProxyAPI;

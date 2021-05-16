@@ -5,7 +5,7 @@
 
 #include <juiz/broker_api.h>
 
-namespace nerikiri {
+namespace juiz {
   class ProcessAPI;
   std::shared_ptr<BrokerFactoryAPI> coreBrokerFactory(ProcessAPI* process, const std::string& fullName);
 }

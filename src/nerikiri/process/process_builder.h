@@ -5,7 +5,7 @@
 #include <juiz/process_store.h>
 #include <juiz/value.h>
 
-namespace nerikiri {
+namespace juiz {
 
 
 

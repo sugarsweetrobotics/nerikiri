@@ -3,4 +3,4 @@
 #include <juiz/utils/naming.h>
 
 #include <juiz/container.h>
-using namespace nerikiri;
+using namespace juiz;

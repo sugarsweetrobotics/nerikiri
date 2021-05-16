@@ -5,7 +5,7 @@
 
 #include "../operation/operation_proxy.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 class ContainerProxy : public ContainerAPI {
 private:
@@ -79,6 +79,6 @@ public:
 
 
 
-std::shared_ptr<ContainerAPI> nerikiri::containerProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
+std::shared_ptr<ContainerAPI> juiz::containerProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<ContainerProxy>(broker, fullName);
 }

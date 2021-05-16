@@ -13,7 +13,7 @@
 #include <juiz/utils/os.h>
 
 
-std::vector<std::string> nerikiri::getEnv(const std::string& key) {
+std::vector<std::string> juiz::getEnv(const std::string& key) {
 
 #ifdef WIN32
 
@@ -25,7 +25,7 @@ std::vector<std::string> nerikiri::getEnv(const std::string& key) {
 }
 
 
-std::string nerikiri::getExecutablePath(const std::string& path) {
+std::string juiz::getExecutablePath(const std::string& path) {
     const char sep = '/';
     if (path.find(sep) == 0) return path; // Absolute Path
     auto ps = getEnv("PATH");
@@ -43,7 +43,7 @@ std::string nerikiri::getExecutablePath(const std::string& path) {
     return simplifyPath(path);
 }
 
-std::string nerikiri::simplifyPath(const std::string& path) {
+std::string juiz::simplifyPath(const std::string& path) {
     const char sep = '/';
     auto ns = stringSplit(path, sep);
     std::stringstream ss;

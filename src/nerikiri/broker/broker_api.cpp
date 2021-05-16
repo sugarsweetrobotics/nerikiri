@@ -1,7 +1,7 @@
 #include <juiz/broker_api.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 
@@ -41,5 +41,5 @@ public:
     }
 };
 
-std::shared_ptr<BrokerAPI> nerikiri::nullBroker() { return std::make_shared<NullBroker>(); }
+std::shared_ptr<BrokerAPI> juiz::nullBroker() { return std::make_shared<NullBroker>(); }
 

@@ -1,7 +1,7 @@
 #include <juiz/container_api.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 class NullContainer : public ContainerAPI {
@@ -45,6 +45,6 @@ public:
 
 };
 
-std::shared_ptr<ContainerAPI> nerikiri::nullContainer() {
+std::shared_ptr<ContainerAPI> juiz::nullContainer() {
     return std::make_shared<NullContainer>();
 }

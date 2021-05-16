@@ -1,6 +1,6 @@
 #include <juiz/container.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 class NullContainerOperationFactory : public ContainerOperationFactoryAPI {
 public:
@@ -15,6 +15,6 @@ public:
     }
 };
 
-std::shared_ptr<ContainerOperationFactoryAPI> nerikiri::nullContainerOperationFactory() {
+std::shared_ptr<ContainerOperationFactoryAPI> juiz::nullContainerOperationFactory() {
     return std::make_shared<NullContainerOperationFactory>();
 }

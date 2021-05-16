@@ -2,7 +2,7 @@
 #include <juiz/connection.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 
@@ -20,7 +20,7 @@ Value OperationInletBase::fullInfo() const {
     {"value", get()},
     {"defaultValue", defaultValue()},
     {"connections", {
-      nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) {
+      juiz::functional::map<Value, std::shared_ptr<ConnectionAPI>>(connections_.connections(), [](auto c) {
         return c->info();
       })
     }}//,

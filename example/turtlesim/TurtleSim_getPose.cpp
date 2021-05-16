@@ -3,7 +3,7 @@
 
 #include "TurtleSim.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 extern "C" {

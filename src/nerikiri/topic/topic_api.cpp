@@ -2,10 +2,10 @@
 #include "../operation/operation_base.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
-using TopicBase = nerikiri::OperationBase;
+using TopicBase = juiz::OperationBase;
 
 class Topic : public TopicBase {
 public:
@@ -17,7 +17,7 @@ public:
     }
 };
 
-std::shared_ptr<TopicAPI> nerikiri::topic(const std::string& _fullName, const Value& defaultArgs) {
+std::shared_ptr<TopicAPI> juiz::topic(const std::string& _fullName, const Value& defaultArgs) {
     return std::make_shared<Topic>(_fullName, defaultArgs);
 }
 
@@ -31,7 +31,7 @@ public:
     }
 };
 
-std::shared_ptr<TopicAPI> nerikiri::nullTopic() {
+std::shared_ptr<TopicAPI> juiz::nullTopic() {
     return std::make_shared<NullTopic>();
 }
 
@@ -62,10 +62,10 @@ public:
 };
 
 
-std::shared_ptr<TopicFactoryAPI> nerikiri::topicFactory() {
+std::shared_ptr<TopicFactoryAPI> juiz::topicFactory() {
     return std::make_shared<TopicFactory>();
 }
 
-std::shared_ptr<TopicFactoryAPI> nerikiri::nullTopicFactory() {
+std::shared_ptr<TopicFactoryAPI> juiz::nullTopicFactory() {
     return std::make_shared<NullTopicFactory>();
 }

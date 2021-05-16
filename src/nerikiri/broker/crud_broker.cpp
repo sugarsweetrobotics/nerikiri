@@ -2,6 +2,6 @@
 
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 

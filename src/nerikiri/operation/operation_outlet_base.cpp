@@ -3,7 +3,7 @@
 #include <juiz/connection.h>
 #include "operation_outlet_base.h"
 
-using namespace nerikiri;
+using namespace juiz;
 /////
 
 /**
@@ -11,7 +11,7 @@ using namespace nerikiri;
  */
 static bool check_the_same_route_connection_exists(const std::vector<std::shared_ptr<ConnectionAPI>>& connections, const Value& conInfo, const std::string& inletOwnerClassName) {
     auto flag = false;
-    nerikiri::functional::for_each<std::shared_ptr<ConnectionAPI>>(connections, [&flag, &conInfo, &inletOwnerClassName](auto con) {
+    juiz::functional::for_each<std::shared_ptr<ConnectionAPI>>(connections, [&flag, &conInfo, &inletOwnerClassName](auto con) {
       // もし接続の所有しているinletのオーナー名と接続情報の名前が一致していたら
         if ((con->inlet()->ownerFullName() == Value::string(conInfo.at("inlet").at(inletOwnerClassName).at("fullName"))) && 
             (con->inlet()->name() != Value::string(conInfo.at("inlet").at("name"))) &&
@@ -23,7 +23,7 @@ static bool check_the_same_route_connection_exists(const std::vector<std::shared
 }
 
 static bool check_the_same_name_connection_exists(const std::vector<std::shared_ptr<ConnectionAPI>>& connections, const std::string& name) {
-    auto con = nerikiri::functional::find<std::shared_ptr<ConnectionAPI>>(connections, [&name](auto c) {
+    auto con = juiz::functional::find<std::shared_ptr<ConnectionAPI>>(connections, [&name](auto c) {
         return c->fullName() == name;
     });
     if (con) return true;

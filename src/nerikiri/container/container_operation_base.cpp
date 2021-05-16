@@ -1,9 +1,9 @@
 
 #include <juiz/container.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
-namespace nerikiri {
+namespace juiz {
     std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
 
     std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {});
@@ -28,8 +28,8 @@ public:
             return Value::error(logger::error("ContainerOperationBase::setOwner(container) failed. Passed argument (info={}) can not be converted to ContainerAPI pointer.", container->info()));
         }
         auto _typeName = typeName();
-        setTypeName(nerikiri::naming::join(container->fullName(), _typeName));
-        base_ = createOperation(nerikiri::naming::join(container->fullName(), _typeName), fullName(), defaultArgs_, 
+        setTypeName(juiz::naming::join(container->fullName(), _typeName));
+        base_ = createOperation(juiz::naming::join(container->fullName(), _typeName), fullName(), defaultArgs_, 
            [this](auto value) {
             return this->function_(value);
         });
@@ -78,7 +78,7 @@ public:
 
 
 
-std::shared_ptr<OperationAPI> nerikiri::containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func) {
+std::shared_ptr<OperationAPI> juiz::containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func) {
     return std::make_shared<ContainerOperationBase>(_typeName, _fullName, defaultArgs, func);
 }
 

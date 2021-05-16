@@ -2,7 +2,7 @@
 #include <juiz/process_api.h>
 #include "object_mapper.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 Value CRUDBrokerBase::onCreate(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullPath, const Value& value, const Value& ancillaryInfo) {
     return ObjectMapper::createResource(broker, fullPath, value, ancillaryInfo, this);

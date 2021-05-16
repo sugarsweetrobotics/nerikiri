@@ -8,7 +8,7 @@
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
-using namespace nerikiri;
+using namespace juiz;
 
 
 SCENARIO( "Container test", "[container]" ) {
@@ -42,7 +42,7 @@ SCENARIO( "Container test", "[container]" ) {
 }
 )";
 
-    auto p = nerikiri::process("container_test", jsonStr);
+    auto p = juiz::process("container_test", jsonStr);
       
       p->load(cf0);
       p->load(copf0);

@@ -5,7 +5,7 @@
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
-using namespace nerikiri;
+using namespace juiz;
 
 #include "operations_for_tests.h"
 
@@ -63,7 +63,7 @@ SCENARIO( "Broker test", "[broker]" ) {
     }  
     )";
 
-    auto p = nerikiri::process("httpbroker_test", jsonStr);
+    auto p = juiz::process("httpbroker_test", jsonStr);
 
     p->loadOperationFactory(opf1);
     p->loadOperationFactory(opf2);

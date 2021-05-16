@@ -2,7 +2,7 @@
 #include <juiz/container.h>
 #include "OpenCVCascadeClassifier.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
 

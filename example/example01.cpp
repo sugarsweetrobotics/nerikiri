@@ -11,13 +11,13 @@
 
 using namespace std::literals::string_literals;
 
-using namespace nerikiri;
+using namespace juiz;
 
 int main(const int argc, const char* argv[]) {
-  return nerikiri::Process(argc, argv)
+  return juiz::Process(argc, argv)
     //.addExecutionContextFactory(f)
-    //.addBrokerFactory(std::shared_ptr<BrokerFactory>(new nerikiri::http::HTTPBrokerFactory()))
-    .addSystemEditor(nerikiri::systemEditor("system_editor", 8080, 8000, 8002))
+    //.addBrokerFactory(std::shared_ptr<BrokerFactory>(new juiz::http::HTTPBrokerFactory()))
+    .addSystemEditor(juiz::systemEditor("system_editor", 8080, 8000, 8002))
     .setOnStarting([](auto process) {
     })
     .setOnStarted([](auto process) {

@@ -1,9 +1,9 @@
 #include <juiz/operation.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 
-namespace nerikiri {
+namespace juiz {
     std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
 }
 
@@ -24,4 +24,4 @@ public:
 
 
 
-void* nerikiri::operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(Value::string(info.at("typeName")), info.at("defaultArg"), func); }
+void* juiz::operationFactory(const Value& info, std::function<Value(const Value&)>&& func) { return new OperationFactory(Value::string(info.at("typeName")), info.at("defaultArg"), func); }

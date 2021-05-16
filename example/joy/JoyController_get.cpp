@@ -3,7 +3,7 @@
 
 #include "JoyController.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
     NK_OPERATION  void* JoyController_get() {

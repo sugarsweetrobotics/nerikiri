@@ -6,7 +6,7 @@
 
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 namespace
 {
@@ -22,16 +22,16 @@ static void signal_handler(int signal)
 }
  
 
-static int sig2sig(const nerikiri::Signal sig) {
+static int sig2sig(const juiz::Signal sig) {
   switch (sig) {
-  case nerikiri::Signal::SIGNAL_INT:
+  case juiz::Signal::SIGNAL_INT:
     return SIGINT;
   default:
     return 0;
   }
 }
 
-bool nerikiri::wait_for(const Signal signal) {
+bool juiz::wait_for(const Signal signal) {
   int sig = sig2sig(signal);
   if (sig) {
     std::unique_lock<std::mutex> lock(condition_mutex);

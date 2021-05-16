@@ -2,7 +2,7 @@
 #include <juiz/operation_api.h>
 #include <juiz/logger.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 
@@ -85,4 +85,4 @@ public:
     }
 };
 
-std::shared_ptr<InletAPI> nerikiri::nullOperationInlet() { return std::make_shared<NullOperationInlet>(); }
+std::shared_ptr<InletAPI> juiz::nullOperationInlet() { return std::make_shared<NullOperationInlet>(); }

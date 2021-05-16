@@ -3,7 +3,7 @@
 
 #include "KeyboardJoy.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
 

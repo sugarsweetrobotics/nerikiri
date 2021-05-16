@@ -3,15 +3,15 @@
 #include <juiz/operation.h>
 #include "./objectfactory.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
-namespace nerikiri {
+namespace juiz {
     std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
     std::shared_ptr<ContainerAPI> containerProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
 
 }
 
-std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const juiz::Value& value, juiz::ProcessStore* store) {
     logger::trace("ProxyBuilder::operationProxy({}, store) called", value);
     auto fullName = Value::string(value.at("fullName"));
     std::string brokerTypeName = "CoreBroker";
@@ -24,7 +24,7 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value
         logger::error("ProxyBuilder::operationProxy() failed. Broker({}) can not be created.", value["broker"]);
         return nullOperation();
     }
-    auto op = nerikiri::operationProxy(broker, fullName);
+    auto op = juiz::operationProxy(broker, fullName);
     if (op->isNull()) {
         logger::error("ProxyBuilder::operationProxy() failed. OperationProxy({}) with broker({}) can not be created.", fullName, value["broker"]);
         return nullOperation();
@@ -38,14 +38,14 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value
 }
 
 /*
-std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const juiz::Value& value, juiz::ProcessStore* store) {
     /* auto fullName = Value::string(value.at("fullName"));
     std::string brokerTypeName = "CoreBroker";
     if (!value.hasKey("broker")) {
         return store->fsm(fullName);
     }
     auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
-    auto fsm = nerikiri::fsmProxy(broker, fullName);
+    auto fsm = juiz::fsmProxy(broker, fullName);
     Value info = store->addFSMProxy(fsm);
     if (info.isError()) {
         return store->fsmProxy(value);
@@ -57,19 +57,19 @@ std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, ner
 
 
 
-std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const nerikiri::Value& value, const std::shared_ptr<ClientProxyAPI>& broker) {
+std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const juiz::Value& value, const std::shared_ptr<ClientProxyAPI>& broker) {
     logger::trace("ProxyBuilder::operationProxy({}, broker='{}') called", value, broker->typeName());
-    return nerikiri::operationProxy(broker, Value::string(value.at("fullName")));
+    return juiz::operationProxy(broker, Value::string(value.at("fullName")));
 }
 
 
-std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const nerikiri::Value& value, const std::shared_ptr<ClientProxyAPI>& broker) {
+std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const juiz::Value& value, const std::shared_ptr<ClientProxyAPI>& broker) {
     logger::trace("ProxyBuilder::containerProxy({}, broker='{}') called", value, broker->typeName());
-    return nerikiri::containerProxy(broker, Value::string(value.at("fullName")));
+    return juiz::containerProxy(broker, Value::string(value.at("fullName")));
 }
 
 
-std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const nerikiri::Value& value, nerikiri::ProcessStore* store) {
+std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const juiz::Value& value, juiz::ProcessStore* store) {
     logger::trace("ProxyBuilder::containerProxy({}, store) called", value);
     auto fullName = Value::string(value.at("fullName"));
     std::string brokerTypeName = "CoreBroker";
@@ -82,7 +82,7 @@ std::shared_ptr<ContainerAPI> ProxyBuilder::containerProxy(const nerikiri::Value
         logger::error("ProxyBuilder::containerProxy() failed. Broker({}) can not be created.", value["broker"]);
         return nullContainer();
     }
-    auto op = nerikiri::containerProxy(broker, fullName);
+    auto op = juiz::containerProxy(broker, fullName);
     if (op->isNull()) {
         logger::error("ProxyBuilder::containerProxy() failed. ContainerProxy({}) with broker({}) can not be created.", fullName, value["broker"]);
         return nullContainer();
@@ -103,9 +103,9 @@ std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, Proce
 //    auto op = store->operation(Value::string(value.at("fullName")));
     auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
     if (Value::string(value.at("stateName")) == "started") {
-        return nerikiri::ecStateStartProxy(broker, fullName);
+        return juiz::ecStateStartProxy(broker, fullName);
     } else if (Value::string(value.at("stateName")) == "stopped") {
-        return nerikiri::ecStateStopProxy(broker, fullName);
+        return juiz::ecStateStopProxy(broker, fullName);
     }
     //return nullECState();
 
@@ -115,12 +115,12 @@ std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, Proce
 
 /*
 std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, const std::shared_ptr<BrokerProxyAPI>& brokerProxy) {
-    return nerikiri::ecStateStartProxy(brokerProxy, Value::string(value.at("fullName")));
+    return juiz::ecStateStartProxy(brokerProxy, Value::string(value.at("fullName")));
 
 }
 */
-//std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const nerikiri::Value& value, const std::shared_ptr<BrokerProxyAPI>& broker) {
-    // return nerikiri::fsmProxy(broker, Value::string(value.at("fullName")));
+//std::shared_ptr<FSMAPI> ProxyBuilder::fsmProxy(const juiz::Value& value, const std::shared_ptr<BrokerProxyAPI>& broker) {
+    // return juiz::fsmProxy(broker, Value::string(value.at("fullName")));
 //}
 
 
@@ -130,7 +130,7 @@ std::shared_ptr<ECStateAPI> ProxyBuilder::ecStateProxy(const Value& value, const
  */
 bool check_the_same_route_connection_exists(const std::vector<std::shared_ptr<ConnectionAPI>>& connections, const Value& conInfo, const std::string& inletOwnerClassName) {
     auto flag = false;
-    nerikiri::functional::for_each<std::shared_ptr<ConnectionAPI>>(connections, [&flag, &conInfo, &inletOwnerClassName](auto con) {
+    juiz::functional::for_each<std::shared_ptr<ConnectionAPI>>(connections, [&flag, &conInfo, &inletOwnerClassName](auto con) {
         if ((con->inlet()->ownerFullName() == Value::string(conInfo.at("inlet").at(inletOwnerClassName).at("fullName"))) && 
             (con->inlet()->name() == Value::string(conInfo.at("inlet").at("name"))) &&
             (con->outlet()->ownerFullName() == Value::string(conInfo.at("outlet").at("operation").at("fullName")))) {
@@ -141,7 +141,7 @@ bool check_the_same_route_connection_exists(const std::vector<std::shared_ptr<Co
 }
 
 bool check_the_same_name_connection_exists(const std::vector<std::shared_ptr<ConnectionAPI>>& connections, const std::string& name) {
-    auto con = nerikiri::functional::find<std::shared_ptr<ConnectionAPI>>(connections, [&name](auto c) {
+    auto con = juiz::functional::find<std::shared_ptr<ConnectionAPI>>(connections, [&name](auto c) {
         return c->fullName() == name;
     });
     if (con) return true;
@@ -162,7 +162,7 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(co
     if (value.at("inlet").hasKey("operation")) {
         // Check the same connection route is already connected
         auto inlet_side_operationProxy = ProxyBuilder::operationProxy(value.at("inlet").at("operation"), store);
-        auto inlet_opt = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlet_side_operationProxy->inlets(), 
+        auto inlet_opt = juiz::functional::find<std::shared_ptr<InletAPI>>(inlet_side_operationProxy->inlets(), 
             [&value](auto i) { return i->name() == Value::string(value.at("inlet").at("name")); }
         );
         if (!inlet_opt) {
@@ -213,7 +213,7 @@ std::shared_ptr<ConnectionAPI> ProxyBuilder::outgoingOperationConnectionProxy(co
 std::shared_ptr<ConnectionAPI> ProxyBuilder::incomingOperationConnectionProxy(const Value& value, ProcessStore* store) {
     if (value.at("inlet").hasKey("operation")) {
         auto outlet_side_operationProxy = ProxyBuilder::operationProxy(value.at("outlet").at("operation"), store);
-        auto inlet = nerikiri::functional::find<std::shared_ptr<InletAPI>>(
+        auto inlet = juiz::functional::find<std::shared_ptr<InletAPI>>(
             store->get<OperationAPI>(Value::string(value.at("inlet").at("operation").at("fullName")))->inlets(), 
             [&value](auto i) { return i->name() == Value::string(value.at("inlet").at("name")); }
         );

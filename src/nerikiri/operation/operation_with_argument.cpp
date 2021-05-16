@@ -3,7 +3,7 @@
 #include <juiz/operation_api.h>
 //#include <nerikiri/operation_with_argument.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 class NK_API OperationWithArgument : public OperationAPI {
@@ -34,7 +34,7 @@ public:
 
     virtual Value execute() override {
         argument_.const_object_for_each([this](auto key, auto value) {
-            auto inlet = nerikiri::functional::find<std::shared_ptr<InletAPI>>(operation_->inlets(), [&key, value] (auto inlet) {
+            auto inlet = juiz::functional::find<std::shared_ptr<InletAPI>>(operation_->inlets(), [&key, value] (auto inlet) {
                 return inlet->name() == key;
             });
             if (!inlet) {
@@ -51,7 +51,7 @@ public:
     virtual std::shared_ptr<OutletAPI> outlet() const override { return operation_->outlet(); }
 
     virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override {
-        auto i = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+        auto i = juiz::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
         if (i) return i.value();
         return nullOperationInlet();
     }
@@ -61,12 +61,12 @@ public:
     //virtual Value putToArgument(const std::string& key, const Value& value) override { return operation_->putToArgument(key, value); }
 };
 
-namespace nerikiri {
+namespace juiz {
 
 
      std::shared_ptr<OperationAPI> operationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v);
 }
 
-std::shared_ptr<OperationAPI> nerikiri::operationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v) {
+std::shared_ptr<OperationAPI> juiz::operationWithArgument(const std::shared_ptr<OperationAPI>& op, const Value& v) {
     return std::make_shared<OperationWithArgument>(op, v);
 }

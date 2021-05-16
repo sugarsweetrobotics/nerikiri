@@ -11,7 +11,7 @@
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
-using namespace nerikiri;
+using namespace juiz;
 
 
 
@@ -31,7 +31,7 @@ SCENARIO( "Connection test", "[ec]" ) {
       }
     })";
 
-    auto p = nerikiri::process("ec_tset", jsonStr);
+    auto p = juiz::process("ec_tset", jsonStr);
 
     
     p->load(opf1);
@@ -60,7 +60,7 @@ SCENARIO( "Connection test", "[ec]" ) {
     }
 
     THEN("Connect with API") {
-      auto ret = nerikiri::connect(p->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
+      auto ret = juiz::connect(p->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0ope->inlet("arg01"), zero0ope->outlet());
       REQUIRE(ret.isError() == false);
 
       auto con1 = zero0ope->outlet()->connections();

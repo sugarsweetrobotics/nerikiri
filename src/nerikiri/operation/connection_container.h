@@ -17,7 +17,7 @@
 
 #include <juiz/operation_api.h>
 
-namespace nerikiri {
+namespace juiz {
 
   class ConnectionContainer {
   private:

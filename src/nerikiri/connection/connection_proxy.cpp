@@ -3,7 +3,7 @@
 
 #include "../operation/operation_proxy.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 class ConnectionProxy : public ConnectionAPI {
@@ -29,16 +29,16 @@ public:
     virtual std::shared_ptr<InletAPI> inlet() const override {
         // TODO: ここでinletの実体を返さないとdeleteできない．
         if (info_.at("inlet").hasKey("operation")) {
-            return nerikiri::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("operation").at("fullName")), Value::string(info_.at("inlet").at("name")));
+            return juiz::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("operation").at("fullName")), Value::string(info_.at("inlet").at("name")));
         } else {
-            return nerikiri::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("ownerFullName")), Value::string(info_.at("inlet").at("name")));
+            return juiz::operationInletProxy(nullptr, broker_, Value::string(info_.at("inlet").at("ownerFullName")), Value::string(info_.at("inlet").at("name")));
         }
         return nullOperationInlet();
     }
 
     virtual std::shared_ptr<OutletAPI> outlet() const override {
         // TODO: ここでoutletの実体を返さないとdeleteできない．
-        return nerikiri::operationOutletProxy(nullptr, broker_, Value::string(info_.at("outlet").at("ownerFullName")));
+        return juiz::operationOutletProxy(nullptr, broker_, Value::string(info_.at("outlet").at("ownerFullName")));
 
     }
 
@@ -52,7 +52,7 @@ public:
     }
 };
 
-std::shared_ptr<ConnectionAPI> nerikiri::connectionProxy(const std::shared_ptr<ClientProxyAPI>& broker, const Value& info) {
+std::shared_ptr<ConnectionAPI> juiz::connectionProxy(const std::shared_ptr<ClientProxyAPI>& broker, const Value& info) {
     auto typ = Value::string(info.at("type"));
     auto typeFlag = ConnectionAPI::ConnectionType::PULL;
     if (typ == "PULL") {}

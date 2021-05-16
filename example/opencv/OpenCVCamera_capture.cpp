@@ -3,7 +3,7 @@
 
 #include "OpenCVCamera.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
 

@@ -5,7 +5,7 @@
 #include "nerikiri/process.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 SCENARIO( "HTTP Service", "[http]" ) {
@@ -53,7 +53,7 @@ SCENARIO( "HTTP Service", "[http]" ) {
     }
     })";
 
-    auto p = nerikiri::process("http_test", jsonStr);
+    auto p = juiz::process("http_test", jsonStr);
 
     THEN("Broker is running") {
       p->startAsync();

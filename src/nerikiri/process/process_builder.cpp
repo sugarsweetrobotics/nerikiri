@@ -5,7 +5,7 @@
 #include "nerikiri/connection/connection_builder.h"
 #include "nerikiri/topic/topic_factory.h"
 
-using namespace nerikiri;
+using namespace juiz;
 /**
  * OperationFactoryの読み込み
  */
@@ -89,7 +89,7 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
     }
     value.const_list_for_each([&store, &ec, &activate_started_ope](auto& v) {
       auto opProxy =  store.operationProxy(v);
-      nerikiri::connect(coreBroker(store), ec->fullName() + "_bind_" + Value::string(v["fullName"]), 
+      juiz::connect(coreBroker(store), ec->fullName() + "_bind_" + Value::string(v["fullName"]), 
         opProxy->inlet("__event__"), activate_started_ope->outlet(), {});
       //ec->bind(store.operation(Value::string(v.at("fullName"))));
     });
@@ -123,7 +123,7 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
         if (opInfo.hasKey("argument")) {
           option["argument"] = opInfo["argument"];
         }
-        nerikiri::connect(coreBroker(store), name, store.operationProxy(opInfo)->inlet("__argument__"), stateOp->outlet(), option);
+        juiz::connect(coreBroker(store), name, store.operationProxy(opInfo)->inlet("__argument__"), stateOp->outlet(), option);
       });
       bindInfo["ecs"].const_list_for_each([&store, &stateOp](auto& ecInfo) {
         auto name = stateOp->fullName() + "_state_connection_" + Value::string(ecInfo["fullName"]) + "_" + Value::string(ecInfo["state"]) ;
@@ -133,7 +133,7 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
         if (ecInfo.hasKey("broker")) {
           ecStateOpInfo["broker"] = ecInfo["broker"];
         }
-        nerikiri::connect(coreBroker(store), name, store.operationProxy(ecStateOpInfo)->inlet("__event__"), stateOp->outlet());
+        juiz::connect(coreBroker(store), name, store.operationProxy(ecStateOpInfo)->inlet("__event__"), stateOp->outlet());
       });
      }
   });
@@ -200,7 +200,7 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
       
     });
     */
-  //} catch (nerikiri::ValueTypeError& e) {
+  //} catch (juiz::ValueTypeError& e) {
   //  logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
   //}
 
@@ -209,7 +209,7 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
 
 void ProcessBuilder::preStartExecutionContexts(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("ProcessBuilder::preStartExecutionContexts() entry");
-  nerikiri::getListValue(config, "ecs.start").const_list_for_each([&store](const auto& value) {
+  juiz::getListValue(config, "ecs.start").const_list_for_each([&store](const auto& value) {
    // store.executionContext(value.stringValue())->start();
    // TODO: ここでECをスタートする
   });
@@ -253,7 +253,7 @@ Value ProcessBuilder::publishTopic(ProcessStore& store, const std::shared_ptr<Cl
   auto topic = store.get<TopicAPI>(Value::string(topicInfo.at("fullName")));
   auto connectionName = "topic_connection_" + Value::string(topicInfo.at("fullName")) + "_" + op->fullName();
 
-  return nerikiri::connect(broker, connectionName, topic->inlet("data"), op->outlet());
+  return juiz::connect(broker, connectionName, topic->inlet("data"), op->outlet());
 }
 
 
@@ -265,7 +265,7 @@ Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<
   auto topic = store.get<TopicAPI>(Value::string(topicInfo.at("fullName")));
   auto connectionName = "topic_connection_" + op->fullName() + "_" + argName + "_" + Value::string(topicInfo.at("fullName"));
 
-  return nerikiri::connect(broker, connectionName, op->inlet(argName), topic->outlet());
+  return juiz::connect(broker, connectionName, op->inlet(argName), topic->outlet());
 }
 
 void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& opInfo) {
@@ -368,7 +368,7 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<Cl
     //}
     **/
 
-  } catch (nerikiri::ValueTypeError& e) {
+  } catch (juiz::ValueTypeError& e) {
     logger::debug("ProcessBuilder::preloadTopics(). ValueTypeException:{}", e.what());
   } 
   logger::trace("ProcessBuilder::preloadTopics() exit");

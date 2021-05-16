@@ -1,5 +1,5 @@
 #include <juiz/operation_api.h>
-using namespace nerikiri;
+using namespace juiz;
 
 class NullOperation : public OperationAPI {
 public:
@@ -44,6 +44,6 @@ public:
     }
 };
 
-std::shared_ptr<OperationAPI> nerikiri::nullOperation() {
+std::shared_ptr<OperationAPI> juiz::nullOperation() {
     return std::make_shared<NullOperation>();
 }

@@ -2,7 +2,7 @@
 
 #include "operation_inlet_base.h"
 
-namespace nerikiri {
+namespace juiz {
 
 
   /**

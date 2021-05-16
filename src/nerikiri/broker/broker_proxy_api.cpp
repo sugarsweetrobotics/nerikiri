@@ -2,7 +2,7 @@
 
 #include <juiz/client_proxy_api.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 class NullFactoryBroker : public FactoryClientAPI {
 public:
@@ -212,6 +212,6 @@ public:
     }
 };
 
-std::shared_ptr<ClientProxyAPI> nerikiri::nullBrokerProxy() {
+std::shared_ptr<ClientProxyAPI> juiz::nullBrokerProxy() {
     return std::make_shared<NullBrokerProxy>();
 }

@@ -10,7 +10,7 @@
 #include <thread>
 #include "operations_for_tests.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 SCENARIO( "Process test", "[process]" ) {
 
@@ -71,14 +71,14 @@ SCENARIO( "Process test", "[process]" ) {
 }  
 )";
 
-    auto p1 = nerikiri::process("process_1", jsonStr1);
+    auto p1 = juiz::process("process_1", jsonStr1);
     p1->load(opf1);
     p1->load(opf2);
     p1->load(opf3);
     p1->startAsync();
 
 
-    auto p2 = nerikiri::process("process_2", jsonStr2);
+    auto p2 = juiz::process("process_2", jsonStr2);
     p2->load(opf1);
     p2->load(opf2);
     p2->load(opf3);
@@ -172,14 +172,14 @@ SCENARIO( "Process test", "[process]" ) {
 }  
 )";
 
-    auto p1 = nerikiri::process("process_1", jsonStr1);
+    auto p1 = juiz::process("process_1", jsonStr1);
     p1->load(opf1);
     p1->load(opf2);
     p1->load(opf3);
     p1->startAsync();
 
 
-    auto p2 = nerikiri::process("process_2", jsonStr2);
+    auto p2 = juiz::process("process_2", jsonStr2);
     p2->load(opf1);
     p2->load(opf2);
     p2->load(opf3);
@@ -226,7 +226,7 @@ SCENARIO( "Process test", "[process]" ) {
 
     REQUIRE(inc0ope->inlet("arg01")->isNull() == false);
     WHEN("Connect with API") {
-      auto ret = nerikiri::connect(p1->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0proxy->inlet("arg01"), zero0proxy->outlet());
+      auto ret = juiz::connect(p1->store()->brokerFactory("CoreBroker")->createProxy(""), "con0", inc0proxy->inlet("arg01"), zero0proxy->outlet());
       REQUIRE(ret.isError() == false);
 
       auto con1 = zero0ope->outlet()->connections();

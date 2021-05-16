@@ -3,7 +3,7 @@
 #include <string>
 #include <juiz/value.h>
 
-namespace nerikiri {
+namespace juiz {
     class ProcessStore;
 
     /**

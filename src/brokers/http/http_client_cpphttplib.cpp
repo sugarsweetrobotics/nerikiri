@@ -7,7 +7,7 @@
 
 #include "http_converter_cpphttplib.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 class HttpClientImpl : public HttpClient {
@@ -62,6 +62,6 @@ public:
 
 
 
-nerikiri::HttpClient_ptr nerikiri::client(const std::string& addr, const int port) {
-    return nerikiri::HttpClient_ptr(new HttpClientImpl(addr, port));
+juiz::HttpClient_ptr juiz::client(const std::string& addr, const int port) {
+    return juiz::HttpClient_ptr(new HttpClientImpl(addr, port));
 }

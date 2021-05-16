@@ -5,7 +5,7 @@
 #include "nerikiri/systemeditor.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 using namespace webi;
 using namespace webi::html;
@@ -40,7 +40,7 @@ public:
 };
 
 
-SystemEditor_ptr nerikiri::systemEditor(const std::string& name, const int32_t api_port, const int32_t port, const int32_t websocket_port) {
+SystemEditor_ptr juiz::systemEditor(const std::string& name, const int32_t api_port, const int32_t port, const int32_t websocket_port) {
   return std::make_unique<SystemEditorImpl>(name, api_port, port, websocket_port);
 }
 

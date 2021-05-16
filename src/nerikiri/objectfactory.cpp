@@ -7,7 +7,7 @@
 #include "./ec/ec_container.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 template<class T>
 std::string numberingPolicy(const std::vector<T>& ts, const Value& info) {
@@ -62,8 +62,8 @@ Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& 
 //  const std::string& containerFullName = Value::string(info.at("containerFullName"));
   auto containerFullName = Value::string(cInfo.at("fullName"));
   //auto fullName = Value::string(info.at("fullName)"));
-  auto fullName = nerikiri::naming::join(containerFullName, loadFullName(store.list<OperationAPI>(), info));
-  auto typeName = nerikiri::naming::join(Value::string(cInfo.at("typeName")), Value::string(info.at("typeName")));
+  auto fullName = juiz::naming::join(containerFullName, loadFullName(store.list<OperationAPI>(), info));
+  auto typeName = juiz::naming::join(Value::string(cInfo.at("typeName")), Value::string(info.at("typeName")));
   auto container = store.get<ContainerAPI>(containerFullName);
   auto cof = store.get<ContainerOperationFactoryAPI>(typeName);
   if (cof->isNull()) {
@@ -97,7 +97,7 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
   //auto fullName = loadFullName(store.executionContexts(), value);
   auto fullName = Value::string(value["fullName"]);
   // info["fullName"] = fullName;
-  return nerikiri::createEC(store, fullName, value);
+  return juiz::createEC(store, fullName, value);
   // return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
 }
 
@@ -110,7 +110,7 @@ Value ObjectFactory::createFSM(ProcessStore& store, const Value& fsmInfo) {
   logger::info("ObjectFactory::createFSM({})", fsmInfo);
   // auto fullName = loadFullName(store.fsms(), fsmInfo);
   auto fullName = Value::string(fsmInfo["fullName"]);
-  return nerikiri::createFSM(store, fullName, fsmInfo);
+  return juiz::createFSM(store, fullName, fsmInfo);
   /*
   auto container = store.containerFactory("_FSMContainerStruct")->create(fullName);
   if (container->isNull()) {

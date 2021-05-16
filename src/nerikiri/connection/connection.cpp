@@ -4,7 +4,7 @@
 #include <juiz/connection.h>
 #include <juiz/process_api.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 class Connection : public ConnectionAPI {
 private:
@@ -90,17 +90,17 @@ public:
   }
 };
 
-std::shared_ptr<ConnectionAPI> nerikiri::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet) {
-  logger::trace("nerikiri::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
+std::shared_ptr<ConnectionAPI> juiz::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet) {
+  logger::trace("juiz::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
   return std::make_shared<Connection>(name, type, inlet, outlet);
 }
 
-std::shared_ptr<ConnectionAPI> nerikiri::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const std::shared_ptr<Object>& obj) {
-  logger::trace("nerikiri::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
+std::shared_ptr<ConnectionAPI> juiz::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const std::shared_ptr<Object>& obj) {
+  logger::trace("juiz::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
   return std::make_shared<Connection>(name, type, inlet, outlet, obj);
 }
 
-ConnectionAPI::ConnectionType nerikiri::connectionType(const std::string& str) {
+ConnectionAPI::ConnectionType juiz::connectionType(const std::string& str) {
     if (str == "PULL") return ConnectionAPI::ConnectionType::PULL;
     else if (str == "PUSH") return ConnectionAPI::ConnectionType::PUSH;
     else if (str == "EVENT") return ConnectionAPI::ConnectionType::EVENT;
@@ -110,7 +110,7 @@ ConnectionAPI::ConnectionType nerikiri::connectionType(const std::string& str) {
     return ConnectionAPI::ConnectionType::UNKNOWN;
 };
 
-std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
+std::string juiz::toString(const ConnectionAPI::ConnectionType& typ) {
     if (typ == ConnectionAPI::ConnectionType::PULL) return "PULL";
     else if (typ == ConnectionAPI::ConnectionType::PUSH) return "PUSH";
     else if (typ == ConnectionAPI::ConnectionType::EVENT) return "EVENT";
@@ -118,8 +118,8 @@ std::string nerikiri::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
-Value nerikiri::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
-  logger::info("nerikiri::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
+Value juiz::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
+  logger::info("juiz::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
   std::string defaultConnectionType = "event";
   if (options.hasKey("event")) {
     defaultConnectionType = options["event"].stringValue();
@@ -168,4 +168,4 @@ public:
 
 };
 
-std::shared_ptr<ConnectionAPI> nerikiri::nullConnection() { return std::make_shared<NullConnection>(); }
+std::shared_ptr<ConnectionAPI> juiz::nullConnection() { return std::make_shared<NullConnection>(); }

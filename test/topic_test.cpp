@@ -6,7 +6,7 @@
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch2/catch_all.hpp"
-using namespace nerikiri;
+using namespace juiz;
 
 #include "operations_for_tests.h"
 
@@ -53,7 +53,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 }
 )";
 
-    auto p = nerikiri::process("topic_and_container_test", jsonStr);
+    auto p = juiz::process("topic_and_container_test", jsonStr);
     p->load(cf0);
     p->load(copf0);
     p->load(copf1);
@@ -126,7 +126,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 )";
 
 
-    auto p = nerikiri::process("topic_connection_test", jsonStr);
+    auto p = juiz::process("topic_connection_test", jsonStr);
     p->load(opf1);
     p->load(opf2);
     p->load(opf3);
@@ -185,7 +185,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 )";
 
 
-    auto p = nerikiri::process("topic_basic_test", jsonStr);
+    auto p = juiz::process("topic_basic_test", jsonStr);
     p->load(opf1);
     p->load(opf2);
     p->load(opf3);
@@ -244,7 +244,7 @@ SCENARIO( "Topic Operation test", "[operaion]" ) {
 }  
 )";
 
-    auto p = nerikiri::process("topic_connection_test", jsonStr);
+    auto p = juiz::process("topic_connection_test", jsonStr);
     p->load(opf1);
     p->load(opf2);
     p->load(opf3);

@@ -2,7 +2,7 @@
 #include <juiz/operation.h>
 #include <opencv2/opencv.hpp>
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
 

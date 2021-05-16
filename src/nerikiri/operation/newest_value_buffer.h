@@ -2,7 +2,7 @@
 
 #include <juiz/value.h>
 
-namespace nerikiri {
+namespace juiz {
 
   /**
    * Buffer for Operation's Input

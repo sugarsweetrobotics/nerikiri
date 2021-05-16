@@ -1,7 +1,7 @@
 #include <juiz/crud_broker_proxy_base.h>
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 class CRUDFactoryBroker : public FactoryClientAPI {

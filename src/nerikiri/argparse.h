@@ -12,7 +12,7 @@
 #include <sstream>
 #include <memory>
 
-namespace nerikiri {
+namespace juiz {
 
   /**
    * 処理結果のベースクラス

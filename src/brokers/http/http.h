@@ -8,7 +8,7 @@
 #include <regex>
 
 
-namespace nerikiri {
+namespace juiz {
   using Header = std::pair<std::string, std::string>;
 
   struct Request {

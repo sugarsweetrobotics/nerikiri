@@ -6,7 +6,7 @@
 #include <juiz/logger.h>
 #include "../fsm/fsm_container.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 struct _FSMContainerStruct {
     std::string fullName;
@@ -18,7 +18,7 @@ struct _FSMContainerStruct {
 
 
 bool 
-nerikiri::setupFSMContainer(nerikiri::ProcessStore& store) {
+juiz::setupFSMContainer(juiz::ProcessStore& store) {
     store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_FSMContainerStruct>())));
     store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
         {
@@ -91,8 +91,8 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
     return cop; 
 }
 
-Value nerikiri::createFSM(ProcessStore& store, const std::string& fullName, const Value& fsmInfo) {
-    logger::info("nerikiri::createFSM({})", fsmInfo);
+Value juiz::createFSM(ProcessStore& store, const std::string& fullName, const Value& fsmInfo) {
+    logger::info("juiz::createFSM({})", fsmInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
     // まずコンテナ作成
     auto container = store.get<ContainerFactoryAPI>("_FSMContainerStruct")->create(fullName);

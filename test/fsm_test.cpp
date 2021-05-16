@@ -11,7 +11,7 @@
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
-using namespace nerikiri;
+using namespace juiz;
 
 
 SCENARIO( "FSM test", "[ec]" ) {
@@ -98,7 +98,7 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
     })";
 
-    auto p = nerikiri::process("fsm_test", jsonStr);
+    auto p = juiz::process("fsm_test", jsonStr);
       
     p->load(opf3);
     p->load(cf0);
@@ -553,7 +553,7 @@ SCENARIO( "FSM test", "[ec]" ) {
       }
     })";
 
-    auto p = nerikiri::process("fsm_test", jsonStr);
+    auto p = juiz::process("fsm_test", jsonStr);
 
     p->loadOperationFactory(opf1);
     p->loadOperationFactory(opf2);

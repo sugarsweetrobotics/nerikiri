@@ -3,7 +3,7 @@
 #include <memory>
 #include <juiz/client_proxy_api.h>
 
-namespace nerikiri {
+namespace juiz {
 
     class ProcessAPI;
 

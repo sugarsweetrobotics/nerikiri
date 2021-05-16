@@ -11,7 +11,7 @@
 #include "http_client.h"
 #include "http_server.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
     NK_OPERATION  void* createHTTPBroker();
@@ -23,7 +23,7 @@ extern "C" {
  */
 class HTTPBroker : public CRUDBrokerBase {
 private:
-  nerikiri::HttpServer_ptr server_;
+  juiz::HttpServer_ptr server_;
   std::string address_;
   std::string allow_;
   int32_t port_;
@@ -36,7 +36,7 @@ public:
 
   HTTPBroker(const std::string& fullName, const std::string& address, const int32_t port, const std::string& allow, const std::string& base_dir=".", const Value& value=Value::error("null")):
     CRUDBrokerBase("HTTPBroker", "HTTPBroker", fullName),
-    server_(nerikiri::server()), address_(address), port_(port), allow_(allow), baseDirectory_(base_dir), endpoint_("httpBroker")
+    server_(juiz::server()), address_(address), port_(port), allow_(allow), baseDirectory_(base_dir), endpoint_("httpBroker")
   {
     logger::trace("HTTPBroker::HTTPBroker(fullName={}, address={}, port={}) called", fullName, address, port);
 
@@ -59,28 +59,28 @@ public:
       return address_ + ":" + std::to_string(port_) + "/";
   }
 
-  nerikiri::Response toResponse(const Value& value) const {
+  juiz::Response toResponse(const Value& value) const {
     try {
-        return nerikiri::Response(200, nerikiri::json::toJSONString(value), "application/json");
-    } catch (nerikiri::json::JSONParseError& e) {
+        return juiz::Response(200, juiz::json::toJSONString(value), "application/json");
+    } catch (juiz::json::JSONParseError& e) {
         logger::error("JSON Parse Error in HTTPBroker::response(): \"{}\"", e.what());
-        return nerikiri::Response(400, "Bad Request", "text/html");
-    } catch (nerikiri::json::JSONConstructError& e) {
+        return juiz::Response(400, "Bad Request", "text/html");
+    } catch (juiz::json::JSONConstructError& e) {
         logger::error("JSON Construct Error in HTTPBroker::response(): \"{}\"", e.what());
-        return nerikiri::Response(400, e.what(), "text/html");
-    } catch (nerikiri::ValueTypeError &e) {
+        return juiz::Response(400, e.what(), "text/html");
+    } catch (juiz::ValueTypeError &e) {
         logger::error("ValueTypeError in HTTPBroker::response(): \"{}\"", e.what());
-        return nerikiri::Response(400, e.what(), "text/html");
+        return juiz::Response(400, e.what(), "text/html");
     } catch (std::exception &e) {
         logger::error("Exception in HTTPBroker::response(): \"{}\"", e.what());
-        return nerikiri::Response(400, e.what(), "text/html");
+        return juiz::Response(400, e.what(), "text/html");
     }
   }
 
-  nerikiri::Value toValue(const std::string& body) {
+  juiz::Value toValue(const std::string& body) {
     try {
-      return nerikiri::json::toValue(body);
-    } catch (nerikiri::json::JSONParseError& e) {
+      return juiz::json::toValue(body);
+    } catch (juiz::json::JSONParseError& e) {
       return Value::error(logger::error("nerikir::toValue(\"{}\") failed. JSONParseError", body));
     }
   }
@@ -94,7 +94,7 @@ public:
     return i;
   }
 
-  Value headerParam(const nerikiri::Request& req) {
+  Value headerParam(const juiz::Request& req) {
     auto param = Value::object();
     for(auto h : req.headers) {
       param[h.first] = h.second;
@@ -102,7 +102,7 @@ public:
     return param;
   }
   
-  Value hostInfo(const nerikiri::Request& req) {
+  Value hostInfo(const juiz::Request& req) {
     auto info = this->fullInfo();
     auto param = Value::object();
     for(auto h : req.headers) {
@@ -125,22 +125,22 @@ public:
 
     const std::string endpoint = "/" + endpoint_ + "/(.*)";
 
-    server_->response(endpoint, "GET", "text/html", [this, coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "GET", "text/html", [this, coreBroker](const juiz::Request& req) -> juiz::Response {
       logger::trace("HTTPBroker::Response(method='GET', url='{}')", req.matches[1]);
       return toResponse(onRead(coreBroker, req.matches[1], headerParam(req), this->hostInfo(req)));
     });
 
-    server_->response(endpoint, "POST", "text/html", [this, coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "POST", "text/html", [this, coreBroker](const juiz::Request& req) -> juiz::Response {
       logger::trace("HTTPBroker::Response(method='POST', url='{}')", req.matches[1]);
       return toResponse(onCreate(coreBroker, req.matches[1], toValue(req.body)));
     });
 
-    server_->response(endpoint, "DELETE", "text/html", [this, coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "DELETE", "text/html", [this, coreBroker](const juiz::Request& req) -> juiz::Response {
       logger::trace("HTTPBroker::Response(method='DELETE', url='{}')", req.matches[1]);
       return toResponse(onDelete(coreBroker, req.matches[1]));
     });
 
-    server_->response(endpoint, "PUT", "text/html", [this, &coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
+    server_->response(endpoint, "PUT", "text/html", [this, &coreBroker](const juiz::Request& req) -> juiz::Response {
       logger::trace("HTTPBroker::Response(method='PUT', url='{}')", req.matches[1]);
       return toResponse(onUpdate(coreBroker, req.matches[1], toValue(req.body)));
     });
@@ -148,10 +148,10 @@ public:
 
     for(auto [k, v] : route_) {
       const std::string path = v;
-      server_->response(k, "GET", "text/html", [this, path, &coreBroker](const nerikiri::Request& req) -> nerikiri::Response {
+      server_->response(k, "GET", "text/html", [this, path, &coreBroker](const juiz::Request& req) -> juiz::Response {
         logger::trace("HTTPBroker::Response(method='GET', url='{}')", req.matches[1]);
         const std::string relpath = req.matches[1];
-        return nerikiri::Response(path + relpath);
+        return juiz::Response(path + relpath);
       });
     }
 

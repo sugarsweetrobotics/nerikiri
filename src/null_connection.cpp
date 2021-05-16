@@ -1,6 +1,6 @@
 #include <nerikiri/null_connection.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 NullConnection::NullConnection() {}
 

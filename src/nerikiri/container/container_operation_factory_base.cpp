@@ -1,5 +1,5 @@
 #include "container_operation_factory_base.h"
-using namespace nerikiri;
+using namespace juiz;
 
 class ContainerOperationFactoryBase : public ContainerOperationFactoryAPI {
 protected:
@@ -11,7 +11,7 @@ public:
   //  virtual std::string operationTypeFullName() const override { return operationTypeFullName_ ;}
 public:
     ContainerOperationFactoryBase(const std::string& className, const std::string& containerTypeFullName, const std::string& operationTypeFullName, const std::string& fullName, const Value& defaultArgs):
-      ContainerOperationFactoryAPI(className, nerikiri::naming::join(containerTypeFullName, operationTypeFullName), nerikiri::naming::join(containerTypeFullName, fullName)), /*containerTypeFullName_(containerTypeFullName), operationTypeFullName_(operationTypeFullName),*/ defaultArgs_(defaultArgs) {}
+      ContainerOperationFactoryAPI(className, juiz::naming::join(containerTypeFullName, operationTypeFullName), juiz::naming::join(containerTypeFullName, fullName)), /*containerTypeFullName_(containerTypeFullName), operationTypeFullName_(operationTypeFullName),*/ defaultArgs_(defaultArgs) {}
     virtual ~ContainerOperationFactoryBase() {}
 public:
     virtual std::shared_ptr<Object> create(const std::string& _fullName, const Value& info=Value::error("")) const override {
@@ -20,6 +20,6 @@ public:
 };
 
 
-std::shared_ptr<ContainerOperationFactoryAPI> nerikiri::containerOperationFactoryBase(const std::string& className, const std::string& containerTypeFullName, const std::string& operationTypeFullName, const std::string& fullName, const Value& defaultArgs) {
+std::shared_ptr<ContainerOperationFactoryAPI> juiz::containerOperationFactoryBase(const std::string& className, const std::string& containerTypeFullName, const std::string& operationTypeFullName, const std::string& fullName, const Value& defaultArgs) {
     return std::make_shared<ContainerOperationFactoryBase>(className, containerTypeFullName, operationTypeFullName, fullName, defaultArgs);
 }

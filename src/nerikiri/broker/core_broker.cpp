@@ -10,10 +10,10 @@
 #include "../objectfactory.h"
 #include "../connection/connection_builder.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 
-class CoreBrokerFactory : public nerikiri::BrokerFactoryAPI {
+class CoreBrokerFactory : public juiz::BrokerFactoryAPI {
 private:
   std::shared_ptr<CoreBroker> coreBroker_;
 
@@ -33,7 +33,7 @@ public:
 };
 
 
-std::shared_ptr<BrokerFactoryAPI> nerikiri::coreBrokerFactory(ProcessAPI* process, const std::string& fullName) {
+std::shared_ptr<BrokerFactoryAPI> juiz::coreBrokerFactory(ProcessAPI* process, const std::string& fullName) {
     return std::make_shared<CoreBrokerFactory>(std::make_shared<CoreBroker>(process, fullName));
 }
 
@@ -98,29 +98,29 @@ public:
   virtual Value getClassObjectInfos(const std::string& className) const override {
         logger::trace("CoreBroker::getClassObjectInfos({})", className);
         if (className == "operation") {
-            return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->list<OperationAPI>(), [](auto op) { return op->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->list<OperationAPI>(), [](auto op) { return op->info(); });
         } else if (className == "operationFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->list<OperationFactoryAPI>(), [](auto op) { return op->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(process_->store()->list<OperationFactoryAPI>(), [](auto op) { return op->info(); });
         } else if (className == "container") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->list<ContainerAPI>(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<ContainerAPI>>(process_->store()->list<ContainerAPI>(), [](auto o) { return o->info(); });
         } else if (className == "connection") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->connections(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->connections(), [](auto o) { return o->info(); });
         } else if (className == "containerFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->list<ContainerFactoryAPI>(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<ContainerFactoryAPI>>(process_->store()->list<ContainerFactoryAPI>(), [](auto o) { return o->info(); });
         //} else if (className == "ec") {
-        //    return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
+        //    return juiz::functional::map<Value, std::shared_ptr<ExecutionContextAPI>>(process_->store()->executionContexts(), [](auto o) { return o->info(); });
         } else if (className == "topic") {
-            return nerikiri::functional::map<Value, std::shared_ptr<TopicAPI>>(process_->store()->list<TopicAPI>(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<TopicAPI>>(process_->store()->list<TopicAPI>(), [](auto o) { return o->info(); });
         } else if (className == "ecFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<ExecutionContextFactoryAPI>>(process_->store()->executionContextFactories(), [](auto o) { return o->info(); });
         //} else if (className == "fsm") {
-        //    return nerikiri::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
+        //    return juiz::functional::map<Value, std::shared_ptr<FSMAPI>>(process_->store()->fsms(), [](auto o) { return o->info(); });
         //} else if (className == "fsmFactory") {
-        //    return nerikiri::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
+        //    return juiz::functional::map<Value, std::shared_ptr<FSMFactoryAPI>>(process_->store()->fsmFactories(), [](auto o) { return o->info(); });
         } else if (className == "broker") {
-            return nerikiri::functional::map<Value, std::shared_ptr<BrokerAPI>>(process_->store()->brokers(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<BrokerAPI>>(process_->store()->brokers(), [](auto o) { return o->info(); });
         } else if (className == "brokerFactory") {
-            return nerikiri::functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(process_->store()->brokerFactories(), [](auto o) { return o->info(); });
+            return juiz::functional::map<Value, std::shared_ptr<BrokerFactoryAPI>>(process_->store()->brokerFactories(), [](auto o) { return o->info(); });
         }
         return Value::error(logger::error("CoreBroker::getClassObjectInfos({}) failed. Class name is invalid.", className));
     }
@@ -189,7 +189,7 @@ public:
   }
 
   virtual Value inlets(const std::string& fullName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<InletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [](auto il) {
+      return juiz::functional::map<Value, std::shared_ptr<InletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [](auto il) {
           return il->info();
       });
   }
@@ -213,7 +213,7 @@ public:
   }
 
   virtual Value connections(const std::string& fullName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->get<OperationAPI>(fullName)->outlet()->connections(), [](auto c) {
+      return juiz::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->get<OperationAPI>(fullName)->outlet()->connections(), [](auto c) {
           return c->info();
       });
   }
@@ -230,7 +230,7 @@ public:
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
         logger::trace("CoreOperationOutletBroker({})::{}({}) called.", fullName, __func__, conInfo);
         // TODO:
-        std::shared_ptr<nerikiri::InletAPI> inlet = nullptr;
+        std::shared_ptr<juiz::InletAPI> inlet = nullptr;
         if (conInfo["inlet"].hasKey("fsm")) {
             inlet = process_->store()->operationProxy(conInfo["inlet"]["fsm"])->inlet(conInfo["inlet"]["name"].stringValue());
         } else if (conInfo["inlet"].hasKey("operation")) {
@@ -280,7 +280,7 @@ public:
   }
   
   virtual Value connections(const std::string& fullName, const std::string& targetName) const override {
-      return nerikiri::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->connections(),
+      return juiz::functional::map<Value, std::shared_ptr<ConnectionAPI>>(process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->connections(),
          [](auto c) {
               return c->info();
           });
@@ -295,7 +295,7 @@ public:
   
   //virtual Value removeConnection(const std::string& fullName, const std::string& targetName, const std::string& name) override {
   //    logger::trace("CoreOperationInletBroker::{}({}, {}, {}) called", __func__, fullName, targetName, name);
-  //    auto inlet = nerikiri::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [&targetName](auto i) {
+  //    auto inlet = juiz::functional::find<std::shared_ptr<OperationInletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [&targetName](auto i) {
   //        return i->name() == targetName;
   //    });
   //    if (inlet) { return inlet.value()->removeConnection(name); }
@@ -348,7 +348,7 @@ public:
   virtual ~CoreContainerBroker() {}
 
   virtual Value operations(const std::string& containerFullName) const override {
-    return nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->get<ContainerAPI>(containerFullName)->operations(), [](auto op) {
+    return juiz::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->get<ContainerAPI>(containerFullName)->operations(), [](auto op) {
         return op->info();
     });
   }

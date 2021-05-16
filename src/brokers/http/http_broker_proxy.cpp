@@ -13,20 +13,20 @@
 #include "http_server.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 /**
  * 
  * 
  */
-class HTTPBrokerProxy : public nerikiri::CRUDBrokerProxyBase {
+class HTTPBrokerProxy : public juiz::CRUDBrokerProxyBase {
 private:
-  nerikiri::HttpClient_ptr client_;
+  juiz::HttpClient_ptr client_;
   const std::string endpoint_;
   const std::string address_;
   const int64_t port_;
 public:
   HTTPBrokerProxy(const std::string& addr, const int64_t port) : CRUDBrokerProxyBase("HTTPBrokerProxy", "HTTPBroker", "httpBrokerProxy"), 
-    client_(nerikiri::client(addr, port)), endpoint_("httpBroker"), address_(addr), port_(port)
+    client_(juiz::client(addr, port)), endpoint_("httpBroker"), address_(addr), port_(port)
   {
     client_->setTimeout(0.5);
   }
@@ -44,26 +44,26 @@ public:
 
 public:
   virtual Value info() const override {
-    auto i = nerikiri::CRUDBrokerProxyBase::info();
+    auto i = juiz::CRUDBrokerProxyBase::info();
     i["port"] = port_;
     i["host"] = address_;
     return i;
   }
 private:
-  Value toValue(nerikiri::Response&& res) const {  
+  Value toValue(juiz::Response&& res) const {  
     if (res.status != 200) {
       logger::error("HTTBrokerProxyImpl: request failed. status = {}", res.status);
       logger::error("body - {}", res.body);
-      return nerikiri::Value::error(res.body);
+      return juiz::Value::error(res.body);
     }
     try {
-      return nerikiri::json::toValue(res.body);
-    } catch (nerikiri::json::JSONParseError& e) {
+      return juiz::json::toValue(res.body);
+    } catch (juiz::json::JSONParseError& e) {
       logger::error("JSON Parse Error: \"{}\"", e.what());
-      return nerikiri::Value::error(e.what());
-    } catch (nerikiri::json::JSONConstructError& e) {
+      return juiz::Value::error(e.what());
+    } catch (juiz::json::JSONConstructError& e) {
       logger::error("JSON Construct Error: \"{}\"", e.what());
-      return nerikiri::Value::error(e.what());
+      return juiz::Value::error(e.what());
     }
   }
 public:
@@ -71,7 +71,7 @@ public:
 
     virtual Value createResource(const std::string& path, const Value& value) override {
       logger::debug("HTTPBrokerProxyImpl::createResource({})", path);
-      return toValue(client_->request("/" + endpoint_ + "/" + path, "POST", {"POST", nerikiri::json::toJSONString(value), "application/json"}));
+      return toValue(client_->request("/" + endpoint_ + "/" + path, "POST", {"POST", juiz::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value readResource(const std::string& path) const override {
@@ -81,7 +81,7 @@ public:
 
     virtual Value updateResource(const std::string& path, const Value& value) override {
       logger::debug("HTTPBrokerProxyImpl(addr={}, port={})::updateResource({})", address_, (int32_t)port_, path);
-      return toValue(client_->request("/" + endpoint_ + "/" + path, "PUT", {"PUT", nerikiri::json::toJSONString(value), "application/json"}));
+      return toValue(client_->request("/" + endpoint_ + "/" + path, "PUT", {"PUT", juiz::json::toJSONString(value), "application/json"}));
     }
 
     virtual Value deleteResource(const std::string& path) override {

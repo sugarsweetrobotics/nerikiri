@@ -13,7 +13,7 @@
 #include "http.h"
 
 
-namespace nerikiri {
+namespace juiz {
 
   class HttpServer {
   public:
@@ -28,13 +28,13 @@ namespace nerikiri {
     virtual void baseDirectory(const std::string& path) = 0;
     
     virtual void response(const std::string& path, const std::string& method, const std::string& contentType, const std::string& content) {
-      response(path, method, contentType, [content, contentType](const nerikiri::Request& req) {
-	  nerikiri::Response response(200, content, contentType);
+      response(path, method, contentType, [content, contentType](const juiz::Request& req) {
+	  juiz::Response response(200, content, contentType);
 	return response;
       });
     }
 
-    virtual void response(const std::string& path, const std::string& method, const std::string& contentType, std::function<nerikiri::Response(const nerikiri::Request&)> callback) = 0;
+    virtual void response(const std::string& path, const std::string& method, const std::string& contentType, std::function<juiz::Response(const juiz::Request&)> callback) = 0;
     
     
     void responseHTML(const std::string& path, const std::string& method, const std::string& content) {
@@ -69,5 +69,5 @@ namespace nerikiri {
   
   using HttpServer_ptr = std::shared_ptr<HttpServer>;
 
-  nerikiri::HttpServer_ptr server();
+  juiz::HttpServer_ptr server();
 };

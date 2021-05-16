@@ -6,7 +6,7 @@
  * 
  * 
  */
-class HTTPBrokerFactory : public nerikiri::BrokerFactoryAPI {
+class HTTPBrokerFactory : public juiz::BrokerFactoryAPI {
 public:
 
   HTTPBrokerFactory(const std::string& fullName): BrokerFactoryAPI ("HTTPBrokerFactory", "HTTPBroker", fullName) {}
@@ -15,8 +15,8 @@ public:
   //virtual std::string brokerTypeFullName() const override { return "HTTPBroker"; }
 
 public:
-  virtual std::shared_ptr<nerikiri::BrokerAPI> create(const nerikiri::Value& value) override;
+  virtual std::shared_ptr<juiz::BrokerAPI> create(const juiz::Value& value) override;
   
-  virtual std::shared_ptr<nerikiri::ClientProxyAPI> createProxy(const nerikiri::Value& value) override;
+  virtual std::shared_ptr<juiz::ClientProxyAPI> createProxy(const juiz::Value& value) override;
 
 };

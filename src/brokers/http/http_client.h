@@ -12,7 +12,7 @@
 //#include "webi/html.h"
 #include "http.h"
 
-namespace nerikiri {
+namespace juiz {
 
   class HttpClient {
   public:

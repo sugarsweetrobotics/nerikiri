@@ -5,7 +5,7 @@
 #include <string>
 
 
-namespace nerikiri {
+namespace juiz {
     class ContainerAPI;
     class ClientProxyAPI;
 

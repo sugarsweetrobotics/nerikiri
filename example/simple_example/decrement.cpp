@@ -3,7 +3,7 @@
 #include <juiz/nerikiri.h>
 #include <juiz/operation.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 extern "C" {
 

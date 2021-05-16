@@ -2,7 +2,7 @@
 #include <memory>
 #include <juiz/factory_api.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 /*
@@ -16,7 +16,7 @@ public:
     }
 };
 
-std::shared_ptr<FactoryAPI> nerikiri::nullFactory() {
+std::shared_ptr<FactoryAPI> juiz::nullFactory() {
     return std::make_shared<NullFactory>();
 }
 */

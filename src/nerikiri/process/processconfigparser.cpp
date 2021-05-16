@@ -2,7 +2,7 @@
 
 #include "processconfigparser.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 Value ProcessConfigParser::parseProjectFile(const std::string& projectFilePath) {
     logger::trace("ProcessConfigParser::parseProjectFile({})", projectFilePath);
@@ -21,9 +21,9 @@ Value ProcessConfigParser::parseProjectFile(const std::string& projectFilePath) 
     std::map<std::string, std::string> env_dictionary;
     env_dictionary["${ProjectDirectory}"] = projectDir;
     
-    //auto v = nerikiri::json::toValue(fp);
+    //auto v = juiz::json::toValue(fp);
 
-    auto v = replaceAndCopy(nerikiri::json::toValue(fp), env_dictionary);
+    auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
     v["projectDir"] = projectDir;
     v["projectFilePath"] = projectFilePath;
     logger::trace(" - parsing sub projects....");
@@ -67,7 +67,7 @@ Value ProcessConfigParser::parseSubProject(const std::string& projFilePath, cons
         logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", projFilePath);
         return Value({});
     }
-    auto v = replaceAndCopy(nerikiri::json::toValue(fp), env_dictionary);
+    auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
     logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", projFilePath);
     return parseSubProjects(v, projectDir);
 }
@@ -115,9 +115,9 @@ Value ProcessConfigParser::parseShelf(const std::string& shelfFilePath, const st
 
         return Value({});
     }
-    //auto v = nerikiri::json::toValue(fp);
+    //auto v = juiz::json::toValue(fp);
     logger::trace(" - ShelfDirectory = {}", projectDir);
-    auto v = replaceAndCopy(nerikiri::json::toValue(fp), env_dictionary);
+    auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
     logger::info("ProcessConfigParser::parseShelf success. File is {}.", shelfFilePath);
     logger::trace("ProcessConfigParser::parseShelf exit");
     return parseShelves(v, projectDir);
@@ -129,7 +129,7 @@ Value ProcessConfigParser::parseConfig(std::FILE* fp, const std::string& filepat
         return Value({});
     }
     auto projectDir = filepath.substr(0, filepath.rfind("/")+1);
-    auto v = nerikiri::json::toValue(fp);
+    auto v = juiz::json::toValue(fp);
     v["projectDir"] = 
     v["projectFilePath"] = filepath;
     auto conf = parseShelves(v, projectDir);
@@ -138,5 +138,5 @@ Value ProcessConfigParser::parseConfig(std::FILE* fp, const std::string& filepat
 }
 
 Value ProcessConfigParser::parseConfig(const std::string& jsonStr) {
-    return (nerikiri::json::toValue(jsonStr));
+    return (juiz::json::toValue(jsonStr));
 }

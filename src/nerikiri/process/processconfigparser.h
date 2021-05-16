@@ -9,7 +9,7 @@
 #include <juiz/utils/os.h>
 #include <juiz/utils/stringutil.h>
 
-namespace nerikiri {
+namespace juiz {
 
   /**
    * ディクショナリのキーにあるパターンでマッチした部分をディクショナリの値で置き換えるツール
@@ -19,7 +19,7 @@ namespace nerikiri {
    */
   static std::string stringReplace(const std::string& ss, const std::map<std::string, std::string>& dictionary) {
     auto s = ss;
-    nerikiri::foreach<std::string, std::string>(dictionary, [&s](const std::string& k, const std::string& v) {
+    juiz::foreach<std::string, std::string>(dictionary, [&s](const std::string& k, const std::string& v) {
         s = replaceAll(s, k, v);
     });
     return s;

@@ -6,7 +6,7 @@
 
 #include "http_converter_cpphttplib.h"
 
-using namespace nerikiri;
+using namespace juiz;
 
 class HttpServerImpl : public HttpServer {
 private:
@@ -20,7 +20,7 @@ public:
 
   void baseDirectory(const std::string& path) override;
   
-  void response(const std::string& path, const std::string& method, const std::string& contentType, std::function<nerikiri::Response(const nerikiri::Request&)> callback) override;
+  void response(const std::string& path, const std::string& method, const std::string& contentType, std::function<juiz::Response(const juiz::Request&)> callback) override;
 
   void runForever(const int32_t port=8080) override;
     
@@ -50,7 +50,7 @@ void HttpServerImpl::baseDirectory(const std::string& path) {
   server_.set_mount_point(nullptr, path.c_str());
 }
 
-void HttpServerImpl::response(const std::string& path, const std::string& method, const std::string& contentType, std::function<nerikiri::Response(const nerikiri::Request&)> callback) {
+void HttpServerImpl::response(const std::string& path, const std::string& method, const std::string& contentType, std::function<juiz::Response(const juiz::Request&)> callback) {
   if (method == "GET") {
     server_.Get(path.c_str(), [callback, contentType](const httplib::Request& req, httplib::Response& res) {
 	apply(res, callback(convert(req)));
@@ -130,6 +130,6 @@ HttpServer_ptr WebiImpl::createHttpServerImpl() {
   return std::make_shared<HttpServerImpl>();
 }*/
 
-nerikiri::HttpServer_ptr nerikiri::server() {
-  return nerikiri::HttpServer_ptr(new HttpServerImpl());
+juiz::HttpServer_ptr juiz::server() {
+  return juiz::HttpServer_ptr(new HttpServerImpl());
 }

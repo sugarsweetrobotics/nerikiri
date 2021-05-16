@@ -3,7 +3,7 @@
 #include <juiz/process_store.h>
 #include <juiz/topic_api.h>
 
-namespace nerikiri {
+namespace juiz {
 
 
     std::shared_ptr<TopicAPI> createTopic(ProcessStore& store, const Value& info);

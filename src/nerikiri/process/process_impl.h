@@ -15,7 +15,7 @@
 
 #include "process_builder.h"
 
-namespace nerikiri {
+namespace juiz {
 
   class ProcessProxy : public ProcessAPI {
   private:

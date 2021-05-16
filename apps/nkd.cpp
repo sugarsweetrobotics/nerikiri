@@ -3,5 +3,5 @@
 
 
 int main(const int argc, const char* argv[]) {
-  return nerikiri::process(argc, argv)->start();
+  return juiz::process(argc, argv)->start();
 }

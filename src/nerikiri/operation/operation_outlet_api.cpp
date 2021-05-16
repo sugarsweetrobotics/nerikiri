@@ -2,7 +2,7 @@
 #include <juiz/logger.h>
 #include <juiz/operation_api.h>
 
-using namespace nerikiri;
+using namespace juiz;
 
 
 
@@ -68,4 +68,4 @@ using namespace nerikiri;
   };
 
   
-  std::shared_ptr<OutletAPI> nerikiri::nullOperationOutlet() { return std::make_shared<NullOperationOutlet>(); }
+  std::shared_ptr<OutletAPI> juiz::nullOperationOutlet() { return std::make_shared<NullOperationOutlet>(); }

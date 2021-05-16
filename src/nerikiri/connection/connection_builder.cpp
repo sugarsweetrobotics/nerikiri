@@ -9,13 +9,13 @@
 #include "../connection/connection_builder.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 /**
  * inletOwnerClassName must be "operation" or "fsm"
  */
 static bool check_the_same_route_connection_exists(const std::shared_ptr<OutletAPI>& outlet, const std::shared_ptr<InletAPI>& inlet) {
     auto flag = false;
-    nerikiri::functional::for_each<std::shared_ptr<ConnectionAPI>>(outlet->connections(), [&flag, &inlet](auto con) {
+    juiz::functional::for_each<std::shared_ptr<ConnectionAPI>>(outlet->connections(), [&flag, &inlet](auto con) {
         if ((con->inlet()->ownerFullName() == Value::string(inlet->info().at("ownerFullName"))) && 
             (con->inlet()->name() == Value::string(inlet->info().at("name")))) {
           flag = true;
@@ -25,7 +25,7 @@ static bool check_the_same_route_connection_exists(const std::shared_ptr<OutletA
 }
 
 static bool check_the_same_name_connection_exists(const std::vector<std::shared_ptr<ConnectionAPI>>& connections, const std::string& name) {
-    auto con = nerikiri::functional::find<std::shared_ptr<ConnectionAPI>>(connections, [&name](auto c) {
+    auto con = juiz::functional::find<std::shared_ptr<ConnectionAPI>>(connections, [&name](auto c) {
         return c->fullName() == name;
     });
     if (con) return true;
@@ -61,7 +61,7 @@ Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<Outl
   }
   auto name = Value::string(connectionInfo.at("name"));
   if (Value::string(connectionInfo.at("namingPolicy")) == "auto") {
-    name = renameConnectionName(nerikiri::functional::join(outlet->connections(), inlet->connections()), name);
+    name = renameConnectionName(juiz::functional::join(outlet->connections(), inlet->connections()), name);
   }
 
 
@@ -105,7 +105,7 @@ Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Va
 
   // 同一名称があるかどうか確認．ある場合はnamingPolicyがautoならば名前自動更新
   auto name = Value::string(connectionInfo.at("name"));
-  auto all_connections = nerikiri::functional::join(outlet->connections(), inlet->connections());
+  auto all_connections = juiz::functional::join(outlet->connections(), inlet->connections());
   if (check_the_same_name_connection_exists(all_connections, name)) {
     if (Value::string(connectionInfo.at("namingPolicy")) == "auto") {
       name = renameConnectionName(all_connections, name);
@@ -237,7 +237,7 @@ Value ConnectionBuilder::createConnection(ProcessStore* store, const Value& conn
 /*
 Value ConnectionBuilder::registerTopicPublisher(ProcessStore& store, const Value& cInfo, const Value& opInfo, const Value& topicInfo) {
   logger::trace("ConnectionBuilder::registerTopicPublisher({}, {}, {})", cInfo, opInfo, topicInfo);
-  auto op = store.get<OperationAPI>(nerikiri::naming::join(Value::string(cInfo.at("fullName")), Value::string(opInfo.at("fullName"))));
+  auto op = store.get<OperationAPI>(juiz::naming::join(Value::string(cInfo.at("fullName")), Value::string(opInfo.at("fullName"))));
   auto topicInfo2 = ObjectFactory::createTopic(store, topicInfo);
   auto connectionName = "topic_connection_" + Value::string(topicInfo.at("fullName")) + "_" + op->fullName();
   Value connectionInfo {

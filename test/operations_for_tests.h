@@ -11,8 +11,8 @@ bool operationZeroIsCalled = false;
 bool operationAddIsCalled = false;
 
 
-auto opf1 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri::OperationFactoryAPI*>(operationFactory(
-  nerikiri::Value { 
+auto opf1 = std::shared_ptr<juiz::OperationFactoryAPI>(static_cast<juiz::OperationFactoryAPI*>(operationFactory(
+  juiz::Value { 
     {"typeName", "inc"},
     {"defaultArg", {
         {"arg01", 1}
@@ -22,12 +22,12 @@ auto opf1 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   [](auto arg) {
     operationIsCalled = true;
     operationIncIsCalled = true;
-    return nerikiri::Value(arg.at("arg01").intValue()+1);
+    return juiz::Value(arg.at("arg01").intValue()+1);
   }
 )));
 
-auto opf2 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri::OperationFactoryAPI*>(operationFactory(
-  nerikiri::Value { 
+auto opf2 = std::shared_ptr<juiz::OperationFactoryAPI>(static_cast<juiz::OperationFactoryAPI*>(operationFactory(
+  juiz::Value { 
     {"typeName", "zero"},
     {"defaultArg", {}
     }
@@ -35,12 +35,12 @@ auto opf2 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   [](auto arg)  {
     operationIsCalled = true;
     operationZeroIsCalled = true;
-    return nerikiri::Value(0);
+    return juiz::Value(0);
   }
 )));
 
-auto opf3 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri::OperationFactoryAPI*>(operationFactory(
-  nerikiri::Value { 
+auto opf3 = std::shared_ptr<juiz::OperationFactoryAPI>(static_cast<juiz::OperationFactoryAPI*>(operationFactory(
+  juiz::Value { 
     {"typeName", "add"},
     {"defaultArg", {
         {"arg01", 0},
@@ -51,25 +51,25 @@ auto opf3 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri:
   [](auto arg)  {
     operationIsCalled = true;
     operationAddIsCalled = true;
-  return nerikiri::Value(arg.at("arg01").intValue()+arg.at("arg02").intValue());
+  return juiz::Value(arg.at("arg01").intValue()+arg.at("arg02").intValue());
   }
 )));
 
-auto opf4 = std::shared_ptr<nerikiri::OperationFactoryAPI>(static_cast<nerikiri::OperationFactoryAPI*>(operationFactory(
-  nerikiri::Value { 
+auto opf4 = std::shared_ptr<juiz::OperationFactoryAPI>(static_cast<juiz::OperationFactoryAPI*>(operationFactory(
+  juiz::Value { 
     {"typeName", "one"},
     {"defaultArg", {}
     }
   },
   [](auto arg)  {
     operationIsCalled = true;
-    return nerikiri::Value(1);
+    return juiz::Value(1);
   }
 )));
 
-class OneShotEC : public nerikiri::ExecutionContextBase {
+class OneShotEC : public juiz::ExecutionContextBase {
 public:
-    OneShotEC(const nerikiri::Value& info) : nerikiri::ExecutionContextBase("OneShotEC") {}
+    OneShotEC(const juiz::Value& info) : juiz::ExecutionContextBase("OneShotEC") {}
 
 public:
     virtual bool onStarted() override {
@@ -78,18 +78,18 @@ public:
     }
 };
 
-auto ecf1 = std::make_shared<nerikiri::ECFactory<OneShotEC>>();
+auto ecf1 = std::make_shared<juiz::ECFactory<OneShotEC>>();
 
 struct MyStruct {
   int32_t value;
   MyStruct(): value(0) {}
 };
 
-auto cf0 = std::make_shared<nerikiri::ContainerFactory<MyStruct>>();
+auto cf0 = std::make_shared<juiz::ContainerFactory<MyStruct>>();
 
 
-auto copf0 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
-  nerikiri::Value { 
+auto copf0 = std::shared_ptr<juiz::ContainerOperationFactoryAPI>(static_cast<juiz::ContainerOperationFactoryAPI*>(juiz::containerOperationFactory<MyStruct>(
+  juiz::Value { 
     {"typeName", {"set"}},
     {"defaultArg", {
       {"value", {0}}
@@ -103,8 +103,8 @@ auto copf0 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast
   }
 )));
 
-auto copf2 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
-  nerikiri::Value { 
+auto copf2 = std::shared_ptr<juiz::ContainerOperationFactoryAPI>(static_cast<juiz::ContainerOperationFactoryAPI*>(juiz::containerOperationFactory<MyStruct>(
+  juiz::Value { 
     {"typeName", {"get"}},
     {"defaultArg", {
       {}
@@ -118,8 +118,8 @@ auto copf2 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast
 
 
 
-auto copf1 = std::shared_ptr<nerikiri::ContainerOperationFactoryAPI>(static_cast<nerikiri::ContainerOperationFactoryAPI*>(nerikiri::containerOperationFactory<MyStruct>(
-  nerikiri::Value { 
+auto copf1 = std::shared_ptr<juiz::ContainerOperationFactoryAPI>(static_cast<juiz::ContainerOperationFactoryAPI*>(juiz::containerOperationFactory<MyStruct>(
+  juiz::Value { 
     {"typeName", {"inc"}},
     {"defaultArg", {
       {}

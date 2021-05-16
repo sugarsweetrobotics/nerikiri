@@ -7,7 +7,7 @@
 #include "container_factory_base.h"
 
 
-using namespace nerikiri;
+using namespace juiz;
 
 /**
  * ContainerBaseクラス
@@ -20,7 +20,7 @@ protected:
     const ContainerFactoryAPI* parentFactory_;
 
     
-    nerikiri::TimedPose3D pose_;
+    juiz::TimedPose3D pose_;
 
 public:
     virtual TimedPose3D getPose() const override { return pose_; }
@@ -59,7 +59,7 @@ public:
 
     virtual Value fullInfo() const override {
         auto inf = info();
-        inf["operations"] = nerikiri::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
+        inf["operations"] = juiz::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
             return op->fullInfo();
         });
         return inf;
@@ -98,10 +98,10 @@ public:
     }
 
     virtual std::shared_ptr<OperationAPI> operation(const std::string& fullName) const override {
-        auto op = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
+        auto op = juiz::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->fullName() == fullName; });
         if (op) return op.value();;
 
-        auto opi = nerikiri::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->instanceName() == fullName; });
+        auto opi = juiz::functional::find<std::shared_ptr<OperationAPI>>(operations(), [&fullName](auto op) { return op->instanceName() == fullName; });
         if (opi) return opi.value();;
         return nullOperation();
     }
@@ -110,6 +110,6 @@ public:
 
 
 
-std::shared_ptr<ContainerAPI> nerikiri::containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) {
+std::shared_ptr<ContainerAPI> juiz::containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) {
     return std::make_shared<ContainerBase>(parentFactory, className, typeName, fullName);
 }

@@ -17,23 +17,23 @@
 #include "nerikiri/fsm/fsm_container.h"
 #include "nerikiri/ec/ec_container.h"
 
-using namespace nerikiri;
-using namespace nerikiri::logger;
+using namespace juiz;
+using namespace juiz::logger;
 
 
-std::shared_ptr<ProcessAPI> nerikiri::process(const std::string& name) {
+std::shared_ptr<ProcessAPI> juiz::process(const std::string& name) {
   return std::make_shared<Process>(name);
 }
 
-std::shared_ptr<ProcessAPI> nerikiri::process(const int argc, const char** argv) {
+std::shared_ptr<ProcessAPI> juiz::process(const int argc, const char** argv) {
   return std::make_shared<Process>(argc, argv);
 }
 
-std::shared_ptr<ProcessAPI> nerikiri::process(const std::string& name, const Value& config) {
+std::shared_ptr<ProcessAPI> juiz::process(const std::string& name, const Value& config) {
   return std::make_shared<Process>(name, config);
 }
 
-std::shared_ptr<ProcessAPI> nerikiri::process(const std::string& name, const std::string& jsonStr) {
+std::shared_ptr<ProcessAPI> juiz::process(const std::string& name, const std::string& jsonStr) {
   return std::make_shared<Process>(name, jsonStr);
 }
 
@@ -81,7 +81,7 @@ Value defaultProcessConfig({
 Process::Process(const std::string& name) : ProcessAPI("Process", "Process", name), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
-    fullpath = nerikiri::getCwd() + "/" + fullpath;
+    fullpath = juiz::getCwd() + "/" + fullpath;
   }
 
   std::string path = fullpath.substr(0, fullpath.rfind("/")+1);
@@ -125,7 +125,7 @@ Process::Process(const int argc, const char** argv) : Process(argv[0]) {
 }
 
 Process::Process(const std::string& name, const Value& config) : Process(name) {
-  config_ = nerikiri::merge(config_, config);  
+  config_ = juiz::merge(config_, config);  
   _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
   logger::info("Process::Process() - ExecutablePath = {}", path_);
@@ -169,7 +169,7 @@ void Process::parseConfigFile(const std::string& filepath) {
   if (fp == nullptr) {
     logger::warn("ProcessConfigParser::parseConfig failed. File pointer is NULL.");
   }
-  auto v = nerikiri::json::toValue(fp);
+  auto v = juiz::json::toValue(fp);
   if (v.hasKey("logger")) {
     auto loggerConf = v.at("logger");
     if (loggerConf.hasKey("logLevel")) {
@@ -183,7 +183,7 @@ void Process::parseConfigFile(const std::string& filepath) {
   config_ = merge(config_, ProcessConfigParser::parseProjectFile(filepath));
   /// ここで環境変数の辞書の設定
   if (filepath.find("/") != 0) {
-    env_dictionary_["${ProjectDirectory}"] = nerikiri::getCwd() + "/";
+    env_dictionary_["${ProjectDirectory}"] = juiz::getCwd() + "/";
   } else {
     env_dictionary_["${ProjectDirectory}"] = filepath.substr(0, filepath.rfind("/")+1);
   }
@@ -308,11 +308,11 @@ void Process::startAsync() {
   _preloadBrokers();
   _preStartFSMs();
   _preStartExecutionContexts();
-  auto broker_futures = nerikiri::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store()->brokers(), [this](auto& brk) -> std::future<bool> {
+  auto broker_futures = juiz::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store()->brokers(), [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, coreBroker_, brk);
 								 });
   
-  auto systemEditor_futures = nerikiri::map<std::future<bool>, std::string, SystemEditor_ptr>(this->systemEditors_,
+  auto systemEditor_futures = juiz::map<std::future<bool>, std::string, SystemEditor_ptr>(this->systemEditors_,
 											      [this](const auto& name, const auto& se) {
 												return start_systemEditor(this->threads_, se); }
 											      );
@@ -351,10 +351,10 @@ int32_t Process::wait() {
 void Process::stop() {
   logger::trace("Process::shutdown()");
   setObjectState("stopping");
-  nerikiri::foreach<std::shared_ptr<BrokerAPI> >(store_.brokers_, [this](auto& brk) {
+  juiz::foreach<std::shared_ptr<BrokerAPI> >(store_.brokers_, [this](auto& brk) {
 			      brk->shutdown(coreBroker_);
 			    });
-  nerikiri::foreach<std::string, SystemEditor_ptr>(systemEditors_, [this](auto& name, auto& se) {
+  juiz::foreach<std::string, SystemEditor_ptr>(systemEditors_, [this](auto& name, auto& se) {
 				      se->shutdown();
 				    });
   

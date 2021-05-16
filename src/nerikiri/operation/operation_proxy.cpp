@@ -4,7 +4,7 @@
 
 #include "operation_proxy.h"
 
-using namespace nerikiri;
+using namespace juiz;
 /// -------------- Operation Outlet
 
 class OperationProxy;
@@ -105,7 +105,7 @@ public:
 };
 
 
-std::shared_ptr<InletAPI> nerikiri::operationInletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName, const std::string& name) {
+std::shared_ptr<InletAPI> juiz::operationInletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName, const std::string& name) {
     return std::make_shared<OperationInletProxy>(owner, broker, fullName, name);
 } 
 
@@ -176,7 +176,7 @@ public:
 };
 
 
-std::shared_ptr<OutletAPI> nerikiri::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
+std::shared_ptr<OutletAPI> juiz::operationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
     return std::make_shared<OperationOutletProxy>(owner, broker, fullName);
 } 
 
@@ -252,7 +252,7 @@ public:
         else if (name == "__argument__") { 
             return argument_inlet_;
         }
-      auto i = nerikiri::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
+      auto i = juiz::functional::find<std::shared_ptr<InletAPI>>(inlets(), [&name](auto i) { return i->name() == name; });
       if (i) return i.value();
       return nullOperationInlet();
     }
@@ -279,12 +279,12 @@ Value OperationInletProxy::executeOwner() {
 
 ///-------------- Operation Inlet
 
-namespace nerikiri {
+namespace juiz {
     std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName);
 
 }
 
-std::shared_ptr<OperationAPI> nerikiri::operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
-    logger::trace("nerikiri::operationProxy(broker='{}', fullName='{}') called.", broker->typeName(), fullName);
+std::shared_ptr<OperationAPI> juiz::operationProxy(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) {
+    logger::trace("juiz::operationProxy(broker='{}', fullName='{}') called.", broker->typeName(), fullName);
     return std::make_shared<OperationProxy>(broker, fullName);
 }
