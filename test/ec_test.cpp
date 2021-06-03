@@ -17,7 +17,7 @@ using namespace juiz;
 SCENARIO( "ExecutionContext test", "[ec]" ) {
   GIVEN("ExecutionContext basic behavior") {
     const std::string jsonStr = R"({
-      "logger": { "logLevel": "INFO" },
+      "logger": { "logLevel": "TRACE" },
 
       "operations": {
           "precreate": [

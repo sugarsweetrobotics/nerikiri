@@ -25,6 +25,8 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
 	    {"className", "ECContainer"}
 	  }))));
     
+
+    // activate_state container operation 
     store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
         {
           {"typeName", "activate_state"},
@@ -39,11 +41,25 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
                 return Value::error(logger::error("[ECStateContainer] failed to activate {} in FSM ({}). This is not found in available state list.", s, container.fullName));
             }
             logger::trace("ECContainerStruct::activate_state_{} succeeded", s);
-            container.currentState = s;
+            if (c != s) {
+                if (s == "started") {
+                    container.ec->onStarting();
+                } else if (s == "stopped") {
+                    container.ec->onStopping();
+                }
+                container.currentState = s;
+                if (s == "started") {
+                    container.ec->onStarted();
+                } else if (s == "stopped") {
+                    container.ec->onStopped();
+                }
+            }
+            
             return arg;
         }))
     ));
 
+    // get_state container operation
     store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_ECContainerStruct>(
         {
           {"typeName", "get_state"},
@@ -75,6 +91,7 @@ Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Val
     c->setClassName("ExecutionContext");
     c->setTypeName(ecInfo["typeName"].stringValue());
     c->ptr()->currentState = defaultStateName;
+
     /// ここでECの本体を設定する
     c->ptr()->ec = store.executionContextFactory(Value::string(ecInfo.at("typeName")))->create(ecInfo);
     //if (c->ptr()->ec->isNull()) {
@@ -101,9 +118,13 @@ Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Val
     }
     start_cop->setOwner(container);
 
+    c->ptr()->ec->setSvcOperation(start_cop);
+    
+
     store.add<ContainerAPI>(c);
     c->addOperation(start_cop);
     c->addOperation(stop_cop);
     c->addOperation(getter);
+    c->useThread(false);
     return c->info();
 }

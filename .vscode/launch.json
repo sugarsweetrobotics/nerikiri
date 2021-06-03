@@ -14,11 +14,11 @@
         },
 
         {
-            "name": "Debug nkd",
+            "name": "Debug juizd",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/nkd",
-            "args": ["nkd.nkproj"],
+            "program": "${workspaceFolder}/build/bin/juizd",
+            "args": ["juizd.nkproj"],
             "cwd": "${workspaceFolder}/example"
         },
         {
@@ -188,7 +188,7 @@
             "name": "Debug turtle_sim_teleop",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/nkd",
+            "program": "${workspaceFolder}/build/bin/juizd",
             "args": ["${workspaceFolder}/example/turtlesim_keyteleop.nkproj"],
             "cwd": "${workspaceFolder}/example"
         },
@@ -196,7 +196,7 @@
             "name": "Debug turtle_sim",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/nkd",
+            "program": "${workspaceFolder}/build/bin/juizd",
             "args": ["${workspaceFolder}/example/turtlesim.nkproj"],
             "cwd": "${workspaceFolder}/example"
         },
@@ -204,7 +204,7 @@
             "name": "Debug opencv",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/nkd",
+            "program": "${workspaceFolder}/build/bin/juizd",
             "args": ["${workspaceFolder}/example/opencv.nkproj"],
             "cwd": "${workspaceFolder}/example/",
             "env": {
@@ -215,7 +215,7 @@
             "name": "Debug joy",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/nkd",
+            "program": "${workspaceFolder}/build/bin/juizd",
             "args": ["${workspaceFolder}/example/joy.nkproj"],
             "cwd": "${workspaceFolder}/example/",
             "env": {

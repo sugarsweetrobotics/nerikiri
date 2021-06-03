@@ -4,9 +4,9 @@
 using namespace juiz;
 
 namespace juiz {
-    std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr); 
+    std::shared_ptr<OperationAPI> createOperation(const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {}, const std::function<Value(const Value&)>& func = nullptr, const Value& info={}); 
 
-    std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {});
+    // std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& operationTypeName, const std::string& _fullName, const Value& defaultArgs = {});
 }
 
 
@@ -19,6 +19,7 @@ protected:
     const std::function<Value(const Value&)> function_;
     std::mutex mutex_;
     Value defaultArgs_;
+    Value info_;
 public:
 
 
@@ -32,7 +33,7 @@ public:
         base_ = createOperation(juiz::naming::join(container->fullName(), _typeName), fullName(), defaultArgs_, 
            [this](auto value) {
             return this->function_(value);
-        });
+        }, info_);
         return container_->info();
     }
 
@@ -42,9 +43,15 @@ public:
     }
 
 public:
-    ContainerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func)
-        : OperationAPI("ContainerOperation", _typeName, _fullName), defaultArgs_(defaultArgs), function_(func)
-        {}
+    ContainerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func, const Value& info={})
+        : OperationAPI("ContainerOperation", _typeName, _fullName), defaultArgs_(defaultArgs), function_(func), info_(info)
+        {
+            if (info_.isObjectValue()) {
+                if (info_.hasKey("description") && info_.isStringValue()) {
+                    setDescription(info_["description"].stringValue());
+                }
+            }
+        }
 
     virtual ~ContainerOperationBase() {}
 
@@ -78,7 +85,7 @@ public:
 
 
 
-std::shared_ptr<OperationAPI> juiz::containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func) {
-    return std::make_shared<ContainerOperationBase>(_typeName, _fullName, defaultArgs, func);
+std::shared_ptr<OperationAPI> juiz::containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func, const Value& info) {
+    return std::make_shared<ContainerOperationBase>(_typeName, _fullName, defaultArgs, func, info);
 }
 

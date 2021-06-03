@@ -17,10 +17,10 @@ function(add_app NAME)
 endfunction(add_app)
 
 
-add_app(nkd)
+add_app(juizd)
 
 
-set(APPS nkd)
+set(APPS juizd)
 
 install(TARGETS ${APPS}
 )

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <queue>
+#include <thread>
+
 #include <juiz/container_api.h>
 #include <juiz/geometry.h>
 
@@ -12,8 +15,35 @@ namespace juiz {
 
     //class OperationBase;
     std::shared_ptr<ContainerAPI> containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName);
-    std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func);
+    std::shared_ptr<OperationAPI> containerOperationBase(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(const Value&)> func, const Value& info={});
 
+    class container_task {
+    public:
+        std::function<void(void)> service_;
+        //std::mutex mutex_;
+        //std::condition_variable cv_;
+        //bool notify_;
+        container_task(const std::function<void(void)>& f) : service_(f) {} //, notify_(false) {}
+        container_task(const container_task& t): service_(t.service_) {} //, notify_(false) {}
+        //container_task(container_task&& c): service_(c.service_), notify_(false) {}
+        /*
+        void wait() { 
+            std::unique_lock<std::mutex> lock(mutex_);
+            cv_.wait(lock, [&]{ return notify_; });
+        }
+
+        void notify() {
+            std::unique_lock<std::mutex> lock(mutex_);
+            notify_ = true;
+            lock.unlock();
+            cv_.notify_one();
+        }
+        */
+
+        void operator()() {
+            service_();
+        }
+    };
     /**
      * Containerテンプレートクラス
      */
@@ -22,7 +52,20 @@ namespace juiz {
     private:
         std::shared_ptr<T> _ptr;
         std::shared_ptr<ContainerAPI> base_;
+        std::thread thread_;
+        bool end_flag_;
+        std::queue<container_task> task_queue_;
+        bool use_thread_;
+        std::condition_variable threading_condition_variable_;
+        std::mutex threading_mutex_;
+        bool threading_notify_;
+        std::condition_variable task_condition_variable_;
+        std::mutex task_mutex_;
+        bool task_notify_;
     public:
+        void useThread(bool flag) { use_thread_ = flag; }
+        bool isUseThread() const { return use_thread_; }
+
         virtual TimedPose3D getPose() const override { return base_->getPose(); }
         virtual void setPose(const TimedPose3D& pose) override { base_->setPose(pose); }
         virtual void setPose(TimedPose3D&& pose) override { base_->setPose(std::move(pose)); }
@@ -31,9 +74,51 @@ namespace juiz {
         virtual void setClassName(const std::string& className) override { base_->setClassName(className); }
     public:
         Container(const ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
-          ,_ptr(std::make_shared<T>())
+          ,_ptr(std::make_shared<T>()), end_flag_(false), use_thread_(false), threading_notify_(false), task_notify_(false), thread_([this]() { this->thread_routine(); })
         {}
-        virtual ~Container() {}
+        virtual ~Container() {
+            end_flag_ = true;
+            threading_notify_ = true;
+            threading_condition_variable_.notify_all();
+            thread_.join();
+        }
+
+        void thread_routine() {
+            while(!end_flag_) {
+                std::unique_lock<std::mutex> lock(threading_mutex_);
+                if (!task_queue_.empty()) {
+                    {
+                        std::unique_lock<std::mutex> task_lock(task_mutex_);
+                        auto task = task_queue_.front();
+                        task();
+                        task_notify_ = true;
+                    }
+                    task_condition_variable_.notify_one();
+                    task_queue_.pop();
+                } else {
+                    threading_notify_ = false;
+                    threading_condition_variable_.wait(lock, [this](){ 
+                        return this->threading_notify_; 
+                    });
+                }
+            }
+        }
+
+        void push_task(const container_task& func) {
+            std::unique_lock<std::mutex> task_lock(task_mutex_);
+            task_notify_= false;
+            task_queue_.push(func);
+            {
+                std::unique_lock<std::mutex> lock(threading_mutex_);
+                threading_notify_ = true;
+            }
+            threading_condition_variable_.notify_one();
+
+            task_condition_variable_.wait(task_lock, [this]() {
+                return this->task_notify_;
+            });
+        }
+
 
         virtual Value info() const override { 
             auto i = base_->info(); 
@@ -86,16 +171,16 @@ namespace juiz {
     protected:
         std::function<Value(T&,const Value&)> function_;
         std::shared_ptr<OperationAPI> base_;
-        std::mutex mutex_;
+        std::mutex cop_mutex_;
         Value defaultArgs_;
     public:
         virtual Value setOwner(const std::shared_ptr<Object>& container) override { return base_->setOwner(container); }
         virtual const std::shared_ptr<Object> getOwner() const override { return base_->getOwner(); }
 
     public:
-        ContainerOperation(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func)
+        ContainerOperation(const std::string& _typeName, const std::string& _fullName, const Value& defaultArgs, const std::function<Value(T&,const Value&)>& func, const Value& info={})
          : OperationAPI("ContainerOperation", _typeName, _fullName), 
-            base_(containerOperationBase(_typeName, _fullName, defaultArgs, [this](const Value& v) {return this->call(v); })),
+            base_(containerOperationBase(_typeName, _fullName, defaultArgs, [this](const Value& v) {return this->call(v); }, info)),
             defaultArgs_(defaultArgs),
             function_(func)
            {}
@@ -103,12 +188,20 @@ namespace juiz {
         virtual ~ContainerOperation() {}
 
         virtual Value call(const Value& value) override {
-            std::lock_guard<std::mutex> lock(mutex_);
+            // std::lock_guard<std::mutex> lock(cop_mutex_);
             auto c = std::static_pointer_cast<Container<T>>(getOwner());
             if (!c) {
                 logger::error("ContainerOperation::call failed. Invalid owner container pointer. Can not convert to {}. ", juiz::demangle(typeid(T).name()));
             }
-            return this->function_(*(c->ptr()), value);
+            if (c->isUseThread()) {
+                Value v;
+                c->push_task(container_task([this, &v, &c, &value]() {
+                    v = this->function_(*(c->ptr()), value);
+                }));
+                return v;
+            } else {
+                return this->function_(*(c->ptr()), value);
+            }
         }
 
         virtual Value info() const override {
@@ -194,7 +287,7 @@ namespace juiz {
                   {"pose", toValue(TimedPose3D())}
                 } 
           ),
-          operation_base_(containerOperationBase("container_set_pose", fullName, {}, [this](const Value& v) {return this->call(v); }))
+          operation_base_(containerOperationBase("container_set_pose", fullName, defaultArgs_, [this](const Value& v) {return this->call(v); }))
            {}
         virtual ~ContainerSetPoseOperation() {}
                
@@ -212,7 +305,7 @@ namespace juiz {
 
             auto pose = toTimedPose3D(value["pose"]);
             c->setPose(pose);
-            return value;
+            return value["pose"];
         }
 
 
@@ -271,10 +364,11 @@ namespace juiz {
             c->setPoseOperation_->setOwner(c);
             c->addOperation(c->getPoseOperation_);
             c->addOperation(c->setPoseOperation_);
-
-	    if (defaultInfo_.hasKey("className")) {
-	      c->setClassName(defaultInfo_["className"].stringValue());
-	    }
+            // ここでinfoにthreading_containerを要求するあたいがあればuseThreadをONにする
+            c->useThread(true);
+            if (defaultInfo_.hasKey("className")) {
+                c->setClassName(defaultInfo_["className"].stringValue());
+            }
             return c;
         }
     };
@@ -297,13 +391,14 @@ namespace juiz {
     private:
         const Value defaultArgs_;
         const std::function<Value(T&,const Value&)> function_;
+        const Value info_;
     public:
         /**
          * コンストラクタ
          * @param typeName: オペレーションのtypeName
          */
-        ContainerOperationFactory(const std::string& typeName, const Value& defaultArgs, std::function<Value(T&,const Value&)> func)
-          : ContainerOperationFactoryAPI("ContainerOperationFactory", naming::join(juiz::demangle(typeid(T).name()), typeName), naming::join(juiz::demangle(typeid(T).name()), typeName)), defaultArgs_(defaultArgs), function_(func)
+        ContainerOperationFactory(const std::string& typeName, const Value& defaultArgs, std::function<Value(T&,const Value&)> func, const Value& info)
+          : ContainerOperationFactoryAPI("ContainerOperationFactory", naming::join(juiz::demangle(typeid(T).name()), typeName), naming::join(juiz::demangle(typeid(T).name()), typeName)), defaultArgs_(defaultArgs), function_(func), info_(info)
         {}
 
         /**
@@ -323,7 +418,7 @@ namespace juiz {
             if (!info.isError() && info.hasKey("defaultArg")) {
                 defaultArg = Value::merge(defaultArg, info["defaultArg"]);    
             }
-            return std::make_shared<ContainerOperation<T>>(typeName(), fullName, defaultArg, function_);
+            return std::make_shared<ContainerOperation<T>>(typeName(), fullName, defaultArg, function_, Value::merge(info, info_));
         }
     };
 
@@ -333,7 +428,7 @@ namespace juiz {
     template<typename T>
     void* containerOperationFactory(const Value& info, const std::function<Value(T&,const Value&)>& func) { 
         logger::trace("juiz::containerOperationFactory<{}> called.", demangle(typeid(T).name()));
-        return new ContainerOperationFactory<T>(Value::string(info["typeName"]), info["defaultArg"], func);
+        return new ContainerOperationFactory<T>(Value::string(info["typeName"]), info["defaultArg"], func, info);
     }
 
 }

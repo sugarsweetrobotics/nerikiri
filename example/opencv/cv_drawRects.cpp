@@ -23,6 +23,7 @@ extern "C" {
                 }},
                 {"rects", Value::list()},
           }},
+          {"description", "Draw ract on the image by argument 'rects'. 'rects' must be list of rectangular data."}
         },
         [](auto arg) {
             //std::cout << "cv_drawRects" << std::endl;

@@ -462,6 +462,14 @@ namespace juiz {
       if (v.isIntValue()) return v.intValue();
       return _default;
     }
+    static double doubleValue(const Value& v, const double _default=0.0) {
+      if (v.isError()) return _default;
+      if (v.isDoubleValue()) return v.doubleValue();
+      if (v.isIntValue()) return v.intValue();
+      return _default;
+    }
+
+
     static Value merge(const Value& v1, const Value& v2);
   };
 

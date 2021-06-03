@@ -1,6 +1,8 @@
-set(nk_base_srcs 
+set(juiz_base_srcs 
 
 base64.c
+
+pose/static_transformation_operation.cpp
 
 # broker/brokerfactory.cpp
 broker/broker_api.cpp
@@ -92,9 +94,9 @@ topic/topic_factory.cpp
 #broker.cpp
 #brokerinfo.cpp brokerdictionary.cpp
 )
-set(nk_http_srcs brokers/http/httpbroker.cpp ) 
-set(nk_se_srcs systemeditor/systemeditor.cpp)
-set(nk_srcs ${nk_base_srcs} )
+set(juiz_http_srcs brokers/http/httpbroker.cpp ) 
+set(juiz_se_srcs systemeditor/systemeditor.cpp)
+set(juiz_srcs ${juiz_base_srcs} )
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -104,7 +106,7 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/spdlog/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/webi/include)
 set(NK_BASE_LIBS )
 
-add_library(juiz SHARED ${nk_srcs} ${nk_headers})
+add_library(juiz SHARED ${juiz_srcs} ${juiz_headers})
 target_link_libraries(juiz ${NK_BASE_LIBS})
 set_target_properties(juiz
   PROPERTIES

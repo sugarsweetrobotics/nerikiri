@@ -12,6 +12,92 @@ using namespace juiz;
 
 
 SCENARIO( "Container test", "[container]" ) {
+
+  GIVEN("Container transformation behavior") {
+    const std::string jsonStr = R"(
+{
+  "logger": { "logLevel": "WARN" },
+
+  "containers": {
+    "precreate": [
+      {
+        "typeName": "MyStruct",
+        "fullName": "MyStruct0.ctn"
+      },
+      {
+        "typeName": "MyStruct",
+        "fullName": "MyStruct1.ctn"
+      }
+    ],
+    "transformation": [
+      {
+        "typeName": "static",
+        "offset": {
+          "position": {
+            "x": 1.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        },
+        "from": {
+          "typeName": "MyStruct",
+          "fullName": "MyStruct0.ctn"
+        },
+        "to": {
+          "typeName": "MyStruct",
+          "fullName": "MyStruct1.ctn"
+        }
+      }
+    ]
+  }
+})";
+
+    auto p = juiz::process("container_test", jsonStr);
+      
+      p->load(cf0);
+      p->load(copf0);
+      p->load(copf1);
+      p->load(copf2);
+      
+    p->startAsync();
+      
+    
+    THEN("Container is stanby") {
+      auto c = p->store()->get<ContainerAPI>("MyStruct0.ctn");
+      REQUIRE(c->isNull() == false);
+      REQUIRE(c->instanceName() == "MyStruct0.ctn");
+
+      AND_THEN("Container operation test") {
+        auto cops = p->store()->list<OperationAPI>();
+        REQUIRE(cops.size() == 5);
+
+        auto getter = p->store()->get<OperationAPI>("MyStruct1.ctn:container_get_pose.ope");
+        REQUIRE(getter->isNull() != true);
+        auto setter = p->store()->get<OperationAPI>("MyStruct0.ctn:container_set_pose.ope");
+        REQUIRE(setter->isNull() != true);
+        auto v = getter->call({});
+        REQUIRE(v.isObjectValue() == true);
+        auto p = toTimedPose3D(v);
+        REQUIRE(p.pose.position.x == 0.0);
+        auto v2 = setter->execute();
+        /*
+        call({
+          {"pose", toValue(TimedPose3D{Time{}, Pose3D{Point3D{}, Orientation3D{}}})}
+        }); */
+
+        auto v3 = getter->call({});
+        REQUIRE(Value::doubleValue(v3["pose"]["position"]["x"]) == 1.0);
+      }
+    }
+    p->stop();
+  }
+
   GIVEN("Container basic behavior") {
     const std::string jsonStr = R"(
 {

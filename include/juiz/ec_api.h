@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <juiz/object.h>
+#include <juiz/operation_api.h>
 
 namespace juiz {
 
@@ -18,6 +19,9 @@ namespace juiz {
         virtual bool onStopped() = 0;
 
         virtual bool svc() = 0;
+
+        virtual void setSvcOperation(const std::shared_ptr<OperationAPI>& op) = 0;
+
     };
 
     std::shared_ptr<ExecutionContextAPI> nullEC();

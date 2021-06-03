@@ -9,7 +9,9 @@ using TopicBase = juiz::OperationBase;
 
 class Topic : public TopicBase {
 public:
-    Topic(const std::string& _fullName, const Value& defaultArgs = {{"data", {}}}): OperationBase("Topic", "Topic", _fullName, defaultArgs) {}
+    Topic(const std::string& _fullName, const Value& defaultArgs = {{"data", {}}}): OperationBase("Topic", "Topic", _fullName, defaultArgs) {
+        setDescription("Plain Topic");
+    }
     virtual ~Topic() {}
 public:
     virtual Value call(const Value& value) override {

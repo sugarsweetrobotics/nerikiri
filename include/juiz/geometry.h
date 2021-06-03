@@ -231,6 +231,23 @@ namespace juiz {
                 };
     }
 
+    inline Pose3D toPose3D(const Value& value) {
+        return Pose3D{
+                        Point3D{
+                            value["position"]["x"].doubleValue(),
+                            value["position"]["y"].doubleValue(),
+                            value["position"]["z"].doubleValue()
+                        },
+                        Orientation3D{
+                            value["orientation"]["x"].doubleValue(),
+                            value["orientation"]["y"].doubleValue(),
+                            value["orientation"]["z"].doubleValue(),
+                            value["orientation"]["w"].doubleValue()
+                        }
+                    
+                };
+    }
+
     inline Value toValue(const TimedPose3D& pose) {
         return {
                 {"tm", {

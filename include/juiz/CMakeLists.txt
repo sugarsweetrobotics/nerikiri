@@ -1,6 +1,6 @@
 add_subdirectory(utils)
 
-set(nk_public_headers
+set(juiz_public_headers
 
 broker_api.h 
 client_proxy_api.h 
@@ -42,24 +42,24 @@ value.h
 )
 
 
-set(nk_headers 
-  ${nk_public_headers}
+set(juiz_headers 
+  ${juiz_public_headers}
 )
 
 
-set(nk_hdrs)
-set(nk_public_hdrs)
+set(juiz_hdrs)
+set(juiz_public_hdrs)
 
-foreach(a IN ITEMS ${nk_headers})
-  set(nk_hdrs ${nk_hdrs} ${CMAKE_CURRENT_SOURCE_DIR}/${a})
+foreach(a IN ITEMS ${juiz_headers})
+  set(juiz_hdrs ${juiz_hdrs} ${CMAKE_CURRENT_SOURCE_DIR}/${a})
 endforeach()
 
-foreach(a IN ITEMS ${nk_public_headers})
-  set(nk_public_hdrs ${nk_public_hdrs} include/juiz/${a})
+foreach(a IN ITEMS ${juiz_public_headers})
+  set(juiz_public_hdrs ${juiz_public_hdrs} include/juiz/${a})
 endforeach()
 
-set(nk_public_hdrs_ ${nk_public_hdrs} PARENT_SCOPE)
-set(nk_hdrs_ ${nk_hdrs} ${nk_util_hdrs_} PARENT_SCOPE)
+set(juiz_public_hdrs_ ${juiz_public_hdrs} PARENT_SCOPE)
+set(juiz_hdrs_ ${juiz_hdrs} ${juiz_util_hdrs_} PARENT_SCOPE)
 
-set(nk_public_util_hdrs__ ${nk_public_util_hdrs_} PARENT_SCOPE)
-# set(nk_hdrs_ ${nk_hdrs} PARENT_SCOPE)
+set(juiz_public_util_hdrs__ ${juiz_public_util_hdrs_} PARENT_SCOPE)
+# set(juiz_hdrs_ ${juiz_hdrs} PARENT_SCOPE)

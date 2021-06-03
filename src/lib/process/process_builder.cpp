@@ -5,6 +5,8 @@
 #include "../connection/connection_builder.h"
 #include "../topic/topic_factory.h"
 
+#include "../pose/static_transformation_operation.h"
+
 using namespace juiz;
 /**
  * OperationFactoryの読み込み
@@ -21,6 +23,9 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
     auto opInfo = ObjectFactory::createOperation(store, oinfo);
     auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
   });
+
+  /// ここでコンテナ間の位置オフセット用Operationを登録
+  store.add<OperationFactoryAPI>(std::shared_ptr<OperationFactoryAPI>( static_cast<OperationFactoryAPI*>(static_transformation_operation()) ));
 
   logger::trace("ProcessBuilder::preloadOperations() exit");
 }
@@ -50,6 +55,32 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
         auto c = store.get<ContainerAPI>(Value::string(cInfo.at("fullName")));
         auto cop = c->operation(Value::string(opInfo.at("fullName")));
       });
+    }
+  });
+
+  config.at("containers").at("transformation").const_list_for_each([&store](auto tfInfo) {
+    if (Value::string(tfInfo["typeName"]) == "static") {
+      auto offset = toPose3D(tfInfo["offset"]);
+      auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
+      auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
+      auto fullName = "offset_" + from_c->fullName() + "_" + to_c->fullName();
+      auto tfOp = std::dynamic_pointer_cast<OperationAPI>(store.get<OperationFactoryAPI> ("static_transformation_operation")->create(fullName, {
+        {"defaultArgs", {
+          {"offset", tfInfo["offset"]}
+        }}
+      }));
+      store.add<OperationAPI>(tfOp);
+
+      const std::string connectionNameFrom = "tfcon_" + from_c->fullName() + "_" + fullName;
+      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
+      const std::string connectionNameTo = "tfcon_" + fullName + "_" + to_c->fullName();
+      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
+
+      /// TODO: 入力の名前とタイプを確認しないといけないよ
+      auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
+      auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
+    } else {
+      logger::error("ProcessBuilder::preloadContainers() failed. Invalid transformation typename (tfInfo={})", tfInfo);
     }
   });
 
@@ -306,7 +337,7 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<Cl
     });
 
     config.at("containers").at("precreate").const_list_for_each([&store, &broker](auto &conInfo) {
-      conInfo.at("operations").const_list_for_each([&conInfo, &store, &broker](auto &opInfo_) {
+      conInfo["operations"].const_list_for_each([&conInfo, &store, &broker](auto &opInfo_) {
         Value opInfo = opInfo_;
         auto fullNameValue = conInfo["fullName"];
         if (!conInfo["fullName"].isStringValue()) {

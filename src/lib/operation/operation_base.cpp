@@ -36,6 +36,7 @@ OperationBase::OperationBase(const std::string& className, const std::string& ty
   defaultArgs.const_object_for_each([this](const std::string& key, const Value& value) {
     inlets_.emplace_back(std::make_shared<OperationInletBase>(key, this, value));
   });
+  
 }
 
 OperationBase::~OperationBase() {}
