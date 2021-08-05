@@ -20,6 +20,7 @@ namespace juiz {
         }
     };
 
+
     inline bool operator==(const Time& x0, const Time& x1) {
         return x0.sec == x1.sec && x0.nsec == x1.nsec;
     }
@@ -209,64 +210,55 @@ namespace juiz {
             atan2(2.0 * (q1q2 + q0q3), q0q0 + q1q1 - q2q2 - q3q3)};
     }
 
+    inline Time toTime(const Value& v) {
+        return {Value::intValue(v["sec"]), Value::intValue(v["nsec"])};
+    }
 
+    inline Point3D toPoint3D(const Value& value) {
+        return {value["x"].doubleValue(), value["y"].doubleValue(), value["z"].doubleValue()};
+    }
 
-
-    inline TimedPose3D toTimedPose3D(const Value& value) {
-        return TimedPose3D{
-                    Time{Value::intValue(value["tm"]["sec"]), Value::intValue(value["tm"]["nsec"])},
-                    Pose3D{
-                        Point3D{
-                            value["pose"]["position"]["x"].doubleValue(),
-                            value["pose"]["position"]["y"].doubleValue(),
-                            value["pose"]["position"]["z"].doubleValue()
-                        },
-                        Orientation3D{
-                            value["pose"]["orientation"]["x"].doubleValue(),
-                            value["pose"]["orientation"]["y"].doubleValue(),
-                            value["pose"]["orientation"]["z"].doubleValue(),
-                            value["pose"]["orientation"]["w"].doubleValue()
-                        }
-                    }
-                };
+    inline Orientation3D toOrientation3D(const Value& value) {
+        return {value["x"].doubleValue(), value["y"].doubleValue(),
+                value["z"].doubleValue(), value["w"].doubleValue()};
     }
 
     inline Pose3D toPose3D(const Value& value) {
-        return Pose3D{
-                        Point3D{
-                            value["position"]["x"].doubleValue(),
-                            value["position"]["y"].doubleValue(),
-                            value["position"]["z"].doubleValue()
-                        },
-                        Orientation3D{
-                            value["orientation"]["x"].doubleValue(),
-                            value["orientation"]["y"].doubleValue(),
-                            value["orientation"]["z"].doubleValue(),
-                            value["orientation"]["w"].doubleValue()
-                        }
-                    
-                };
+        return {toPoint3D(value["position"]), toOrientation3D(value["orientation"])};
+    }
+
+    inline TimedPose3D toTimedPose3D(const Value& value) {
+        return {toTime(value["tm"]),
+                toPose3D(value["pose"])};
+    }
+
+    inline Value toValue(const Time& tm) {
+        return {{"sec", (int64_t)tm.sec},
+                {"nsec", (int64_t)tm.nsec}};
+    }
+
+    inline Value toValue(const Point3D& position) {
+        return {{"x", position.x},
+                {"y", position.y},
+                {"z", position.z}};
+    }
+    
+    inline Value toValue(const Orientation3D& orientation) {
+        return {{"x", orientation.x},
+                {"y", orientation.y},
+                {"z", orientation.z},
+                {"w", orientation.w}};
+    }
+
+    inline Value toValue(const Pose3D& pose) {
+        return {{"position", toValue(pose.position)},
+                {"orientation", toValue(pose.orientation)}};
     }
 
     inline Value toValue(const TimedPose3D& pose) {
         return {
-                {"tm", {
-                    {"sec", (int64_t)pose.tm.sec},
-                    {"nsec", (int64_t)pose.tm.nsec}
-                }},
-                {"pose", {
-                    {"position", {
-                        {"x", pose.pose.position.x},
-                        {"y", pose.pose.position.y},
-                        {"z", pose.pose.position.z}
-                    }},
-                    {"orientation", {
-                        {"x", pose.pose.orientation.x},
-                        {"y", pose.pose.orientation.y},
-                        {"z", pose.pose.orientation.z},
-                        {"w", pose.pose.orientation.w}
-                    }}
-                }}
+                {"tm", toValue(pose.tm)},
+                {"pose", toValue(pose.pose)}
             };
     }
     

@@ -84,12 +84,15 @@ namespace juiz {
         }
 
         void thread_routine() {
+            const auto id = this->thread_.get_id();
+            const auto h = std::hash<std::thread::id>{}(std::this_thread::get_id());
             while(!end_flag_) {
                 std::unique_lock<std::mutex> lock(threading_mutex_);
                 if (!task_queue_.empty()) {
                     {
                         std::unique_lock<std::mutex> task_lock(task_mutex_);
                         auto task = task_queue_.front();
+                        logger::trace("Container::thread_routine(id={}) is executing task.", (int32_t)h);
                         task();
                         task_notify_ = true;
                     }

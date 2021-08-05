@@ -67,6 +67,8 @@ namespace juiz::logger {
   
   NK_API format_type formatter(format_type&& fmt, const int32_t& arg);
 
+  NK_API format_type formatter(format_type&& fmt, const int64_t& arg);
+
   NK_API format_type formatter(format_type&& fmt, const double& arg);
 
   NK_API format_type formatter(format_type&& fmt, const std::string& arg);
@@ -112,6 +114,10 @@ namespace juiz::logger {
   inline std::string log(const LOG_LEVEL& severity, const char* fmt, const Args &... args) {
     if (!doLog(severity)) return doNotLog(formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
     return log(formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
+  }
+
+  inline std::string trace(const std::string& str) {
+    return log(LOG_TRACE, str.c_str());
   }
 
   template<typename... Args>
