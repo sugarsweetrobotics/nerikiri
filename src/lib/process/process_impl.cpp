@@ -22,19 +22,19 @@ using namespace juiz::logger;
 
 
 std::shared_ptr<ProcessAPI> juiz::process(const std::string& name) {
-  return std::make_shared<Process>(name);
+  return std::make_shared<ProcessImpl>(name);
 }
 
 std::shared_ptr<ProcessAPI> juiz::process(const int argc, const char** argv) {
-  return std::make_shared<Process>(argc, argv);
+  return std::make_shared<ProcessImpl>(argc, argv);
 }
 
 std::shared_ptr<ProcessAPI> juiz::process(const std::string& name, const Value& config) {
-  return std::make_shared<Process>(name, config);
+  return std::make_shared<ProcessImpl>(name, config);
 }
 
 std::shared_ptr<ProcessAPI> juiz::process(const std::string& name, const std::string& jsonStr) {
-  return std::make_shared<Process>(name, jsonStr);
+  return std::make_shared<ProcessImpl>(name, jsonStr);
 }
 
 
@@ -78,7 +78,7 @@ Value defaultProcessConfig({
   {"callbacks", Value::list()}
 });
 
-Process::Process(const std::string& name) : ProcessAPI("Process", "Process", name), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
+ProcessImpl::ProcessImpl(const std::string& name) : ProcessAPI("Process", "Process", name), store_(this), config_(defaultProcessConfig), started_(false), env_dictionary_(env_dictionary_default) {
   std::string fullpath = name;
   if (fullpath.find("/") != 0) {
     fullpath = juiz::getCwd() + "/" + fullpath;
@@ -104,7 +104,7 @@ Process::Process(const std::string& name) : ProcessAPI("Process", "Process", nam
   }
 }
 
-Process::Process(const int argc, const char** argv) : Process(argv[0]) {
+ProcessImpl::ProcessImpl(const int argc, const char** argv) : ProcessImpl(argv[0]) {
   ArgParser parser;
   parser.option<std::string>("-ll", "--loglevel", "Log Level", false, "INFO");
   auto options = parser.parse(argc, argv);
@@ -124,7 +124,7 @@ Process::Process(const int argc, const char** argv) : Process(argv[0]) {
   logger::info("ExecutableDirectory = {}", env_dictionary_["${ExecutableDirectory}"]);
 }
 
-Process::Process(const std::string& name, const Value& config) : Process(name) {
+ProcessImpl::ProcessImpl(const std::string& name, const Value& config) : ProcessImpl(name) {
   config_ = juiz::merge(config_, config);  
   _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
@@ -132,20 +132,20 @@ Process::Process(const std::string& name, const Value& config) : Process(name) {
   logger::info("ExecutableDirectory = {}", env_dictionary_["${ExecutableDirectory}"]);
 }
 
-Process::Process(const std::string& name, const std::string& jsonStr): Process(name) {
+ProcessImpl::ProcessImpl(const std::string& name, const std::string& jsonStr): ProcessImpl(name) {
   config_ = merge(config_, ProcessConfigParser::parseConfig(jsonStr));
   _setupLogger();
   logger::info("Process::Process(\"{}\")", name);
 }
 
-Process::~Process() {
+ProcessImpl::~ProcessImpl() {
   logger::trace("Process::~Process()");
   if (started_) {
     stop();
   }
 }
 
-void Process::_setupLogger() {
+void ProcessImpl::_setupLogger() {
   if (config_.hasKey("logger")) {
     auto loggerConf = config_.at("logger");
     if (loggerConf.hasKey("logLevel")) {
@@ -157,11 +157,10 @@ void Process::_setupLogger() {
       logger::setLogFileName(logfile_str);
     }
   }
-
   logger::initLogger();
 }
 
-void Process::parseConfigFile(const std::string& filepath) {
+void ProcessImpl::parseConfigFile(const std::string& filepath) {
   logger::trace("Process::parseConfigFile({}) entry", filepath);
 
   /// まず読み込んでみてロガーの設定を確認します
@@ -194,73 +193,7 @@ void Process::parseConfigFile(const std::string& filepath) {
   logger::trace("Process::parseConfigFile({}) exit", filepath);
 }
 
-/**
- * OperationFactoryの読み込み
- */
-void Process::_preloadOperations() {
-  logger::trace("Process::_preloadOperations() called.");
-  ProcessBuilder::preloadOperations(store_, config_, path_);
-  logger::trace("Process::_preloadOperations() exit.");
-}
-
-
-void Process::_preloadContainers() {
-  logger::trace("Process::_preloadContainers() called.");
-  ProcessBuilder::preloadContainers(store_, config_, env_dictionary_["${ProjectDirectory}"]);
-  logger::trace("Process::_preloadContainers() exit.");
-}
-
-void Process::_preloadFSMs() {
-  logger::trace("Process::_preloadFSMs() called.");
-  ProcessBuilder::preloadFSMs(store_, config_, path_);
-  logger::trace("Process::_preloadFSMs() exit.");
-}
-
-void Process::_preloadExecutionContexts() {
-  logger::trace("Process::_preloadExecutionContexts() called.");
-  ProcessBuilder::preloadExecutionContexts(store_, config_, path_);
-  logger::trace("Process::_preloadExecutionContexts() exit.");
-}
-
-void Process::_preStartFSMs() {
-  logger::trace("Process::_preStartFSMs() called.");
-  ProcessBuilder::preStartFSMs(store_, config_, path_);
-  logger::trace("Process::_preStartFSMs() exit.");
-}
-
-void Process::_preStartExecutionContexts() {
-  logger::trace("Process::_preStartExecutionContexts() called.");
-  ProcessBuilder::preStartExecutionContexts(store_, config_, path_);
-  logger::trace("Process::_preStartExecutionContexts() exit.");
-}
-
-void Process::_preloadBrokers() {
-  logger::trace("Process::_preloadBrokers() called.");
-  ProcessBuilder::preloadBrokers(store_, config_, path_);
-  logger::trace("Process::_preloadBrokers() exit.");
-}
-
-void Process::_preloadConnections() {
-  logger::trace("Process::_preloadConnections() called.");
-  ProcessBuilder::preloadConnections(store_, config_, path_);
-  logger::trace("Process::_preloadConnections() exit.");
-}
-
-
-void Process::_preloadTopics() {
-  logger::trace("Process::_preloadTopics() called.");
-  ProcessBuilder::preloadTopics(store_, coreBroker_, config_, path_);
-  logger::trace("Process::_preloadTopics() exit.");
-}
-
-void Process::_preloadCallbacksOnStarted() {
-  logger::trace("Process::_preloadCallbacksOnStarted() called.");
-  ProcessBuilder::preloadCallbacksOnStarted(store_, config_, path_);
-  logger::trace("Process::_preloadCallbacksOnStarted() called.");
-}
-
-
-Process& Process::addSystemEditor(SystemEditor_ptr&& se) {
+ProcessImpl& ProcessImpl::addSystemEditor(SystemEditor_ptr&& se) {
   logger::trace("Process::addSystemEditor() called");
   systemEditors_.emplace(se->name(), std::forward<SystemEditor_ptr>(se));
   logger::trace("Process::addSystemEditor() exit");
@@ -295,19 +228,21 @@ static std::future<bool> start_systemEditor(std::vector<std::shared_ptr<std::thr
   return ftr;
 }
 
-void Process::startAsync() {
+void ProcessImpl::startAsync() {
   logger::trace("Process::startAsync()");
 
   setObjectState("starting");
 
   if (on_starting_) on_starting_(this);
-  _preloadOperations();
-  _preloadContainers();
-  _preloadFSMs();
-  _preloadExecutionContexts();
-  _preloadBrokers();
-  _preStartFSMs();
-  _preStartExecutionContexts();
+  
+  ProcessBuilder::preloadOperations(store_, config_, path_);
+  ProcessBuilder::preloadContainers(store_, config_, env_dictionary_["${ProjectDirectory}"]);  
+  ProcessBuilder::preloadFSMs(store_, config_, path_);
+  ProcessBuilder::preloadExecutionContexts(store_, config_, path_);
+  ProcessBuilder::preloadBrokers(store_, config_, path_);
+  ProcessBuilder::preStartFSMs(store_, config_, path_);
+  ProcessBuilder::preStartExecutionContexts(store_, config_, path_);
+
   auto broker_futures = juiz::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store()->brokers(), [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, coreBroker_, brk);
 								 });
@@ -317,7 +252,8 @@ void Process::startAsync() {
 												return start_systemEditor(this->threads_, se); }
 											      );
 
-  for(auto& b : store_.brokers_) {
+  /// Check brokers are started.
+  for(auto& b : store_.brokers()) {
     while(true) {
       if (b->isNull()) break;
 
@@ -330,16 +266,15 @@ void Process::startAsync() {
 
   setObjectState("started");
   started_ = true;
-  _preloadConnections();
-  _preloadTopics();
-  _preloadCallbacksOnStarted();
+  
+  ProcessBuilder::preloadConnections(store_, config_, path_);
+  ProcessBuilder::preloadTopics(store_, coreBroker_, config_, path_);
+  ProcessBuilder::preloadCallbacksOnStarted(store_, config_, path_);
+
   if (on_started_) on_started_(this);
-
-
-  // system("open -a 'Google Chrome' http://localhost:8080/process/fullInfo");
 }
   
-int32_t Process::wait() {
+int32_t ProcessImpl::wait() {
   logger::trace("Process::wait()");
   if (!wait_for(SIGNAL_INT)) {
     logger::error("Process::start method try to wait for SIGNAL_INT, but can not.");
@@ -348,10 +283,10 @@ int32_t Process::wait() {
   return 0;
 }
 
-void Process::stop() {
+void ProcessImpl::stop() {
   logger::trace("Process::shutdown()");
   setObjectState("stopping");
-  juiz::foreach<std::shared_ptr<BrokerAPI> >(store_.brokers_, [this](auto& brk) {
+  juiz::foreach<std::shared_ptr<BrokerAPI> >(store_.brokers(), [this](auto& brk) {
 			      brk->shutdown(coreBroker_);
 			    });
   juiz::foreach<std::string, SystemEditor_ptr>(systemEditors_, [this](auto& name, auto& se) {
@@ -368,7 +303,7 @@ void Process::stop() {
 }
 
 
-int32_t Process::start() {
+int32_t ProcessImpl::start() {
   logger::trace("Process::start()");
   startAsync();
   if (wait() < 0) return -1;
@@ -377,7 +312,7 @@ int32_t Process::start() {
 }
 
 
-Value Process::getCallbacks() const {
+Value ProcessImpl::getCallbacks() const {
   logger::trace("Process::getCallbacks()");
   auto v = this->config_.at("callbacks");
   if (v.isError()) return Value({});
@@ -385,7 +320,7 @@ Value Process::getCallbacks() const {
 }
 
 
-Value Process::fullInfo() const {
+Value ProcessImpl::fullInfo() const {
   auto inf = info();
   inf["operations"] = functional::map<Value, std::shared_ptr<OperationAPI>>(store()->list<OperationAPI>(), [](auto op) { return op->fullInfo(); });
   inf["operationFactories"] = functional::map<Value, std::shared_ptr<OperationFactoryAPI>>(store()->list<OperationFactoryAPI>(), [](auto op) { return op->info(); });

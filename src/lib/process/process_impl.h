@@ -29,7 +29,7 @@ namespace juiz {
     
 
         virtual int32_t start() {
-
+          return 0;
         }
 
         virtual void startAsync() {
@@ -37,11 +37,11 @@ namespace juiz {
         }
 
         virtual int32_t wait() {
-
+          return 0;
         }
 
         virtual Value fullInfo() const {
-
+          return Object::fullInfo();
         }
 
         virtual void stop() {
@@ -49,7 +49,7 @@ namespace juiz {
         }
 
         virtual bool isRunning() {
-          
+          return false;
         }
         // virtual std::shared_ptr<BrokerProxyAPI> coreBroker() = 0;
 
@@ -83,9 +83,8 @@ namespace juiz {
   /**
    * プロセスクラス
    */
-  class NK_API Process : public ProcessAPI {
+  class NK_API ProcessImpl : public ProcessAPI {
   private:
-    static Process null;
    
     Value config_;
 
@@ -96,8 +95,8 @@ namespace juiz {
     std::vector<std::shared_ptr<std::thread>> threads_;
     bool started_;
     std::string path_;
-    std::function<void(Process*)> on_starting_;
-    std::function<void(Process*)> on_started_;
+    std::function<void(ProcessAPI*)> on_starting_;
+    std::function<void(ProcessAPI*)> on_started_;
 
     std::map<std::string, std::string> env_dictionary_;
   public:
@@ -105,30 +104,20 @@ namespace juiz {
      * コンストラクタ
      * @param name
      */
-    Process(const std::string& name);
+    ProcessImpl(const std::string& name);
 
-    Process(const int argc, const char** argv);
+    ProcessImpl(const int argc, const char** argv);
 
-    Process(const std::string& name, const Value& config);
+    ProcessImpl(const std::string& name, const Value& config);
 
-    Process(const std::string& name, const std::string& jsonStr);
+    ProcessImpl(const std::string& name, const std::string& jsonStr);
     /**
      * デストラクタ
      */
-    virtual ~Process();
+    virtual ~ProcessImpl();
 
     void parseConfigFile(const std::string& filepath);
   private:
-    void _preloadOperations();
-    void _preloadContainers();
-    void _preloadExecutionContexts();
-    void _preStartExecutionContexts();
-    void _preloadBrokers();
-    void _preloadConnections();
-    void _preloadCallbacksOnStarted();
-    void _preloadTopics();
-    void _preloadFSMs();
-    void _preStartFSMs();
 
     void _setupLogger();
   public:
@@ -144,7 +133,7 @@ namespace juiz {
 
   public:
 
-    Process& addSystemEditor(SystemEditor_ptr&& se);
+    ProcessImpl& addSystemEditor(SystemEditor_ptr&& se);
 
     virtual Value fullInfo() const override;
     
@@ -160,20 +149,6 @@ namespace juiz {
       store()->add<FactoryAPI>(f); return *this;
       return *this;
     }
-
-    /*
-    virtual ProcessAPI& loadOperationFactory(const std::shared_ptr<OperationFactoryAPI>& opf) override {
-      store()->add<OperationFactoryAPI>(opf); return *this;
-    }
-
-    virtual ProcessAPI& loadContainerFactory(const std::shared_ptr<ContainerFactoryAPI>& cf) override {
-      store()->add<ContainerFactoryAPI>(cf); return *this;
-    }
-
-    virtual ProcessAPI& loadContainerOperationFactory(const std::shared_ptr<ContainerOperationFactoryAPI>& copf) override {
-      store()->add<ContainerOperationFactoryAPI>(copf); return *this;
-    }
-    */
 
     virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) override {
       store()->addECFactory(ef); return *this;
@@ -200,9 +175,6 @@ namespace juiz {
         logger::error("ProcessImpl::addFollowerProcess() failed. proc is null");
         return *this;
       }
-
-
-
       return *this;
     }
 
@@ -211,11 +183,11 @@ namespace juiz {
     virtual bool isRunning() override { return started_; }
 
   public:
-    Process& setOnStarting(std::function<void(Process*)> f) {
+    ProcessAPI& setOnStarting(std::function<void(ProcessAPI*)> f) {
       on_starting_ = f;
       return *this;
     }
-    Process& setOnStarted(std::function<void(Process*)> f) {
+    ProcessAPI& setOnStarted(std::function<void(ProcessAPI*)> f) {
       on_started_ = f;
       return *this;
     }
