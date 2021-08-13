@@ -29,6 +29,8 @@ namespace juiz {
 
         static Value createExecutionContext(ProcessStore& store, const Value& value);
 
+        static Value createAnchor(ProcessStore& store, const Value& value);
+
         static Value createTopic(ProcessStore& store, const Value& topicInfo);
 
         static Value createFSM(ProcessStore& store, const Value& fsmInfo);

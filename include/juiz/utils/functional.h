@@ -78,6 +78,13 @@ namespace juiz {
     }
   }
 
+  template<typename V>
+  void foreach(std::vector<V>&& vec, std::function<void(V&)> func) {
+    for(auto& v : vec) {
+      func(v);
+    }
+  }
+
 
   template<typename V>
   std::vector<V> filter(std::vector<V>& vec, std::function<bool(V&)> func) {

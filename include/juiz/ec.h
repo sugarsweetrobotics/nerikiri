@@ -26,13 +26,7 @@ namespace juiz {
         virtual bool onStopping() override { return true; }
         virtual bool onStopped() override { return true; }
 
-        virtual bool svc() override; /* { 
-            logger::trace("ExecutionContextBase::svc() called");
-            for(auto c : svcOperation_->outlet()->connections()) {
-                c->inlet()->put({});
-            }
-            //return !svcOperation_->execute().isError(); 
-        } */
+        virtual bool svc() override; 
 
         virtual void setSvcOperation(const std::shared_ptr<OperationAPI>& op) override { svcOperation_ = op; }
     };

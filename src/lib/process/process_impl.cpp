@@ -16,6 +16,7 @@
 
 #include "../fsm/fsm_container.h"
 #include "../ec/ec_container.h"
+#include "../anchor/anchor_container.h"
 
 using namespace juiz;
 using namespace juiz::logger;
@@ -95,6 +96,7 @@ ProcessImpl::ProcessImpl(const std::string& name) : ProcessAPI("Process", "Proce
 
     setupFSMContainer(*this->store());
     setupECContainer(*this->store());
+    setupAnchorContainer(*this->store());
     setExecutablePath(getExecutablePath(name));
 
     env_dictionary_["${ExecutableDirectory}"] = path_.substr(0, path_.rfind('/'));
@@ -239,6 +241,7 @@ void ProcessImpl::startAsync() {
   ProcessBuilder::preloadContainers(store_, config_, env_dictionary_["${ProjectDirectory}"]);  
   ProcessBuilder::preloadFSMs(store_, config_, path_);
   ProcessBuilder::preloadExecutionContexts(store_, config_, path_);
+  ProcessBuilder::preloadAnchors(store_, config_, path_);
   ProcessBuilder::preloadBrokers(store_, config_, path_);
   ProcessBuilder::preStartFSMs(store_, config_, path_);
   ProcessBuilder::preStartExecutionContexts(store_, config_, path_);

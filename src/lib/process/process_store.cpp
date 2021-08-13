@@ -170,5 +170,5 @@ Value ProcessStore::addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy) {
 }
 
 Value ProcessStore::getCallbacks() const {
-  return ((Process*)process_)->getCallbacks();
+  return ((ProcessImpl*)process_)->getCallbacks();
 }

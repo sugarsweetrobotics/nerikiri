@@ -16,8 +16,8 @@ namespace juiz {
         std::shared_ptr<OperationAPI> getPoseOperation_;
         std::shared_ptr<OperationAPI> setPoseOperation_;
     public:
-        std::shared_ptr<OperationAPI> getPoseOperation() const { return getPoseOperation(); }
-        std::shared_ptr<OperationAPI> setPoseOperation() const { return setPoseOperation(); }
+        std::shared_ptr<OperationAPI> getPoseOperation() const { return getPoseOperation_; }
+        std::shared_ptr<OperationAPI> setPoseOperation() const { return setPoseOperation_; }
 
     public:
         ContainerAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}

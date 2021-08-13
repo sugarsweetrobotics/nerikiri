@@ -5,6 +5,7 @@
 
 #include "./fsm/fsm_container.h"
 #include "./ec/ec_container.h"
+#include "./anchor/anchor_container.h"
 
 
 using namespace juiz;
@@ -98,6 +99,16 @@ Value ObjectFactory::createExecutionContext(ProcessStore& store, const Value& va
   auto fullName = Value::string(value["fullName"]);
   // info["fullName"] = fullName;
   return juiz::createEC(store, fullName, value);
+  // return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
+}
+
+Value ObjectFactory::createAnchor(ProcessStore& store, const Value& value) {
+  logger::info("ObjectFactory::createAnchor({})", value);
+  // auto info = value;
+  //auto fullName = loadFullName(store.executionContexts(), value);
+  auto fullName = Value::string(value["fullName"]);
+  // info["fullName"] = fullName;
+  return juiz::createAnchor(store, fullName, value);
   // return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
 }
 

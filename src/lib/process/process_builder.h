@@ -15,6 +15,7 @@ namespace juiz {
         static void preloadOperations(ProcessStore& store, const Value& config, const std::string& path);
         static void preloadContainers(ProcessStore& store, const Value& config, const std::string& path);
         static void preloadExecutionContexts(ProcessStore& store, const Value& config, const std::string& path);
+        static void preloadAnchors(ProcessStore& store, const Value& config, const std::string& path);
         static void preloadFSMs(ProcessStore& store, const Value& config, const std::string& path);
 
         static void preStartFSMs(ProcessStore& store, const Value& config, const std::string& path);

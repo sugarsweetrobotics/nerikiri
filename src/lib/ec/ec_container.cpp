@@ -21,7 +21,7 @@ struct _ECContainerStruct {
 
 bool 
 juiz::setupECContainer(juiz::ProcessStore& store) {
-  store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>({
+    store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>({
 	    {"className", "ECContainer"}
 	  }))));
     
@@ -55,7 +55,7 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
                 }
             }
             
-            return arg;
+            return Value(s);
         }))
     ));
 
@@ -74,7 +74,7 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
     return true;
 }
 
-Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo) {
+Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo, const std::string& className) {
     logger::info("juiz::createEC({})", ecInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
     auto container = store.get<ContainerFactoryAPI>("_ECContainerStruct")->create(fullName);
@@ -88,7 +88,7 @@ Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Val
 
     auto defaultStateName = "stopped";
     c->ptr()->fullName = fullName;
-    c->setClassName("ExecutionContext");
+    c->setClassName(className);
     c->setTypeName(ecInfo["typeName"].stringValue());
     c->ptr()->currentState = defaultStateName;
 

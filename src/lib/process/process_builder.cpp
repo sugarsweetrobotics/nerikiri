@@ -125,23 +125,39 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
       //ec->bind(store.operation(Value::string(v.at("fullName"))));
     });
   });
-  /*
-  
-  config.at("ecs").at("precreate").const_list_for_each([&store](auto& value) {
-    ObjectFactory::createExecutionContext(store, value);
-  });
-
-  
-  */
-  logger::trace("Process::_preloadExecutionContexts() exit");
+  logger::trace("ProcessBuilder::_preloadExecutionContexts() exit");
 }
 
+
+void ProcessBuilder::preloadAnchors(ProcessStore& store, const Value& config, const std::string& path) {
+  logger::trace("ProcessBuilder::_preloadAnchors() entry");
+  config.at("anchors").const_list_for_each([&store, &config](auto& value) {
+    auto returnValue = ObjectFactory::createAnchor(store, value);
+    auto anchor = store.get<ContainerAPI>(Value::string(value["fullName"]));
+
+    auto tgt = value.at("target");
+    auto tgtCtn = store.get<ContainerAPI>(Value::string(tgt["fullName"]));
+    if (tgtCtn->isNull()) {
+      logger::error("ProcessBuilder::preloadAnchor failed. Loading Precreated COntainer named '{}' failed. Not found.", tgt["fullName"]);
+      return;
+    }
+    auto set_basepose_ope = tgtCtn->setPoseOperation();
+    auto activate_started_ope = anchor->operation("activate_state_started.ope");
+    if (activate_started_ope->isNull()) {
+      logger::error("ProcessBuilder::preloadExecutionContext failed. Loading Precreated EC's activation function named '{}' failed. Not found.", Value::string(tgt["fullName"]) + ":activate_state_started.ope");
+      return;
+    }
+    juiz::connect(coreBroker(store), tgtCtn->fullName() + "_bind_" + anchor->fullName(), 
+        set_basepose_ope->inlet("pose"), activate_started_ope->outlet(), {});
+  });
+  logger::trace("ProcessBuilder::_preloadAnchors() exit");
+}
 
 /**
  * 
  */
 void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("Process::_preStartFSMs() entry");
+  logger::trace("ProcessBuilder::_preStartFSMs() entry");
   config.at("fsms").at("bind").const_list_for_each([&store](const auto& bindInfo) {
      {
       auto fullName = Value::string(bindInfo["fullName"]);
@@ -235,7 +251,7 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
   //  logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
   //}
 
-  logger::trace("Process::_preStartFSMs() exit");
+  logger::trace("ProcessBuilder::_preStartFSMs() exit");
 }
 
 void ProcessBuilder::preStartExecutionContexts(ProcessStore& store, const Value& config, const std::string& path) {
@@ -289,7 +305,7 @@ Value ProcessBuilder::publishTopic(ProcessStore& store, const std::shared_ptr<Cl
 
 
 Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& opInfo, const std::string& argName, const Value& topicInfo) {
-  logger::trace("ProcessBuilder::subscribeTopic({}, {}, {})", opInfo, argName, topicInfo);
+  logger::trace("ProcessBuilder::subscribeTopic({}, {}, {}) called", opInfo, argName, topicInfo);
   
   auto op = store.get<OperationAPI>(Value::string(opInfo.at("fullName")));
   auto topicInfo2 = ObjectFactory::createTopic(store, topicInfo);
@@ -347,58 +363,6 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<Cl
         _parseOperationInfo(store, broker, opInfo);
       });
     });
-
-    /*
-    
-    config.at("containers").at("precreate").const_list_for_each([&store](auto &cInfo) {
-      cInfo.at("operations").const_list_for_each([&cInfo, &store](auto &opInfo) {
-        opInfo.at("publish").const_list_for_each([&cInfo, &opInfo, &store](auto &topicInfo) {
-          ConnectionBuilder::registerTopicPublisher(store, cInfo, opInfo, topicInfo);
-        });
-        opInfo.at("subscribe").const_list_for_each([](auto &topicInfo) {
-          
-        });
-      });
-    });
-
-    auto operationCallback = [&store](const Value& opInfo) -> void {
-      logger::trace("Process::_preloadTopics(): operationCallback for opInfo={}", opInfo);
-      getListValue(opInfo, "publish").const_list_for_each([&store, &opInfo](auto topicInfo) { 
-        ObjectFactory::createTopic(store, topicInfo);
-        //ConnectionBuilder::registerTopicPublisher(&store, opInfo, ObjectFactory::createTopic(store,
-        //  {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-      });
-      /*
-      opInfo.at("publish").const_list_for_each([this, &opInfo](auto v) {
-        ConnectionBuilder::registerTopicPublisher(store(), opInfo, ObjectFactory::createTopic(store_,
-         {{"fullName", v.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-      });
-      *
-      getObjectValue(opInfo, "subscribe").const_object_for_each([&opInfo](auto key, auto v) {
-        v.list_for_each([&opInfo, key](auto sv) {
-         // ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
-         //  {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-        });
-      });
-      /*
-      opInfo.at("subscribe").const_object_for_each([this, &opInfo](auto key, auto v) {
-        v.list_for_each([this, &opInfo, key](auto sv) {
-          ConnectionBuilder::registerTopicSubscriber(store(), opInfo, key, ObjectFactory::createTopic(store_,
-           {{"fullName", sv.stringValue()}, {"defaultArg", { {"data", {}} }}} ));
-        });
-      });
-      *
-    };
-    
-    
-    //store()->getOperationInfos().const_list_for_each(operationCallback);
-    //for(auto pc : store()->getContainers()) {
-    //  for(auto opInfo : pc->getOperationInfos()) {
-    //    operationCallback(opInfo);
-    //  }
-    //}
-    **/
-
   } catch (juiz::ValueTypeError& e) {
     logger::debug("ProcessBuilder::preloadTopics(). ValueTypeException:{}", e.what());
   } 

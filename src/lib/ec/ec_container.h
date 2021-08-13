@@ -14,5 +14,5 @@ namespace juiz {
     /**
      * 
      */
-    Value createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo);
+    Value createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo, const std::string& className="ExecutionContext");
 }

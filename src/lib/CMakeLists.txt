@@ -38,6 +38,10 @@ dllproxy.cpp
 ec/ec_api.cpp
 ec/ec_factory_api.cpp
 
+anchor/anchor_container.h
+anchor/anchor_container.cpp
+anchor/PeriodicAnchor.cpp
+
 ec/ec_container.h
 ec/ec_container.cpp
 
