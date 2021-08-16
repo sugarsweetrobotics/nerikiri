@@ -52,8 +52,10 @@ Value defaultProcessConfig({
   }},
   {"containers", {
     {"precreate", Value::list()},
-    {"preload", Value::list()}
+    {"preload", Value::list()},
+    {"transformation", Value::list()}
   }},
+  {"anchors", Value::list()},
   {"containerOperations", {
     {"precreate", Value::list()},
     {"preload", Value::list()}

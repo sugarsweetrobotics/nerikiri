@@ -423,6 +423,7 @@ namespace juiz {
       else if (isObjectValue()) {
         if (objectvalue_->size() != v2.objectvalue_->size()) return false;
         for(const auto& [k, v] : *objectvalue_) {
+          if (v2.objectvalue_->count(k) == 0) return false;
           if (v != (*v2.objectvalue_).at(k)) return false;
         }
         return true;

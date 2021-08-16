@@ -80,7 +80,7 @@ namespace juiz {
     Value info_;
 
   protected: 
-    void _setNull() { info_["typeName"] = "null"; }
+    void _setNull() { info_["typeName"] = "null"; this->fullName_ = "null"; }
 
   public:
 

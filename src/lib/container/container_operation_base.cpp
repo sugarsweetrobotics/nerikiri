@@ -32,7 +32,7 @@ public:
         setTypeName(juiz::naming::join(container->fullName(), _typeName));
         base_ = createOperation(juiz::naming::join(container->fullName(), _typeName), fullName(), defaultArgs_, 
            [this](auto value) {
-            return this->function_(value);
+                return this->function_(value);
         }, info_);
         return container_->info();
     }

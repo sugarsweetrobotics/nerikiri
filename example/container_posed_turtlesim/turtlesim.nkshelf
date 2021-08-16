@@ -1,0 +1,16 @@
+{
+
+    "load_paths": ["./"],
+
+    "operations": {
+        "load_paths": ["${ShelfDirectory}", "../build/lib/Debug"],
+        "preload": []
+    },
+
+    "containers": {
+      "load_paths": [ "${ShelfDirectory}", "../build/lib/Debug}", "build/lib", "lib" ],
+        "preload": {
+            "TurtleSim": ["spawn", "setVelocity", "update", "kill", "getPose", "odomTransform"]
+        }
+    }
+}

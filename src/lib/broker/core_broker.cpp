@@ -189,7 +189,11 @@ public:
   }
 
   virtual Value inlets(const std::string& fullName) const override {
-      return juiz::functional::map<Value, std::shared_ptr<InletAPI>>(process_->store()->get<OperationAPI>(fullName)->inlets(), [](auto il) {
+      auto op = process_->store()->get<OperationAPI>(fullName);
+      if (op->isNull()) {
+          return Value::error(logger::error("CoreOperationBroker::inlets({}) failed. Operation(fullName={}) not found", fullName, fullName));
+      }
+      return juiz::functional::map<Value, std::shared_ptr<InletAPI>>(op->inlets(), [](auto il) {
           return il->info();
       });
   }

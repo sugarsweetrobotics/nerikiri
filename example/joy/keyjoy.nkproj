@@ -9,6 +9,14 @@
 
     "operations": {
         "precreate": [
+            {
+                "typeName": "joy2turtlevel",
+                "fullName": "joy2turlevel0.ope",
+                "subscribe": {
+                    "data": "joy"
+                },
+                "publish": "vel"
+            }
         ]
     },
 
@@ -28,7 +36,8 @@
                     },
                     {
                         "typeName": "get",
-                        "instanceName": "get0.ope"
+                        "instanceName": "get0.ope",
+                        "publish": "joy"
                     }
                 ]
             }

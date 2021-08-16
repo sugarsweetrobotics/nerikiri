@@ -1,0 +1,116 @@
+{
+    "logger": { "logLevel": "INFO" },
+
+    "load_paths": ["./"],
+
+    "includes": [
+        {"path": "container_posed_turtlesim/turtlesim.nkproj"},
+        {"path": "joy/keyjoy.nkproj"}
+    ],
+
+    "shelves": [
+        {"path": "brokers.nkshelf"},
+        {"path": "ecs.nkshelf"}
+    ],
+
+    "brokers": {
+        "precreate": [ 
+          {
+            "typeName": "HTTPBroker",
+            "fullName": "HTTPBroker0.brk",
+            "host": "0.0.0.0",
+            "port": 8080,
+            "baseDir": "${ProjectDirectory}/../systemeditor",
+            "route": {
+                "/container_posed_turtlesim/(.*)": "${ProjectDirectory}container_posed_turtlesim/"
+            }
+            
+          }
+        ]
+    },
+
+    "ecs": {
+        "precreate": [
+          {
+            "typeName": "TimerEC",
+            "fullName": "TimerEC0.ec",
+            "rate": 10.0
+          }
+        ],
+        "bind": {
+            "TimerEC0.ec": [
+                {
+                    "fullName": "TurtleSim0.ctn:update0.ope",
+                    "broker": "CoreBroker"
+                },
+                {
+                    "fullName": "KeyboardJoy0.ctn:update0.ope",
+                    "broker": "CoreBroker"
+                }, 
+                {
+                    "fullName": "KeyboardJoy0.ctn:get0.ope",
+                    "broker": "CoreBroker"
+                }
+            ]
+        },
+        "start": ["TimerEC0.ec"]
+    },
+
+
+    "fsms": {
+
+        "precreate": [
+            {
+                "typeName": "GenericFSM",
+                "fullName": "FSM0.fsm",
+                "states" : [
+                    {
+                      "name": "stopped",
+                      "transit": ["running"]
+                    },
+                    { 
+                        "name": "running",
+                        "transit": ["stopped"]
+                    }
+                ],
+                "defaultState": "stopped"
+            }
+        ],
+
+        "bind": [
+            {
+                "fullName" : "FSM0.fsm",
+                "state" : "running",
+                "operations" : [
+                    {
+                        "fullName": "KeyboardJoy0.ctn:initialize0.ope",
+                        "argument": {}
+                    }
+                ],
+                "ecs" : [
+                    {
+                        "fullName": "TimerEC0.ec",
+                        "state": "started"
+                    }
+                ]
+            },
+            {
+                "fullName" : "FSM0.fsm",
+                "state": "stopped",
+                "ecs" : [
+                    {
+                        "fullName": "TimerEC0.ec",
+                        "state": "stopped"
+                    }
+                ]
+            }
+        ]        
+    },
+
+
+    "connections": [
+    ],
+
+    "callbacks": [
+    ]
+}  

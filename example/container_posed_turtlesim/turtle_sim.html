@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv=""X-UA-Compatible" content="IE=edge">
+    <meta name=""viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+
+    <!-- <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"/>
+    <script src="js/bootstrap.min.js"></script>
+    -->
+    <script type="text/javascript">
+
+        /// 指定されたURLからGETメソッドでjsonファイルを取得して
+        /// parseしてJavascriptのobjectを取得するメソッド
+        /// 失敗したら空のオブジェクトが還ります。
+        function requestObject(url, value){
+            var ret = {};
+            /// Promiseが使えない。Ubuntu14.04のFirefoxが対応していない
+            /// ラムダ式が使えない。Ubuntu14.04略
+            ret.then = function(func){
+                var request = new XMLHttpRequest();
+                request.open("PUT", url, true);
+                request.send(JSON.stringify(value));
+                request.onreadystatechange = function(){
+                    if(request.readyState == 4){
+                        if(request.status == 200){
+                            func(JSON.parse(request.responseText));
+                        } else {
+//            reject();
+                        }
+                    }
+                }
+            };
+            return ret;
+        };
+
+        /// 現在の位置姿勢取得
+        function requestPose(){
+            return requestObject('http://localhost:8080/process/containers/TurtleSim0.ctn/operations/getPose0.ope/', {name:"turtle0"});
+        };
+
+
+        function setVelocity(){
+            return requestObject('http://localhost:8080/process/containers/TurtleSim0.ctn/operations/setVelocity0.ope/', {name:"turtle0",vth:0.101000,vx:0.001000,vy:0.000001});
+        };
+
+        /// positionのデータを、mapInfoによってマップ上のピクセル単位の位置に変換
+        function pxPosition(mapInfo, position) {
+            return {'x': (-mapInfo.origin.position.x + position.x) / mapInfo.resolution,
+                'y': (-mapInfo.origin.position.y - position.y) / mapInfo.resolution};
+        };
+
+        /// グローバル変数
+        var currentPose = undefined;
+
+        var mapInfo = {
+            origin : { position: {x: -210, y: -210}},
+            resolution: 0.1
+        };
+
+        /// この関数がAnimationで周期的に呼ばれる
+        function main() {
+            //setVelocity().then(function(p){});
+            /// These parameters are modified for ah01's tests.
+            var robotSize = [20, 20];
+            var zoom = 1.;
+            var origin = [-1600, -1650];
+
+
+            /// 各種のデータを取得してグローバル変数に書き込む
+            requestPose().then(function(pose){
+                currentPose = pose;
+
+                /// マップの画像を書き込む
+                var canvas = document.getElementById('main_canvas');
+                var ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                /// 文字列を表示する
+                ctx.font = '24px';
+                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fillText("------------------ DEBUG ---------------------", 10, 650)
+                ctx.fillText("currentPose:" + JSON.stringify(currentPose), 10, 665);
+
+
+                /// ロボットの位置と姿勢をピクセル単位に修正
+                var robotPoseInPx = {'position': pxPosition(mapInfo, currentPose),
+                    'heading': currentPose.th };
+                //ctx.fillText(JSON.stringify(robotPoseInPx), 10, 110);
+
+                /// まず、ロボットの位置・姿勢の分だけContext2Dを移動・回転
+                ctx.translate((robotPoseInPx.position.x + origin[0])/zoom,
+                    (robotPoseInPx.position.y + origin[1])/zoom);
+                ctx.rotate(-robotPoseInPx.heading);
+
+                /// ロボットの本体を表示。白は本体。黄色はカメラ部分
+                //ctx.fillRect(-robotSize[0]/2, -robotSize[1]/2, robotSize[0], robotSize[1]);
+                drawTurtle(ctx, robotSize);
+
+
+                /// ロボットの位置・姿勢への回転を元に戻す
+                ctx.rotate(robotPoseInPx.heading);
+                ctx.translate(-(robotPoseInPx.position.x + origin[0])/zoom,
+                    -(robotPoseInPx.position.y + origin[1])/zoom);
+            });
+
+            /// 再度、アニメーションでmain関数を呼ぶ予約をする
+            window.requestAnimationFrame(main);
+        };
+
+        function drawTurtle(ctx, robotSize) {
+            ctx.fillStyle = '#ffca54';
+            ctx.beginPath();
+            ctx.ellipse(robotSize[0]*0.5, 0, robotSize[0]*0.3, robotSize[1]*0.2, 0, 0, 2*Math.PI);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(robotSize[0]*0.3, robotSize[0]*0.4, robotSize[0]*0.25, robotSize[1]*0.13, Math.PI/4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(robotSize[0]*0.3, -robotSize[0]*0.4, robotSize[0]*0.25, robotSize[1]*0.13, -Math.PI/4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(-robotSize[0]*0.3, -robotSize[0]*0.4, robotSize[0]*0.25, robotSize[1]*0.13, Math.PI/4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(-robotSize[0]*0.3, robotSize[0]*0.4, robotSize[0]*0.25, robotSize[1]*0.13, -Math.PI/4, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(-robotSize[0]*0.5, 0, robotSize[0]*0.4, robotSize[1]*0.15, 0, 0, 2*Math.PI);
+            ctx.fill();
+
+
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.ellipse(robotSize[0]*0.7, robotSize[1]*0.15, robotSize[0]*0.1, robotSize[1]*0.1, 0, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(robotSize[0]*0.7, -robotSize[1]*0.15, robotSize[0]*0.1, robotSize[1]*0.1, 0, 0, 2*Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = 'green';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, robotSize[0]*0.45, robotSize[1]*0.4, 0, 0, 2*Math.PI);
+            ctx.fill();
+        };
+
+        /// DOMのロードが終わった時の処理予約
+        window.addEventListener('DOMContentLoaded', function() {
+            window.requestAnimationFrame(main); // アニメーションの予約
+        });
+
+    </script>
+</head>
+<body>
+<div style="float:left;">
+    <canvas id="main_canvas" width="800px" height="800px" ></canvas>
+</div>
+</body>
+</html>

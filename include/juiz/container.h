@@ -192,18 +192,26 @@ namespace juiz {
 
         virtual Value call(const Value& value) override {
             // std::lock_guard<std::mutex> lock(cop_mutex_);
-            auto c = std::static_pointer_cast<Container<T>>(getOwner());
-            if (!c) {
-                logger::error("ContainerOperation::call failed. Invalid owner container pointer. Can not convert to {}. ", juiz::demangle(typeid(T).name()));
-            }
-            if (c->isUseThread()) {
-                Value v;
-                c->push_task(container_task([this, &v, &c, &value]() {
-                    v = this->function_(*(c->ptr()), value);
-                }));
-                return v;
-            } else {
-                return this->function_(*(c->ptr()), value);
+            try {
+                auto c = std::static_pointer_cast<Container<T>>(getOwner());
+                if (!c) {
+                    logger::error("ContainerOperation::call failed. Invalid owner container pointer. Can not convert to {}. ", juiz::demangle(typeid(T).name()));
+                }
+                if (c->isUseThread()) {
+                    Value v;
+                    c->push_task(container_task([this, &v, &c, &value]() {
+                        try {
+                        v = this->function_(*(c->ptr()), value);
+                        } catch (std::exception& ex) {
+                           logger::error("ContainerOperation(fullName={})::call() failed. Exception occurred in ContainerThread : {}", fullName(), std::string(ex.what()));
+                        }
+                    }));
+                    return v;
+                } else {
+                    return this->function_(*(c->ptr()), value);
+                }
+            } catch (std::exception& ex) {
+                return Value::error(logger::error("ContainerOperation(fullName={})::call() failed. Exception occurred {}", fullName(), std::string(ex.what())));
             }
         }
 

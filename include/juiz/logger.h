@@ -55,7 +55,7 @@ namespace juiz::logger {
 
   NK_API void setLogFileName(const std::string& fileName);
 
-  inline bool doLog(const LOG_LEVEL& lvl) {
+  inline bool isDoLog(const LOG_LEVEL& lvl) {
     return getLogLevel() <= lvl;
   }
 
@@ -87,12 +87,12 @@ namespace juiz::logger {
   //    return formatter(std::forward<format_type>(fmt), juiz::str(arg));
   //  }
 
-  NK_API std::string log(std::string&& fmt);
-  inline std::string doNotLog(std::string&& fmt) { return std::move(fmt); }
+  NK_API std::string log(const LOG_LEVEL& severity, std::string&& fmt);
+  inline std::string doNotLog(const LOG_LEVEL& severity, std::string&& fmt) { return std::move(fmt); }
 
   template<typename T, typename... Args>
-  inline std::string log(format_type&& fmt, const T& arg, const Args &... args) {
-    return log(formatter(std::forward<format_type>(fmt), arg), args...);
+  inline std::string log(const LOG_LEVEL& severity, format_type&& fmt, const T& arg, const Args &... args) {
+    return log(severity, formatter(std::forward<format_type>(fmt), arg), args...);
   }
  
   //template<typename... Args>
@@ -101,19 +101,19 @@ namespace juiz::logger {
   // }
 
   template<typename T, typename... Args>
-  inline std::string doNotLog(format_type&& fmt, const T& arg, const Args &... args) {
-    return doNotLog(formatter(std::forward<format_type>(fmt), arg), args...);
+  inline std::string doNotLog(const LOG_LEVEL& severity, format_type&& fmt, const T& arg, const Args &... args) {
+    return doNotLog(severity, formatter(std::forward<format_type>(fmt), arg), args...);
   }
 
   template<typename... Args>
-  inline std::string doNotLog(format_type&& fmt, const Value& arg, const Args &... args) {
-    return doNotLog(formatter(std::forward<format_type>(fmt), std::string("object::Value")), args...);
+  inline std::string doNotLog(const LOG_LEVEL& severity, format_type&& fmt, const Value& arg, const Args &... args) {
+    return doNotLog(severity, formatter(std::forward<format_type>(fmt), std::string("object::Value")), args...);
   }
     
   template<typename... Args>
   inline std::string log(const LOG_LEVEL& severity, const char* fmt, const Args &... args) {
-    if (!doLog(severity)) return doNotLog(formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
-    return log(formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
+    if (!isDoLog(severity)) return doNotLog(severity, formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
+    return log(severity, formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
   }
 
   inline std::string trace(const std::string& str) {

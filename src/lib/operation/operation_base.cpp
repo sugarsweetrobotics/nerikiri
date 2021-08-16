@@ -91,7 +91,7 @@ Value OperationBase::invoke() {
       logger::trace("OperationBase({})::invoke() not updated. Just output the outlet buffer.", fullName());
       return outlet_->get();
     }
-  } catch (const std::exception& ex) {
+  } catch (std::exception& ex) {
     return Value::error(logger::error("OperationBase({})::invoke() failed. Exception occurred {}", fullName(), std::string(ex.what())));
   }
   
@@ -101,7 +101,7 @@ Value OperationBase::execute() {
   logger::trace("OperationBase({})::execute() called", fullName());
   try {
     return outlet_->put(invoke());
-  } catch (const std::exception& ex) {
+  } catch (std::exception& ex) {
     return Value::error(logger::error("OperationBase({})::invoke() failed. Exception occurred {}", fullName(), std::string(ex.what())));
   }
 }

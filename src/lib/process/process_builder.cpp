@@ -33,6 +33,7 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
 
 void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("ProcessBuilder::preloadContainers(path={}) entry", path);
+  /// オブジェクト型のリストでの定義だった場合の読み込みルール
   config.at("containers").at("preload").const_list_for_each([&store, &config, &path](auto value) {
     ModuleLoader::loadContainerFactory(store, {"./", path}, {
       {"typeName", value.at("typeName")}, {"load_paths", config.at("containers").at("load_paths")}
@@ -44,6 +45,19 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
         });
       });
     }
+  });
+  /// よりシンプルな，単一オブジェクト内でのキー＆バリュー型の定義
+  /// キー：コンテナ名
+  /// バリュー：　リスト．Operationの名前のリスト
+  config.at("containers").at("preload").const_object_for_each([&store, &config, &path](auto key, auto value) {
+    ModuleLoader::loadContainerFactory(store, {"./", path}, {
+      {"typeName", key}, {"load_paths", config.at("containers").at("load_paths")}
+    });
+    value.const_list_for_each([&config, &store, &key, &path](auto& v) {
+      ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
+        {"typeName", v}, {"container_name", key}, {"load_paths", config["containers"]["load_paths"] }
+      });
+    });
   });
   
   config.at("containers").at("precreate").const_list_for_each([&store](auto info) {
@@ -59,7 +73,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
   });
 
   config.at("containers").at("transformation").const_list_for_each([&store](auto tfInfo) {
-    if (Value::string(tfInfo["typeName"]) == "static") {
+    if (tfInfo.hasKey("typeName") && Value::string(tfInfo["typeName"]) == "static") {
       auto offset = toPose3D(tfInfo["offset"]);
       auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
       auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
@@ -70,6 +84,20 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
         }}
       }));
       store.add<OperationAPI>(tfOp);
+
+      const std::string connectionNameFrom = "tfcon_" + from_c->fullName() + "_" + fullName;
+      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
+      const std::string connectionNameTo = "tfcon_" + fullName + "_" + to_c->fullName();
+      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
+
+      /// TODO: 入力の名前とタイプを確認しないといけないよ
+      auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
+      auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
+    } else if (tfInfo.hasKey("fullName")) {
+      auto fullName = Value::string(tfInfo["fullName"]);
+      auto tfOp = store.get<OperationAPI>(fullName);
+      auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
+      auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
 
       const std::string connectionNameFrom = "tfcon_" + from_c->fullName() + "_" + fullName;
       auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
@@ -315,12 +343,12 @@ Value ProcessBuilder::subscribeTopic(ProcessStore& store, const std::shared_ptr<
   return juiz::connect(broker, connectionName, op->inlet(argName), topic->outlet());
 }
 
+// ここでOperationの情報からTopicを作成する
 void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& opInfo) {
   logger::trace("{} _parseOperationInfo(info={}) called.", __FILE__, opInfo);
   if (opInfo["publish"].isStringValue()) {
     ProcessBuilder::publishTopic(store, broker, opInfo, {{"fullName", opInfo["publish"]}});
-  }
-  else {
+  } else {
     opInfo["publish"].const_list_for_each([&opInfo, &store, &broker](auto &topicInfo) {
       if (topicInfo.isStringValue()) {
         ProcessBuilder::publishTopic(store, broker, opInfo, {{"fullName", topicInfo}});
@@ -328,20 +356,21 @@ void _parseOperationInfo(ProcessStore& store, const std::shared_ptr<ClientProxyA
         ProcessBuilder::publishTopic(store, broker, opInfo, topicInfo);
       }
     });
-    opInfo["subscribe"].const_object_for_each([&opInfo, &store, &broker](auto& argName, auto &argInfo) {
-      if (argInfo.isStringValue()) {
-        ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, {{"fullName", argInfo}});
-      } else {
-        argInfo.const_list_for_each([&opInfo, &store, &broker, &argName](auto &topicInfo) {
-          if (topicInfo.isStringValue()) {
-            ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, {{"fullName", topicInfo}});
-          } else {
-            ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, topicInfo);
-          }
-        });
-      }
-    });
-  }
+  } 
+  opInfo["subscribe"].const_object_for_each([&opInfo, &store, &broker](auto& argName, auto &argInfo) {
+    if (argInfo.isStringValue()) {
+      ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, {{"fullName", argInfo}});
+    } else {
+      argInfo.const_list_for_each([&opInfo, &store, &broker, &argName](auto &topicInfo) {
+        if (topicInfo.isStringValue()) {
+          ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, {{"fullName", topicInfo}});
+        } else {
+          ProcessBuilder::subscribeTopic(store, broker, opInfo, argName, topicInfo);
+        }
+      });
+    }
+  });
+
 }
 
 void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<ClientProxyAPI>& broker, const Value& config, const std::string& path) {

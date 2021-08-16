@@ -19,7 +19,16 @@ std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const juiz::Value& va
         logger::trace("ProxyBuilder::operationProxy({}) ... Please check. Passed argument 'value' has no 'broker' key object.");
         return store->get<OperationAPI>(fullName);
     }
-    auto broker = store->brokerFactory(Value::string(value.at("broker").at("typeName")))->createProxy(value.at("broker"));
+    // std::string brokerTypeName;
+    if (value["broker"].hasKey("typeName")) {
+        brokerTypeName = Value::string(value["broker"]["typeName"]);
+    } else if(value["broker"].isStringValue()) {
+        brokerTypeName = Value::string(value["broker"]);
+    } else {
+        logger::error("ProxyBuilder::operationProxy() failed. Argument 'info' does not have valid broker information.");
+        return nullOperation();
+    }
+    auto broker = store->brokerFactory(brokerTypeName)->createProxy(value.at("broker"));
     if (broker->isNull()) {
         logger::error("ProxyBuilder::operationProxy() failed. Broker({}) can not be created.", value["broker"]);
         return nullOperation();

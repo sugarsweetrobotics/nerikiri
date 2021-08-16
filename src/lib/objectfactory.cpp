@@ -41,10 +41,13 @@ Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainer({}) called", (info));
   auto fullName = loadFullName(store.list<ContainerAPI>(), info);
-  logger::info("ObjectFactory is creating a Container({})", info);
+  logger::info("ObjectFactory is creating a Container(fullName={}, info={})", fullName, info);
   auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create<ContainerAPI>(fullName);
   auto v = store.add<ContainerAPI>(c);
-  if (v.isError()) return v;
+  if (v.isError()) {
+    logger::trace("ObjectFactory::createContainer({}) exit with error {}", (info), v);
+    return v;
+  }
   /*
   auto getterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
     {"fullName", "getBasePose.ope"},
@@ -55,6 +58,7 @@ Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
     {"typeName", "ContainerSetBasePose"}
   });
   */
+  logger::trace("ObjectFactory::createContainer({}) exit", (info));
   return v;
 }
 

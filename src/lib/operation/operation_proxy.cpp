@@ -198,6 +198,7 @@ public:
         fullName_(fullName), outlet_(std::make_shared<OperationOutletProxy>(this, broker, fullName)), inlets_ready_(false) {
         inletInfos_ = broker_->operation()->inlets(fullName_);
         if (inletInfos_.isError()) {
+            this->_setNull();
             return;
         }
         inlets_.clear();

@@ -34,7 +34,7 @@ public:
     }
 
     virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const override {
-        logger::error("NullOperation::{}() failed. Operation is null.", __func__);
+        logger::error("NullOperation::{}({}) failed. Operation is null.", __func__, name);
         return nullOperationInlet();
     }
 

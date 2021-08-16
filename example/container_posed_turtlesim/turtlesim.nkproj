@@ -1,0 +1,89 @@
+{
+    "logger": { "logLevel": "DEBUG" },
+
+    "load_paths": ["./"],
+
+    "shelves": [
+        {"path": "${SubProjectDirectory}/turtlesim.nkshelf"}
+    ],
+
+    "operations": {
+        "precreate": [
+        ]
+    },
+
+  "anchors": [
+    {
+      "fullName": "origin",
+      "typeName": "PeriodicAnchor",
+      "rate": 10,
+      "target": {
+        "fullName": "KeyboardJoy0.ctn"
+      },
+      "offset": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    }
+  ],
+
+    "containers": {
+        "precreate": [
+            {
+                "typeName": "TurtleSim",
+                "fullName": "TurtleSim0.ctn",
+                "operations": [
+                    {
+                        "typeName": "update",
+                        "instanceName": "update0.ope"
+                    },
+                    {
+                        "typeName": "spawn",
+                        "instanceName": "spawn0.ope"
+                    },
+                    {
+                        "typeName": "kill",
+                        "instanceName": "kill0.ope"
+                    },
+                    {
+                        "typeName": "setVelocity",
+                        "instanceName": "setVelocity0.ope",
+                        "subscribe": {
+                           "data": "vel"
+                        }
+                    },
+                    {
+                        "typeName": "getPose",
+                        "instanceName": "getPose0.ope"
+                    },
+                    {
+                        "typeName": "odomTransform",
+                        "instanceName": "odomTransform0.ope"
+                    }
+                ]
+            }
+        ], 
+        "transformation": [
+            {
+                "fullName": "TurtleSim0.ctn:odomTransform0.ope",
+                "from": {
+                    "fullName": "KeyboardJoy0.ctn"
+                },
+                "to": {
+                    "fullName": "TurtleSim0.ctn"
+                }
+            }
+        ]
+        
+    }
+
+}  

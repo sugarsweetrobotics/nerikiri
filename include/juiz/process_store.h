@@ -177,7 +177,46 @@ namespace juiz {
           }
         }
       }
+      logger::warn("ProcessStore::get<> failed. Searching object (fullName={}) but not found.", fullName);
       return nullObject<T>();
+    }
+
+
+    template<typename T>
+    bool has(const std::string& fullName) {
+      /// 最初が / だったら
+      if (fullName.length()==0) return false;
+      if (fullName.at(0) == '/') {
+        std::string fn = fullName.substr(1);
+        /// まだ / を含んでいるなら，最初の要素はドメイン．
+        if (fn.find('/') == std::string::npos) {
+          auto tokens = juiz::stringSplit(fn, '/');
+          if (tokens.size() != 2) { // / で分割して2つにならないということは，ドメインよりも多くの要素があって，現状は対応不可能
+            return false;
+          }
+          /// /で区切って２つになるパターン．最初の要素がドメイン．二つ目がfullNameだ
+          for(auto p : followerProxies_) {
+            if (p->domain() == tokens[0]) {
+              auto info = p->getProcessFullInfo();
+            }
+          }
+        } else {
+          /// / がなければローカルなObjectを指しているので返す
+          for(auto& e : list<T>()) { if (e->fullName() == fullName) return true; }
+          /// 見つからなければnullを返さなくてはならない．他のホストは検索しない
+          return false;
+        }
+      } else { /// この場合はfullNameだけで他のホストも全力で検索して最初に見つかったやつを返す
+
+        for(auto& e : list<T>()) { if (e->fullName() == fullName) return true; }
+        for(auto& f : followerProxies_) {
+          auto p = this->proxy<T>(fullName, f);
+          if (!p->isNull()) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     template<typename T>
@@ -198,7 +237,7 @@ namespace juiz {
     Value add(const std::shared_ptr<T>& obj) {
       logger::trace("ProcessStore::add<{}>(objInfo={}) called",  obj->className(), obj->info());
       /// 同じ名前がないか確認
-      if (!get<T>(obj->fullName())->isNull()) {
+      if (has<T>(obj->fullName())) {
         return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is already contained.", obj->className(), obj->fullName()));
       }
       if (obj->isNull()) {
