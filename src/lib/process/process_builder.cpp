@@ -177,6 +177,9 @@ void ProcessBuilder::preloadAnchors(ProcessStore& store, const Value& config, co
     }
     juiz::connect(coreBroker(store), tgtCtn->fullName() + "_bind_" + anchor->fullName(), 
         set_basepose_ope->inlet("pose"), activate_started_ope->outlet(), {});
+    if (Value::boolValue(value["autoStart"], false)) {
+      anchor->operation("activate_state_started.ope")->execute();
+    }
   });
   logger::trace("ProcessBuilder::_preloadAnchors() exit");
 }

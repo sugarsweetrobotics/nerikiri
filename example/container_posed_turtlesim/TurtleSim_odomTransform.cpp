@@ -45,8 +45,9 @@ extern "C" {
                         auto odom = Pose3D({(*it).x, (*it).y, 0.0}, 
                             juiz::EulerXYZToQuaternion({0, 0, (*it).th}));
                         auto timedPose = toTimedPose3D(arg["pose"]);
-                        auto output = dot(timedPose.pose, odom);
+                        auto output = dot(odom, timedPose.pose);
                         return toValue(TimedPose3D(timedPose.tm, output));
+                        //return toValue(TimedPose3D(timedPose.tm, odom));//TimedPose3D(timedPose.tm, output));
                     }
                 }
                 return Value::error("TurtleSim_getPose failed. Name (" + arg.at("name").stringValue() + ") can not be found.");
