@@ -18,6 +18,7 @@ OPTION(BUILD_JUIZ_TEST_FSM "FSM Test" ON)
 OPTION(BUILD_JUIZ_TEST_CONNECTION "Connection Test" ON)
 OPTION(BUILD_JUIZ_TEST_HTTPBROKER "HTTP Broker Test" ON)
 OPTION(BUILD_JUIZ_TEST_GEOMETRY "Geometry Test" ON)
+OPTION(BUILD_JUIZ_TEST_VALUE "Value Test" ON)
 
 set(EXAMPLE_LIBS juiz)
 
@@ -41,6 +42,10 @@ endif ()
 
 if (${BUILD_JUIZ_TEST_GEOMETRY})
   declare_test(geometry)
+endif ()
+
+if (${BUILD_JUIZ_TEST_VALUE})
+  declare_test(value)
 endif ()
 
 if (${BUILD_JUIZ_TEST_HTTPBROKER})
