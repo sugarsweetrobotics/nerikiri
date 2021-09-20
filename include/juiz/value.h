@@ -323,6 +323,12 @@ namespace juiz {
      
     Value& operator[](const std::string& key) {
       if (typecode_ == VALUE_TYPE_OBJECT) {
+        auto sep_pos = key.find(".");
+        if (sep_pos != std::string::npos) {
+          auto fst_key = key.substr(0, sep_pos);
+          auto snd_key = key.substr(sep_pos+1);
+          return (*objectvalue_)[fst_key][snd_key];
+        }
         return (*objectvalue_)[key];
       }
       _clear();
@@ -339,6 +345,14 @@ namespace juiz {
         return v;
       //  throw ValueTypeError("Value::operator[std::string] failed. Value is not Object type.");
       }
+
+        auto sep_pos = key.find(".");
+        if (sep_pos != std::string::npos) {
+          auto fst_key = key.substr(0, sep_pos);
+          auto snd_key = key.substr(0, sep_pos+1);
+          return (*objectvalue_)[fst_key][snd_key];
+        }
+
       return (*objectvalue_)[key];
     }
 
