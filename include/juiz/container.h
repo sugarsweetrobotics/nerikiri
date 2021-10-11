@@ -4,10 +4,12 @@
 #include <thread>
 
 #include <juiz/container_api.h>
+#include <juiz/model_data.h>
 #include <juiz/geometry.h>
 
 namespace juiz {
 
+    const std::string _default_model_data_str = "";
 
     // class ContainerOperationBase;
     class ContainerOperationFactoryBase;
@@ -62,6 +64,8 @@ namespace juiz {
         std::condition_variable task_condition_variable_;
         std::mutex task_mutex_;
         bool task_notify_;
+        
+        std::shared_ptr<ModelDataAPI> model_data_;
     public:
         void useThread(bool flag) { use_thread_ = flag; }
         bool isUseThread() const { return use_thread_; }
@@ -72,9 +76,14 @@ namespace juiz {
         
         virtual void setTypeName(const std::string& typeName) override { base_->setTypeName(typeName); }
         virtual void setClassName(const std::string& className) override { base_->setClassName(className); }
+
+        virtual void setModelDataPath(const std::string& path) { model_data_ = modelDataFromPath(path); }
+        virtual void setModelDataString(const std::string& str) { model_data_ = modelDataFromString(str); }
+        virtual std::shared_ptr<ModelDataAPI> getModelData() const { return model_data_; }
+
     public:
         Container(const ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
-          ,_ptr(std::make_shared<T>()), end_flag_(false), use_thread_(false), threading_notify_(false), task_notify_(false), thread_([this]() { this->thread_routine(); })
+          ,_ptr(std::make_shared<T>()), end_flag_(false), use_thread_(false), threading_notify_(false), task_notify_(false), thread_([this]() { this->thread_routine(); }), model_data_(nullptr)
         {}
         virtual ~Container() {
             end_flag_ = true;
