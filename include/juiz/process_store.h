@@ -29,7 +29,22 @@ namespace juiz {
 
   std::shared_ptr<OperationAPI> operationProxy(const std::shared_ptr<ClientProxyAPI>& proxy, const std::string& fullName);
 
-  class NK_API ProcessStore {
+
+  class NK_API ProcessStoreAPI {
+  private:
+
+    const std::string& name_;
+
+  public:
+    std::string name() const { return name_; }
+  public:
+    ProcessStoreAPI(const std::string& name) : name_(name) {}
+    virtual ~ProcessStoreAPI() {};
+
+  };
+
+
+  class NK_API ProcessStore : public ProcessStoreAPI {
   private:
     ProcessAPI* process_;
 
@@ -50,12 +65,23 @@ namespace juiz {
 
     std::vector<std::shared_ptr<ClientProxyAPI>> followerProxies_;
 
+    std::vector<std::shared_ptr<ProcessStore>> childStores_;
+    std::vector<std::shared_ptr<ProcessStore>> pluginStores_;
+  
     friend class ProcessAPI;
     friend class Process;
   public:
-    ProcessStore(ProcessAPI* process) : process_(process) {}
+    /**
+     * コンストラクタ
+     * 
+     * 名前はデフォルトの"store"になります
+     */
+    ProcessStore(ProcessAPI* process) : ProcessStoreAPI("store"), process_(process) {}
 
-    ~ProcessStore() {
+
+    ProcessStore(ProcessAPI* process, const std::string& name) : ProcessStoreAPI(name), process_(process) {}
+
+    virtual ~ProcessStore() {
       /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
 
       executionContextFactories_.clear();
