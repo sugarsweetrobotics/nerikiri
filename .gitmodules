@@ -19,3 +19,6 @@
 [submodule "example/joy/libaqua2"]
 	path = example/joy/libaqua2
 	url = https://github.com/sugarsweetrobotics/libaqua2
+[submodule "thirdparty/yaml-cpp"]
+	path = thirdparty/yaml-cpp
+	url = https://github.com/sugarsweetrobotics/yaml-cpp.git
