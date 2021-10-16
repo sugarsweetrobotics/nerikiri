@@ -6,6 +6,7 @@ set(juiz_public_util_headers
   os.h 
   signal.h 
   stringutil.h 
+  yaml.h
 )
 
 

@@ -1,6 +1,5 @@
 set(juiz_base_srcs 
 
-base64.c
 
 pose/static_transformation_operation.cpp
 
@@ -60,7 +59,8 @@ fsm/fsm_container.cpp
 #fsm/fsm_proxy.cpp
 #fsm/fsm_factory_api.cpp
 
-json.cpp 
+utils/json.cpp 
+utils/base64.c
 logger.cpp 
 naming.cpp
 
