@@ -86,8 +86,8 @@ juiz::Value juiz::json::toValue(std::FILE* fp) {
         throw JSONParseError();
     } 
     return construct(doc);
-
 }
+
 std::string juiz::json::toJSONString(const juiz::Value& value) {
     if (value.isBoolValue()) return std::to_string(value.boolValue());
     if (value.isIntValue()) return std::to_string(value.intValue());

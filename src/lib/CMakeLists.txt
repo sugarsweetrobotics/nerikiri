@@ -61,6 +61,7 @@ fsm/fsm_container.cpp
 
 utils/json.cpp 
 utils/base64.c
+utils/yaml.cpp
 logger.cpp 
 naming.cpp
 
@@ -109,7 +110,9 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/cpp-httplib)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/rapidjson/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/spdlog/include)
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/webi/include)
-set(NK_BASE_LIBS )
+include_directories(${CMAKE_SOURCE_DIR}/thirdparty/yaml-cpp/include)
+include_directories(${CMAKE_BINARY_DIR}/thirdparty/yaml-cpp/include)
+set(NK_BASE_LIBS yaml-cpp)
 
 add_library(juiz SHARED ${juiz_srcs} ${juiz_headers})
 target_link_libraries(juiz ${NK_BASE_LIBS})

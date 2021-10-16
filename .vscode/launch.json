@@ -188,6 +188,15 @@
 
         },
         {
+            "name": "Debug yaml_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/yaml_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
             "name": "Debug turtle_sim_teleop",
             "type": "lldb",
             "request": "launch",

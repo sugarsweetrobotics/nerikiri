@@ -19,6 +19,7 @@ OPTION(BUILD_JUIZ_TEST_CONNECTION "Connection Test" ON)
 OPTION(BUILD_JUIZ_TEST_HTTPBROKER "HTTP Broker Test" ON)
 OPTION(BUILD_JUIZ_TEST_GEOMETRY "Geometry Test" ON)
 OPTION(BUILD_JUIZ_TEST_VALUE "Value Test" ON)
+OPTION(BUILD_JUIZ_TEST_YAML "YAML Value Test" ON)
 
 set(EXAMPLE_LIBS juiz)
 
@@ -81,5 +82,9 @@ if (${BUILD_JUIZ_TEST_OPTION})
   declare_test(option)
 endif ()
 
+
+if (${BUILD_JUIZ_TEST_YAML})
+  declare_test(yaml)
+endif ()
 
 endif (BUILD_JUIZ_TEST)

@@ -36,6 +36,14 @@ namespace juiz {
         return buf;
     }
 
+    inline std::string stringJoin(const std::vector<std::string>& strs) {
+        std::string buf;
+        for(int i = 0;i < strs.size();i++) {
+            buf += strs[i];
+        }
+        return buf;
+    }
+
     inline std::string stringJoin(std::vector<std::string>::iterator starts, const std::vector<std::string>::const_iterator& ends, const char sep) {
         std::string buf;
         while(true) {
