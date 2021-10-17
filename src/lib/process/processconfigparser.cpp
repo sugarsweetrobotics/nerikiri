@@ -1,16 +1,28 @@
+#include <filesystem>
 
-
+#include <juiz/utils/yaml.h>
 #include "processconfigparser.h"
 
+
 using namespace juiz;
+namespace fs = std::filesystem;
 
 Value ProcessConfigParser::parseProjectFile(const std::string& projectFilePath) {
     logger::trace("ProcessConfigParser::parseProjectFile({})", projectFilePath);
-    auto fp = fopen(projectFilePath.c_str(), "r");
-    if (fp == nullptr) {
-        logger::warn("ProcessConfigParser::parseConfig failed. Can not open file.  File path is {}.", projectFilePath);
-        return Value({});
+    Value config;
+    if (fs::path(projectFilePath).extension() == ".nkproj") {
+        // 拡張子が.nkprojであればjsonを仮定
+        auto fp = fopen(projectFilePath.c_str(), "r");
+        if (fp == nullptr) {
+            logger::warn("ProcessConfigParser::parseConfig failed. Can not open file.  File path is {}.", projectFilePath);
+            return Value({});
+        }
+        config = juiz::json::toValue(fp);
+    } else {
+        std::ifstream ifs(projectFilePath);
+        config = juiz::yaml::toValue(ifs);
     }
+    
     auto projectDir = projectFilePath.substr(0, projectFilePath.rfind("/")+1);
     if (projectFilePath.at(0) != '/') {
         /// 絶対パス指定ではなかった
@@ -23,7 +35,7 @@ Value ProcessConfigParser::parseProjectFile(const std::string& projectFilePath) 
     
     //auto v = juiz::json::toValue(fp);
 
-    auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
+    auto v = replaceAndCopy(config, env_dictionary);
     v["projectDir"] = projectDir;
     v["projectFilePath"] = projectFilePath;
     logger::trace(" - parsing sub projects....");
