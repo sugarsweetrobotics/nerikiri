@@ -229,7 +229,7 @@ juiz::Value juiz::yaml::toValue(const std::string& yaml_str) {
     return construct(node);
 }
 
-juiz::Value juiz::yaml::toValue(std::istream& ifs) {
+juiz::Value juiz::yaml::toValue(std::ifstream& ifs) {
     YAML::Node node = YAML::Load(ifs);
     if (!node) {
         logger::error("YAMLParseError - filestream");
