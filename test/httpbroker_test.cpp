@@ -65,8 +65,8 @@ SCENARIO( "Broker test", "[broker]" ) {
 
     auto p = juiz::process("httpbroker_test", jsonStr);
 
-    p->loadOperationFactory(opf1);
-    p->loadOperationFactory(opf2);
+    p->load(opf1);
+    p->load(opf2);
     p->loadECFactory(ecf1);
 
     p->startAsync();

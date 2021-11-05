@@ -8,6 +8,7 @@ include_directories(${CMAKE_SOURCE_DIR}/thirdparty/Catch2/src)
 
 OPTION(BUILD_JUIZ_TEST_HTTP "Http Server Client Test" OFF)
 OPTION(BUILD_JUIZ_TEST_HTTPBROKER "HttpBroker Test" OFF)
+OPTION(BUILD_JUIZ_TEST_WEBSOCKETBROKER "WebSocketBroker Test" OFF)
 OPTION(BUILD_JUIZ_TEST_OPTION "Option Parser Test" OFF)
 OPTION(BUILD_JUIZ_TEST_TOPIC "Topic Test" ON)
 OPTION(BUILD_JUIZ_TEST_PROCESS "Process Test" OFF)
@@ -53,6 +54,9 @@ if (${BUILD_JUIZ_TEST_HTTPBROKER})
   declare_test(httpbroker)
 endif ()
 
+if (${BUILD_JUIZ_TEST_WEBSOCKETBROKER})
+  declare_test(wsbroker)
+endif ()
 
 if (${BUILD_JUIZ_TEST_PROCESS})
   declare_test(process)

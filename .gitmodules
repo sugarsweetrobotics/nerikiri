@@ -22,3 +22,6 @@
 [submodule "thirdparty/yaml-cpp"]
 	path = thirdparty/yaml-cpp
 	url = https://github.com/sugarsweetrobotics/yaml-cpp.git
+[submodule "src/brokers/ws/IXWebSocket"]
+	path = src/brokers/ws/IXWebSocket
+	url = git@github.com:machinezone/IXWebSocket.git
