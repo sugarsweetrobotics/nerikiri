@@ -61,19 +61,19 @@ public:
 
   juiz::ws::Response toResponse(const Value& value) const {
     try {
-        return juiz::ws::Response(200, juiz::json::toJSONString(value), "application/json");
+        return juiz::ws::Response(200, value, "application/json_hoge");
     } catch (juiz::json::JSONParseError& e) {
         logger::error("JSON Parse Error in HTTPBroker::response(): \"{}\"", e.what());
-        return juiz::ws::Response(400, "Bad Request", "text/html");
+        return juiz::ws::Response(400, Value::error("Bad Request"), "text/html");
     } catch (juiz::json::JSONConstructError& e) {
         logger::error("JSON Construct Error in HTTPBroker::response(): \"{}\"", e.what());
-        return juiz::ws::Response(400, e.what(), "text/html");
+        return juiz::ws::Response(400, Value::error(e.what()), "text/html");
     } catch (juiz::ValueTypeError &e) {
         logger::error("ValueTypeError in HTTPBroker::response(): \"{}\"", e.what());
-        return juiz::ws::Response(400, e.what(), "text/html");
+        return juiz::ws::Response(400, Value::error(e.what()), "text/html");
     } catch (std::exception &e) {
         logger::error("Exception in HTTPBroker::response(): \"{}\"", e.what());
-        return juiz::ws::Response(400, e.what(), "text/html");
+        return juiz::ws::Response(400, Value::error(e.what()), "text/html");
     }
   }
 
@@ -126,23 +126,23 @@ public:
     const std::string endpoint = "/" + endpoint_ + "/(.*)";
 
     server_->response(endpoint, "GET", "text/html", [this, coreBroker](const juiz::ws::Request& req) -> juiz::ws::Response {
-      logger::trace("WSBroker::Response(method='GET', url='{}')", req.matches[1]);
-      return toResponse(onRead(coreBroker, req.matches[1], headerParam(req), this->hostInfo(req)));
+      logger::trace("WSBroker::Response(method='GET', url='{}')", req.path);
+      return toResponse(onRead(coreBroker, req.path, headerParam(req), this->hostInfo(req)));
     });
 
     server_->response(endpoint, "POST", "text/html", [this, coreBroker](const juiz::ws::Request& req) -> juiz::ws::Response {
-      logger::trace("WSBroker::Response(method='POST', url='{}')", req.matches[1]);
-      return toResponse(onCreate(coreBroker, req.matches[1], toValue(req.body)));
+      logger::trace("WSBroker::Response(method='POST', url='{}')", req.path);
+      return toResponse(onCreate(coreBroker, req.path, req.body));
     });
 
     server_->response(endpoint, "DELETE", "text/html", [this, coreBroker](const juiz::ws::Request& req) -> juiz::ws::Response {
-      logger::trace("WSBroker::Response(method='DELETE', url='{}')", req.matches[1]);
-      return toResponse(onDelete(coreBroker, req.matches[1]));
+      logger::trace("WSBroker::Response(method='DELETE', url='{}')", req.path);
+      return toResponse(onDelete(coreBroker, req.path));
     });
 
     server_->response(endpoint, "PUT", "text/html", [this, &coreBroker](const juiz::ws::Request& req) -> juiz::ws::Response {
-      logger::trace("WSBroker::Response(method='PUT', url='{}')", req.matches[1]);
-      return toResponse(onUpdate(coreBroker, req.matches[1], toValue(req.body)));
+      logger::trace("WSBroker::Response(method='PUT', url='{}')", req.path);
+      return toResponse(onUpdate(coreBroker, req.path, req.body));
     });
 
 
@@ -224,6 +224,6 @@ std::shared_ptr<BrokerAPI> WebSocketBrokerFactory::create(const Value& value) {
 }
 
 
-void* createWebSocketBroker() {
+void* createWSBroker() {
     return new WebSocketBrokerFactory("wsBroker");
 }

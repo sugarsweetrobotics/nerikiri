@@ -1,18 +1,20 @@
 #include <iostream>
-
 #include "ws_server.h"
-
 #include <ixwebsocket/IXWebSocketServer.h>
 
+#include "juiz/utils/json.h"
 #include "ws_converter_ixwebsocket.h"
 
 using namespace juiz;
 using namespace juiz::ws;
 
+using callback_type = std::function<juiz::ws::Response(const juiz::ws::Request&)>;
+
 class WSServerImpl : public WSServer {
 private:
   std::unique_ptr<ix::WebSocketServer> server_;
   std::unique_ptr<std::thread> thread_;
+  std::map<std::string, callback_type> callbacks_;
 public:
   WSServerImpl();
   virtual ~WSServerImpl();
@@ -52,7 +54,7 @@ void WSServerImpl::baseDirectory(const std::string& path) {
 }
 
 void WSServerImpl::response(const std::string& path, const std::string& method, const std::string& contentType, std::function<juiz::ws::Response(const juiz::ws::Request&)> callback) {
-  
+  callbacks_[method] = callback;
   /*
   if (method == "GET") {
     server_.Get(path.c_str(), [callback, contentType](const httplib::Request& req, httplib::Response& res) {
@@ -80,7 +82,51 @@ void WSServerImpl::response(const std::string& path, const std::string& method, 
 
 void WSServerImpl::runForever(const int32_t port /*=8080*/) {
   server_ = std::make_unique<ix::WebSocketServer>(port);
-  server_->listen();
+
+  // Setup a callback to be fired when a message or an event (open, close, error) is received
+  server_->setOnClientMessageCallback( [this](std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket & webSocket, const ix::WebSocketMessagePtr & msg) {
+    // std::cout << "Remote ip: " << connectionState->getRemoteIp() << std::endl;
+    if (msg->type == ix::WebSocketMessageType::Open) {
+      // std::cerr << "New connection from client" << std::endl;
+      
+      // A connection state object is available, and has a default id
+      // You can subclass ConnectionState and pass an alternate factory
+      // to override it. It is useful if you want to store custom
+      // attributes per connection (authenticated bool flag, attributes, etc...)
+      // std::cerr << "id: " << connectionState->getId() << std::endl;
+      
+      // The uri the client did connect to.
+      // std::cerr << "Uri: " << msg->openInfo.uri << std::endl;
+      
+      // std::cerr << "Headers:" << std::endl;
+      for (auto it : msg->openInfo.headers) {
+        // std::cerr << it.first << ": " << it.second << std::endl;
+      } 
+    }
+
+    if (msg->type == ix::WebSocketMessageType::Message) {
+      std::cout << msg->str << std::endl;
+      const auto request = apply(msg);
+      //std::cout << request["method"].stringValue() << std::endl;
+      webSocket.send(apply(callbacks_[request.method](std::move(request))));
+    }
+  });
+
+      
+
+
+
+  auto res =server_->listen();
+
+if (!res.first)
+{
+    std::cout << "ERROR:" << res.second << std::endl;
+    // Error handling
+    return ;
+}
+
+  server_->disablePerMessageDeflate();
+
   server_->start();
   server_->wait();
 }

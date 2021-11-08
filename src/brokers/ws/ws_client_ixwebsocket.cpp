@@ -21,6 +21,7 @@ class WebSocketClientImpl : public juiz::ws::WebSocketClient {
 private:
   ix::WebSocket webSocket;
   uint64_t message_counter_;
+  int32_t connection_timeout_sec_;
 
   // "ステート"変数＋ミューテックスmtx＋条件変数cv
   int state;  // 注: 変数型やその個数は目的による
@@ -32,7 +33,7 @@ private:
 public:
   WebSocketClientImpl(const std::string& addr, const int port) : message_counter_(0), is_message_received_(false) {
     std::stringstream ss;
-    ss << addr << ":" << port;
+    ss << "ws://" << addr << ":" << port << "/";
     webSocket.setUrl(ss.str());
 
     // Optional heart beat, sent every 45 seconds when there is not any traffic
@@ -43,18 +44,39 @@ public:
     webSocket.disablePerMessageDeflate();
 
     webSocket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
-        if (msg->type == ix::WebSocketMessageType::Message) {
-          this->message_buffer_ = msg->str;
-          this->is_message_received_ = true;
-        }
+      if (msg->type == ix::WebSocketMessageType::Open) {
+        // std::cerr << "New connection to Server" << std::endl;
+        
+        
+        // The uri the client did connect to.
+        // std::cerr << "Uri: " << msg->openInfo.uri << std::endl;
+        
+        // std::cerr << "Headers:" << std::endl;
+        for (auto it : msg->openInfo.headers) {
+          // std::cerr << it.first << ": " << it.second << std::endl;
+        } 
+        cv.notify_all();
       }
-    );
+      
+      if (msg->type == ix::WebSocketMessageType::Message) {
+        this->message_buffer_ = msg->str;
+        this->is_message_received_ = true;
+        cv.notify_all();
+      }
+    });
+    webSocket.start();
+    std::unique_lock<std::mutex> lk(mtx);
+    cv.wait(lk);
+    std::cout << "start websocket" << std::endl;
+  
 
   }
 
   bool isMessageReceived() const { return is_message_received_; }
 
-  virtual ~WebSocketClientImpl() {}
+  virtual ~WebSocketClientImpl() {
+    webSocket.stop();
+  }
 public:
   virtual void setTimeout(double sec) {
     double to_sec = floor(sec);
@@ -67,7 +89,9 @@ public:
   virtual juiz::ws::Response request(const std::string& url, const std::string& method) {
     if (method == "GET" || method == "POST" || method == "PUT" || method == "DELETE") {
       std::stringstream ss;
-      ss << "{\"url\":\"" << url << "\",\"method\":\"" << method << "\",\"id\":" << message_counter_ << "}";
+      //url.substr(5)
+      is_message_received_ = false;
+      ss << "{\"url\":\"" << url.substr(10) << "\",\"method\":\"" << method << "\",\"id\":" << message_counter_ << "}";
       webSocket.send(ss.str());
       std::unique_lock<std::mutex> lk(mtx);
       cv.wait(lk, [this]{ return this->isMessageReceived(); });
@@ -82,7 +106,9 @@ public:
         return request(url, method);
       } else if (method == "POST" || method == "PUT") {
         std::stringstream ss;
-        ss << "{\"url\":\"" << url << "\",\"method\":\"" << method << "\",\"id\":" << message_counter_ << ",\"body\":\"" << req.body << "\"}";
+
+        is_message_received_ = false;
+        ss << "{\"url\":\"" << url.substr(10) << "\",\"method\":\"" << method << "\",\"id\":" << message_counter_ << ",\"body\":" << juiz::json::toJSONString(req.body) << "}";
         webSocket.send(ss.str());
         std::unique_lock<std::mutex> lk(mtx);
         cv.wait(lk, [this]{ return this->isMessageReceived(); });

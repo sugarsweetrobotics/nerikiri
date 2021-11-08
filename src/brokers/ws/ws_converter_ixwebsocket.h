@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "juiz/value.h"
-
+#include "ixwebsocket/IXWebSocketMessage.h"
 
 namespace juiz {
 
@@ -41,13 +41,28 @@ namespace juiz {
   }
   */
   inline juiz::ws::Response convert(juiz::Value&& response) {
-    if (!response.hasKey("status")) {
-      return juiz::ws::Response(404, "", "text/html");
+    //if (!response.hasKey("status")) {
+    //  return juiz::ws::Response(404, "", "text/html");
+    //}
+    //if (!response["status"].isIntValue()) { 
+    //  return juiz::ws::Response(404, "", "text/html");
+    // }
+    return juiz::ws::Response(200, response["body"], "application/json");
+  }
+
+  inline juiz::ws::Request apply(const ix::WebSocketMessagePtr & msg) {
+    auto request = juiz::json::toValue(msg->str);
+    if (request.hasKey("body")) {
+      return juiz::ws::Request(request["url"].stringValue(), request["method"].stringValue(), request["body"]);
+    } else {
+      return juiz::ws::Request(request["url"].stringValue(), request["method"].stringValue(), {});
     }
-    if (!response["status"].isIntValue()) { 
-      return juiz::ws::Response(404, "", "text/html");
-    }
-    return juiz::ws::Response(response["status"].intValue(), juiz::getStringValue(response["body"], ""), "application/json");
+  }
+
+  inline std::string apply(juiz::ws::Response &&response) {
+    std::stringstream ss;
+    ss << "{\"status\":200,\"body\":" << juiz::json::toJSONString(response.body) << "}";
+    return ss.str();
   }
 
 }

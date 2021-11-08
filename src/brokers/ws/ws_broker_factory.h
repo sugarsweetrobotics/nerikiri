@@ -10,7 +10,7 @@
  */
 class WebSocketBrokerFactory : public juiz::BrokerFactoryAPI {
 public:
-  WebSocketBrokerFactory(const std::string& fullName): BrokerFactoryAPI ("WebSocketBrokerFactory", "WebSocketBroker", fullName) {}
+  WebSocketBrokerFactory(const std::string& fullName): BrokerFactoryAPI ("WSBrokerFactory", "WSBroker", fullName) {}
   virtual ~WebSocketBrokerFactory() {}
 
 public:

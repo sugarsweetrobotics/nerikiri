@@ -122,6 +122,15 @@
 
         },
         {
+            "name": "Debug wsbroker_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/wsbroker_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
             "name": "Debug ec_test",
             "type": "lldb",
             "request": "launch",
