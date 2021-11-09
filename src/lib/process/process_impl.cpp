@@ -5,8 +5,7 @@
 #include <juiz/utils/os.h>
 #include <juiz/utils/signal.h>
 #include <juiz/process.h>
-
-#include "../argparse.h"
+#include <juiz/utils/argparse.h>
 #include "../objectfactory.h"
 
 #include "process_impl.h"
