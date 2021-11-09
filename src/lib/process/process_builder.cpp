@@ -135,7 +135,8 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
     ObjectFactory::createExecutionContext(store, value);
   });
 
-  config.at("ecs").at("bind").const_object_for_each([&store](auto ecName, auto value) {
+  config.at("ecs").at("bind").const_list_for_each([&store](auto value) {
+    auto ecName = getStringValue(value["fullName"], "");
     auto ec = store.get<ContainerAPI>(ecName);
     if (ec->isNull()) {
       logger::error("ProcessBuilder::preloadExecutionContext failed. Loading Precreated EC named '{}' failed. Not found.", ecName);
@@ -146,7 +147,7 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
       logger::error("ProcessBuilder::preloadExecutionContext failed. Loading Precreated EC's activation function named '{}' failed. Not found.", ecName + ":activate_state_started.ope");
       return;
     }
-    value.const_list_for_each([&store, &ec, &activate_started_ope](auto& v) {
+    value["operations"].const_list_for_each([&store, &ec, &activate_started_ope](auto& v) {
       auto opProxy =  store.operationProxy(v);
       juiz::connect(coreBroker(store), ec->fullName() + "_bind_" + Value::string(v["fullName"]), 
         opProxy->inlet("__event__"), activate_started_ope->outlet(), {});
