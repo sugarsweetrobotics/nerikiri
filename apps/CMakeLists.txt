@@ -19,8 +19,9 @@ endfunction(add_app)
 
 add_app(juizd)
 
+add_app(create_container_pkg)
 
-set(APPS juizd)
+set(APPS juizd create_container_pkg)
 
 install(TARGETS ${APPS}
 )
