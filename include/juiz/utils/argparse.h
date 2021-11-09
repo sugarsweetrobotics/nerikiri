@@ -11,6 +11,8 @@
 #include <map>
 #include <sstream>
 #include <memory>
+#include <cstdlib>
+#include <filesystem>
 
 namespace juiz {
 
@@ -92,6 +94,8 @@ namespace juiz {
   public:
     virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) = 0;
     virtual std::shared_ptr<ResultBase> makeDefaultResult() = 0;
+    virtual std::string makeUsage() const = 0;
+    virtual std::string makeDescription() const = 0;
   };
 
   /**
@@ -107,7 +111,7 @@ namespace juiz {
       OptionBase(shorts, longs, help, key, required), defaultValue_(defaultValue) {}
     virtual ~ValueOption() {}
 
-    virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) {
+    virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) override {
       ++it;
       std::istringstream ss(*it);
       T value;
@@ -115,8 +119,25 @@ namespace juiz {
       return std::make_shared<Result<T>>(true, value);
     }
 
-    virtual std::shared_ptr<ResultBase> makeDefaultResult() {
+    virtual std::shared_ptr<ResultBase> makeDefaultResult() override {
         return std::make_shared<Result<T>>(false, defaultValue_);
+    }
+
+    virtual std::string makeUsage() const override {
+      std::stringstream ss;
+      ss << "[" << short_ << " " << "VALUE" << "]";
+      return ss.str();
+    }
+
+    virtual std::string makeDescription() const override {
+      std::stringstream ss;
+      ss << short_ << " " << "VALUE" << ", " << long_ << " " << "VALUE" ;
+      int len = ss.str().length();
+      for(int i = 0;i < 40 - len;i++) {
+        ss << " ";
+      }
+      ss << help_;
+      return ss.str();
     }
   };
   
@@ -140,12 +161,29 @@ namespace juiz {
       OptionBase(shorts, longs, help, key, required, action) {}
     virtual ~FlagOption() {}
 
-    virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) {
+    virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) override {
       return std::shared_ptr<ResultBase>(new Result<bool>(true, this->action_ == "store_true"));
     }
 
-    virtual std::shared_ptr<ResultBase> makeDefaultResult() {
+    virtual std::shared_ptr<ResultBase> makeDefaultResult() override {
         return std::make_shared<Result<bool>>(false, this->action_ != "store_true");
+    }
+
+    virtual std::string makeUsage() const override {
+      std::stringstream ss;
+      ss << "[" << short_ << "]";
+      return ss.str();
+    }
+
+    virtual std::string makeDescription() const override {
+      std::stringstream ss;
+      ss << short_ << ", " << long_;
+      int len = ss.str().length();
+      for(int i = 0;i < 40 - len;i++) {
+        ss << " ";
+      }
+      ss << help_;
+      return ss.str();
     }
   };
 
@@ -192,7 +230,11 @@ namespace juiz {
   class ArgParser {
   private:
     std::vector<std::shared_ptr<OptionBase>> options_;
+    bool show_usage_;
+  public:
+    ArgParser(): show_usage_(true) {}
 
+  private:
     bool checkMatch(Options& options, std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) {
         for(auto& option: options_) {
             if (option->matched()) continue;
@@ -247,6 +289,12 @@ namespace juiz {
         options.program_name = *it;
         ++it; // first argument is program name;
         for(;it != args.end();) {
+          if (show_usage_) {
+            if (*it == "-h" || *it == "--help") {
+              showUsage(options.program_name);
+              exit(0);
+            }
+          }
             if (*it == "--") {
                 ++it;
                 break;
@@ -268,6 +316,20 @@ namespace juiz {
         }
 
         return options;
+    }
+
+    void showUsage(const std::string& program_path) {
+      const std::string program_name = std::filesystem::path(program_path).filename();
+      std::cout << "usage: " << program_name << " ";
+      for(auto op : options_) {
+        std::cout << op->makeUsage() << " ";
+      }
+      std::cout << std::endl << std::endl;
+
+      std::cout << "optional arguments:" << std::endl;
+      for(auto op : options_) {
+        std::cout << "  " << op->makeDescription() << std::endl;
+      }
     }
     
   };
