@@ -8,9 +8,22 @@
 #include "catch.hpp"
 using namespace juiz;
 
+TEST_CASE( "Simple one flag test", "[args]" ) {
+    ArgParser parser;
+    parser.option("-f", "--flag", "This is help for flag", juiz::REQUIRED);
+
+    const char* args[] = {"program_name", "-f"};
+
+    auto options = parser.parse(2, args);
+    REQUIRE(options.program_name == "program_name");
+    REQUIRE(options.results.size() == 1);
+    REQUIRE(getValue<bool>(options.results["flag"], false) == true);
+    REQUIRE(options.unknown_args.size() == 0);
+}
+
 TEST_CASE( "Simple one input test", "[args]" ) {
     ArgParser parser;
-    parser.option<std::string>("-f", "--filename", "This is help for filename", true, "file.in");
+    parser.option<std::string>("-f", "--filename", "This is help for filename", juiz::REQUIRED, "file.in");
 
     const char* args[] = {"program_name", "-f", "my_file.in"};
 
@@ -23,7 +36,7 @@ TEST_CASE( "Simple one input test", "[args]" ) {
 
 TEST_CASE( "Simple one input but default test", "[args]" ) {
     ArgParser parser;
-    parser.option<std::string>("-f", "--filename", "This is help for filename", true, "file.in");
+    parser.option<std::string>("-f", "--filename", "This is help for filename", juiz::REQUIRED, "file.in");
 
     const char* args[] = {"program_name"};
 

@@ -49,6 +49,14 @@ namespace juiz {
     return r->value();
   }
 
+  bool getBool(const std::shared_ptr<ResultBase>& result) {
+    auto r = std::dynamic_pointer_cast<Result<bool>>(result);
+    if (!r) {
+      return false;
+    }
+    return r->value();
+  }
+
   /**
    * 処理内容および処理実行関数matchを格納するクラス
    */
@@ -60,9 +68,10 @@ namespace juiz {
     bool required_;
     std::string key_;
     bool matched_;
+    std::string action_;
   public:
-    OptionBase(const std::string& shorts, const std::string& longs, const std::string& help, const std::string& key, const bool required):
-      short_(shorts), long_(longs), help_(help), key_(key), required_(required), matched_(false) {}
+    OptionBase(const std::string& shorts, const std::string& longs, const std::string& help, const std::string& key, const bool required, const std::string& action=""):
+      short_(shorts), long_(longs), help_(help), key_(key), required_(required), matched_(false), action_(action) {}
     virtual ~OptionBase() {}
 
     std::string key() const { return key_; }
@@ -127,16 +136,16 @@ namespace juiz {
   class FlagOption : public OptionBase {
   private:
   public:
-    FlagOption(const std::string& shorts, const std::string& longs, const std::string& help, const std::string& key, const bool required): 
-      OptionBase(shorts, longs, help, key, required) {}
+    FlagOption(const std::string& shorts, const std::string& longs, const std::string& help, const std::string& key, const bool required, const std::string& action): 
+      OptionBase(shorts, longs, help, key, required, action) {}
     virtual ~FlagOption() {}
 
     virtual std::shared_ptr<ResultBase> makeResult(std::vector<std::string>::iterator& it, const std::vector<std::string>::const_iterator& end) {
-      return std::shared_ptr<ResultBase>(new Result<bool>(true, true));
+      return std::shared_ptr<ResultBase>(new Result<bool>(true, this->action_ == "store_true"));
     }
 
     virtual std::shared_ptr<ResultBase> makeDefaultResult() {
-        return std::make_shared<Result<bool>>(false, false);
+        return std::make_shared<Result<bool>>(false, this->action_ != "store_true");
     }
   };
 
@@ -212,9 +221,9 @@ namespace juiz {
     /**
      * 処理を定義する関数．真偽値の場合
      */
-    void option(const std::string& shorts, const std::string& longs, const std::string& help, const bool required) {
+    void option(const std::string& shorts, const std::string& longs, const std::string& help, const bool required, const std::string& action="store_true") {
         std::string key = longs.substr(2);
-        options_.push_back(std::shared_ptr<OptionBase>(new FlagOption(shorts, longs, help, key, required)));
+        options_.push_back(std::shared_ptr<OptionBase>(new FlagOption(shorts, longs, help, key, required, action)));
     }
   public:
 
@@ -264,5 +273,6 @@ namespace juiz {
   };
 
 
-
+  static const bool NOT_REQUIRED = false;
+  static const bool REQUIRED = true;
 }
