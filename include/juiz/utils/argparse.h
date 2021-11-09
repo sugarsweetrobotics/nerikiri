@@ -40,6 +40,15 @@ namespace juiz {
     }
   };
 
+  template<typename R>
+  R getValue(const std::shared_ptr<ResultBase>& result, const R& default_value) {
+    auto r = std::dynamic_pointer_cast<Result<R>>(result);
+    if (!r) {
+      return default_value;
+    }
+    return r->value();
+  }
+
   /**
    * 処理内容および処理実行関数matchを格納するクラス
    */
@@ -143,6 +152,7 @@ namespace juiz {
    */
   class Options {
   public:
+    std::string program_name;
     std::map<std::string, std::shared_ptr<ResultBase>> results;
     bool error_;
     std::vector<std::string> unknown_args;
@@ -160,6 +170,10 @@ namespace juiz {
             return base->value();
         }
         throw OptionNotFoundException();
+    }
+
+    size_t size(void) const {
+      return results.size();
     }
   };
 
@@ -221,6 +235,7 @@ namespace juiz {
     Options parse(std::vector<std::string>&& args) {
         Options options;
         auto it = args.begin();
+        options.program_name = *it;
         ++it; // first argument is program name;
         for(;it != args.end();) {
             if (*it == "--") {
