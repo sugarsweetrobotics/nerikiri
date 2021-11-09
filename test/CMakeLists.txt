@@ -21,6 +21,7 @@ OPTION(BUILD_JUIZ_TEST_HTTPBROKER "HTTP Broker Test" ON)
 OPTION(BUILD_JUIZ_TEST_GEOMETRY "Geometry Test" ON)
 OPTION(BUILD_JUIZ_TEST_VALUE "Value Test" ON)
 OPTION(BUILD_JUIZ_TEST_YAML "YAML Value Test" ON)
+OPTION(BUILD_JUIZ_TEST_ARGPARSE "Argument Parser Test" OFF)
 
 set(EXAMPLE_LIBS juiz)
 
@@ -90,5 +91,10 @@ endif ()
 if (${BUILD_JUIZ_TEST_YAML})
   declare_test(yaml)
 endif ()
+
+if (${BUILD_JUIZ_TEST_ARGPARSE})
+  declare_test(argparse)
+endif ()
+
 
 endif (BUILD_JUIZ_TEST)
