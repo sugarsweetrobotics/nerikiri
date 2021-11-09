@@ -1,5 +1,5 @@
 {
-    "logger": { "logLevel": "TRACE" },
+    "logger": { "logLevel": "INFO" },
 
     "load_paths": ["./"],
 
@@ -23,7 +23,7 @@
             "port": 8080,
             "baseDir": "${ProjectDirectory}/../systemeditor",
             "route": {
-                "/turtlesim/(.*)": "${ProjectDirectory}turtlesim/"
+                "/turtlesim/": "${ProjectDirectory}turtlesim/"
             }
           }
         ]
@@ -37,16 +37,19 @@
             "rate": 30.0
           }
         ],
-        "bind": {
-            "TimerEC0.ec": [
-                {
-                    "fullName": "OpenCVCamera0.ctn:capture0.ope",
-                    "broker": {
-                        "typeName": "CoreBroker"
+        "bind": [
+            {
+                "fullName": "TimerEC0.ec",
+                "operations": [
+                    {
+                        "fullName": "OpenCVCamera0.ctn:capture0.ope",
+                        "broker": {
+                            "typeName": "CoreBroker"
+                        }
                     }
-                }
-            ]
-        }
+                ]
+            }
+        ]
     },
 
 
