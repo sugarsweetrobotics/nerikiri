@@ -59,6 +59,7 @@ option(BUILD_JUIZ_EXAMPLE_OPENCV "Build OpenCV Example" OFF)
 option(BUILD_JUIZ_EXAMPLE_JOY "Build Joy Controller Example" OFF)
 option(BUILD_JUIZ_EXAMPLE_TURTLESIM "Build Turtle Simulator Controller Example" OFF)
 option(BUILD_JUIZ_EXAMPLE_CONTAINER_POSED_TURTLESIM "Build Turtle Simulator with ContainerPose Controller Example" OFF)
+option(BUILD_JUIZ_EXAMPLE_DEMOBEHAVIOUR "Build Demo behaviour of turtle simulator" OFF)
 
 
 set(EXAMPLE_LIBS juiz)
@@ -93,6 +94,11 @@ if (BUILD_JUIZ_EXAMPLE_OPENCV)
   add_subdirectory(opencv)
   list(APPEND EXAMPLES opencv.nkproj)
 endif (BUILD_JUIZ_EXAMPLE_OPENCV)
+
+if (BUILD_JUIZ_EXAMPLE_DEMOBEHAVIOUR)
+  add_subdirectory(DemoBehaviour)
+  list(APPEND EXAMPLES demobehaviour.nkproj)
+endif (BUILD_JUIZ_EXAMPLE_DEMOBEHAVIOUR)
 
 set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
 

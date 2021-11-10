@@ -1,7 +1,14 @@
 set(juiz_base_srcs 
 
 
+
+anchor/anchor_container.h
+anchor/anchor_container.cpp
+anchor/StaticPeriodicAnchor.cpp
+anchor/DynamicPeriodicAnchor.cpp
+
 pose/static_transformation_operation.cpp
+pose/dynamic_transformation_operation.cpp
 
 # broker/brokerfactory.cpp
 broker/broker_api.cpp
@@ -11,6 +18,7 @@ broker/crud_broker.cpp
 broker/crud_broker_base.cpp
 broker/crud_broker_proxy_base.cpp
 broker/core_broker.cpp
+broker/object_mapper.cpp 
 
 container/container_api.cpp
 container/container_base.cpp
@@ -37,10 +45,6 @@ dllproxy.cpp
 # ec/ec.cpp
 ec/ec_api.cpp
 ec/ec_factory_api.cpp
-
-anchor/anchor_container.h
-anchor/anchor_container.cpp
-anchor/PeriodicAnchor.cpp
 
 ec/ec_container.h
 ec/ec_container.cpp
@@ -77,6 +81,8 @@ operation/operation_with_argument.cpp
 operation/operation_proxy.cpp
 operation/operation_inlet_base.cpp
 operation/operation_outlet_base.cpp
+
+
 object.cpp
 factory_api.cpp
 objectfactory.cpp
@@ -87,7 +93,8 @@ process/process_impl.cpp
 process/process_store.cpp 
 process/processconfigparser.cpp
 process/process_builder.cpp
-broker/object_mapper.cpp 
+
+
 process/moduleloader.cpp
 #operationinfo.cpp 
 

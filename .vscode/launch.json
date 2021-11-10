@@ -179,6 +179,15 @@
 
         },
         {
+            "name": "Debug argparse_test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test/argparse_test",
+            "args": [],
+            "cwd": "${workspaceFolder}/test"
+
+        },
+        {
             "name": "Debug container_test",
             "type": "lldb",
             "request": "launch",
@@ -250,6 +259,24 @@
             "env": {
                 "OPENCV_AVFOUNDATION_SKIP_AUTH": "1"
             }
+        },
+        {
+            "name": "Debug create_container_pkg",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/create_container_pkg",
+            "args": ["-v", "-t", "../example/container_template", "-c", "HogeContainer"],
+            "cwd": "${workspaceFolder}/build/"
+
+        },
+        {
+            "name": "Debug demo_behaviour",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/juizd",
+            "args": ["../example/demo.nkproj"],
+            "cwd": "${workspaceFolder}/build/"
+
         }
     ]
 }

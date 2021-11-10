@@ -6,6 +6,7 @@
 #include "../topic/topic_factory.h"
 
 #include "../pose/static_transformation_operation.h"
+#include "../pose/dynamic_transformation_operation.h"
 
 using namespace juiz;
 /**
@@ -26,6 +27,7 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
 
   /// ここでコンテナ間の位置オフセット用Operationを登録
   store.add<OperationFactoryAPI>(std::shared_ptr<OperationFactoryAPI>( static_cast<OperationFactoryAPI*>(static_transformation_operation()) ));
+  store.add<OperationFactoryAPI>(std::shared_ptr<OperationFactoryAPI>( static_cast<OperationFactoryAPI*>(dynamic_transformation_operation()) ));
 
   logger::trace("ProcessBuilder::preloadOperations() exit");
 }
@@ -73,7 +75,7 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
   });
 
   config.at("containers").at("transformation").const_list_for_each([&store](auto tfInfo) {
-    if (tfInfo.hasKey("typeName") && Value::string(tfInfo["typeName"]) == "static") {
+    if (tfInfo.hasKey("typeName") && Value::string(tfInfo["typeName"]) == "static") { /// スタティックな変換
       auto offset = toPose3D(tfInfo["offset"]);
       auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
       auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
@@ -93,16 +95,39 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
       /// TODO: 入力の名前とタイプを確認しないといけないよ
       auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
       auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
-    } else if (tfInfo.hasKey("fullName")) {
+
+    } else if (tfInfo.hasKey("typeName") && Value::string(tfInfo["typeName"]) == "dynamic") { /// ダイナミックな変換
+      // auto dynOp = store.get<OperationAPI>(input);
+
+      auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
+      auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
+      auto fullName = "input_" + from_c->fullName() + "_" + to_c->fullName();
+      auto tfOp = std::dynamic_pointer_cast<OperationAPI>(store.get<OperationFactoryAPI> ("dynamic_transformation_operation")->create(fullName, {
+        }
+      ));
+      store.add<OperationAPI>(tfOp);
+
+      const std::string connectionNameFrom = "dynamic_tfcon_" + from_c->fullName() + "_" + fullName;
+      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
+      const std::string connectionNameTo = "dynamic_tfcon_" + fullName + "_" + to_c->fullName();
+      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
+      const std::string connectionNameInput = "dynamic_dyncon_" +tfInfo["input"]["fullName"].stringValue() + "_" + fullName;
+      auto dynOp = store.get<OperationAPI>(tfInfo["input"]["fullName"].stringValue());
+
+      /// TODO: 入力の名前とタイプを確認しないといけないよ
+      auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
+      auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
+      auto result3 = juiz::connect(coreBroker(store), connectionNameInput, tfOp->inlet("input"), dynOp->outlet());
+    } else if (tfInfo.hasKey("fullName")) { // 名前のある変換
       auto fullName = Value::string(tfInfo["fullName"]);
       auto tfOp = store.get<OperationAPI>(fullName);
       auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
       auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
 
       const std::string connectionNameFrom = "tfcon_" + from_c->fullName() + "_" + fullName;
-      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
+      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope"); /// 当該変換が受け取る出力
       const std::string connectionNameTo = "tfcon_" + fullName + "_" + to_c->fullName();
-      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
+      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope"); /// 当該変換が出力すべき相手入力
 
       /// TODO: 入力の名前とタイプを確認しないといけないよ
       auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
@@ -176,8 +201,20 @@ void ProcessBuilder::preloadAnchors(ProcessStore& store, const Value& config, co
       logger::error("ProcessBuilder::preloadExecutionContext failed. Loading Precreated EC's activation function named '{}' failed. Not found.", Value::string(tgt["fullName"]) + ":activate_state_started.ope");
       return;
     }
+
+    if (getStringValue(value["typeName"], "") == "DynamicPeriodicAnchor") {
+      auto input_ope = store.get<OperationAPI>(value["input"]["fullName"].stringValue());
+      if (input_ope->isNull()) {
+        logger::error("ProcessBuilder::preloadExecutionContext failed. Loading input operation named '{}' failed. Not found.", Value::string(tgt["fullName"]) + ":activate_state_started.ope");
+        return;
+      }
+      juiz::connect(coreBroker(store), input_ope->fullName() + "_bind_" + anchor->fullName(), 
+        activate_started_ope->inlet("input"), input_ope->outlet(), {});
+    }
+
     juiz::connect(coreBroker(store), tgtCtn->fullName() + "_bind_" + anchor->fullName(), 
         set_basepose_ope->inlet("pose"), activate_started_ope->outlet(), {});
+
     if (Value::boolValue(value["autoStart"], false)) {
       anchor->operation("activate_state_started.ope")->execute();
     }

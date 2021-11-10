@@ -112,7 +112,16 @@ Value ObjectFactory::createAnchor(ProcessStore& store, const Value& value) {
   //auto fullName = loadFullName(store.executionContexts(), value);
   auto fullName = Value::string(value["fullName"]);
   // info["fullName"] = fullName;
-  return juiz::createAnchor(store, fullName, value);
+  if(value.hasKey("typeName")) {
+    if (value["typeName"].stringValue() == "StaticPeriodicAnchor") {
+      return juiz::createStaticPeriodicAnchor(store, fullName, value);
+    } else if (value["typeName"].stringValue() == "DynamicPeriodicAnchor") {
+      return juiz::createDynamicPeriodicAnchor(store, fullName, value);
+    } else {
+      return Value::error(logger::error("ObjectFactory::createAnchor failed. Anchor's typeName is invalid({})", value["typeName"]));
+    }
+  } 
+  return juiz::createStaticPeriodicAnchor(store, fullName, value);
   // return store.addEC(store.executionContextFactory(Value::string(value.at("typeName")))->create(info));
 }
 

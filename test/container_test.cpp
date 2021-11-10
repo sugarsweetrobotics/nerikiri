@@ -16,7 +16,7 @@ SCENARIO( "Container test", "[container]" ) {
   GIVEN("Container transformation behavior with anchor") {
     const std::string jsonStr = R"(
 {
-  "logger": { "logLevel": "WARN" },
+  "logger": { "logLevel": "TRACE" },
 
 
   "containers": {

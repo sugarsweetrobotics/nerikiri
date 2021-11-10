@@ -14,5 +14,10 @@ namespace juiz {
     /**
      * 
      */
-    Value createAnchor(ProcessStore& store, const std::string& fullName, const Value& ecInfo);
+    Value createStaticPeriodicAnchor(ProcessStore& store, const std::string& fullName, const Value& ecInfo);
+
+    /**
+     * 
+     */
+    Value createDynamicPeriodicAnchor(ProcessStore& store, const std::string& fullName, const Value& ecInfo);
 }
