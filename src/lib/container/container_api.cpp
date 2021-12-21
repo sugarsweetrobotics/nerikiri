@@ -25,6 +25,10 @@ public:
         logger::error("NullContainer::{}() failed. Container is null.", __func__);
     }
 
+    virtual JUIZ_MESH_DATA getMeshData() const override {
+        logger::error("NullContainer::{}() failed. Container is null.", __func__);
+    }
+
     virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override {
         logger::warn("NullContainer::operations() failed. Container is null.");
         return {};

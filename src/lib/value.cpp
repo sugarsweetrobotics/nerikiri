@@ -31,6 +31,9 @@ Value::Value(const Value& value): typecode_(value.typecode_) {
   else if (value.isError()) {
     errormessage_ = new std::string(*value.errormessage_);
   }
+  else if (value.isNull()) {
+    this->typecode_ = Value::VALUE_TYPE_NULL;
+  }
   else {
     typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;
     errormessage_ = new std::string("Value::Value(const Value& value) failed. Argument value's typecode is unknown");
@@ -68,6 +71,9 @@ Value::Value(Value&& value) : typecode_(std::move(value.typecode_)) {
     errormessage_ = std::move(value.errormessage_);
     value.errormessage_ = nullptr;
     value.typecode_ = VALUE_TYPE_NULL;
+  }
+  else if (value.isNull()) {
+    typecode_ = VALUE_TYPE_NULL;
   }
   else {
     typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;
@@ -176,6 +182,18 @@ Value& Value::emplace(std::pair<std::string, Value>&& v) {
   }
   return *this;
 }
+    
+Value& Value::insert(const int position, const Value& value) {
+  if (typecode_ == VALUE_TYPE_LIST) {
+    listvalue_->insert(listvalue_->begin()+position, value);
+  } else {
+    _clear();
+    this->typecode_ = VALUE_TYPE_ERROR;
+    errormessage_ = new std::string("Value::insert(const Value&) failed.");
+  }
+  return *this;
+}
+
 
 Value& Value::push_back(const Value& str) {
   if (typecode_ == VALUE_TYPE_LIST) {

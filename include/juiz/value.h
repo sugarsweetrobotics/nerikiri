@@ -254,6 +254,20 @@ namespace juiz {
     static Value list();
 
     static Value object();
+
+    template<typename V=Value>
+    static Value valueList(V v) {
+      Value ret = list();
+      ret.insert(0, v);
+      return ret;
+    }
+
+    template<typename V=Value, typename... R>
+    static Value valueList(V v, R... rem) {
+      Value ret = valueList(rem...);
+      ret.insert(0, v);
+      return ret;
+    }
   private:
     
     
@@ -316,6 +330,8 @@ namespace juiz {
     const Value& at(const std::string& key) const ;
 
     Value& emplace(std::pair<std::string, Value>&& v);
+
+    Value& insert(const int position, const Value& value);
 
     Value& push_back(const Value& str);
 
@@ -395,6 +411,9 @@ namespace juiz {
       }
       else if (isError()) {
         errormessage_ = new std::string(*value.errormessage_);
+      }
+      else if (isNull()) {
+
       }
       else {
         typecode_ = VALUE_TYPE_CODE::VALUE_TYPE_ERROR;

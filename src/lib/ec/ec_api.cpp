@@ -50,10 +50,11 @@ std::shared_ptr<ExecutionContextAPI> juiz::nullEC() {
 
 bool ExecutionContextBase::svc() { 
     logger::trace("ExecutionContextBase::svc() called");
-    for(auto c : svcOperation_->outlet()->connections()) {
-        // c->inlet()->put({});
-        c->inlet()->executeOwner();
-    }
+    //for(auto c : svcOperation_->outlet()->connections()) {
+    //    // c->inlet()->put({});
+    //    c->inlet()->executeOwner();
+    //}
+    svcOperation_->execute();
     return true;
     //return !svcOperation_->execute().isError(); 
 }

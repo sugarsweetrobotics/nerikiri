@@ -155,7 +155,7 @@ namespace juiz {
 
     template<typename V>
     bool for_any(const std::vector<V>& vec, std::function<bool(const V&)> func) {
-      bool flag = true;
+      bool flag = false;
       for(const auto& v : vec) {
         flag = flag || func(v);
       }

@@ -133,6 +133,10 @@ Value juiz::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::st
     {"outlet", outlet->info()}
   };
 
+  if (options.hasKey("type") && getStringValue(options["type"], "") == "pull") {
+    con0Info["type"] = "pull";
+  }
+
   return broker->connection()->createConnection(con0Info);
   //return store.process()->coreBroker()->connection()->createConnection(con0Info);
 }

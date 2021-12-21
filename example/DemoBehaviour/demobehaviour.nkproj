@@ -1,0 +1,61 @@
+{
+    "logger": { "logLevel": "DEBUG" },
+
+    "load_paths": ["./"],
+
+    "shelves": [
+        {"path": "${SubProjectDirectory}/demobehaviour.nkshelf"}
+    ],
+
+    "operations": {
+        "precreate": [
+        ]
+    },
+
+  "anchors": [
+    {
+      "fullName": "origin",
+      "typeName": "DynamicPeriodicAnchor",
+      "rate": 10,
+      "target": {
+        "fullName": "DemoBehaviour0.ctn"
+      },
+      "input": {
+        "fullName": "DemoBehaviour0.ctn:update0.ope",
+        "broker": {
+          "typeName": "CoreBroker"
+        },
+        "connectionType": "pull"
+      },
+      "autoStart": true
+    }
+  ],
+
+    "containers": {
+        "precreate": [
+            {
+                "typeName": "DemoBehaviour",
+                "fullName": "DemoBehaviour0.ctn",
+                "operations": [
+                    {
+                        "typeName": "start",
+                        "instanceName": "start0.ope"
+                    },
+                    {
+                        "typeName": "getPose",
+                        "instanceName": "getPose0.ope"
+                    },
+                    {
+                        "typeName": "update",
+                        "instanceName": "update0.ope"
+                    }
+                ]
+            }
+        ], 
+        
+        "transformation": [
+        ]
+        
+    }
+
+}  

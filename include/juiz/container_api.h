@@ -7,6 +7,8 @@
 
 namespace juiz {
 
+    using JUIZ_MESH_DATA = Value;
+
 
     class ContainerAPI : public Object {
     public:
@@ -28,6 +30,8 @@ namespace juiz {
         virtual TimedPose3D getPose() const = 0;
         virtual void setPose(const TimedPose3D& pose) = 0;
         virtual void setPose(TimedPose3D&& pose) = 0;
+
+        virtual JUIZ_MESH_DATA getMeshData() const = 0;
 
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const = 0;
 

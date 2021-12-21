@@ -73,6 +73,8 @@ namespace juiz {
         virtual TimedPose3D getPose() const override { return base_->getPose(); }
         virtual void setPose(const TimedPose3D& pose) override { base_->setPose(pose); }
         virtual void setPose(TimedPose3D&& pose) override { base_->setPose(std::move(pose)); }
+
+        virtual JUIZ_MESH_DATA getMeshData() const override { return base_->getMeshData(); }
         
         virtual void setTypeName(const std::string& typeName) override { base_->setTypeName(typeName); }
         virtual void setClassName(const std::string& className) override { base_->setClassName(className); }
@@ -134,6 +136,7 @@ namespace juiz {
 
         virtual Value info() const override { 
             auto i = base_->info(); 
+            
             return i;
         } 
 

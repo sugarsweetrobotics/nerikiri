@@ -45,6 +45,10 @@ public:
 
     }
 
+    virtual JUIZ_MESH_DATA getMeshData() const override {
+
+    }
+
     virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override {
         return broker_->container()->operations(fullName_).const_list_map<std::shared_ptr<OperationAPI>>([this](const Value& v) {
             return operationProxy(broker_, Value::string(v["fullName"]));

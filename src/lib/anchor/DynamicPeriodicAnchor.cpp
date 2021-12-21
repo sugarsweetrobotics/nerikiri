@@ -1,5 +1,5 @@
 #include <thread>
-
+#include <iostream>
 #include <juiz/ec.h>
 
 using namespace juiz;
@@ -36,6 +36,7 @@ public:
         thread_ = new std::thread([this]() {
             logger::trace("DynamicPeriodicAnchor::onStarted() in Thread starting....");
             while(!flag_) {
+                std::cout << "Dynamic Anchor: svc" << std::endl;
                 logger::trace("DynamicPeriodicAnchor::svc_thread. svc calling");
                 svc();
                 std::this_thread::sleep_for(std::chrono::nanoseconds( (int)(1.0E+9/rate_) ));

@@ -225,8 +225,7 @@ Value juiz::createDynamicPeriodicAnchor(ProcessStore& store, const std::string& 
     auto start_cop = store.get<ContainerOperationFactoryAPI>("_AnchorContainerStruct:activate_state")->create<OperationAPI>(container->fullName() + ":" +  "activate_state_" + "started" + ".ope", 
         { 
             {"defaultArg", {
-                {"stateName", "started"},
-                {}
+                {"stateName", "started"}
             }}
         });
     if (start_cop->isNull()) {

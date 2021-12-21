@@ -208,8 +208,13 @@ void ProcessBuilder::preloadAnchors(ProcessStore& store, const Value& config, co
         logger::error("ProcessBuilder::preloadExecutionContext failed. Loading input operation named '{}' failed. Not found.", Value::string(tgt["fullName"]) + ":activate_state_started.ope");
         return;
       }
-      juiz::connect(coreBroker(store), input_ope->fullName() + "_bind_" + anchor->fullName(), 
-        activate_started_ope->inlet("input"), input_ope->outlet(), {});
+      if (value["input"].hasKey("connectionType") && getStringValue(value["input"]["connectionType"], "") == "pull") {
+        juiz::connect(coreBroker(store), input_ope->fullName() + "_bind_" + anchor->fullName(), 
+          activate_started_ope->inlet("input"), input_ope->outlet(), {{"type", "pull"}});
+      } else {
+        juiz::connect(coreBroker(store), input_ope->fullName() + "_bind_" + anchor->fullName(), 
+          activate_started_ope->inlet("input"), input_ope->outlet(), {});
+      }
     }
 
     juiz::connect(coreBroker(store), tgtCtn->fullName() + "_bind_" + anchor->fullName(), 

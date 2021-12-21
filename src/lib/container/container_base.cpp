@@ -26,6 +26,53 @@ public:
     virtual TimedPose3D getPose() const override { return pose_; }
     virtual void setPose(const TimedPose3D& pose) override { pose_ = pose; }
     virtual void setPose(TimedPose3D&& pose) override { pose_ = std::move(pose); }
+
+
+    virtual JUIZ_MESH_DATA getMeshData() const override {
+        const double x = 0;
+        const double y = 0;
+        const double z = 0;
+        const double wx = 0;
+        const double wy = 0;
+        const double wz = 0;
+        const double ww = 1;
+        return Value{
+            {"name", "modelData"},
+            {"links", Value::valueList({
+                {"name", "root"},
+                {"visual", {
+                    {"geometry", {
+                        {"box", {
+                            {"size", Value::valueList(0.5, 0.5, 0.5)}
+                        }}
+                    }},
+                    {"material", {
+                        {"script", "red"}
+                    }}
+                }},
+                {"pose", Value::valueList(0., 0., 0., 0., 0., 0.)}
+            })
+            }
+        };
+            /*,
+            {"mesh", {
+                {"typeName", "box"},
+                {"size", {
+                    {"width", "0.5"},
+                    {"height", "1.5"},
+                    {"depth", "1.5"}
+                }}
+            }},
+            {"material", {
+                {"typeName", "black"}
+            }},
+            {"offset", toValue(Pose3D(Point3D(x, y, z), Orientation3D(wx, wy, wz, ww)))},
+            {"children", {
+
+            }}*/
+        //};
+    }
+
 public:
 
     /**
@@ -62,11 +109,13 @@ public:
         inf["operations"] = juiz::functional::map<Value, std::shared_ptr<OperationAPI>>(operations(), [](auto op) {
             return op->fullInfo();
         });
+        inf["meshData"] = getMeshData();
         return inf;
     }
 
     virtual Value info() const override {
         auto inf = ContainerAPI::info();
+        inf["basePose"] = juiz::toValue(this->getPose());
         return inf;
     }
 

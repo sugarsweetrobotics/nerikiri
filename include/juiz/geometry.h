@@ -47,6 +47,12 @@ namespace juiz {
         }
     };
 
+    inline std::string toString(const Vector3D& v) {
+        std::stringstream ss;
+        ss << "Vector3(x=" << v.x << ", y=" << v.y << ", z=" << v.z << ")";
+        return ss.str();
+    }
+
     inline std::string toStr(const Vector3D& q) {
         std::stringstream ss;
         ss << "Vector3D(" << q.x << ", " << q.y << ", " << q.z << ")";
@@ -84,6 +90,12 @@ namespace juiz {
             return *this;
         }
     };
+
+    inline std::string toString(const Quaternion& q) {
+        std::stringstream ss;
+        ss << "Quaternion(x=" << q.x << ", y=" << q.y << ", z=" << q.z << ", w=" << q.w << ")";
+        return ss.str();
+    }
 
     inline Quaternion conjugated(const Quaternion& q) {
         return {-q.x, -q.y, -q.z, q.w};
@@ -142,6 +154,13 @@ namespace juiz {
             return *this;
         }
     };
+
+
+    inline std::string toString(const Pose3D& pose) {
+        std::stringstream ss;
+        ss << "Pose3D(position=" << toString(pose.position) << ", orientation=" << toString(pose.orientation) << ")";
+        return ss.str();
+    }
 
     inline std::string toStr(const Pose3D& q) {
         std::stringstream ss;
@@ -226,6 +245,7 @@ namespace juiz {
     inline Pose3D toPose3D(const Value& value) {
         return {toPoint3D(value["position"]), toOrientation3D(value["orientation"])};
     }
+
 
     inline TimedPose3D toTimedPose3D(const Value& value) {
         return {toTime(value["tm"]),

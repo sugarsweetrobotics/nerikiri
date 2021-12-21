@@ -70,7 +70,8 @@ namespace juiz {
     virtual bool isUpdated() const override { 
       if(argument_updated_) return true;
       // どの接続もPull型でないならupdateしない
-      return juiz::functional::for_all<std::shared_ptr<ConnectionAPI>>(connections(), [](auto c) { return !c->isPull(); }); 
+      bool pull_ =  juiz::functional::for_all<std::shared_ptr<ConnectionAPI>>(connections(), [](auto c) { return !c->isPull(); }); 
+      return pull_;
     }
 
     virtual std::vector<std::shared_ptr<ConnectionAPI>> connections() const override { return connections_.connections(); }
