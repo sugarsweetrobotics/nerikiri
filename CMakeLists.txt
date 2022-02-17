@@ -34,7 +34,12 @@ add_subdirectory(thirdparty)
 
 add_subdirectory(include)
 add_subdirectory(src)
+
+if (BUILD_JUIZ_EXAMPLE)
+message("--- Building Examples")
 add_subdirectory(example)
+endif (BUILD_JUIZ_EXAMPLE)
+
 add_subdirectory(apps)
 add_subdirectory(test)
 

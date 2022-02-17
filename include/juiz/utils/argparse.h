@@ -204,7 +204,11 @@ namespace juiz {
     bool error_;
     std::vector<std::string> unknown_args;
   public:
+    Options() : error_(false) {}
+  public:
     void error(bool flag) { error_ = flag; }
+
+    bool is_error() const { return error_; }
 
     void emplace(std::pair<std::string, std::shared_ptr<ResultBase>>&& pair) { 
         results.emplace(std::move(pair));
@@ -272,18 +276,18 @@ namespace juiz {
     /**
      * 実際にコマンドライン引数を処理する関数
      */
-    Options parse(const int argc, const char** argv) {
+    Options parse(const int argc, const char** argv, const bool verbose=false) {
         std::vector<std::string> args;
         for(int i = 0;i < argc;i++) {
             args.push_back(std::string(argv[i]));
         }
-        return parse(std::move(args));
+        return parse(std::move(args), verbose);
     }
 
     /**
      * 実際にコマンドライン引数を処理する関数
      */
-    Options parse(std::vector<std::string>&& args) {
+    Options parse(std::vector<std::string>&& args, const bool verbose=false) {
         Options options;
         auto it = args.begin();
         options.program_name = *it;
@@ -301,6 +305,9 @@ namespace juiz {
             }
             if(!checkMatch(options, it, args.end())) {
                 // Unknown Argument
+                if (verbose) {
+                  std::cerr << "juiz/util/argparse.h error. Unknown option " << *it << " passed." << std::endl;
+                }
                 options.error(true);
                 break;
             }

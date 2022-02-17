@@ -76,6 +76,7 @@ juiz::Value juiz::json::toValue(const std::string& json_str) {
 
 
 juiz::Value juiz::json::toValue(std::FILE* fp) {
+    if (fp == NULL) { return Value::error(logger::error("juiz::json::toValue(FILE*) failed. File pointer is NULL")); }
 
     rapidjson::Document doc;
     char readBuffer[65536];

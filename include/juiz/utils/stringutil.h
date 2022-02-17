@@ -63,8 +63,10 @@ namespace juiz {
             ///const char *begin = pstr;
             while(str[i] != sep && str[i] != 0)
                 i++;
-
-            result.push_back(str.substr(begin, i-begin));//std::string(begin, pstr));
+            auto v = str.substr(begin, i-begin);
+            if (v.length() != 0) {
+                result.push_back(v);//std::string(begin, pstr));
+            }
         } while (0 != str[i++]);
         return result;
     }

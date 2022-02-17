@@ -75,6 +75,7 @@ namespace juiz {
         virtual void setPose(TimedPose3D&& pose) override { base_->setPose(std::move(pose)); }
 
         virtual JUIZ_MESH_DATA getMeshData() const override { return base_->getMeshData(); }
+        virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override { base_->setMeshData(mesh); }
         
         virtual void setTypeName(const std::string& typeName) override { base_->setTypeName(typeName); }
         virtual void setClassName(const std::string& className) override { base_->setClassName(className); }
@@ -142,7 +143,7 @@ namespace juiz {
 
         virtual Value fullInfo() const override {
             auto inf = base_->fullInfo();
-            inf["pose"] = toValue(getPose()); 
+            /// inf["pose"] = toValue(getPose()); 
             return inf;
         }
 
@@ -233,6 +234,7 @@ namespace juiz {
 
         virtual Value fullInfo() const override { 
             auto i = base_->fullInfo(); 
+            i["className"] = "ContainerOperation";
             i["ownerContainerFullName"] = getOwner()->fullName();
             return i;
         }
@@ -358,7 +360,7 @@ namespace juiz {
     template<typename T>
     class ContainerFactory : public ContainerFactoryAPI {
     private:
-      const Value defaultInfo_;
+      Value defaultInfo_;
     public:
 
         /**
@@ -366,13 +368,19 @@ namespace juiz {
          */
       ContainerFactory(const Value& info={}): ContainerFactoryAPI(demangle(typeid(T).name()), demangle(typeid(T).name())), defaultInfo_(info) {}
 
-
         /**
          * 
          */
         virtual ~ContainerFactory() {}
     public:
 
+        virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override {
+            defaultInfo_["mesh"] = mesh;
+        }
+
+        virtual JUIZ_MESH_DATA getMeshData() const override {
+            return defaultInfo_["mesh"];
+        }
 
         /**
          * 
@@ -391,6 +399,9 @@ namespace juiz {
             c->useThread(true);
             if (defaultInfo_.hasKey("className")) {
                 c->setClassName(defaultInfo_["className"].stringValue());
+            }
+            if (defaultInfo_.hasKey("mesh")) {
+                c->setMeshData(defaultInfo_["mesh"]);
             }
             return c;
         }
@@ -429,6 +440,7 @@ namespace juiz {
          */
         virtual ~ContainerOperationFactory() {}
     public:
+
 
         /**
          * 

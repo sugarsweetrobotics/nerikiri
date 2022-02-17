@@ -1,55 +1,39 @@
-include_directories(${CMAKE_SOURCE_DIR}/include)
+message("---------------------- DemoBehaviour project --------------------------")
 
-set(OPERATIONS)
+project(DemoBehaviour LANGUAGES CXX C VERSION 0.0)
+
+set(CONTAINERS DemoBehaviour)
+
+set(CONTAINER_OPERATIONS
+  DemoBehaviour_start
+  DemoBehaviour_getPose
+  DemoBehaviour_update)
+set(OPERATIONS poseRotate)
+
+set(JUIZ_LIBS juiz)
 set(EXT_LIBS)
 
-function(add_operation NAME)
-  add_library(${NAME} SHARED ${NAME}.cpp)
-  add_dependencies(${NAME} juiz)
-  target_link_libraries(${NAME} juiz ${EXT_LIBS})
-  set_target_properties(${NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-  )
-  set_target_properties(${NAME} PROPERTIES PREFIX "")
+include(juiz_component.cmake)
 
-  set(OPERATIONS ${NAME} ${OPERATIONS})
-  set(OPERATIONS ${OPERATIONS} PARENT_SCOPE)
-endfunction(add_operation)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
-set(CONTAINERS)
-function(add_container NAME)
-  add_library(${NAME} SHARED ${NAME}.cpp)
-  add_dependencies(${NAME} juiz)
-  target_link_libraries(${NAME} juiz ${EXT_LIBS})
+# Output basic information of this project.
+message("- CMakeLists.txt    : " ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
+message("- JUIZ_LIBS         : " ${JUIZ_LIBS})
+message("- EXT_LIBS          : " ${EXT_LIBS})
 
-  set_target_properties(${NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-  )
+# ----- IMPLEMENTATION AREA ------
 
-  set_target_properties(${NAME} PROPERTIES PREFIX "")
-  set(CONTAINERS ${NAME} ${CONTAINERS})
-  set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
-endfunction(add_container)
+# Add projects to target
+add_containers(CONTAINERS)
+add_container_operations(CONTAINER_OPERATIONS)
+add_operations(OPERATIONS)
 
+# Define modules for install
+set(DEMOBEHAVIOUR_MODULES ${EXPORTING_OPERATIONS} ${EXPORTING_CONTAINERS} ${ECS} PARENT_SCOPE)
 
-add_container(DemoBehaviour)
-# __begin_operation_build_section__ do not edit this line
+# Installing files for targets
+INSTALL(TARGETS ${EXPORTING_CONTAINERS} ${EXPORTING_OPERATIONS} DESTINATION share/juiz/example/demobehaviour)
+INSTALL(FILES demobehaviour.jshelf DESTINATION share/juiz/example/demobehaviour)
 
-# add_container(DemoBehaviour_operationName)
-add_container(DemoBehaviour_start)
-add_container(DemoBehaviour_getPose)
-add_container(DemoBehaviour_update)
-
-# __end_operation_build_section__ do not edit this line
-
-set(CONTAINERNAME_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
-
-INSTALL(TARGETS ${CONTAINERS} ${OPERATIONS} DESTINATION share/juiz/example/demobehaviour)
-INSTALL(FILES demobehaviour.nkshelf DESTINATION share/juiz/example/containername)
-
+message("-----------------------------------------------------------------------")

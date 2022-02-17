@@ -1,6 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-set(OPERATIONS)
+set(CONTAINERS ContainerName)
+set(EXPORTING_EXPORTING_OPERATIONS)
 set(EXT_LIBS)
 
 function(add_operation NAME)
@@ -15,11 +16,11 @@ function(add_operation NAME)
   )
   set_target_properties(${NAME} PROPERTIES PREFIX "")
 
-  set(OPERATIONS ${NAME} ${OPERATIONS})
-  set(OPERATIONS ${OPERATIONS} PARENT_SCOPE)
+  set(EXPORTING_EXPORTING_OPERATIONS ${NAME} ${EXPORTING_EXPORTING_OPERATIONS})
+  set(EXPORTING_EXPORTING_OPERATIONS ${EXPORTING_EXPORTING_OPERATIONS} PARENT_SCOPE)
 endfunction(add_operation)
 
-set(CONTAINERS)
+set(EXPORTING_CONTAINERS)
 function(add_container NAME)
   add_library(${NAME} SHARED ${NAME}.cpp)
   add_dependencies(${NAME} juiz)
@@ -33,8 +34,8 @@ function(add_container NAME)
   )
 
   set_target_properties(${NAME} PROPERTIES PREFIX "")
-  set(CONTAINERS ${NAME} ${CONTAINERS})
-  set(CONTAINERS ${CONTAINERS} PARENT_SCOPE)
+  set(EXPORTING_CONTAINERS ${NAME} ${EXPORTING_CONTAINERS})
+  set(EXPORTING_CONTAINERS ${EXPORTING_CONTAINERS} PARENT_SCOPE)
 endfunction(add_container)
 
 
@@ -46,8 +47,8 @@ add_container(TurtleSim_kill)
 add_container(TurtleSim_setVelocity)
 add_container(TurtleSim_odomTransform)
 
-set(TURTLESIM_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)
+set(TURTLESIM_MODULES ${EXPORTING_EXPORTING_OPERATIONS} ${EXPORTING_CONTAINERS} ${ECS} PARENT_SCOPE)
 
-INSTALL(TARGETS ${CONTAINERS} ${OPERATIONS} DESTINATION share/juiz/example/turtlesim)
+INSTALL(TARGETS ${EXPORTING_CONTAINERS} ${EXPORTING_EXPORTING_OPERATIONS} DESTINATION share/juiz/example/turtlesim)
 INSTALL(FILES turtlesim.nkshelf DESTINATION share/juiz/example/turtlesim)
 

@@ -55,7 +55,15 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
     ModuleLoader::loadContainerFactory(store, {"./", path}, {
       {"typeName", key}, {"load_paths", config.at("containers").at("load_paths")}
     });
+    if (value.hasKey("mesh")) {
+      store.get<ContainerFactoryAPI>(key)->setMeshData(value["mesh"]);
+    }
     value.const_list_for_each([&config, &store, &key, &path](auto& v) {
+      ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
+        {"typeName", v}, {"container_name", key}, {"load_paths", config["containers"]["load_paths"] }
+      });
+    });
+    value["operations"].const_list_for_each([&config, &store, &key, &path](auto& v) {
       ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
         {"typeName", v}, {"container_name", key}, {"load_paths", config["containers"]["load_paths"] }
       });
@@ -65,13 +73,17 @@ void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config,
   config.at("containers").at("precreate").const_list_for_each([&store](auto info) {
     /// ここでコンテナを作成する
     auto cInfo = ObjectFactory::createContainer(store, info);
+    auto c = store.get<ContainerAPI>(Value::string(cInfo["fullName"]));
     if (info.hasKey("operations")) {
-      info.at("operations").const_list_for_each([&store, &cInfo](auto value) {
+      info.at("operations").const_list_for_each([&store, &cInfo, &c](auto value) {
         auto opInfo = ObjectFactory::createContainerOperation(store, cInfo, value);
-        auto c = store.get<ContainerAPI>(Value::string(cInfo.at("fullName")));
         auto cop = c->operation(Value::string(opInfo.at("fullName")));
       });
     }
+    if (info.hasKey("mesh")) {
+      c->setMeshData(info["mesh"]);
+    }
+
   });
 
   config.at("containers").at("transformation").const_list_for_each([&store](auto tfInfo) {

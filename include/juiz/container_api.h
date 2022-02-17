@@ -26,12 +26,15 @@ namespace juiz {
 
         virtual ~ContainerAPI() {}
 
-
         virtual TimedPose3D getPose() const = 0;
+        
         virtual void setPose(const TimedPose3D& pose) = 0;
+
         virtual void setPose(TimedPose3D&& pose) = 0;
 
         virtual JUIZ_MESH_DATA getMeshData() const = 0;
+
+        virtual void setMeshData(const JUIZ_MESH_DATA& mesh) = 0;
 
         virtual std::vector<std::shared_ptr<OperationAPI>> operations() const = 0;
 
@@ -49,8 +52,39 @@ namespace juiz {
     inline std::shared_ptr<ContainerAPI> nullObject() { return nullContainer(); }
 
 
-    using ContainerFactoryAPI = FactoryBase<ContainerAPI>;
-    using NullContainerFactory = NullFactory<ContainerAPI>;
+    class ContainerFactoryAPI : public FactoryAPI {
+    public:
+
+        ContainerFactoryAPI(const std::string& typeName, const std::string& fullName): FactoryAPI("ContainerFactory", typeName, fullName) {}
+
+        virtual ~ContainerFactoryAPI() {}
+
+        virtual void setMeshData(const JUIZ_MESH_DATA& mesh) = 0;
+
+        virtual JUIZ_MESH_DATA getMeshData() const = 0;
+    };
+
+    class NullContainerFactory : public ContainerFactoryAPI {
+    public:
+
+        NullContainerFactory(): ContainerFactoryAPI("NullContainer", "null") {}
+
+        virtual ~NullContainerFactory() {}
+
+        virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override {
+            logger::error("NullContainerFactory::{}() failed. ContainerFactory is null.", __func__);
+        }
+
+        virtual JUIZ_MESH_DATA getMeshData() const override {
+            return Value::error(logger::error("NullContainerFactory::{}() failed. ContainerFactory is null.", __func__));            
+        }
+
+
+        virtual std::shared_ptr<Object> create(const std::string& _fullName, const Value& info={}) const override {
+            logger::error("NullContainerFactory::{}() failed. ContainerFactory is null.", __func__);
+            return nullObject<ContainerAPI>();  
+        }
+    };
 
     template<>
     inline std::shared_ptr<ContainerFactoryAPI> nullObject() { return std::make_shared<NullContainerFactory>(); }
@@ -62,7 +96,7 @@ namespace juiz {
         ContainerOperationFactoryAPI(const std::string& className, const std::string& typeName, const std::string& fullName)
         : FactoryAPI(className, typeName, fullName) {}
         virtual ~ContainerOperationFactoryAPI() {}
-
+        
         // virtual std::shared_ptr<Object> create(const std::string& _fullName, const Value& info=Value::error("")) const = 0;
     };
 

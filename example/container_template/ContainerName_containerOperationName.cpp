@@ -8,17 +8,17 @@ using namespace juiz;
 
 extern "C" {
 
-    JUIZ_OPERATION  void* ContainerName_operationName() {
+    JUIZ_OPERATION  void* ContainerName_containerOperationName() {
         return containerOperationFactory<ContainerName>(
             {
-              {"typeName", "operationName"},
+              {"typeName", "containerOperationName"},
               {"defaultArg", {
                   {}
               }},
             },
             [](auto& container, auto arg) {
                 
-                return Value::error("ContainerName_operationName is not implemented yet.");
+                return Value::error("ContainerName_containerOperationName is not implemented yet.");
             }
         );
     }

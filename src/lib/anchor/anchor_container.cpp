@@ -7,9 +7,49 @@
 #include "../ec/ec_container.h"
 #include "../anchor/anchor_container.h"
 
-
-
 using namespace juiz;
+namespace {
+
+    auto anchor_mesh = juiz::Value{
+            {"name", "anchor"}
+    };
+
+    auto daruma_mesh = juiz::Value{
+            {"name", "modelData"},
+            {"links", Value::valueList(
+                Value{
+                    {"name", "root"},
+                    {"visual", {
+                        {"geometry", {
+                            {"box", {
+                                {"size", Value::valueList(0.5, 0.5, 0.5)}
+                            }}
+                        }},
+                        {"material", {
+                            {"script", "blue"}
+                        }}
+                    }},
+                    {"pose", Value::valueList(0., 0., 0., 0., 0., 0.)}
+                },
+                Value{
+                    {"name", "neck"},
+                    {"visual", {
+                        {"geometry", {
+                            {"box", {
+                                {"size", Value::valueList(0.3, 0.3, 0.3)}
+                            }}
+                        }},
+                        {"material", {
+                            {"script", "blue"}
+                        }}
+                    }},
+                    {"pose", Value::valueList(0., 0., 0.5, 0., 0., 0.)}
+                }
+            )}
+        };
+
+}
+
 
 class StaticPeriodicAnchor;
 std::shared_ptr<ExecutionContextFactoryAPI> staticPeriodicAnchor();
@@ -38,7 +78,8 @@ bool juiz::setupAnchorContainer(juiz::ProcessStore& store) {
 bool setupDynamicPeriodicAnchorContainer(juiz::ProcessStore& store) {
     logger::trace("anchor_container.cpp: setupDynamicPeriodicAnchorContainer() called");
     store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_AnchorContainerStruct>({
-	    {"className", "DynamicAnchorContainer"}
+	    {"className", "DynamicAnchorContainer"},
+        {"mesh", anchor_mesh}
 	  }))));
     
 
@@ -114,7 +155,8 @@ bool setupDynamicPeriodicAnchorContainer(juiz::ProcessStore& store) {
 bool setupStaticPeriodicAnchorContainer(juiz::ProcessStore& store) {
     logger::trace("anchor_container.cpp: setupStaticPeriodicAnchorContainer() called");
     store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_AnchorContainerStruct>({
-	    {"className", "StaticAnchorContainer"}
+	    {"className", "StaticAnchorContainer"},
+        {"mesh", anchor_mesh}
 	  }))));
     
 

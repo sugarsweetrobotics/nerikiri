@@ -7,3 +7,12 @@ ContainerFactoryBase::ContainerFactoryBase(const std::string& className, const s
 }
 
 ContainerFactoryBase::~ContainerFactoryBase() {}
+
+
+void ContainerFactoryBase::setMeshData(const JUIZ_MESH_DATA& mesh) {
+    
+}
+
+JUIZ_MESH_DATA ContainerFactoryBase::getMeshData() const {
+
+}

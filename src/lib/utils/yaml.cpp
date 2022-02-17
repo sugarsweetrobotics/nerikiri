@@ -94,11 +94,17 @@ namespace {
         return IsIntBase2(v) || IsIntBase10(v) || IsIntBase8(v) || IsIntBase16(v) || IsIntBase60(v);
     }
 
+    bool IsIPAddress(const std::string& s) {
+        std::regex re("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$");
+        std::smatch match;
+        return regex_match(s, match, re);
+    }
+
 
     bool IsFloatBase10(const std::string& s) {
         std::regex re("[-+]?([0-9][0-9_]*)?\\.[0-9.]*([eE][-+][0-9]+)?");
         std::smatch match;
-        return regex_match(s, match, re);
+        return regex_match(s, match, re) && (!IsIPAddress(s));
     }
 
     bool IsInfinity(const std::string& s) {
@@ -229,7 +235,8 @@ juiz::Value juiz::yaml::toValue(const std::string& yaml_str) {
     return construct(node);
 }
 
-juiz::Value juiz::yaml::toValue(std::ifstream& ifs) {
+juiz::Value juiz::yaml::toValue(std::ifstream&& ifs) {
+    if (!ifs) { return Value::error(logger::error("juiz::yaml::toValue(ifstream&) failed. Input file stream is wrong. The file must NOT OPENED.")); }
     YAML::Node node = YAML::Load(ifs);
     if (!node) {
         logger::error("YAMLParseError - filestream");

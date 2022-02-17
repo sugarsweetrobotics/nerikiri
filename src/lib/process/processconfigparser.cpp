@@ -8,9 +8,10 @@ using namespace juiz;
 namespace fs = std::filesystem;
 
 Value ProcessConfigParser::parseProjectFile(const std::string& projectFilePath) {
-    logger::trace("ProcessConfigParser::parseProjectFile({})", projectFilePath);
+    logger::info("ProcessConfigParser::parseProjectFile({}) called", projectFilePath);
     Value config;
     if (fs::path(projectFilePath).extension() == ".nkproj") {
+        logger::info(" - opening NKPROJ file.");
         // 拡張子が.nkprojであればjsonを仮定
         auto fp = fopen(projectFilePath.c_str(), "r");
         if (fp == nullptr) {
@@ -19,8 +20,8 @@ Value ProcessConfigParser::parseProjectFile(const std::string& projectFilePath) 
         }
         config = juiz::json::toValue(fp);
     } else {
-        std::ifstream ifs(projectFilePath);
-        config = juiz::yaml::toValue(ifs);
+        logger::info(" - opening JPROJ file.");
+        config = juiz::yaml::toValue(std::ifstream(projectFilePath));
     }
     
     auto projectDir = projectFilePath.substr(0, projectFilePath.rfind("/")+1);
@@ -73,15 +74,23 @@ Value ProcessConfigParser::parseSubProject(const std::string& projFilePath, cons
     logger::trace("ProcessConfigParser::parseSubProject(projFilePath={})", projFilePath);
     std::map<std::string, std::string> env_dictionary;
     env_dictionary["${ProjectDirectory}"] = projectDir;
-    auto fp = fopen(projFilePath.c_str(), "r");
-    if (fp == nullptr) {
-        logger::warn("ProcessConfigParser::parseSubProject failed. Can not open file. File path is " + projFilePath);
+    std::filesystem::path _path(projFilePath);
+    if (_path.extension() == ".nkproj") {
+        auto fp = fopen(projFilePath.c_str(), "r");
+        if (fp == nullptr) {
+            logger::warn("ProcessConfigParser::parseSubProject failed. Can not open file. File path is " + projFilePath);
+            logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", projFilePath);
+            return Value({});
+        }
+        auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
         logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", projFilePath);
-        return Value({});
+        return parseSubProjects(v, projectDir);
+    } else if (_path.extension() == ".jproj") {
+        auto v = replaceAndCopy(juiz::yaml::toValue(std::ifstream(_path)), env_dictionary);
+        logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", projFilePath);
+        return parseSubProjects(v, projectDir);
     }
-    auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
-    logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", projFilePath);
-    return parseSubProjects(v, projectDir);
+    return Value::error(logger::error("ProcessConfigParser::parseSubProject({}) failed. Invalid File extension. Must be .nkproj or .jproj", projFilePath));
 }
 
 
@@ -120,19 +129,26 @@ Value ProcessConfigParser::parseShelf(const std::string& shelfFilePath, const st
     logger::trace("ProcessConfigParser::parseShelf({})", shelfFilePath);
     std::map<std::string, std::string> env_dictionary;
     env_dictionary["${ShelfDirectory}"] = projectDir;
-    auto fp = fopen(shelfFilePath.c_str(), "r");
-    if (fp == nullptr) {
-        logger::error("ProcessConfigParser::parseShelf failed. File is " + shelfFilePath);  
-        logger::trace("ProcessConfigParser::parseShelf exit");
-
-        return Value({});
+    std::filesystem::path _path(shelfFilePath);
+    if (_path.extension() == ".nkshelf") {
+        auto fp = fopen(shelfFilePath.c_str(), "r");
+        if (fp == nullptr) {
+            logger::error("ProcessConfigParser::parseShelf failed. File is " + shelfFilePath);  
+            logger::trace("ProcessConfigParser::parseShelf exit");
+            return Value({});
+        }
+        // auto v = juiz::json::toValue(fp);
+        // logger::trace(" - ShelfDirectory = {}", projectDir);
+        auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
+        // logger::info("ProcessConfigParser::parseShelf success. File is {}.", shelfFilePath);
+        // logger::trace("ProcessConfigParser::parseShelf exit");
+        return parseShelves(v, projectDir);
+    } else if (_path.extension() == ".jshelf") {
+        auto v = replaceAndCopy(juiz::yaml::toValue(std::ifstream(_path)), env_dictionary);
+        logger::trace("ProcessConfigParser::parseSubProject(projFilePath={}) exit", shelfFilePath);
+        return parseSubProjects(v, projectDir);
     }
-    //auto v = juiz::json::toValue(fp);
-    logger::trace(" - ShelfDirectory = {}", projectDir);
-    auto v = replaceAndCopy(juiz::json::toValue(fp), env_dictionary);
-    logger::info("ProcessConfigParser::parseShelf success. File is {}.", shelfFilePath);
-    logger::trace("ProcessConfigParser::parseShelf exit");
-    return parseShelves(v, projectDir);
+    return Value::error(logger::trace("ProcessConfigParser::parseShelf({}) failed. File extension must be .nkshelf or .jshelf", projectDir));   
 }
 
 Value ProcessConfigParser::parseConfig(std::FILE* fp, const std::string& filepath, const std::string& shelfPath/*=""*/) {

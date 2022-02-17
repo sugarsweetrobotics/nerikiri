@@ -32,6 +32,12 @@ namespace juiz::json {
 
     juiz::Value NK_API toValue(const std::string& json_str);
 
+    /**
+     * @brief 
+     * 
+     * @param fp 
+     * @return juiz::Value 
+     */
     juiz::Value NK_API toValue(std::FILE* fp);
 
 };

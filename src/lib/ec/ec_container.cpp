@@ -9,6 +9,12 @@
 
 using namespace juiz;
 
+namespace {
+    auto ec_mesh = juiz::Value{
+            {"name", "anchor"}
+    };
+}
+
 struct _ECContainerStruct {
     std::string fullName;
     std::string typeName;
@@ -22,7 +28,8 @@ struct _ECContainerStruct {
 bool 
 juiz::setupECContainer(juiz::ProcessStore& store) {
     store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_ECContainerStruct>({
-	    {"className", "ECContainer"}
+	    {"className", "ECContainer"},
+        {"mesh", ec_mesh}
 	  }))));
     
 

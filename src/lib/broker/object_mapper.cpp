@@ -82,6 +82,8 @@ Value ObjectMapper::readResource(const std::shared_ptr<const ClientProxyAPI>& co
       return coreBroker->operationInlet()->get(match[1], match[2]);
     } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)/info$"))) {
       return coreBroker->operationInlet()->info(match[1], match[2]);
+    } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)/defaultValue$"))) {
+      return coreBroker->operationInlet()->info(match[1], match[2])["defaultValue"];
     } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)/connections$"))) {
       return coreBroker->operationInlet()->connections(match[1], match[2]);
     } else if (std::regex_match(path, match, std::regex("operations/([^/]*)/outlet/info$"))) {

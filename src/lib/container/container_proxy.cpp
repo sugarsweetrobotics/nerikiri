@@ -38,7 +38,7 @@ public:
     }
 
     virtual void setPose(const TimedPose3D& pose) override {
-
+        
     }
 
     virtual void setPose(TimedPose3D&& pose) override {
@@ -46,6 +46,10 @@ public:
     }
 
     virtual JUIZ_MESH_DATA getMeshData() const override {
+
+    }
+
+    virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override {
 
     }
 

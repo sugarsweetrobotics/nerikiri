@@ -4,7 +4,7 @@
 
     "operations": {
         "load_paths": ["${ShelfDirectory}", "../build/lib/Debug", "../build/lib/Release"],
-        "preload": []
+        "preload": ["poseRotate"]
     },
 
     "containers": {

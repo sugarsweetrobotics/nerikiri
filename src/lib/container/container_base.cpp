@@ -9,6 +9,64 @@
 
 using namespace juiz;
 
+
+namespace {
+    auto daruma_mesh = Value{
+            {"name", "modelData"},
+            {"links", Value::valueList(
+                Value{
+                    {"name", "root"},
+                    {"visual", {
+                        {"geometry", {
+                            {"box", {
+                                {"size", Value::valueList(0.5, 0.5, 0.5)}
+                            }}
+                        }},
+                        {"material", {
+                            {"script", "red"}
+                        }}
+                    }},
+                    {"pose", Value::valueList(0., 0., 0., 0., 0., 0.)}
+                },
+                Value{
+                    {"name", "neck"},
+                    {"visual", {
+                        {"geometry", {
+                            {"box", {
+                                {"size", Value::valueList(0.3, 0.3, 0.3)}
+                            }}
+                        }},
+                        {"material", {
+                            {"script", "red"}
+                        }}
+                    }},
+                    {"pose", Value::valueList(0., 0., 0.5, 0., 0., 0.)}
+                }
+            )}
+        };
+
+    auto default_mesh = Value{
+            {"name", "modelData"},
+            {"links", Value::valueList(
+                Value{
+                    {"name", "root"},
+                    {"visual", {
+                        {"geometry", {
+                            {"box", {
+                                {"size", Value::valueList(0.5, 0.5, 0.5)}
+                            }}
+                        }},
+                        {"material", {
+                            {"script", "red"}
+                        }}
+                    }},
+                    {"pose", Value::valueList(0., 0., 0., 0., 0., 0.)}
+                }
+            )}
+        };
+}
+
+
 /**
  * ContainerBaseクラス
  * 
@@ -17,60 +75,26 @@ using namespace juiz;
 class ContainerBase : public ContainerAPI {
 protected:
     std::vector<std::shared_ptr<OperationAPI>> operations_;
+
     const ContainerFactoryAPI* parentFactory_;
 
+    Value mesh_;
     
     juiz::TimedPose3D pose_;
 
 public:
     virtual TimedPose3D getPose() const override { return pose_; }
+
     virtual void setPose(const TimedPose3D& pose) override { pose_ = pose; }
+
     virtual void setPose(TimedPose3D&& pose) override { pose_ = std::move(pose); }
 
-
+    virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override {
+        mesh_ = mesh;
+    }
+    
     virtual JUIZ_MESH_DATA getMeshData() const override {
-        const double x = 0;
-        const double y = 0;
-        const double z = 0;
-        const double wx = 0;
-        const double wy = 0;
-        const double wz = 0;
-        const double ww = 1;
-        return Value{
-            {"name", "modelData"},
-            {"links", Value::valueList({
-                {"name", "root"},
-                {"visual", {
-                    {"geometry", {
-                        {"box", {
-                            {"size", Value::valueList(0.5, 0.5, 0.5)}
-                        }}
-                    }},
-                    {"material", {
-                        {"script", "red"}
-                    }}
-                }},
-                {"pose", Value::valueList(0., 0., 0., 0., 0., 0.)}
-            })
-            }
-        };
-            /*,
-            {"mesh", {
-                {"typeName", "box"},
-                {"size", {
-                    {"width", "0.5"},
-                    {"height", "1.5"},
-                    {"depth", "1.5"}
-                }}
-            }},
-            {"material", {
-                {"typeName", "black"}
-            }},
-            {"offset", toValue(Pose3D(Point3D(x, y, z), Orientation3D(wx, wy, wz, ww)))},
-            {"children", {
-
-            }}*/
-        //};
+        return mesh_;
     }
 
 public:
@@ -79,7 +103,15 @@ public:
      * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
      */
     ContainerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) :  
-        ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory)
+        ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory), mesh_(default_mesh)
+    {
+    }
+
+    /**
+     * コンストラクタ．実体を作る時はこちらのコンストラクタを使います．
+     */
+    ContainerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName, const Value& mesh) :  
+        ContainerAPI(className, typeName, fullName), parentFactory_(parentFactory), mesh_(mesh)
     {
     }
 
@@ -87,7 +119,6 @@ public:
      * デストラクタ
      */
     virtual ~ContainerBase() {}
-
 
     /**
      * ContainerにOperationを登録します．登録時にOperationのinstanceNameおよびfullNameを更新します
@@ -129,7 +160,6 @@ public:
         auto it = operations_.begin();
         for(;it != operations_.end();++it) {
             auto op = *it;
-            
             if (op->info().at("fullName").stringValue() == fullName) {
                 // match operation
                 it = operations_.erase(it);
@@ -139,11 +169,8 @@ public:
         return Value::error("ContainerBase::deleteOperation() failed. Operation not found.");        
     }
     
-
-    
     virtual std::vector<std::shared_ptr<OperationAPI>> operations() const override { 
         return {operations_.begin(), operations_.end()};
-        //return operations_;
     }
 
     virtual std::shared_ptr<OperationAPI> operation(const std::string& fullName) const override {
@@ -157,8 +184,10 @@ public:
 
 };
 
-
-
 std::shared_ptr<ContainerAPI> juiz::containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName) {
     return std::make_shared<ContainerBase>(parentFactory, className, typeName, fullName);
+}
+
+std::shared_ptr<ContainerAPI> juiz::containerBase(const ContainerFactoryAPI* parentFactory, const std::string& className, const std::string& typeName, const std::string& fullName, const Value& mesh) {
+    return std::make_shared<ContainerBase>(parentFactory, className, typeName, fullName, mesh);
 }

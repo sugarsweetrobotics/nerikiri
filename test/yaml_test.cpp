@@ -58,6 +58,9 @@ TEST_CASE("String value access", "") {
 
         REQUIRE(yaml::toValue("hello, world").isStringValue() == true);
         REQUIRE(yaml::toValue("hello, world").stringValue() ==  std::string("hello, world"));
+
+        REQUIRE(yaml::toValue("0.0.0.0").isStringValue() == true);
+        REQUIRE(yaml::toValue("0.0.0.0").stringValue() ==  std::string("0.0.0.0"));
     }
 
     SECTION("Value is not string") {

@@ -1,10 +1,14 @@
 #include <sstream>
 #include <iostream>
 #include <future>
+#include <filesystem>
 
 #include <juiz/utils/os.h>
 #include <juiz/utils/signal.h>
 #include <juiz/process.h>
+#include <juiz/utils/json.h>
+#include <juiz/utils/yaml.h>
+
 #include <juiz/utils/argparse.h>
 #include "../objectfactory.h"
 
@@ -43,7 +47,7 @@ std::map<std::string, std::string> env_dictionary_default{};
 
 Value defaultProcessConfig({
   {"logger", {
-    {"logLevel", "OFF"}
+    {"logLevel", "ALL"}
   }},
   {"operations", {
     {"precreate", Value::list()},
@@ -163,10 +167,40 @@ void ProcessImpl::_setupLogger() {
   logger::initLogger();
 }
 
+
+namespace {
+
+  Value loadNKProj(const std::filesystem::path& _path) {
+    return juiz::json::toValue(fopen(_path.string().c_str(), "r"));
+  }
+
+  Value loadJProj(const std::filesystem::path& _path) {
+    return juiz::yaml::toValue(std::ifstream(_path));
+  }
+
+  Value loadConfigFile(const std::filesystem::path& _path) {
+    if (_path.extension() == ".nkproj") {
+      return loadNKProj(_path);
+    } else if (_path.extension() == ".jproj") {
+      return loadJProj(_path);
+    }
+  }
+}
+/**
+ * @brief この部分でコンフィグファイルを読み込み，Valueデータに変換し，まずロガーを設定してからincludeをマージします．
+ * 
+ * @param filepath 
+ */
 void ProcessImpl::parseConfigFile(const std::string& filepath) {
-  logger::trace("Process::parseConfigFile({}) entry", filepath);
+  logger::info("Process::parseConfigFile({}) entry", filepath);
 
   /// まず読み込んでみてロガーの設定を確認します
+  auto v = loadConfigFile(std::filesystem::path(filepath));
+  if (v.isError()) {
+    logger::error("ProcessImpl::parseConfigFile({}) failed.", filepath);
+    return;
+  }
+  /** 
   auto fp = fopen(filepath.c_str(), "r");
   if (fp == nullptr) {
     logger::warn("ProcessConfigParser::parseConfig failed. File pointer is NULL.");
@@ -179,7 +213,9 @@ void ProcessImpl::parseConfigFile(const std::string& filepath) {
       logger::setLogLevel(loglevel_str);
     }
   }
+  */
 
+  logger::info("Process::parseConfigFile({}) loaded", filepath);
   
   /// ここでプロジェクトを読み込む
   config_ = merge(config_, ProcessConfigParser::parseProjectFile(filepath));

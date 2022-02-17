@@ -8,6 +8,12 @@
 
 using namespace juiz;
 
+namespace {
+    auto fsm_mesh = juiz::Value{
+            {"name", "fsm"}
+    };
+}
+
 struct _FSMContainerStruct {
     std::string fullName;
     std::string currentState;
@@ -19,7 +25,9 @@ struct _FSMContainerStruct {
 
 bool 
 juiz::setupFSMContainer(juiz::ProcessStore& store) {
-    store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_FSMContainerStruct>())));
+    store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(containerFactory<_FSMContainerStruct>({
+        {"mesh", fsm_mesh}
+    }))));
     store.add<ContainerOperationFactoryAPI>(std::shared_ptr<ContainerOperationFactoryAPI>(static_cast<ContainerOperationFactoryAPI*>(containerOperationFactory<_FSMContainerStruct>(
         {
           {"typeName", "activate_state"},

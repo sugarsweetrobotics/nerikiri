@@ -96,8 +96,9 @@ if (BUILD_JUIZ_EXAMPLE_OPENCV)
 endif (BUILD_JUIZ_EXAMPLE_OPENCV)
 
 if (BUILD_JUIZ_EXAMPLE_DEMOBEHAVIOUR)
+  message("---- Building DemoBehaviour project.....")
   add_subdirectory(DemoBehaviour)
-  list(APPEND EXAMPLES demobehaviour.nkproj)
+  list(APPEND EXAMPLES demobehaviour.jproj)
 endif (BUILD_JUIZ_EXAMPLE_DEMOBEHAVIOUR)
 
 set(EXAMPLE_MODULES ${OPERATIONS} ${CONTAINERS} ${ECS} PARENT_SCOPE)

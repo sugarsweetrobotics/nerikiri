@@ -277,6 +277,15 @@
             "args": ["../example/demo.nkproj"],
             "cwd": "${workspaceFolder}/build/"
 
+        },
+        {
+            "name": "Debug demo_behaviour2",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/juizd",
+            "args": ["../example/demo.jproj"],
+            "cwd": "${workspaceFolder}/build/"
+
         }
     ]
 }
