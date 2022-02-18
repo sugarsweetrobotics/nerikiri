@@ -1,0 +1,73 @@
+logger:
+  logLevel: DEBUG
+load_paths:
+  - ./
+shelves:
+  - path: ${SubProjectDirectory}/demobehaviour.jshelf
+operations:
+  precreate:
+    - typeName: poseRotate
+      fullName: poseRotate0.ope
+anchors:
+  - fullName: origin
+    typeName: DynamicPeriodicAnchor
+    rate: 10
+    target:
+      fullName: DemoBehaviour0.ctn
+    input:
+      fullName: DemoBehaviour0.ctn:update0.ope
+      broker:
+        typeName: CoreBroker
+      connectionType: pull
+    autoStart: true
+containers:
+  precreate: 
+    - typeName: DemoBehaviour
+      fullName: DemoBehaviour0.ctn
+      operations:
+        - typeName: start
+          instanceName: start0.ope
+        - typeName: getPose
+          instanceName: getPose0.ope
+        - typeName: update
+          instanceName: update0.ope
+      mesh:
+        name: modelData
+        links:
+          - name: root
+            visual:
+              geometry:
+                box:
+                  size: [0.3, 0.3, 0.3]
+              material:
+                script: yellow
+            pose: [0, 0, 0.15, 0, 0, 0]
+          - name: head
+            visual:
+              geometry:
+                cylinder:
+                  radius: 0.1
+                  height: 0.1
+              material:
+                script: yellow
+            pose: [0, 0, 0.4, 0, 0, 0]
+          - name: rightW
+            visual:
+              geometry:
+                cylinder:
+                  radius: 0.1
+                  height: 0.03
+              material:
+                script: gray
+            pose: [0.1, 0.2, 0.1, 0, 1.5708, 0]
+          - name: leftW
+            visual:
+              geometry:
+                cylinder:
+                  radius: 0.1
+                  height: 0.03
+              material:
+                script: gray
+            pose: [0.1, -0.2, 0.1, 0, 1.5708, 0]
+  transformations: []
+        

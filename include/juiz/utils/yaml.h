@@ -29,7 +29,7 @@ namespace juiz::yaml {
         }
     };
 
-    std::string NK_API toYAMLString(const juiz::Value& value);
+    std::string NK_API toYAMLString(const juiz::Value& value, const bool default_flow_style=false);
 
     juiz::Value NK_API toValue(const std::string& yaml_str);
 

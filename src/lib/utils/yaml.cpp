@@ -4,6 +4,8 @@
 #include <juiz/utils/yaml.h>
 #include <yaml-cpp/yaml.h>
 #include <juiz/logger.h>
+
+#include "./base64.h"
 using namespace juiz;
 
 
@@ -245,6 +247,121 @@ juiz::Value juiz::yaml::toValue(std::ifstream&& ifs) {
     return construct(node);
 }
 
-std::string juiz::yaml::toYAMLString(const juiz::Value& value) {
-    return "";
+namespace {
+    
+    std::string toJSONString(const juiz::Value& value) {
+        if (value.isBoolValue()) return std::to_string(value.boolValue());
+        if (value.isIntValue()) return std::to_string(value.intValue());
+        if (value.isDoubleValue()) return std::to_string(value.doubleValue());
+        if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
+        if (value.isObjectValue()) {
+            if (value.objectValue().size() == 0) { return "{}"; }
+            
+            std::stringstream ss;
+            for(auto [k, v] : value.objectValue()) {
+                ss << ",\"" << k << "\":" << toJSONString(v);
+            }
+            ss << "}";
+            return ss.str().replace(0, 1, "{");
+        }
+        if (value.isListValue()) {
+            if (value.listValue().size() == 0) { return "[]"; }
+
+            
+            std::stringstream ss;
+            for(auto& v : value.listValue()) {
+                ss << "," << toJSONString(v);
+            }
+            ss << "]";
+            return ss.str().replace(0, 1, "[");
+        }
+        if (value.isByteArrayValue()) {
+    //        return "\"hogehoge\""; 
+            //auto ss = "hogehoge";
+            // std::cout << "bytetojson:" << value.byteArraySize() << std::endl;
+            auto v = ::base64Encode((const char*)(&(value.byteArrayValue()[0])), value.byteArraySize(), ::BASE64_TYPE::BASE64_TYPE_STANDARD);
+            auto s = std::string("{\"__byte64__\":\"") + v + "\"}";
+            free(v);
+            return s;
+            //return std::string("\"") + ::base64Encode(ss, 8, ::BASE64_TYPE::BASE64_TYPE_STANDARD) + "\"";
+        }
+        if (value.isNull()) {
+            return "{}";
+        }
+        if (value.isError()) {
+
+        return "{\"__ERROR__\": \"Value is error('" + value.getErrorMessage() + "').\"}"; 
+    //      throw JSONConstructError(value.getErrorMessage());
+        }
+        return "{\"Error\": \"Value is not supported type.\"}";
+    }
+
+
+    
+    std::string toYAMLStringImpl(const juiz::Value& value, const int numIndent, const std::string& unitIndent = "  ") {
+        std::string indent = "";
+        for(int i = 0;i < numIndent;i++) {
+            indent += unitIndent;
+        }
+        if (value.isBoolValue()) return std::to_string(value.boolValue());
+        if (value.isIntValue()) return std::to_string(value.intValue());
+        if (value.isDoubleValue()) return std::to_string(value.doubleValue());
+        if (value.isStringValue()) return std::string("\"") + value.stringValue() + "\"";
+        if (value.isObjectValue()) {
+            if (value.objectValue().size() == 0) { return "{}"; }
+            
+            std::stringstream ss;
+            for(auto [k, v] : value.objectValue()) {
+                ss << '\n' << indent << k << ": ";
+                if (v.isObjectValue()) {
+                    if (v.objectValue().size() == 0) {
+                        ss << "{}" << std::endl;
+                    } else {
+                        ss 
+                           << (indent + unitIndent) << toYAMLStringImpl(v, numIndent+1, unitIndent);
+                    }
+                } else if (v.isListValue()) {
+                    if (v.listValue().size() == 0) {
+                        ss << "[]" << std::endl;
+                    } else {
+                        ss << std::endl
+                           << toYAMLStringImpl(v, numIndent+1, unitIndent);
+                    }
+                } else {
+                    ss << toYAMLStringImpl(v, 0);
+                }
+            }
+            return ss.str();
+        }
+        if (value.isListValue()) {
+            if (value.listValue().size() == 0) { return "[]"; }
+            std::stringstream ss;
+            for(auto& v : value.listValue()) {
+                if (v.isObjectValue()) {
+                    ss << indent + "- " << toYAMLStringImpl(v, numIndent+1, unitIndent) << std::endl;
+                } else {
+                    ss << indent + "- " << toYAMLStringImpl(v, numIndent+1, unitIndent) << std::endl;
+                }
+            }
+            return ss.str();
+        }
+        if (value.isByteArrayValue()) {
+            auto v = ::base64Encode((const char*)(&(value.byteArrayValue()[0])), value.byteArraySize(), ::BASE64_TYPE::BASE64_TYPE_STANDARD);
+            auto s = std::string("{\"__byte64__\":\"") + v + "\"}";
+            free(v);
+            return s;
+        }
+        if (value.isNull()) {
+            return "{}";
+        }
+        if (value.isError()) {
+            return "{\"__ERROR__\": \"Value is error('" + value.getErrorMessage() + "').\"}"; 
+        }
+        return "{\"Error\": \"Value is not supported type.\"}";
+    }
+}
+
+std::string juiz::yaml::toYAMLString(const juiz::Value& value, const bool default_flow_style) {
+    if (default_flow_style) return toJSONString(value);
+    return toYAMLStringImpl(value, 0);
 }

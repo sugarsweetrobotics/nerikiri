@@ -6,8 +6,15 @@
 #include <iomanip> // put_time
 #include <string>  // string
 
+#include <juiz/utils/os.h>
 #include <juiz/utils/argparse.h>
 #include <juiz/utils/stringutil.h>
+
+#include <juiz/utils/yaml.h>
+#include <juiz/utils/json.h>
+#include <juiz/value.h>
+
+
 using namespace juiz;
 namespace fs=std::filesystem;
 namespace c=std::chrono;
@@ -93,37 +100,6 @@ namespace {
         return output_str;
     }
 
-    /*
-    void replace_and_copy(const fs::path& src, fs::path& dst, const std::string& ContainerName) {
-        std::string containerName{ContainerName};
-        containerName[0] = std::tolower(containerName[0]);
-        std::string containername(ContainerName);
-        std::transform(containername.begin(), containername.end(), containername.begin(), [](unsigned char c){ return std::tolower(c); });
-        
-        std::ifstream src_f(src);
-        std::ofstream dst_f(dst);
-        std::string lineBuffer;
-        while(std::getline(src_f, lineBuffer)) {
-            lineBuffer = replace(lineBuffer, "ContainerName", ContainerName);
-            lineBuffer = replace(lineBuffer, "containerName", containerName);
-            lineBuffer = replace(lineBuffer, "containername", containername);
-            dst_f << lineBuffer << '\n';
-        }
-    }
-
-    void replace_and_copy_operation(const fs::path& src, fs::path& dst, const std::string& ContainerName, const std::string& operationName) {
-        const auto dictionary = setup_replace_dictionary_for_container_operation(ContainerName, operationName);
-        std::ifstream src_f(src);
-        std::ofstream dst_f(dst);
-        std::string lineBuffer;
-        while(std::getline(src_f, lineBuffer)) {
-            lineBuffer = replace_with_dictionary(lineBuffer, dictionary);
-            dst_f << lineBuffer << '\n';
-        }
-    }
-    */
-
-    
     void replace_and_copy_operation_with_dictionary(const fs::path& src, const fs::path& dst, const std::map<std::string, std::string>& dictionary) {
         std::ifstream src_f(src);
         std::ofstream dst_f(dst);
@@ -138,16 +114,16 @@ namespace {
         if (fs::exists(newFilePath)) { /// すでに出力先が存在して，上書きオプションが設定されていない場合は何もしない．
             if (overwrite) {
                 if (verbose) {
-                    std::cout << " --- Converted to " << newFilePath << ". But file found. OVERWRITTEN." << std::endl;
+                    std::cout << "  FileConvert from " << newFilePath << ". But file found. OVERWRITTEN." << std::endl;
                 }
                 std::string backupFilename = fileName + timestamp_str();
                 auto backupFilePath = destPath / fs::path(backupFilename);
-                std::cout << " --- Rename from " << newFilePath << " to " << backupFilePath << std::endl;
+                std::cout << "  Rename from " << newFilePath << " to " << backupFilePath << std::endl;
                 fs::rename(newFilePath, backupFilePath);      
                 return backupFilePath;  
             } else {
                 if (verbose) {
-                    std::cout << " --- Converted to " << newFilePath << ". But file found. NOT GENERATED." << std::endl;
+                    std::cout << "  Converted to " << newFilePath << ". But file found. NOT GENERATED." << std::endl;
                 }
                 return "";
             }
@@ -173,7 +149,7 @@ namespace {
         std::string fileName = replace_with_dictionary(tempFilePath.filename().string(), dictionary);
         if (create_backup_file_if_exists(destPath, fileName, overwrite, verbose).length() != 0) { // もし必要ならバックアップする
             if (verbose) {
-                std::cout << " --- Converted to " << destPath / fs::path(fileName) << ". GENERATED." << std::endl;
+                std::cout << "  Converted to " << destPath / fs::path(fileName) << ". GENERATED." << std::endl;
             }
             replace_and_copy_operation_with_dictionary(tempFilePath, destPath / fs::path(fileName), dictionary);
         }
@@ -181,34 +157,45 @@ namespace {
 
     void generateTemplateCodes(const fs::path& tempDir, const fs::path& destPath, const std::map<std::string, std::string>& dictionary, const matcher_function& matcher, const bool overwrite, const bool verbose) {
         if (verbose) {
-            std::cout << "generating template codes....." << std::endl;
+            std::cout << "generatingTemplateCodes: called" << std::endl;
         }
         for(const fs::directory_entry& dir_entry: std::filesystem::recursive_directory_iterator{tempDir}) {
             if (matcher(dir_entry.path())) { /// もしmatcherでファイルが該当すると判断されたらテンプレートを更新してコピーする
                 /// 表示
-                if (verbose) { std::cout << " - parsing " << dir_entry.path() << '\n'; }
+                if (verbose) { std::cout << "  parsing: " << dir_entry.path() << '\n'; }
                 generateTemplateCode(destPath, dir_entry.path(), dictionary, overwrite, verbose);
             }
         }
         if (verbose) {
-            std::cout << " ..... done. " << std::endl;
+            std::cout << "  status: done" << std::endl;
         }
     }
 
 
     bool check_option_validity(juiz::Options& options, const bool verbose=false) {
         if (options.is_error()) {   
-            std::cout << "Failed. Passed command-line argument is invalid." << std::endl;
+            std::cerr << "# Failed. Passed command-line argument is invalid." << std::endl;
             return false;
         }
         auto program_name = options.program_name;
         
         // もしテンプレートディレクトリが存在しないなら失敗
-        auto templateDirName = juiz::getValue<std::string>(options.results["templateDir"], "./container_template");
+        auto juiz_root_list = juiz::getEnv("JUIZ_ROOT");
+        std::string juiz_root = "";
+        if (juiz_root_list.size() == 1) {
+            juiz_root = juiz_root_list[0];
+        } else if (juiz_root_list.size() > 1) {
+            std::cout << "# juiz_root_list size is larger than 1" << std::endl;
+            juiz_root = juiz_root_list[0];
+        }
+        auto templateDirName = juiz::getValue<std::string>(options.results["templateDir"], "$JUIZ_ROOT/share/component_template");
+        if (templateDirName.find("$JUIZ_ROOT") != std::string::npos) {
+            templateDirName = replace(templateDirName, "$JUIZ_ROOT", juiz_root);
+        }
         fs::path tempDir(templateDirName);
         if (!fs::exists(tempDir)) {
             if (verbose) {
-                std::cout << program_name << ": " << "templateDir is not found (" << templateDirName << ")" << std::endl;
+                std::cerr << "# templateDir is not found (" << templateDirName << ")" << std::endl;
             }
             return false;
         }
@@ -217,7 +204,7 @@ namespace {
         auto ContainerName = juiz::getValue<std::string>(options.results["container"], "ContainerName");
         auto containerOperationName = juiz::getValue<std::string>(options.results["container_operation"], "");
         if (ContainerName.length() == 0 && containerOperationName.length() != 0) {
-            std::cout << program_name << ": " << "containerOperationName is set but ContainerName is not set." << std::endl;
+            std::cerr << "# containerOperationName is set but ContainerName is not set." << std::endl;
             return false;
         }
 
@@ -226,7 +213,7 @@ namespace {
             auto proj_name = juiz::getValue<std::string>(options.results["name"], "");
             auto destination = juiz::getValue<std::string>(options.results["destination"], "");
             if (proj_name.length() == 0 && destination.length() == 0) {
-                std::cout << program_name << ": " << "--name option or --destination option must be defined." << std::endl;
+                std::cerr << "# --name option or --destination option must be defined." << std::endl;
                 return false;
             }
         }
@@ -237,7 +224,7 @@ namespace {
             auto destination = juiz::getValue<std::string>(options.results["destination"], "");
             fs::path destinationPath(destination);
             if (proj_name.length() == 0 && !fs::exists(destinationPath)) {
-                std::cout << program_name << ": " << "--name option must be defined if the destination path does not exists." << std::endl;
+                std::cerr << "# --name option must be defined if the destination path does not exists." << std::endl;
                 return false;
             }
         }
@@ -275,7 +262,7 @@ namespace {
                 pos = container_names_and_dust.find(")"); /// かっこが閉じているか確認
                 while(pos == std::string::npos) {
                     if (!std::getline(src_f, lineBuffer)) { /// かっこが終わらないのにファイル終端にきたら
-                        std::cout << "FATAL ERROR: detecting file end without detecting " + ModuleName + "." << std::endl;
+                        std::cout << "# FATAL ERROR: detecting file end without detecting " + ModuleName + "." << std::endl;
                         return buf;
                     }
                     container_names_and_dust += " "  + lineBuffer;
@@ -333,13 +320,79 @@ namespace {
         src_f.close();
     }
 
+    void updateJShelfForContainer(const fs::path& destinationPath, const std::string& ComponentName, const std::string& ContainerName, const bool overwrite, const bool verbose) {
+        std::ifstream src_f(destinationPath / (ComponentName + ".jshelf"));
+        auto value = juiz::yaml::toValue(std::move(src_f));
+        if(!value["containers"].hasKey("preload")) {
+            value["containers"]["preload"] = juiz::Value::object();
+        }
+        if(!value["containers"]["preload"].hasKey(ContainerName)) {
+            value["containers"]["preload"][ContainerName] = juiz::Value{
+                {"operations", juiz::Value::list()}
+            };
+        }
+
+        std::cout << juiz::yaml::toYAMLString(value, false);
+
+        const fs::path newPath(create_backup_file_if_exists(destinationPath, (ComponentName + ".jshelf"), true, verbose));
+
+        std::ofstream dst_f(destinationPath / (ComponentName + ".jshelf"));
+        dst_f << juiz::yaml::toYAMLString(value, false);
+        dst_f.close();
+    }
+
+    void updateJShelfForContainerOperation(const fs::path& destinationPath, const std::string& ComponentName, const std::string& ContainerName, const std::string& containerOperationName, const bool overwrite, const bool verbose) {
+        std::ifstream src_f(destinationPath / (ComponentName + ".jshelf"));
+        auto value = juiz::yaml::toValue(std::move(src_f));
+        if(!value["containers"].hasKey("preload")) {
+            value["containers"]["preload"] = juiz::Value::object();
+        }
+        if(!value["containers"]["preload"].hasKey(ContainerName)) {
+            value["containers"]["preload"][ContainerName] = juiz::Value{
+                {"operations", juiz::Value::list()}
+            };
+        }
+
+        auto vlist = value["containers"]["preload"][ContainerName]["operations"].listValue();
+        if(std::find(vlist.begin(), vlist.end(), containerOperationName) == vlist.end()) {
+            value["containers"]["preload"][ContainerName]["operations"].push_back(containerOperationName);
+        }
+
+        std::cout << juiz::yaml::toYAMLString(value, false);
+
+        const fs::path newPath(create_backup_file_if_exists(destinationPath, (ComponentName + ".jshelf"), true, verbose));
+
+        std::ofstream dst_f(destinationPath / (ComponentName + ".jshelf"));
+        dst_f << juiz::yaml::toYAMLString(value, false);
+        dst_f.close();
+    }
+
+    void updateJShelfForOperation(const fs::path& destinationPath, const std::string& ComponentName, const std::string& operationName, const bool overwrite, const bool verbose) {
+        std::ifstream src_f(destinationPath / (ComponentName + ".jshelf"));
+        auto value = juiz::yaml::toValue(std::move(src_f));
+        if(!value["operations"].hasKey("preload")) {
+            value["operations"]["preload"] = juiz::Value::list();
+        }
+        auto vlist = value["operations"]["preload"].listValue();
+        if(std::find(vlist.begin(), vlist.end(), operationName) == vlist.end()) {
+            value["operations"]["preload"].push_back(operationName);
+        }
+
+        std::cout << juiz::yaml::toYAMLString(value, false);
+
+        const fs::path newPath(create_backup_file_if_exists(destinationPath, (ComponentName + ".jshelf"), true, verbose));
+
+        std::ofstream dst_f(destinationPath / (ComponentName + ".jshelf"));
+        dst_f << juiz::yaml::toYAMLString(value, false);
+        dst_f.close();
+    }
 
 }
 
 int main(const int argc, const char* argv[]) {
     ArgParser parser;
     parser.option("-v", "--verbose", "Show a lot of messages", juiz::NOT_REQUIRED);
-    parser.option<std::string>("-t", "--templateDir", "Template Directory of ContainerPackage", juiz::NOT_REQUIRED, "./container_template");
+    parser.option<std::string>("-t", "--templateDir", "Template Directory of ContainerPackage (default=$JUIZ_ROOT/share/juiz/component_template)", juiz::NOT_REQUIRED, "$JUIZ_ROOT/share/juiz/component_template");
     parser.option<std::string>("-c", "--container", "Name of Container", juiz::NOT_REQUIRED, "");
     parser.option("-f", "--force", "Overwrite output file", juiz::NOT_REQUIRED);
     parser.option<std::string>("-co", "--container_operation", "Container Operation Name (ContainerName option must be set if this option is used.", juiz::NOT_REQUIRED, "");
@@ -353,9 +406,20 @@ int main(const int argc, const char* argv[]) {
     }
 
     auto program_name = options.program_name;
+    auto juiz_root_list = juiz::getEnv("JUIZ_ROOT");
+    std::string juiz_root = "";
+    if (juiz_root_list.size() == 1) {
+        juiz_root = juiz_root_list[0];
+    } else if (juiz_root_list.size() > 1) {
+        std::cout << "# juiz_root_list size is larger than 1" << std::endl;
+        juiz_root = juiz_root_list[0];
+    }
     auto verbose = juiz::getBool(options.results["verbose"]);
     auto overwrite = juiz::getBool(options.results["force"]);
-    auto templateDirName = juiz::getValue<std::string>(options.results["templateDir"], "./container_template");
+    auto templateDirName = juiz::getValue<std::string>(options.results["templateDir"], "$JUIZ_ROOT/share/juiz/component_template");
+    if (templateDirName.find("$JUIZ_ROOT") != std::string::npos) {
+        templateDirName = replace(templateDirName, "$JUIZ_ROOT", juiz_root);
+    }
     auto ComponentName = juiz::getValue<std::string>(options.results["name"], "");
     auto ContainerName = juiz::getValue<std::string>(options.results["container"], "ContainerName");
     auto containerOperationName = juiz::getValue<std::string>(options.results["container_operation"], "");
@@ -376,11 +440,14 @@ int main(const int argc, const char* argv[]) {
     const fs::path destinationPath(destination);
     if (fs::exists(destinationPath)) {
         if (verbose) {
-            std::cout << program_name << ": " << "destination path is found (" << destinationPath << ")" << std::endl;
+            std::cout << "destinationPath: " << destinationPath << std::endl;
+            std::cout << "  status: " << "found" << std::endl;
+            std::cout << "juiz_root: " << juiz_root << std::endl;
         }
         if (!fs::exists(destinationPath / "CMakeLists.txt")) {
             if (verbose) {
-                std::cout << program_name << ": " << "destination path is found, but not found CMakeLists.txt in the folder." << std::endl;
+                std::cout << "CMakeLists.txt: NotFound" << std::endl;
+                std::cerr << "# destination path is found, but not found CMakeLists.txt in the folder." << std::endl;
                 return -1;
             }
         }
@@ -388,33 +455,44 @@ int main(const int argc, const char* argv[]) {
         
         if (ComponentName.length() == 0) {
             if (detected_component_name.length() == 0) {
-                std::cout << program_name << ": " << "ComponentName is not defined, but destination is found. But detecting component name failed." << std::endl;
+                std::cerr << "# ComponentName is not defined, but destination is found. But detecting component name failed." << std::endl;
                 return -1;
             }
-            
             ComponentName = detected_component_name;
             if (verbose) {
-                std::cout << program_name << ": " << "ComponentName (" << ComponentName << ") detected." << std::endl;
+                std::cout << "# ComponentName (" << ComponentName << ") detected." << std::endl;
             }
         } else if(ComponentName != detected_component_name) {
-            std::cout << program_name << ": " << "ComponentName is defined, but destination is found. But detecting component name (" << detected_component_name << ") is not same as ComponentName(" << ComponentName << ")." << std::endl;
+            std::cout << "# ComponentName is defined, but destination is found. But detecting component name (" << detected_component_name << ") is not same as ComponentName(" << ComponentName << ")." << std::endl;
             return -1;
         } else {
             
         }
     } else {
+        if (verbose) {
+            std::cout << "juiz_root: " << juiz_root << std::endl;
+            std::cout << "destinationPath: " << destinationPath << std::endl;
+            std::cout << "  status: " << "NotFound" << std::endl;
+        }
         /// 存在しなければ
         fs::create_directory(destinationPath);
         auto matcher = [](const fs::path& p){
-            return p.string().find("CMakeLists.txt") != std::string::npos;
+            return  p.string().find("CMakeLists.txt") != std::string::npos ||
+                    p.string().find("juiz_component.cmake") != std::string::npos || 
+                    p.string().find("ComponentName.") != std::string::npos;
         };
         auto dictionary = setup_replace_dictionary(ComponentName);
         generateTemplateCodes(tempDir, destinationPath, dictionary, matcher, overwrite, verbose);
     }
 
     if (verbose) {
-        std::cout << program_name << ": " << "componentname   = " << all_lower(ComponentName) << std::endl;
-        std::cout << program_name << ": " << "destinationPath = " << destinationPath << std::endl;
+        std::cout << "command: " << program_name << std::endl;
+        std::cout << "  ComponentName          : " << (ComponentName) << std::endl;
+        std::cout << "  componentname          : " << all_lower(ComponentName) << std::endl;
+        std::cout << "  destinationPath        : " << destinationPath << std::endl;
+        std::cout << "  ContainerName          : " << ContainerName << std::endl;
+        std::cout << "  ContainerOperationName : " << containerOperationName << std::endl;
+        std::cout << "  OperationName          : " << operationName << std::endl;
     }
     
     /// 出力テンプレートディレクトリの存在確認
@@ -428,12 +506,13 @@ int main(const int argc, const char* argv[]) {
         auto dictionary = setup_replace_dictionary_for_container(ContainerName);
         generateTemplateCodes(tempDir, destinationPath, dictionary, matcher, overwrite, verbose);
         updateCMakeListsForModule(destinationPath, "CONTAINERS", ContainerName, overwrite, verbose);
+        updateJShelfForContainer(destinationPath, ComponentName, ContainerName, overwrite, verbose);
     }
     if (containerOperationName.length() != 0) {
 
         auto module_names = detect_module_names(destinationPath / "CMakeLists.txt", "CONTAINERS");
         if (std::find(module_names.begin(), module_names.end(), ContainerName) == module_names.end()) {
-            std::cout << "ContainerOperation (name=" << containerOperationName << ") is detected, but property ContainerName is not properly set. The container name can not be found in the component." << std::endl;
+            std::cout << "# ContainerOperation (name=" << containerOperationName << ") is detected, but property ContainerName is not properly set. The container name can not be found in the component." << std::endl;
             return -1;
         }
         
@@ -442,7 +521,8 @@ int main(const int argc, const char* argv[]) {
         };
         auto dictionary = setup_replace_dictionary_for_container_operation(ContainerName, containerOperationName);
         generateTemplateCodes(tempDir, destinationPath, dictionary, matcher, overwrite, verbose);
-        updateCMakeListsForModule(destinationPath, "CONTAINER_OPERATIONS", containerOperationName, overwrite, verbose);
+        updateCMakeListsForModule(destinationPath, "CONTAINER_OPERATIONS", ContainerName + "_" + containerOperationName, overwrite, verbose);
+        updateJShelfForContainerOperation(destinationPath, ComponentName, ContainerName, containerOperationName, overwrite, verbose);
     }
     if (operationName.length() != 0) {        
         auto matcher = [](const fs::path& p){
@@ -451,6 +531,7 @@ int main(const int argc, const char* argv[]) {
         auto dictionary = setup_replace_dictionary_for_operation(operationName);
         generateTemplateCodes(tempDir, destinationPath, dictionary, matcher, overwrite, verbose);
         updateCMakeListsForModule(destinationPath, "OPERATIONS", operationName, overwrite, verbose);
+        updateJShelfForOperation(destinationPath, ComponentName, operationName, overwrite, verbose);
     }
     return 0;
 }

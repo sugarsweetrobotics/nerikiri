@@ -1,0 +1,21 @@
+load_paths: 
+  - ./
+operations:
+  load_paths:
+    - ${ShelfDirectory}
+    - ../build/lib/Debug
+    - ../build/lib/Release
+  preload:
+    - poseRotate
+containers:
+  load_paths:
+    - ${ShelfDirectory}
+    - ../build/lib/Debug
+    - ../build/lib/Release
+  preload: 
+    DemoBehaviour: 
+      operations:
+        - start
+        - getPose
+        - update
+      

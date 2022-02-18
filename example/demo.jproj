@@ -1,0 +1,65 @@
+logger: 
+  logLevel: INFO
+load_paths: 
+  - ./
+includes:
+  - path: "DemoBehaviour/demobehaviour.jproj"
+shelves:
+  - path: brokers.nkshelf
+  - path: ecs.nkshelf
+brokers:
+  precreate:
+    - typeName: HTTPBroker
+      fullName: HTTPBroker0.brk
+      host: "0.0.0.0"
+      port: 8080
+      baseDir: ${ProjectDirectory}/../systemeditor
+      route: {}
+ecs:
+  precreate:
+    - typeName: TimerEC
+      fullName: TimerEC0.ec
+      rate: 30.0
+    
+  bind:
+    - fullName: TimerEC0.ec
+      operations:
+        - fullName: DemoBehaviour0.ctn:update0.ope
+          broker:
+            typeName: CoreBroker
+fsms:
+  bind:
+    - fullName: FSM0.fsm
+      state: running
+      operations : []
+      ecs: 
+        - fullName: TimerEC0.ec
+          state: started
+    - fullName: FSM0.fsm
+      state: stopped
+      ecs :
+        - fullName: TimerEC0.ec
+          state: stopped
+  precreate: 
+    - typeName: GenericFSM
+      fullName: FSM0.fsm
+      states : 
+        - name: stopped
+          transit: [running]
+        - name: running
+          transit: [stopped]
+      defaultState: stopped
+connections:
+  - name: con0
+    type: event
+    broker: CoreBroker
+    inlet:
+      name: pose
+      operation:
+        fullName: poseRotate0.ope
+    outlet:
+      operation:
+        fullName: DemoBehaviour0.ctn:getPose0.ope
+
+callbacks: []
+

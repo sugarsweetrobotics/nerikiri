@@ -17,10 +17,12 @@ std::vector<std::string> juiz::getEnv(const std::string& key) {
 
 #ifdef WIN32
 
-
 #else
     const char *val = getenv(key.c_str());
-    return stringSplit(val, ':');
+    if (val == nullptr) return {};
+    std::string vals = val;
+    if (vals.length() == 0) return {};
+    return stringSplit(vals, ':');
 #endif
 }
 

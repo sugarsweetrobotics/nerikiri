@@ -23,5 +23,4 @@ add_app(juiz_create_component)
 
 set(APPS juizd juiz_create_component)
 
-install(TARGETS ${APPS}
-)
+install(TARGETS ${APPS} )
