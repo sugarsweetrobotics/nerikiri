@@ -1,0 +1,9 @@
+# Component Name = ComponentName
+load_paths: ["./"]
+operations:
+  load_paths: ["${ShelfDirectory}", "../build/lib/Debug", "../build/lib/Release"]
+  preload: []
+containers:
+  load_paths: [ "${ShelfDirectory}", "../build/lib/Debug", "../build/lib/Release"]
+  preload: {}
+

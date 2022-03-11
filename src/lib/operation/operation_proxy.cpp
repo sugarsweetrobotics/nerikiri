@@ -120,8 +120,7 @@ private:
 public:
     OperationOutletProxy(OperationAPI* owner, const std::shared_ptr<ClientProxyAPI>& broker, const std::string& fullName) : owner_(owner), broker_(broker), fullName_(fullName), ownerProxy_(nullptr) {}
     virtual ~OperationOutletProxy() {}
-    
-    // virtual OperationAPI* owner() override { return owner_; }
+
 
     virtual Value invokeOwner() override { 
         return owner_->invoke(); 
@@ -214,6 +213,12 @@ public:
         inlets_.clear();
         
     }
+
+        
+    virtual Value brokerInfo() const override {
+        return broker_->info();
+    }
+    
 public:
     virtual Value info() const override {
         logger::trace("OperationProxy::info() called");

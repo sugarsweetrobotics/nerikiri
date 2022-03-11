@@ -1,0 +1,17 @@
+# Component Name = ComponentName
+
+load_paths: ["./"]
+operations:
+  load_paths: ["@JUIZ_INSTALL_PREFIX@/ContainerName", "${ShelfDirectory}", "../build/lib/Debug", "../build/lib/Release"]
+  preload: []
+containers:
+  load_paths: ["@JUIZ_INSTALL_PREFIX@/ContainerName", "${ShelfDirectory}", "../build/lib/Debug", "../build/lib/Release"]
+  preload: {}
+
+
+
+
+
+
+
+

@@ -15,7 +15,7 @@ namespace juiz {
 
     class ObjectFactory {
     public:
-
+        
 
         static Value createOperation(ProcessStore& store, const Value& info);
 

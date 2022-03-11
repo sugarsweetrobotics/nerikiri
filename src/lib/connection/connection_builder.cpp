@@ -63,12 +63,7 @@ Value ConnectionBuilder::connect(ProcessStore& store, const std::shared_ptr<Outl
   if (Value::string(connectionInfo.at("namingPolicy")) == "auto") {
     name = renameConnectionName(juiz::functional::join(outlet->connections(), inlet->connections()), name);
   }
-
-
-
 }
-
-
 
 
 Value ConnectionBuilder::createInletConnection(ProcessStore& store, const Value& connectionInfo, ClientProxyAPI* inletBroker) {
@@ -93,7 +88,7 @@ Value ConnectionBuilder::createOutletConnection(ProcessStore& store, const Value
  * 接続の作成
  */
 Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Value& connectionInfo_, BrokerAPI* receiverBroker/*=nullptr*/) {
-  logger::trace("ConnectionBuilder::createOperationConnection() called");
+  logger::trace("ConnectionBuilder::createOperationConnection(connectionInfo={}) called", connectionInfo_);
   Value connectionInfo = connectionInfo_;
   //logger::trace("ConnectionBuilder::createConnection({}) called", connectionInfo);
   auto inlet = store.inletProxy(connectionInfo["inlet"]);

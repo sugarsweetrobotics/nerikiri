@@ -12,6 +12,13 @@ namespace juiz {
     class ProcessBuilder {
     public:
 
+
+        static void preloadContainerFactories(ProcessStore& store, const Value& containerConfig, const std::string& path);
+
+        static void precreateContainers(ProcessStore& store, const Value& containerConfig);
+
+        static void presetContainerTransformation(ProcessStore& store, const Value& containerConfig);
+
         static void preloadOperations(ProcessStore& store, const Value& config, const std::string& path);
         static void preloadContainers(ProcessStore& store, const Value& config, const std::string& path);
         static void preloadExecutionContexts(ProcessStore& store, const Value& config, const std::string& path);

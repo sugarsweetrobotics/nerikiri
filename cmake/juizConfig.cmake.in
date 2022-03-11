@@ -1,6 +1,7 @@
 set(JUIZ_VERSION 0.0.1)
 @PACKAGE_INIT@
 
+set_and_check(juiz_ROOT_DIR "@CMAKE_INSTALL_PREFIX@")
 set_and_check(juiz_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
 set_and_check(juiz_LIB_DIR "@PACKAGE_LIB_INSTALL_DIR@")
 #set_and_check(juiz_SYSCONFIG_DIR "@PACKAGE_SYSCONFIG_INSTALL_DIR@")

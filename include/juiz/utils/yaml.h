@@ -33,6 +33,6 @@ namespace juiz::yaml {
 
     juiz::Value NK_API toValue(const std::string& yaml_str);
 
-    juiz::Value NK_API toValue(std::ifstream&& fp);
+    juiz::Value NK_API toValue(std::ifstream& fp);
 
 };

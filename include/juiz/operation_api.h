@@ -89,6 +89,7 @@ namespace juiz {
 
     std::shared_ptr<InletAPI> nullOperationInlet();
 
+
     /**
      * 
      * 
@@ -138,6 +139,12 @@ namespace juiz {
 
     template<>
     inline std::shared_ptr<OperationAPI> nullObject() { return nullOperation(); }
+
+
+    template<>
+    inline std::shared_ptr<OutletAPI> nullObject() { return nullOperationOutlet(); }
+    template<>
+    inline std::shared_ptr<InletAPI> nullObject() { return nullOperationInlet(); }
 
     using OperationFactoryAPI = FactoryBase<OperationAPI>;
     

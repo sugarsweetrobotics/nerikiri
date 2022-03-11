@@ -75,17 +75,31 @@ std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string&
 }
 
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
-  auto fullName = Value::string(info.at("fullName"));
-  auto f = juiz::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
-    if (f) return f.value();
-  if (info.hasKey("broker")) {
-    logger::trace("ProcessStore::operationProxy({}) called. Creating OperationProxy....", info);
+  logger::trace("ProcessStore::operationProxy({}) called", info);
+  if (info.hasKey("fullName")) {
+    auto fullName = Value::string(info["fullName"]);
+    auto f = juiz::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+    if (f) {
+      return f.value();
+    }
+    if (info.hasKey("broker")) {
+      logger::trace("ProcessStore::operationProxy({}) called. Creating OperationProxy....", info);
+      return ProxyBuilder::operationProxy(info, this);
+    }
+  } else if (info.isStringValue()) {
+    const auto fullName = info.stringValue();
+    auto f = juiz::functional::find<std::shared_ptr<OperationAPI>>(operationProxies(), [&fullName](auto b) { return b->fullName() == fullName; });
+    if (f) {
+      return f.value();
+    }
     return ProxyBuilder::operationProxy(info, this);
+    
   }
   return get<OperationAPI>(Value::string(info.at("fullName")));
 }
 
 std::shared_ptr<InletAPI> ProcessStore::inletProxy(const Value& info) {
+  logger::trace("ProcessStore::inletProxy({}) called", info);
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
     auto p = juiz::functional::find<std::shared_ptr<InletAPI>>(inletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
@@ -105,7 +119,25 @@ std::shared_ptr<InletAPI> ProcessStore::inletProxy(const Value& info) {
     auto ip = operationProxy->inlet(Value::string(info["name"]));
     addInletProxy(ip);
     return ip;
-  } 
+  } else if (info.isStringValue()) {
+    /// Full path of inlet
+    const std::string fullPath = getStringValue(info, "");
+    const auto separator_pos = fullPath.rfind(":");
+    if (separator_pos == std::string::npos) {
+      logger::error("ProcessStore::inletProxy({}) failed. passed argument is wrong.", info);
+      return nullObject<InletAPI>();
+    }
+    const std::string operationFullPath = fullPath.substr(0, separator_pos);
+    logger::trace("operationFullPath is {}", operationFullPath);
+    const std::string inletName = fullPath.substr(separator_pos+1);
+    const auto operationProxy = this->operationProxy(operationFullPath);
+    if (operationProxy->isNull()) {
+      logger::error("ProcessStore::inletProxy({}) failed. Created OperationProxy(info={}) is null.", info);
+    }
+    auto ip = operationProxy->inlet(inletName);
+    addInletProxy(ip);
+    return ip;
+  }
     
   logger::error("ProcessStore::inletProxy({}) failed. Invalid Info format", info);
   return nullOperationInlet();  
@@ -118,6 +150,7 @@ std::shared_ptr<ClientProxyAPI> juiz::coreBroker(ProcessStore& store) {
 
 
 std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
+  logger::trace("ProcessStore::outletProxy({}) called", info);
   if (info.hasKey("operation")) { /// もしoperation側のinletならば
     auto p = juiz::functional::find<std::shared_ptr<OutletAPI>>(outletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
@@ -134,7 +167,21 @@ std::shared_ptr<OutletAPI> ProcessStore::outletProxy(const Value& info) {
     auto op = operationProxy->outlet();
     addOutletProxy(op);
     return op;
-  } /* else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
+  } else if (info.isStringValue()) {
+    /// Full path of inlet
+    const std::string fullPath = getStringValue(info, "");
+    const std::string operationFullPath = fullPath;
+    const auto operationProxy = this->operationProxy(operationFullPath);
+    if (operationProxy->isNull()) {
+      logger::error("ProcessStore::inletProxy({}) failed. Created OperationProxy() is null.", info);
+    }
+    auto op = operationProxy->outlet();
+    addOutletProxy(op);
+    return op;
+  }
+  
+  
+  /* else if (info.hasKey("fsm")) { /// もしfsm側のinletならば
     auto p = juiz::functional::find<std::shared_ptr<OperationOutletAPI>>(outletProxies(), [&info](auto p) {
       // もしoperationの名前が一緒でnameが一緒のinletproxyがあればそれは同一
       return p->info()["ownerFullName"] == info["fsm"]["fullName"];
@@ -165,6 +212,9 @@ std::shared_ptr<ContainerAPI> ProcessStore::containerProxy(const Value& info) {
 }
 
 Value ProcessStore::addDLLProxy(const std::shared_ptr<DLLProxy>& dllproxy) {
+  if (!dllproxy) {
+    return Value(logger::error("ProcessStore::addDLLProxy failed. dllproxy is nullptr."));
+  }
   dllproxies_.push_back(dllproxy);
   return Value{{"STATUS", "OK"}};
 }

@@ -4,7 +4,10 @@
 #include <juiz/object.h>
 #include <juiz/operation_api.h>
 
+
 namespace juiz {
+
+    class ProcessStore;
 
     class ExecutionContextAPI {
     private:
@@ -45,4 +48,9 @@ namespace juiz {
      * 
      */
     std::shared_ptr<ExecutionContextFactoryAPI> nullECFactory();
+
+
+
+    Value bind(ProcessStore& store, const Value& ecInfo, const Value& opInfo);
+
 }

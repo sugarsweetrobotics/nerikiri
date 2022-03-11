@@ -1,11 +1,13 @@
 #pragma once
 
 #include <queue>
+#include <filesystem>
 #include <thread>
 
 #include <juiz/container_api.h>
 #include <juiz/model_data.h>
 #include <juiz/geometry.h>
+#include <juiz/utils/yaml.h>
 
 namespace juiz {
 
@@ -199,7 +201,9 @@ namespace juiz {
             base_(containerOperationBase(_typeName, _fullName, defaultArgs, [this](const Value& v) {return this->call(v); }, info)),
             defaultArgs_(defaultArgs),
             function_(func)
-           {}
+           {
+               logger::trace("ContainerOperation(typeName={}, fullName={}, defaultArgs={}, func, info={}) called", _typeName, _fullName, defaultArgs, info);
+           }
 
         virtual ~ContainerOperation() {}
 
@@ -266,6 +270,7 @@ namespace juiz {
         virtual std::string fullName() const override { return operation_base_->fullName(); }
 
         virtual Value setOwner(const std::shared_ptr<Object>& container) override { return operation_base_->setOwner(container); }
+
         virtual const std::shared_ptr<Object> getOwner() const override { return operation_base_->getOwner(); }
 
         virtual Value call(const Value& value) override  {
@@ -366,7 +371,13 @@ namespace juiz {
         /**
          * コンストラクタ
          */
-      ContainerFactory(const Value& info={}): ContainerFactoryAPI(demangle(typeid(T).name()), demangle(typeid(T).name())), defaultInfo_(info) {}
+      ContainerFactory(const Value& info={}): ContainerFactoryAPI(demangle(typeid(T).name()), demangle(typeid(T).name())), defaultInfo_(info) {
+          if (defaultInfo_.hasKey("mesh")) {
+              defaultInfo_["mesh"] = loadMesh(defaultInfo_["mesh"]);
+          }
+      }
+
+        
 
         /**
          * 
@@ -375,7 +386,7 @@ namespace juiz {
     public:
 
         virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override {
-            defaultInfo_["mesh"] = mesh;
+            defaultInfo_["mesh"] = loadMesh(mesh);
         }
 
         virtual JUIZ_MESH_DATA getMeshData() const override {
@@ -401,7 +412,7 @@ namespace juiz {
                 c->setClassName(defaultInfo_["className"].stringValue());
             }
             if (defaultInfo_.hasKey("mesh")) {
-                c->setMeshData(defaultInfo_["mesh"]);
+                c->setMeshData(loadMesh(defaultInfo_["mesh"]));
             }
             return c;
         }
@@ -446,8 +457,10 @@ namespace juiz {
          * 
          */
         virtual std::shared_ptr<Object> create(const std::string& fullName, const Value& info=Value::error("")) const override { 
+            logger::trace("ContainerOperationFactory(typeName={})::create(fullName={}, info={})", typeName(), fullName, info);
             auto defaultArg = defaultArgs_;
             if (info.isError()) {
+                logger::error("ContainerOperationFactory(typeName={})::create(fullname={}, info={}) failed. info is error.", typeName(), fullName, info);
                 //defaultArg = info["defaultArg"];
             }
             if (!info.isError() && info.hasKey("defaultArg")) {

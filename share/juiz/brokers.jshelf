@@ -1,0 +1,6 @@
+brokers:
+  load_paths: 
+    - "${ShelfDirectory}/brokers"
+    - "${ShelfDirectory}../brokers"
+  preload: 
+    - HTTPBroker

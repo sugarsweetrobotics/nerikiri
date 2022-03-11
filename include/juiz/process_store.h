@@ -162,6 +162,18 @@ namespace juiz {
 
 
   public:
+    template<typename T>
+    std::shared_ptr<T> get(const Value& fullName) const {
+      if (fullName.isError()) {
+        logger::error("ProcessStore::get(Value arg) failed. arg is Error.");
+        return nullObject<T>();
+      }
+      if (!fullName.isStringValue()) {
+        logger::error("ProcessStore::get(Value arg) failed. arg is not stringValue");
+        return nullObject<T>();
+      }
+      return get_with_string<T>(fullName.stringValue());
+    }
     /**
      * 登録されているObjectをT型に変換して返す
      * 
@@ -170,7 +182,7 @@ namespace juiz {
      * 
      */
     template<typename T>
-    std::shared_ptr<T> get(const std::string& fullName) const {
+    std::shared_ptr<T> get_with_string(const std::string& fullName) const {
       /// 最初が / だったら
       if (fullName.length()==0) return nullObject<T>();
       if (fullName.at(0) == '/') {
@@ -262,12 +274,12 @@ namespace juiz {
     template<typename T>
     Value add(const std::shared_ptr<T>& obj) {
       logger::trace("ProcessStore::add<{}>(objInfo={}) called",  obj->className(), obj->info());
+      if (obj->isNull()) {
+        return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is null.", obj->className(), obj->fullName()));
+      }
       /// 同じ名前がないか確認
       if (has<T>(obj->fullName())) {
         return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is already contained.", obj->className(), obj->fullName()));
-      }
-      if (obj->isNull()) {
-        return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is null.", obj->className(), obj->fullName()));
       }
       objects_.push_back(obj);
       //ref_list<T>().push_back(obj);

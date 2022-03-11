@@ -558,6 +558,24 @@ inline juiz::Value replaceAll(const juiz::Value& value, const std::string& patte
     return _default;
   }
 
+  /**
+   * 
+   */
+  inline double getDoubleValue(const Value& v, const double& _default) {
+    if (v.isError()) return _default;
+    if (v.isDoubleValue()) return v.doubleValue();
+    return _default;
+  }
+
+  /**
+   * 
+   */
+  inline bool getBoolValue(const Value& v, const bool& _default) {
+    if (v.isError()) return _default;
+    if (v.isBoolValue()) return v.boolValue();
+    return _default;
+  }
+
   inline const Value &getObjectValue(const Value& v, const std::string& key, const Value& defaultVal = {}) {
     auto keys = stringSplit(key, '.');
     if (keys.size() == 0) return defaultVal;

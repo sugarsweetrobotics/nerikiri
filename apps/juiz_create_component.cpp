@@ -322,7 +322,7 @@ namespace {
 
     void updateJShelfForContainer(const fs::path& destinationPath, const std::string& ComponentName, const std::string& ContainerName, const bool overwrite, const bool verbose) {
         std::ifstream src_f(destinationPath / (ComponentName + ".jshelf"));
-        auto value = juiz::yaml::toValue(std::move(src_f));
+        auto value = juiz::yaml::toValue(src_f);
         if(!value["containers"].hasKey("preload")) {
             value["containers"]["preload"] = juiz::Value::object();
         }
@@ -343,7 +343,7 @@ namespace {
 
     void updateJShelfForContainerOperation(const fs::path& destinationPath, const std::string& ComponentName, const std::string& ContainerName, const std::string& containerOperationName, const bool overwrite, const bool verbose) {
         std::ifstream src_f(destinationPath / (ComponentName + ".jshelf"));
-        auto value = juiz::yaml::toValue(std::move(src_f));
+        auto value = juiz::yaml::toValue(src_f);
         if(!value["containers"].hasKey("preload")) {
             value["containers"]["preload"] = juiz::Value::object();
         }
@@ -369,7 +369,7 @@ namespace {
 
     void updateJShelfForOperation(const fs::path& destinationPath, const std::string& ComponentName, const std::string& operationName, const bool overwrite, const bool verbose) {
         std::ifstream src_f(destinationPath / (ComponentName + ".jshelf"));
-        auto value = juiz::yaml::toValue(std::move(src_f));
+        auto value = juiz::yaml::toValue(src_f);
         if(!value["operations"].hasKey("preload")) {
             value["operations"]["preload"] = juiz::Value::list();
         }

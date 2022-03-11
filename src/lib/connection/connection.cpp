@@ -118,8 +118,37 @@ std::string juiz::toString(const ConnectionAPI::ConnectionType& typ) {
 };
 
 
-Value juiz::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
+std::shared_ptr<ClientProxyAPI> select_broker(ProcessStore& store, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
+  return coreBroker(store);
+}
+
+Value juiz::connect(ProcessStore& store, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
   logger::info("juiz::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
+  auto broker = select_broker(store, inlet, outlet, options);
+  std::string defaultConnectionType = "event";
+  if (options.hasKey("event")) {
+    defaultConnectionType = options["event"].stringValue();
+  }
+  
+  Value con0Info{
+    {"name", name},
+    {"type", "event"},
+    {"broker", "CoreBroker"},
+    {"inlet", inlet->info()},
+    {"outlet", outlet->info()}
+  };
+
+  if (options.hasKey("type") && getStringValue(options["type"], "") == "pull") {
+    con0Info["type"] = "pull";
+  }
+
+  return broker->connection()->createConnection(con0Info);
+  //return store.process()->coreBroker()->connection()->createConnection(con0Info);
+}
+
+
+Value juiz::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
+  logger::info("juiz::connect(broker={typeName={}}, name={}, inlet={}, outlet={}, options={}) called", broker->typeName(), name, inlet->info(), outlet->info(), options);
   std::string defaultConnectionType = "event";
   if (options.hasKey("event")) {
     defaultConnectionType = options["event"].stringValue();

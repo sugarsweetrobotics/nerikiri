@@ -13,8 +13,9 @@ namespace juiz {
 
     class ProcessStore;
 
-
     class InvalidBrokerException : public std::exception {};
+
+    Value connect(ProcessStore& store, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options);
 
     Value connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options={});
 

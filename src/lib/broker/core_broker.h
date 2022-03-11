@@ -7,5 +7,5 @@
 
 namespace juiz {
   class ProcessAPI;
-  std::shared_ptr<BrokerFactoryAPI> coreBrokerFactory(ProcessAPI* process, const std::string& fullName);
+  std::shared_ptr<BrokerFactoryAPI> coreBrokerFactory(ProcessAPI* process);
 }

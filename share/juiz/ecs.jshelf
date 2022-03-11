@@ -1,0 +1,7 @@
+brokers:
+  load_paths: 
+    - "${ShelfDirectory}/ecs"
+    - "${ShelfDirectory}../ecs"
+  preload: 
+    - OneShotEC
+    - TimerEC

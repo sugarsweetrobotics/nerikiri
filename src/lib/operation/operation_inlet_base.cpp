@@ -37,7 +37,7 @@ Value OperationInletBase::info() const {
 }
 
 Value OperationInletBase::collectValues() {
-  logger::trace("OperationInletBase::collectValues() called");
+  logger::trace("OperationInletBase::collectValues({}:{}) called", ownerFullName(), name());
   for (auto& con : connections_.connections()) {
     if (con->isPull()) { 
       logger::trace(" - Pulling by connection: {}", con->fullName());

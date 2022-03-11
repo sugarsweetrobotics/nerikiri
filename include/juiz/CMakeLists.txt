@@ -35,6 +35,8 @@ process_api.h
 process_store.h 
 process.h 
 
+path_parser.h
+
 systemeditor.h 
 
 topic_api.h 

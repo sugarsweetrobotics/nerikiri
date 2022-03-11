@@ -106,6 +106,10 @@ Value ObjectMapper::readResource(const std::shared_ptr<const ClientProxyAPI>& co
       return v;
     } 
 
+    if (std::regex_match(path, match, std::regex("containerFactories"))) {
+      
+    }
+
     return Value::error(logger::error("ObjectMapper::readResource({}) failed. No route matched", path));
 }
 

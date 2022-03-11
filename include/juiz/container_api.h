@@ -1,9 +1,13 @@
 #pragma once
+#include <filesystem>
+#include <fstream>
 
 #include <juiz/object.h>
 #include <juiz/operation_api.h>
 #include <juiz/logger.h>
 #include <juiz/geometry.h>
+#include <juiz/utils/yaml.h>
+
 
 namespace juiz {
 
@@ -52,6 +56,10 @@ namespace juiz {
     inline std::shared_ptr<ContainerAPI> nullObject() { return nullContainer(); }
 
 
+    
+
+
+
     class ContainerFactoryAPI : public FactoryAPI {
     public:
 
@@ -62,6 +70,18 @@ namespace juiz {
         virtual void setMeshData(const JUIZ_MESH_DATA& mesh) = 0;
 
         virtual JUIZ_MESH_DATA getMeshData() const = 0;
+
+        static Value loadMesh(const Value& value) {
+            if (value.hasKey("include")) {
+                std::filesystem::path path(value["include"].stringValue());
+                if (path.extension() == ".yaml" || path.extension() == ".yml") {
+                    std::ifstream src_f(path);
+                    return juiz::yaml::toValue(src_f);
+                }
+            }
+            return value;
+        }
+
     };
 
     class NullContainerFactory : public ContainerFactoryAPI {

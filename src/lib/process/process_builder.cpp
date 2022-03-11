@@ -32,124 +32,151 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
   logger::trace("ProcessBuilder::preloadOperations() exit");
 }
 
+namespace {
+  void loadContainerFactory(ProcessStore& store, const std::string& typeName, const std::vector<std::string>& load_paths) {
+    const auto dllproxy = ModuleLoader::loadDLL(typeName, load_paths);
+    store.addDLLProxy(dllproxy);
+    store.add(ModuleLoader::loadContainerFactory(dllproxy, typeName)); /// これでコンテナのファクトリを作成
+  }
 
-void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("ProcessBuilder::preloadContainers(path={}) entry", path);
+  void loadContainerOperationFactory(ProcessStore& store, const std::string& opTypeName, const std::vector<std::string>& load_paths) {
+    const auto opDLLProxy = ModuleLoader::loadDLL(opTypeName, load_paths);
+    store.addDLLProxy(opDLLProxy);
+    store.add(ModuleLoader::loadContainerOperationFactory(opDLLProxy, opTypeName));
+  }
+}
+
+void ProcessBuilder::preloadContainerFactories(ProcessStore& store, const Value& containerConfig, const std::string& path) {
+  logger::trace("ProcessBuilder::preloadContainers(containerConfig={} path={}) entry", containerConfig, path);
+  std::vector<std::string> load_paths = {"./", path};
+  containerConfig["load_paths"].const_list_for_each([&load_paths](auto value) {
+    load_paths.push_back(getStringValue(value, ""));
+  });
   /// オブジェクト型のリストでの定義だった場合の読み込みルール
-  config.at("containers").at("preload").const_list_for_each([&store, &config, &path](auto value) {
-    ModuleLoader::loadContainerFactory(store, {"./", path}, {
-      {"typeName", value.at("typeName")}, {"load_paths", config.at("containers").at("load_paths")}
-    });
-    if (value.hasKey("operations")) {
-      value.at("operations").const_list_for_each([&config, &store, &value, &path](auto& v) {
-        ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
-          {"typeName", v}, {"container_name", value.at("typeName")}, {"load_paths", config["containers"]["load_paths"] }
-        });
-      });
-    }
-  });
-  /// よりシンプルな，単一オブジェクト内でのキー＆バリュー型の定義
-  /// キー：コンテナ名
-  /// バリュー：　リスト．Operationの名前のリスト
-  config.at("containers").at("preload").const_object_for_each([&store, &config, &path](auto key, auto value) {
-    ModuleLoader::loadContainerFactory(store, {"./", path}, {
-      {"typeName", key}, {"load_paths", config.at("containers").at("load_paths")}
-    });
-    if (value.hasKey("mesh")) {
-      store.get<ContainerFactoryAPI>(key)->setMeshData(value["mesh"]);
-    }
-    value.const_list_for_each([&config, &store, &key, &path](auto& v) {
-      ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
-        {"typeName", v}, {"container_name", key}, {"load_paths", config["containers"]["load_paths"] }
-      });
-    });
-    value["operations"].const_list_for_each([&config, &store, &key, &path](auto& v) {
-      ModuleLoader::loadContainerOperationFactory(store, {"./", path}, {
-        {"typeName", v}, {"container_name", key}, {"load_paths", config["containers"]["load_paths"] }
-      });
+  containerConfig["preload"].const_list_for_each([&store, &load_paths](auto value) {
+    /// ここでコンテナごとにDLLをロードする．
+    const std::string typeName = getStringValue(value["typeName"], "");
+    loadContainerFactory(store, typeName, load_paths);
+    value["operations"].const_list_for_each([&store, &typeName, &load_paths](auto opValue) {
+      /// コンテナの記述内にoperationsがあれば，それは文字列のリストなので，ContainerOperationとして読み込む．
+      loadContainerOperationFactory(store, typeName + "_" + opValue.stringValue(), load_paths);
     });
   });
+
+  /// キーバリュー型のディクショナリでの定義の場合の読み込みルール
+  containerConfig["preload"].const_object_for_each([&store, &load_paths](auto containerName, auto value) {
+    const std::string typeName = getStringValue(containerName, "");
+    loadContainerFactory(store, typeName, load_paths);
+    /// もしコンテナ名
+    value.const_list_for_each([&store, &typeName, &load_paths](auto& opValue) {
+      loadContainerOperationFactory(store, typeName + "_" + opValue.stringValue(), load_paths);
+    });
   
-  config.at("containers").at("precreate").const_list_for_each([&store](auto info) {
-    /// ここでコンテナを作成する
-    auto cInfo = ObjectFactory::createContainer(store, info);
-    auto c = store.get<ContainerAPI>(Value::string(cInfo["fullName"]));
-    if (info.hasKey("operations")) {
-      info.at("operations").const_list_for_each([&store, &cInfo, &c](auto value) {
-        auto opInfo = ObjectFactory::createContainerOperation(store, cInfo, value);
-        auto cop = c->operation(Value::string(opInfo.at("fullName")));
-      });
+    if (value.hasKey("mesh")) {
+      store.get<ContainerFactoryAPI>(containerName)->setMeshData(ContainerFactoryAPI::loadMesh(value["mesh"]));
     }
-    if (info.hasKey("mesh")) {
-      c->setMeshData(info["mesh"]);
-    }
-
+    value["operations"].const_list_for_each([&store, &typeName, &load_paths](auto& opValue) {
+      loadContainerOperationFactory(store, typeName + "_" + opValue.stringValue(), load_paths);
+    });
   });
+}
 
-  config.at("containers").at("transformation").const_list_for_each([&store](auto tfInfo) {
+
+void ProcessBuilder::precreateContainers(ProcessStore& store, const Value& containerConfig) {
+  containerConfig["precreate"].const_list_for_each([&store](auto info) {
+    /// ここでコンテナを作成する
+    const auto cInfo = ObjectFactory::createContainer(store, info);
+    info["operations"].const_list_for_each([&store, &cInfo](auto value) {
+      auto opInfo = ObjectFactory::createContainerOperation(store, cInfo, value);
+    });
+    if (info.hasKey("mesh")) {
+      if (info["mesh"].hasKey("include")) {
+        store.get<ContainerAPI>(cInfo["fullName"])->setMeshData(ContainerFactoryAPI::loadMesh(info["mesh"]));
+      } else {
+        store.get<ContainerAPI>(cInfo["fullName"])->setMeshData(info["mesh"]);
+      }
+    }
+  });
+}
+
+namespace {
+  void setupStaticTransformation(ProcessStore& store, const Value& tfInfo) {
+    //auto offset = toPose3D(tfInfo["offset"]);
+
+    const auto from_c = store.get<ContainerAPI>(tfInfo["from"]["fullName"]);
+    const auto to_c = store.get<ContainerAPI>(tfInfo["to"]["fullName"]);
+    const auto fullName = "offset_" + from_c->fullName() + "_" + to_c->fullName();
+    auto tfOp = std::dynamic_pointer_cast<OperationAPI>(store.get<OperationFactoryAPI> ("static_transformation_operation")->create(fullName, {
+      {"defaultArgs", {
+        {"offset", tfInfo["offset"]}
+      }}
+    }));
+    store.add<OperationAPI>(tfOp);
+
+    const auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
+    const auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
+
+    /// TODO: 入力の名前とタイプを確認しないといけないよ
+    auto result1 = juiz::connect(coreBroker(store), "tfcon_" + from_c->fullName() + "_" + fullName, tfOp->inlet("pose"), fromOp->outlet());
+    auto result2 = juiz::connect(coreBroker(store), "tfcon_" + fullName + "_" + to_c->fullName(), toOp->inlet("pose"), tfOp->outlet());
+  }
+
+  void setupDynamicTransformation(ProcessStore& store, const Value& tfInfo) {
+    const auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
+    const auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
+    const auto fullName = "input_" + from_c->fullName() + "_" + to_c->fullName();
+    const auto tfOp = std::dynamic_pointer_cast<OperationAPI>(store.get<OperationFactoryAPI> ("dynamic_transformation_operation")->create(fullName, {
+      }
+    ));
+    store.add<OperationAPI>(tfOp);
+
+    auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
+    auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
+    auto dynOp = store.get<OperationAPI>(tfInfo["input"]["fullName"]);
+
+    /// TODO: 入力の名前とタイプを確認しないといけないよ
+    auto result1 = juiz::connect(coreBroker(store), "dynamic_tfcon_" + from_c->fullName() + "_" + fullName, tfOp->inlet("pose"), fromOp->outlet());
+    auto result2 = juiz::connect(coreBroker(store), "dynamic_tfcon_" + fullName + "_" + to_c->fullName(), toOp->inlet("pose"), tfOp->outlet());
+    auto result3 = juiz::connect(coreBroker(store), "dynamic_dyncon_" + tfInfo["input"]["fullName"].stringValue() + "_" + fullName, tfOp->inlet("input"), dynOp->outlet());
+  }
+
+
+  void setupNamedTransformation(ProcessStore& store, const Value& tfInfo) {
+    const auto fullName = Value::string(tfInfo["fullName"]);
+    const auto tfOp = store.get<OperationAPI>(fullName);
+    const auto from_c = store.get<ContainerAPI>(tfInfo["from"]["fullName"]);
+    const auto to_c = store.get<ContainerAPI>(tfInfo["to"]["fullName"]);
+
+    const auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope"); /// 当該変換が受け取る出力
+    const auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope"); /// 当該変換が出力すべき相手入力
+
+    /// TODO: 入力の名前とタイプを確認しないといけないよ
+    auto result1 = juiz::connect(coreBroker(store), "tfcon_" + from_c->fullName() + "_" + fullName, tfOp->inlet("pose"), fromOp->outlet());
+    auto result2 = juiz::connect(coreBroker(store), "tfcon_" + fullName + "_" + to_c->fullName(), toOp->inlet("pose"), tfOp->outlet());
+  }
+
+}
+
+void ProcessBuilder::presetContainerTransformation(ProcessStore& store, const Value& containerConfig) {
+  containerConfig["transformation"].const_list_for_each([&store](auto tfInfo) {
     if (tfInfo.hasKey("typeName") && Value::string(tfInfo["typeName"]) == "static") { /// スタティックな変換
-      auto offset = toPose3D(tfInfo["offset"]);
-      auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
-      auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
-      auto fullName = "offset_" + from_c->fullName() + "_" + to_c->fullName();
-      auto tfOp = std::dynamic_pointer_cast<OperationAPI>(store.get<OperationFactoryAPI> ("static_transformation_operation")->create(fullName, {
-        {"defaultArgs", {
-          {"offset", tfInfo["offset"]}
-        }}
-      }));
-      store.add<OperationAPI>(tfOp);
-
-      const std::string connectionNameFrom = "tfcon_" + from_c->fullName() + "_" + fullName;
-      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
-      const std::string connectionNameTo = "tfcon_" + fullName + "_" + to_c->fullName();
-      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
-
-      /// TODO: 入力の名前とタイプを確認しないといけないよ
-      auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
-      auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
-
+      setupStaticTransformation(store, tfInfo);
     } else if (tfInfo.hasKey("typeName") && Value::string(tfInfo["typeName"]) == "dynamic") { /// ダイナミックな変換
-      // auto dynOp = store.get<OperationAPI>(input);
-
-      auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
-      auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
-      auto fullName = "input_" + from_c->fullName() + "_" + to_c->fullName();
-      auto tfOp = std::dynamic_pointer_cast<OperationAPI>(store.get<OperationFactoryAPI> ("dynamic_transformation_operation")->create(fullName, {
-        }
-      ));
-      store.add<OperationAPI>(tfOp);
-
-      const std::string connectionNameFrom = "dynamic_tfcon_" + from_c->fullName() + "_" + fullName;
-      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope");
-      const std::string connectionNameTo = "dynamic_tfcon_" + fullName + "_" + to_c->fullName();
-      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope");
-      const std::string connectionNameInput = "dynamic_dyncon_" +tfInfo["input"]["fullName"].stringValue() + "_" + fullName;
-      auto dynOp = store.get<OperationAPI>(tfInfo["input"]["fullName"].stringValue());
-
-      /// TODO: 入力の名前とタイプを確認しないといけないよ
-      auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
-      auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
-      auto result3 = juiz::connect(coreBroker(store), connectionNameInput, tfOp->inlet("input"), dynOp->outlet());
+      setupDynamicTransformation(store, tfInfo);
     } else if (tfInfo.hasKey("fullName")) { // 名前のある変換
-      auto fullName = Value::string(tfInfo["fullName"]);
-      auto tfOp = store.get<OperationAPI>(fullName);
-      auto from_c = store.get<ContainerAPI>(Value::string(tfInfo["from"]["fullName"]));
-      auto to_c = store.get<ContainerAPI>(Value::string(tfInfo["to"]["fullName"]));
-
-      const std::string connectionNameFrom = "tfcon_" + from_c->fullName() + "_" + fullName;
-      auto fromOp = store.get<OperationAPI>(from_c->fullName() + ":" + "container_set_pose.ope"); /// 当該変換が受け取る出力
-      const std::string connectionNameTo = "tfcon_" + fullName + "_" + to_c->fullName();
-      auto toOp = store.get<OperationAPI>(to_c->fullName() + ":" + "container_set_pose.ope"); /// 当該変換が出力すべき相手入力
-
-      /// TODO: 入力の名前とタイプを確認しないといけないよ
-      auto result1 = juiz::connect(coreBroker(store), connectionNameFrom, tfOp->inlet("pose"), fromOp->outlet());
-      auto result2 = juiz::connect(coreBroker(store), connectionNameTo, toOp->inlet("pose"), tfOp->outlet());
+      setupNamedTransformation(store, tfInfo);
     } else {
       logger::error("ProcessBuilder::preloadContainers() failed. Invalid transformation typename (tfInfo={})", tfInfo);
     }
   });
-
   logger::trace("ProcessBuilder::preloadContainers() exit");
+}
+
+
+void ProcessBuilder::preloadContainers(ProcessStore& store, const Value& config, const std::string& path) {
+  preloadContainerFactories(store, config["containers"], path);
+  precreateContainers(store, config["containers"]);
+  presetContainerTransformation(store, config["containers"]);
 }
 
 void ProcessBuilder::preloadFSMs(ProcessStore& store, const Value& config, const std::string& path) {
@@ -163,16 +190,20 @@ void ProcessBuilder::preloadFSMs(ProcessStore& store, const Value& config, const
 
 void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("ProcessBuilder::_preloadExecutionContexts() entry");
-  config.at("ecs").at("preload").const_list_for_each([&store, &config, &path](auto& value) {
+  config["ecs"]["preload"].const_list_for_each([&store, &config, &path](auto& value) {
     ModuleLoader::loadExecutionContextFactory(store, {"./", path}, {
-      {"typeName", value}, {"load_paths", config.at("ecs").at("load_paths")}
+      {"typeName", value}, {"load_paths", config["ecs"]["load_paths"]}
     });
   });
-  config.at("ecs").at("precreate").const_list_for_each([&store](auto& value) {
-    ObjectFactory::createExecutionContext(store, value);
+  config["ecs"]["precreate"].const_list_for_each([&store](auto& value) {
+    auto ecInfo = ObjectFactory::createExecutionContext(store, value);
+    auto ec = store.get<ContainerAPI>(ecInfo);
+    value["bind"].const_list_for_each([&store, &ecInfo](auto& opValue) {
+
+    });
   });
 
-  config.at("ecs").at("bind").const_list_for_each([&store](auto value) {
+  config["ecs"]["bind"].const_list_for_each([&store](auto value) {
     auto ecName = getStringValue(value["fullName"], "");
     auto ec = store.get<ContainerAPI>(ecName);
     if (ec->isNull()) {
@@ -187,8 +218,7 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
     value["operations"].const_list_for_each([&store, &ec, &activate_started_ope](auto& v) {
       auto opProxy =  store.operationProxy(v);
       juiz::connect(coreBroker(store), ec->fullName() + "_bind_" + Value::string(v["fullName"]), 
-        opProxy->inlet("__event__"), activate_started_ope->outlet(), {});
-      //ec->bind(store.operation(Value::string(v.at("fullName"))));
+        opProxy->inlet("__event__"), activate_started_ope->outlet(), {}); 
     });
   });
   logger::trace("ProcessBuilder::_preloadExecutionContexts() exit");

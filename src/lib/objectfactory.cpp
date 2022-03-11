@@ -23,66 +23,31 @@ std::string numberingPolicy(const std::vector<T>& ts, const Value& info) {
 
 template<class T>
 std::string loadFullName(const std::vector<T>& ts, const Value& info) {
-  if (info.hasKey("instanceName")) return info.at("instanceName").stringValue();
-  if (info.hasKey("fullName")) return info.at("fullName").stringValue();
-  if (info.hasKey("typeName")) return info.at("typeName").stringValue() + numberingPolicy(ts, info);;
+  if (info.hasKey("instanceName")) return info["instanceName"].stringValue();
+  if (info.hasKey("fullName")) return info["fullName"].stringValue();
+  if (info.hasKey("typeName")) return info["typeName"].stringValue() + numberingPolicy(ts, info);;
   return "object";
 }
 
 
 Value ObjectFactory::createOperation(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createOperation({}) called", (info));
-  auto fullName = loadFullName(store.list<OperationAPI>(), info);
-  logger::info("ObjectFactory is creating an Operation({})", info);
-  auto op = store.get<OperationFactoryAPI>(Value::string(info.at("typeName")))->create<OperationAPI>(fullName);
-  return store.add<OperationAPI>(op);
+  return store.add<OperationAPI>(store.get<OperationFactoryAPI>(info["typeName"])->create<OperationAPI>(loadFullName(store.list<OperationAPI>(), info)));
 }
 
 Value ObjectFactory::createContainer(ProcessStore& store, const Value& info) {
   logger::trace("ObjectFactory::createContainer({}) called", (info));
-  auto fullName = loadFullName(store.list<ContainerAPI>(), info);
-  logger::info("ObjectFactory is creating a Container(fullName={}, info={})", fullName, info);
-  auto c = store.get<ContainerFactoryAPI>(Value::string(info.at("typeName")))->create<ContainerAPI>(fullName);
-  auto v = store.add<ContainerAPI>(c);
-  if (v.isError()) {
-    logger::trace("ObjectFactory::createContainer({}) exit with error {}", (info), v);
-    return v;
-  }
-  /*
-  auto getterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
-    {"fullName", "getBasePose.ope"},
-    {"typeName", "ContainerGetBasePose"}
-  });
-  auto setterInfo = ObjectFactory::createContainerOperation(store, c->info(), {
-    {"fullName", "setBasePose.ope"},
-    {"typeName", "ContainerSetBasePose"}
-  });
-  */
-  logger::trace("ObjectFactory::createContainer({}) exit", (info));
-  return v;
+  return store.add<ContainerAPI>(store.get<ContainerFactoryAPI>(info["typeName"])->create<ContainerAPI>(loadFullName(store.list<ContainerAPI>(), info)));
 }
 
 Value ObjectFactory::createContainerOperation(ProcessStore& store, const Value& cInfo, const Value& info) {
-  logger::trace("ObjectFactory::createContainerOperation({}) called", info);
-//  const std::string& containerFullName = Value::string(info.at("containerFullName"));
-  auto containerFullName = Value::string(cInfo.at("fullName"));
-  //auto fullName = Value::string(info.at("fullName)"));
-  auto fullName = juiz::naming::join(containerFullName, loadFullName(store.list<OperationAPI>(), info));
-  auto typeName = juiz::naming::join(Value::string(cInfo.at("typeName")), Value::string(info.at("typeName")));
-  auto container = store.get<ContainerAPI>(containerFullName);
-  auto cof = store.get<ContainerOperationFactoryAPI>(typeName);
-  if (cof->isNull()) {
-    return Value::error(logger::error("ObjectFactory::createContainerOperation failed. ContainerOperationFactory({}) is null.", typeName));
-  }
-
-  logger::info("ObjectFactory is creating a ContainerOperation({})", info);
-  auto cop = cof->create<OperationAPI>(fullName);
+  logger::trace("ObjectFactory::createContainerOperation(store, cinfo={}, info={}) called", cInfo, info);
+  auto container = store.get<ContainerAPI>(cInfo["fullName"]);
+  auto cof = store.get<ContainerOperationFactoryAPI>(naming::join(Value::string(cInfo["typeName"]), Value::string(info["typeName"])));
+  auto cop = cof->create<OperationAPI>(naming::join(Value::string(cInfo["fullName"]), loadFullName(store.list<OperationAPI>(), info)), info);
   cop->setOwner(container);
   return container->addOperation(cop);
-
-  // return store.addOperation(store.containerOperationFactory(typeName)->create(container, fullName));
 }
-
 
 Value ObjectFactory::createBroker(ProcessStore& store, const Value& info) {
   logger::info("ObjectFactory::createBroker({})", info);

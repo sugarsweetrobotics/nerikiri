@@ -33,8 +33,8 @@ public:
 };
 
 
-std::shared_ptr<BrokerFactoryAPI> juiz::coreBrokerFactory(ProcessAPI* process, const std::string& fullName) {
-    return std::make_shared<CoreBrokerFactory>(std::make_shared<CoreBroker>(process, fullName));
+std::shared_ptr<BrokerFactoryAPI> juiz::coreBrokerFactory(ProcessAPI* process) {
+    return std::make_shared<CoreBrokerFactory>(std::make_shared<CoreBroker>(process));
 }
 
 class CoreFactoryBroker : public FactoryClientAPI {
@@ -366,8 +366,8 @@ public:
 /**
  * 
  */
-CoreBroker::CoreBroker(ProcessAPI* process, const std::string& fullName): 
-ClientProxyAPI("CoreBroker", "CoreBroker", fullName,
+CoreBroker::CoreBroker(ProcessAPI* process): 
+ClientProxyAPI("CoreBroker", "CoreBroker", "coreBroker",
     std::make_shared<CoreStoreBroker>(process),
     std::make_shared<CoreFactoryBroker>(process, this), 
     std::make_shared<CoreOperationBroker>(process),

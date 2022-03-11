@@ -1,4 +1,5 @@
 #include "./proxy_builder.h"
+#include <juiz/path_parser.h>
 
 #include <juiz/operation.h>
 #include "./objectfactory.h"
@@ -13,7 +14,18 @@ namespace juiz {
 
 std::shared_ptr<OperationAPI> ProxyBuilder::operationProxy(const juiz::Value& value, juiz::ProcessStore* store) {
     logger::trace("ProxyBuilder::operationProxy({}, store) called", value);
-    auto fullName = Value::string(value.at("fullName"));
+    if (value.isStringValue()) {
+        const auto fullPath = value.stringValue();
+        const auto brokerTypeName = PathParser::brokerTypeName(fullPath);
+        if (brokerTypeName == "CoreBroker") {
+            logger::trace(" - Broker is CoreBroker.");
+            return store->get<OperationAPI>(PathParser::operationFullName(fullPath));
+        }
+        const auto brokerFullPath = PathParser::brokerFullPath(fullPath);
+        auto broker = store->brokerFactory(brokerTypeName)->createProxy(fullPath);
+
+    }
+    auto fullName = Value::string(value["fullName"]);
     std::string brokerTypeName = "CoreBroker";
     if (!value.hasKey("broker")) {
         logger::trace("ProxyBuilder::operationProxy({}) ... Please check. Passed argument 'value' has no 'broker' key object.");

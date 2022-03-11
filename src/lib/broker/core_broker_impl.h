@@ -16,7 +16,7 @@ namespace juiz {
     /**
      * 
      */
-    CoreBroker(ProcessAPI* process, const std::string& fullName);
+    CoreBroker(ProcessAPI* process);
 
     virtual ~CoreBroker();
 

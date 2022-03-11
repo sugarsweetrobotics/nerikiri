@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <functional>
+#include <filesystem>
 
 #include <juiz/juiz.h>
 
@@ -89,12 +90,15 @@ namespace juiz {
     Value config_;
 
     std::shared_ptr<ClientProxyAPI> coreBroker_;
+
     ProcessStore store_;
    
     std::map<std::string, SystemEditor_ptr> systemEditors_;
     std::vector<std::shared_ptr<std::thread>> threads_;
     bool started_;
-    std::string path_;
+    
+    std::filesystem::path fullpath_;
+
     std::function<void(ProcessAPI*)> on_starting_;
     std::function<void(ProcessAPI*)> on_started_;
 
@@ -111,23 +115,25 @@ namespace juiz {
     ProcessImpl(const std::string& name, const Value& config);
 
     ProcessImpl(const std::string& name, const std::string& jsonStr);
+
     /**
      * デストラクタ
      */
     virtual ~ProcessImpl();
 
-    void parseConfigFile(const std::string& filepath);
   private:
 
-    void _setupLogger();
+    void _setupLogger(const Value& loggerValue) const;
+
+    std::filesystem::path _guessFullPath(const std::string& commandName) const;
+
+    void _parseConfigFile(const std::filesystem::path& filepath);
+    
   public:
+
     virtual ProcessStore* store() override { return &store_; }
 
     virtual const ProcessStore* store() const override { return &store_; }
-    
-    void setExecutablePath(const std::string& path) { path_ = path; }
-
-    // virtual std::shared_ptr<BrokerProxyAPI> coreBroker() override { return coreBroker_; }
     
     Value getCallbacks() const;
 

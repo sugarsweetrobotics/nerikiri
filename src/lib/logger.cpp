@@ -19,13 +19,14 @@ using namespace juiz::logger;
 #define REDB "\e[41m" // underline
 
 
-static LOG_LEVEL g_loglevel = logger::LOG_INFO;
+static LOG_LEVEL g_loglevel = logger::LOG_WARN;;
 static auto startTime = std::chrono::system_clock::now();
 static std::string g_logFileName = "juiz.log";
 static bool init = false;
 static std::ofstream g_logFile;
 
 void juiz::logger::setLogLevel(const LOG_LEVEL& level) {
+  logger::trace("logger::setLogLevel({})", to_string(level));
   g_loglevel = level;
 }
 

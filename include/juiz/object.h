@@ -44,6 +44,7 @@ namespace juiz {
     virtual void finalize() {}
 
     virtual const std::string& description() const { return description_; }
+
     virtual void setDescription(const std::string& description) { description_ = description; }
     
     virtual ClassName className() const { 
@@ -75,6 +76,8 @@ namespace juiz {
     virtual std::string instanceName() const;
 
     std::string getInstanceName() const;
+
+    virtual Value brokerInfo() const { return Value{ {"typeName", "CoreBroker"}} ; }
 
   protected:
     Value info_;

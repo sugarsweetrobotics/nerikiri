@@ -229,22 +229,31 @@ namespace {
 }
 
 juiz::Value juiz::yaml::toValue(const std::string& yaml_str) {
-    YAML::Node node = YAML::Load(yaml_str);
-    if (!node) {
-        logger::error("YAMLParseError - String=\"{}\"", yaml_str);
-        throw YAMLParseError();
-    } 
-    return construct(node);
+    try {
+        YAML::Node node = YAML::Load(yaml_str);
+        if (!node) {
+            logger::error("YAMLParseError - String=\"{}\"", yaml_str);
+            throw YAMLParseError();
+        } 
+        return construct(node);
+    } catch (YAML::ParserException& ex) {
+        return Value::error(logger::error("juiz::yaml::toValue failed. YAML::ParserException occurred. msg={}", std::string(ex.what())));
+    }
 }
 
-juiz::Value juiz::yaml::toValue(std::ifstream&& ifs) {
-    if (!ifs) { return Value::error(logger::error("juiz::yaml::toValue(ifstream&) failed. Input file stream is wrong. The file must NOT OPENED.")); }
-    YAML::Node node = YAML::Load(ifs);
-    if (!node) {
-        logger::error("YAMLParseError - filestream");
-        throw YAMLParseError();
-    } 
-    return construct(node);
+juiz::Value juiz::yaml::toValue(std::ifstream& ifs) {
+    try {
+        logger::trace("juiz::yaml::toValue(std::ifstream) called");
+        if (!ifs) { return Value::error(logger::error("juiz::yaml::toValue(ifstream&) failed. Input file stream is wrong. The file must NOT OPENED.")); }
+        YAML::Node node = YAML::Load(ifs);
+        if (!node) {
+            logger::error("YAMLParseError - filestream");
+            throw YAMLParseError();
+        } 
+        return construct(node);
+    } catch (YAML::ParserException& ex) {
+        return Value::error(logger::error("juiz::yaml::toValue failed. YAML::ParserException occurred. msg={}", std::string(ex.what())));
+    }
 }
 
 namespace {

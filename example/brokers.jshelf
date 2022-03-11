@@ -1,0 +1,15 @@
+brokers:
+  load_paths: 
+    - "${ShelfDirectory}../brokers"
+    - "test"
+    - "../build/lib"
+    - "../build/lib/Debug"
+    - "build/test"
+    - "../build/test"
+    - "../build/example"
+    - "../../build/example"
+    - "../build/bin/Debug"
+    - "../../build/bin/Debug"
+    - "../../../build/bin"
+  preload: 
+    - HTTPBroker

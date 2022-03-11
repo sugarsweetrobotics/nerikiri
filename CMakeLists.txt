@@ -34,7 +34,7 @@ add_subdirectory(thirdparty)
 
 add_subdirectory(include)
 add_subdirectory(src)
-add_subdirectory(share)
+add_subdirectory(share/juiz)
 
 if (BUILD_JUIZ_EXAMPLE)
 message("--- Building Examples")

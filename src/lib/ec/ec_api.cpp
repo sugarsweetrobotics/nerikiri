@@ -5,6 +5,8 @@
 #include <juiz/connection_api.h>
 
 #include <juiz/ec.h>
+#include <juiz/process_store.h>
+#include <juiz/container_api.h>
 
 using namespace juiz;
 
@@ -57,4 +59,13 @@ bool ExecutionContextBase::svc() {
     svcOperation_->execute();
     return true;
     //return !svcOperation_->execute().isError(); 
+}
+
+
+
+Value juiz::bind(ProcessStore& store, const Value& ecInfo, const Value& opInfo) {
+    const std::string ecName = getStringValue(ecInfo["fullName"], "");
+    const auto activate_started_ope = store.get<ContainerAPI>(ecName)->operation("activate_state_started.ope");
+    const auto opProxy =  store.operationProxy(opInfo);
+    return juiz::connect(coreBroker(store), ecName + "_bind_" + opProxy->fullName(), opProxy->inlet("__event__"), activate_started_ope->outlet(), {}); 
 }
