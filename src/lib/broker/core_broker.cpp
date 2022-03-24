@@ -1,5 +1,7 @@
 // #include <utility>
 
+#include <iostream>
+
 #include <juiz/process_api.h>
 #include <juiz/operation.h>
 #include <juiz/connection.h>
@@ -46,7 +48,7 @@ public:
   virtual ~CoreFactoryBroker() {}
 
   virtual Value createObject(const std::string& className, const Value& info={}) override {
-        logger::trace("CoreBroker::CoreFactoryBroker::createObject({}, {})", className, info);
+        logger::trace2_object to("CoreBroker::CoreFactoryBroker::createObject({}, {})", className, info);
         if (className == "operation") {
             return ObjectFactory::createOperation(*process_->store(), info);
         } else if (className == "container") {
@@ -71,7 +73,7 @@ public:
 
 
   virtual Value deleteObject(const std::string& className, const std::string& fullName) override {
-        logger::trace("CoreBroker::CoreFactoryBroker::deleteObject({})", fullName);
+        logger::trace2_object to("CoreBroker::CoreFactoryBroker::deleteObject({})", fullName);
         if (className == "operation") {
             return ObjectFactory::deleteOperation(*process_->store(), fullName);
         } else if (className == "container") {
@@ -96,7 +98,7 @@ public:
   virtual ~CoreStoreBroker() {}
 
   virtual Value getClassObjectInfos(const std::string& className) const override {
-        logger::trace("CoreBroker::getClassObjectInfos({})", className);
+        logger::trace2_object to("CoreBroker::getClassObjectInfos({})", className);
         if (className == "operation") {
             return juiz::functional::map<Value, std::shared_ptr<OperationAPI>>(process_->store()->list<OperationAPI>(), [](auto op) { return op->info(); });
         } else if (className == "operationFactory") {
@@ -177,7 +179,9 @@ public:
   }
 
   virtual Value call(const std::string& fullName, const Value& value) override {
-      return process_->store()->get<OperationAPI>(fullName)->call(value);
+      logger::trace2_object to("CoreOperationBroker::call({}, value)", fullName);
+      auto&& v = process_->store()->get<OperationAPI>(fullName)->call(value);
+      return v;
   }
 
   virtual Value invoke(const std::string& fullName) override {
@@ -232,7 +236,7 @@ public:
   //}
 
     virtual Value connectTo(const std::string& fullName, const Value& conInfo) override {
-        logger::trace("CoreOperationOutletBroker({})::{}({}) called.", fullName, __func__, conInfo);
+        logger::trace_object  to("CoreOperationOutletBroker({})::{}({})", fullName, __func__, conInfo);
         // TODO:
         std::shared_ptr<juiz::InletAPI> inlet = nullptr;
         if (conInfo["inlet"].hasKey("fsm")) {
@@ -308,7 +312,9 @@ public:
   
   // TODO: 未実装
      virtual Value connectTo(const std::string& fullName, const std::string& targetName, const Value& conInfo) override {
-         auto outlet = process_->store()->operationProxy(conInfo["outlet"]["operation"])->outlet();
+        logger::trace_object to("CoreOperationInletBroker::connectTo(fullName={}, targetName={}, conInfo={}) called", fullName, targetName, conInfo);
+
+        auto outlet = process_->store()->outletProxy(conInfo["outlet"]);
         return process_->store()->get<OperationAPI>(fullName)->inlet(targetName)->connectTo(outlet, conInfo);
     }
 
@@ -328,7 +334,7 @@ public:
   virtual ~CoreConnectionBroker() {}
 
     virtual Value createConnection(const Value& connectionInfo) override {
-        logger::trace("CoreConnectionBroker::createConnection({}) called", connectionInfo);
+        logger::trace_object to("CoreConnectionBroker::createConnection({}) called", connectionInfo);
         //if (connectionInfo.at("inlet").hasKey("fsm")) {
         //    return ConnectionBuilder::createStateBind(*process_->store(), connectionInfo);
         //} else {
@@ -337,7 +343,7 @@ public:
     }
 
     virtual Value deleteConnection(const std::string& fullName) override {
-        logger::trace("CoreConnectionBroker::deleteConnection({}) called", fullName);
+        logger::trace_object to("CoreConnectionBroker::deleteConnection({}) called", fullName);
         return ConnectionBuilder::deleteConnection(process_->store(), fullName);
     }
         
@@ -378,7 +384,10 @@ ClientProxyAPI("CoreBroker", "CoreBroker", "coreBroker",
 ), process_(process)
 {}
 
-CoreBroker::~CoreBroker() {}
+CoreBroker::~CoreBroker() {
+    std::cerr << "CoreBroker::~CoreBroker() called" << std::endl;
+    logger::info("CoreBroker::~CoreBroker() called");
+}
 
 
 Value CoreBroker::getProcessInfo() const{ return process_->info(); }

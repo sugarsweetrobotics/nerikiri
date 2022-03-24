@@ -9,6 +9,7 @@ namespace juiz {
 
   class OperationBase : public OperationAPI {
   protected:
+    std::mutex invoke_mutex_;
     std::shared_ptr<OperationInletBase> event_inlet_; //< 引数に影響なし
     std::shared_ptr<OperationInletBase> argument_inlet_; //< 全引数に影響する接続につかうinlet
     std::vector<std::shared_ptr<OperationInletBase>> inlets_;
@@ -37,5 +38,10 @@ namespace juiz {
 	  virtual Value execute() override;
 
     virtual Value info() const override;
+
+    virtual void finalize() override;
+
+  private:
+    bool _first_output_done;
   };
 }

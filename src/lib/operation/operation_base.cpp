@@ -30,7 +30,7 @@ Value OperationInputBase::collectValues() {
 //OperationBase::OperationBase(const OperationBase& op): OperationAPI() {}
 
 OperationBase::OperationBase(const std::string& className, const std::string& typeName, const std::string& fullName, const Value& defaultArgs /*= {}*/):
-  OperationAPI(className, typeName, fullName), outlet_(std::make_shared<OperationOutletBase>(this)) {
+  OperationAPI(className, typeName, fullName), outlet_(std::make_shared<OperationOutletBase>(this)), _first_output_done(false) {
   event_inlet_ = std::make_shared<OperationInletBase>("__event__", this, Value({}));
   argument_inlet_ = std::make_shared<ArgumentInlet>("__argument__", this, Value({}));
   defaultArgs.const_object_for_each([this](const std::string& key, const Value& value) {
@@ -40,6 +40,15 @@ OperationBase::OperationBase(const std::string& className, const std::string& ty
 }
 
 OperationBase::~OperationBase() {}
+
+
+void OperationBase::finalize() {
+  logger::trace2_object to("OperationBase(fullName={})::finalize() called", fullName());
+  std::for_each(inlets_.begin(), inlets_.end(), [this](auto inlet) {
+    inlet->finalize();
+  });
+  inlets_.clear();
+}
 
 std::shared_ptr<OutletAPI> OperationBase::outlet() const  { return outlet_; }
 
@@ -73,22 +82,37 @@ std::vector<std::shared_ptr<InletAPI>> OperationBase::inlets() const {
   return {inlets_.begin(), inlets_.end()};
 }
 
+namespace {
+  bool has_pull_connection(const std::shared_ptr<InletAPI>& inlet) {
+    auto cons = inlet->connections();
+    bool flag = false;
+    std::for_each(cons.begin(), cons.end(), [&flag](auto con) {
+      flag |= con->isPull();
+    });
+    return flag;
+  }
+}
 /**
  * invoke　
  */
 Value OperationBase::invoke() {
-  logger::trace("OperationBase({})::invoke() called", fullName());
+  logger::trace2_object to("OperationBase({})::invoke() called", fullName());
   try {
-    /// TODO: ここの論理はおかしいかもしれない．
     /// もし，一つでもインレット（引数）がアップデートされていたらcollectValuesでデータを集めてcallします．
-    if (juiz::functional::for_any<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return inlet->isUpdated(); })) {
-      logger::trace("OperationBase({})::invoke() inlet updated. Collecting data and calling...", fullName());
-      return call(
+    auto is_inlet_updated = [this]() { return juiz::functional::for_any<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return inlet->isUpdated(); }); };
+    auto do_have_pull_connection = [this]() { return juiz::functional::for_any<std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) { return has_pull_connection(inlet); }); };
+    if (!_first_output_done || is_inlet_updated() || do_have_pull_connection()) {
+      logger::verbose("OperationBase({})::invoke() inlet updated. Collecting data and calling...", fullName());
+      Value&& v = call(
         juiz::functional::map<std::pair<std::string, Value>, std::shared_ptr<OperationInletBase>>(inlets_, [](auto inlet) {
           return std::pair<std::string, Value>{inlet->name(), inlet->collectValues()};
       }));
+      _first_output_done = true;
+
+      logger::verbose("OperationBase({})::invoke() exit", fullName());
+      return v;
     } else {
-      logger::trace("OperationBase({})::invoke() not updated. Just output the outlet buffer.", fullName());
+      logger::verbose("OperationBase({})::invoke() not updated. Just output the outlet buffer.", fullName());
       return outlet_->get();
     }
   } catch (std::exception& ex) {
@@ -98,10 +122,12 @@ Value OperationBase::invoke() {
 }
 
 Value OperationBase::execute() {
-  logger::trace("OperationBase({})::execute() called", fullName());
+  logger::trace2_object to("OperationBase({})::execute() called", fullName());
   try {
-    return outlet_->put(invoke());
+    auto&& v = outlet_->put(invoke());
+    logger::verbose("OperationBase({})::execute() exit", fullName());
+    return v;
   } catch (std::exception& ex) {
-    return Value::error(logger::error("OperationBase({})::invoke() failed. Exception occurred {}", fullName(), std::string(ex.what())));
+    return Value::error(logger::error("OperationBase({})::execute() failed. Exception occurred {}", fullName(), std::string(ex.what())));
   }
 }

@@ -40,6 +40,7 @@ juiz::setupFSMContainer(juiz::ProcessStore& store) {
                 return Value::error(logger::error("FSMContainer::activate_state failed. Argument does not has 'stateName' object"));
             }
             const auto s = Value::string(arg["stateName"]);
+            logger::trace_object to("FSMContainerStruct::activate_state_" + s + " succeeded");
             const auto c = container.currentState;
             if (std::find(container.availableStates.begin(), container.availableStates.end(), s) == container.availableStates.end()) {
                 return Value::error(logger::error("[FSMStateContainer] failed to activate {} in FSM ({}). This is not found in available state list.", s, container.fullName));
@@ -47,7 +48,6 @@ juiz::setupFSMContainer(juiz::ProcessStore& store) {
             if (std::find(container.transittableStates[c].begin(), container.transittableStates[c].end(), s) == container.transittableStates[c].end()) {
                 return Value::error(logger::error("[FSMStateContainer] failed to activate {} in FSM ({}). This is not found in transittable state list.", s, container.fullName));
             }
-            logger::trace("FSMContainerStruct::activate_state_{} succeeded", s);
             container.currentState = s;
             return arg;
         }))
@@ -100,7 +100,7 @@ std::shared_ptr<OperationAPI> createFSMStateContainerOperation(ProcessStore& sto
 }
 
 Value juiz::createFSM(ProcessStore& store, const std::string& fullName, const Value& fsmInfo) {
-    logger::info("juiz::createFSM({})", fsmInfo);
+    logger::trace("fsm_container.cpp: juiz::createFSM({})", fsmInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
     // まずコンテナ作成
     auto container = store.get<ContainerFactoryAPI>("_FSMContainerStruct")->create(fullName);

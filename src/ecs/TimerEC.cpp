@@ -36,9 +36,11 @@ public:
         thread_ = new std::thread([this]() {
             logger::trace("TimerEC::onStarted() in Thread starting....");
             while(!flag_) {
-                logger::trace("TimerEC::svc_thread. svc calling");
+                logger::verbose("TimerEC::svc_thread(rate={}). svc calling", rate_);
                 svc();
+                logger::verbose("TimerEC::svc_thread(rate={}). svc called", rate_);
                 std::this_thread::sleep_for(std::chrono::nanoseconds( (int)(1.0E+9/rate_) ));
+                logger::verbose("TimerEC::svc_thread(rate={}). sleeped", rate_);
             }
             logger::trace("TimerEC::onStarted() in Thread stopped");
         });
@@ -48,6 +50,7 @@ public:
     virtual bool onStopping() override { 
         flag_ = true;
         thread_->join();
+        thread_ = nullptr;
         return true;
     }
 };

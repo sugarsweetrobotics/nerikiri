@@ -24,7 +24,7 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
       store.addDLLProxy(dllproxy);
       auto f = dllproxy->functionSymbol(info.at("typeName").stringValue());
       if (f) {
-        logger::info("ModuleLoader::loadOperationFactory({}, {}) load success.", p, name);
+        logger::debug("ModuleLoader::loadOperationFactory({}, {}) load success.", p, name);
         //store.addOperationFactory(std::shared_ptr<OperationFactoryAPI>(  static_cast<OperationFactoryAPI*>(f())  ) );
         store.add<OperationFactoryAPI>(std::shared_ptr<OperationFactoryAPI>(  static_cast<OperationFactoryAPI*>(f())  ) );
         return info;
@@ -42,7 +42,7 @@ Value ModuleLoader::loadOperationFactory(ProcessStore& store, std::vector<std::s
 std::shared_ptr<ContainerOperationFactoryAPI> ModuleLoader::loadContainerOperationFactory(const std::shared_ptr<DLLProxy>& dllproxy, const std::string& typeName) {
   auto f = dllproxy->functionSymbol(typeName);
   if (f) {
-    logger::info("ModuleLoader::loadContainerOperationFactory({}) load success.", typeName);
+    logger::debug("ModuleLoader::loadContainerOperationFactory({}) load success.", typeName);
     return std::shared_ptr<ContainerOperationFactoryAPI>(  static_cast<ContainerOperationFactoryAPI*>(f()) );
   } 
   
@@ -101,7 +101,7 @@ std::shared_ptr<ContainerFactoryAPI> ModuleLoader::loadContainerFactory(const st
   logger::trace("ModuleLoader::loadContainerFactory({}, search_paths) called", typeName);
   auto f = dllproxy->functionSymbol("create" + typeName); 
   if (f) {
-    logger::info("ModuleLoader::loadContainerFactory({}). function(\"create{}\") is successfully loaded.", typeName,typeName);
+    logger::debug("ModuleLoader::loadContainerFactory({}). function(\"create{}\") is successfully loaded.", typeName,typeName);
     return std::shared_ptr<ContainerFactoryAPI>(static_cast<ContainerFactoryAPI*>(f()));
   } 
   logger::error("ModuleLoader::loadContainerFactory failed. Can not load function(\"create{}\")", typeName);
@@ -123,7 +123,7 @@ Value ModuleLoader::loadContainerFactory(ProcessStore& store, std::vector<std::s
       store.addDLLProxy(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name); 
       if (f) {
-        logger::info("ModuleLoader::loadContainerFactory({}, {}). function(\"create{}\") is successfully loaded.", p, name, name);
+        logger::debug("ModuleLoader::loadContainerFactory({}, {}). function(\"create{}\") is successfully loaded.", p, name, name);
         auto cf = static_cast<ContainerFactoryAPI*>(f());
         store.add<ContainerFactoryAPI>(std::shared_ptr<ContainerFactoryAPI>( cf ) );
         return info;
@@ -152,7 +152,7 @@ Value ModuleLoader::loadExecutionContextFactory(ProcessStore& store, std::vector
       store.addDLLProxy(dllproxy);
       auto f = dllproxy->functionSymbol("create" + name);
       if (f) {
-        logger::info("ModuleLoader::loadExecutionContextFactory({}, {}) load success.", p, name);
+        logger::debug("ModuleLoader::loadExecutionContextFactory({}, {}) load success.", p, name);
         store.addECFactory(std::shared_ptr<ExecutionContextFactoryAPI>(  static_cast<ExecutionContextFactoryAPI*>(f())  ) );
         return info;
       } else {
@@ -182,7 +182,7 @@ Value ModuleLoader::loadBrokerFactory(ProcessStore& store, std::vector<std::stri
     
     auto f = dllproxy->functionSymbol("create" + name);
     if (f) {
-      logger::info("ModuleLoader::loadBrokerFactory({}, {}) load success. Function symbol({}) can be acquired.", p, name, "create" + name);
+      logger::debug("ModuleLoader::loadBrokerFactory({}, {}) load success. Function symbol({}) can be acquired.", p, name, "create" + name);
       store.addDLLProxy(dllproxy);
       store.addBrokerFactory(std::shared_ptr<BrokerFactoryAPI>(  static_cast<BrokerFactoryAPI*>(f())  ) );
       logger::trace("ModuleLoader::loadBrokerFactory({}) exit", (info_));

@@ -14,7 +14,7 @@ SCENARIO( "Operation test", "[operaion]" ) {
   GIVEN("Operation basic behavior") {
     const std::string jsonStr = R"(
 {
-    "logger": { "logLevel": "ERROR" },
+    "logger": { "logLevel": "TRACE" },
 
     "operations": {
         "precreate": [

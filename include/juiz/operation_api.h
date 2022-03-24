@@ -85,6 +85,10 @@ namespace juiz {
         virtual Value disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) = 0;
 
         // virtual Value removeConnection(const std::string& _fullName) = 0;
+
+        virtual std::string fullPath() const {
+            return ownerFullName() + ":" + name();
+        }
     };
 
     std::shared_ptr<InletAPI> nullOperationInlet();
@@ -133,6 +137,10 @@ namespace juiz {
         virtual std::shared_ptr<InletAPI> inlet(const std::string& name) const = 0;
     
         virtual std::vector<std::shared_ptr<InletAPI>> inlets() const = 0;
+
+        virtual void finalize() override {
+            logger::info("OperationAPI(fullName={})::finalize() called.", fullName());
+        }
     };
 
     std::shared_ptr<OperationAPI> nullOperation();

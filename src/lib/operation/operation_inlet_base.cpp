@@ -14,6 +14,7 @@ OperationInletBase::OperationInletBase(const std::string& name, OperationAPI* op
 }
 
 Value OperationInletBase::fullInfo() const {
+  logger::trace3_object to("OperationInletBase({})::fullInfo() called", fullPath());
   return {
     {"name", name()},
     {"ownerFullName", operation_->fullName()},
@@ -37,10 +38,10 @@ Value OperationInletBase::info() const {
 }
 
 Value OperationInletBase::collectValues() {
-  logger::trace("OperationInletBase::collectValues({}:{}) called", ownerFullName(), name());
+  logger::trace3_object to("OperationInletBase::collectValues({}:{}) called", ownerFullName(), name());
   for (auto& con : connections_.connections()) {
-    if (con->isPull()) { 
-      logger::trace(" - Pulling by connection: {}", con->fullName());
+    if (con->isPull()) {
+      logger::verbose(" - Pulling by connection: {}", con->fullName());
       auto v = put(con->pull());
       if (v.isError()) {
         logger::warn("OperationInletBase::collectValues(): Pulling by connection {} failed. Error message is : {}", con->fullName(), v.getErrorMessage());
@@ -53,13 +54,13 @@ Value OperationInletBase::collectValues() {
 }
 
 Value OperationInletBase::put(const Value& value) {  
-  logger::trace("OperaitonInletBase::put({}) called", value);
+  logger::trace3_object to("OperaitonInletBase({})::put(value) called", ownerFullName() + ":" + name());
   std::lock_guard<std::mutex> lock(argument_mutex_);
   if (value.isError()) {
-    logger::error("OperationInletBase::{} failed. Argument is error({})", __func__, value.getErrorMessage());
+    logger::error("OperationInletBase({})::{} failed. Argument is error({})", ownerFullName() + ":" + name(), __func__, value.getErrorMessage());
     return value;
   }
-  logger::trace(" - pushing the value to the buffer");
+  logger::verbose(" - pushing the value to the buffer");
   buffer_->push(value);
   argument_updated_ = true;
   return value;
@@ -68,6 +69,7 @@ Value OperationInletBase::put(const Value& value) {
 
 
 Value OperationInletBase::connectTo(const std::shared_ptr<OutletAPI>& outlet, const Value& connectionInfo) {  
+  logger::trace3_object to("OperationInletBase::connectTo(outlet(info={}), connectionInfo={}) called", outlet->info(), connectionInfo);
   auto con = createConnection(Value::string(connectionInfo["name"]), connectionType(Value::string(connectionInfo.at("type"))), operation_->inlet(this->name()), outlet, nullptr);
   auto v = connections_.addConnection(con);
   if (v.isError()) {
@@ -79,4 +81,13 @@ Value OperationInletBase::connectTo(const std::shared_ptr<OutletAPI>& outlet, co
     
 Value OperationInletBase::disconnectFrom(const std::shared_ptr<OutletAPI>& outlet) {
   
+}
+
+
+void OperationInletBase::finalize() {
+  auto conns = connections_.connections();
+  std::for_each(conns.begin(), conns.end(), [this](auto c) {
+
+  });
+  connections_.clear();
 }

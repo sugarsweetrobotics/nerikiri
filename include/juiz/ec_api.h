@@ -25,9 +25,14 @@ namespace juiz {
 
         virtual void setSvcOperation(const std::shared_ptr<OperationAPI>& op) = 0;
 
+        virtual bool isNull() const { return false; }
+
     };
 
     std::shared_ptr<ExecutionContextAPI> nullEC();
+
+    template<>
+    inline std::shared_ptr<ExecutionContextAPI> nullObject<ExecutionContextAPI>() { return nullEC(); }
 
     /**
      * 

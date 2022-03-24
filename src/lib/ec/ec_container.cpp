@@ -44,10 +44,10 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
         [](auto& container, auto arg) {
             const auto s = Value::string(arg["stateName"]);
             const auto c = container.currentState;
+            logger::trace2_object to("ECContainerStruct({})::activate_state_{} succeeded", s);
             if (std::find(container.availableStates.begin(), container.availableStates.end(), s) == container.availableStates.end()) {
                 return Value::error(logger::error("[ECStateContainer] failed to activate {} in FSM ({}). This is not found in available state list.", s, container.fullName));
             }
-            logger::trace("ECContainerStruct::activate_state_{} succeeded", s);
             if (c != s) {
                 if (s == "started") {
                     container.ec->onStarting();
@@ -61,7 +61,6 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
                     container.ec->onStopped();
                 }
             }
-            
             return Value(s);
         }))
     ));
@@ -82,7 +81,7 @@ juiz::setupECContainer(juiz::ProcessStore& store) {
 }
 
 Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Value& ecInfo, const std::string& className) {
-    logger::info("juiz::createEC({})", ecInfo);
+    logger::trace2_object to("ec_container.cpp: juiz::createEC({})", ecInfo);
     //auto fullName = loadFullName(store.fsms(), fsmInfo);
     auto container = store.get<ContainerFactoryAPI>("_ECContainerStruct")->create(fullName);
     if (container->isNull()) {
@@ -101,9 +100,7 @@ Value juiz::createEC(ProcessStore& store, const std::string& fullName, const Val
 
     /// ここでECの本体を設定する
     c->ptr()->ec = store.executionContextFactory(Value::string(ecInfo.at("typeName")))->create(ecInfo);
-    //if (c->ptr()->ec->isNull()) {
-    //    return Value::error(logger::error("ObjectFactory::createEC failed. Failed to create ExecutionContext(typeName={})", Value::string(ecInfo.at("typeName"))));
-    //}
+    
     auto getter = store.get<ContainerOperationFactoryAPI>("_ECContainerStruct:get_state")->create<OperationAPI>(container->fullName() + ":" + "get_state.ope");
     getter->setOwner(container);
 

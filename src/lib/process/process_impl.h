@@ -55,23 +55,24 @@ namespace juiz {
         // virtual std::shared_ptr<BrokerProxyAPI> coreBroker() = 0;
 
         virtual ProcessStore* store() {
-
+          return nullptr;
         }
 
         virtual const ProcessStore* store() const {
 
+          return nullptr;
         }
 
         virtual ProcessAPI& load(const std::shared_ptr<FactoryAPI>& f) {
-
+          return *this;
         }
 
         virtual ProcessAPI& loadECFactory(const std::shared_ptr<ExecutionContextFactoryAPI>& ef) {
-
+          return *this;
         }
 
         virtual ProcessAPI& conductProcess(const Value& brokerInfo) {
-
+          return *this;
         }
 
   };

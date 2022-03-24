@@ -1,4 +1,5 @@
 #include <string>
+#include <iostream>
 #include <vector>
 
 #include <juiz/utils/functional.h>
@@ -115,10 +116,25 @@ public:
     {
     }
 
+    virtual void finalize() override {
+        logger::trace_object to("ContainerBase(fullName={})::finalize() called.", fullName());
+        auto ops = operations();
+        std::for_each(ops.begin(), ops.end(), [this](auto op) {
+            this->deleteOperation(op->fullName());
+            op->finalize();
+        });
+        operations_.clear();
+    }
+
     /**
      * デストラクタ
      */
-    virtual ~ContainerBase() {}
+    virtual ~ContainerBase() {
+        logger::info("ContainerBase(fullName={})::~ContainerBase() called", fullName());
+
+
+        logger::info("ContainerBase(fullName={})::~ContainerBase() exit", fullName());
+    }
 
     /**
      * ContainerにOperationを登録します．登録時にOperationのinstanceNameおよびfullNameを更新します
@@ -126,11 +142,11 @@ public:
      * @param operation
      */
     virtual Value addOperation(const std::shared_ptr<OperationAPI>& _operation) override { 
-        logger::trace("ContainerBase::addOperation(operation(fullName={}, typeName={})) called", _operation->fullName(), _operation->typeName());
+        logger::trace2_object to("ContainerBase::addOperation(operation(fullName={}, typeName={})) called", _operation->fullName(), _operation->typeName());
         if (_operation->isNull()) {
             return Value::error(logger::warn("ContainerBase::addOperation() failed. The argument operation is NullOperation. Ignored."));
         }
-        logger::info("Container is adding a ContainerOperation(fullName={}, typeName={})", _operation->fullName(), _operation->typeName());
+        logger::info("ContainerBase(fullName={})::addOperation(typeName={}, fullName={})", fullName(), _operation->typeName(), _operation->fullName());
         operations_.push_back((_operation)); 
         return _operation->info();;
     }
@@ -161,6 +177,7 @@ public:
         for(;it != operations_.end();++it) {
             auto op = *it;
             if (op->info().at("fullName").stringValue() == fullName) {
+                logger::info("ContainerBase(fullName={})::deleteOperation(typeName={}, fullName={})", this->fullName(), op->typeName(), op->fullName());
                 // match operation
                 it = operations_.erase(it);
                 return op->info();

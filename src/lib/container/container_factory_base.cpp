@@ -14,5 +14,5 @@ void ContainerFactoryBase::setMeshData(const JUIZ_MESH_DATA& mesh) {
 }
 
 JUIZ_MESH_DATA ContainerFactoryBase::getMeshData() const {
-
+    return Value::error("ContainerFactoryBase::getMeshData() called. But not Implemented.");
 }

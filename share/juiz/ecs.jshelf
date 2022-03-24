@@ -1,4 +1,4 @@
-brokers:
+ecs:
   load_paths: 
     - "${ShelfDirectory}/ecs"
     - "${ShelfDirectory}../ecs"

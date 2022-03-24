@@ -71,24 +71,23 @@ namespace juiz {
     friend class ProcessAPI;
     friend class Process;
   public:
+
+    ProcessStore() = delete;
+    ProcessStore(ProcessStore&) = delete;
+
+    ProcessStore& operator=(const ProcessStore&) = delete;
     /**
+     * 
      * コンストラクタ
      * 
      * 名前はデフォルトの"store"になります
      */
-    ProcessStore(ProcessAPI* process) : ProcessStoreAPI("store"), process_(process) {}
+    ProcessStore(ProcessAPI* process);
 
 
-    ProcessStore(ProcessAPI* process, const std::string& name) : ProcessStoreAPI(name), process_(process) {}
+    ProcessStore(ProcessAPI* process, const std::string& name);
 
-    virtual ~ProcessStore() {
-      /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
-
-      executionContextFactories_.clear();
-      brokers_.clear();
-      brokerFactories_.clear();
-    }
-
+    virtual ~ProcessStore();
     /**
      * 基本情報取得
      * TODO: このクラスもObjectクラスを継承するべきだろうか
@@ -165,11 +164,11 @@ namespace juiz {
     template<typename T>
     std::shared_ptr<T> get(const Value& fullName) const {
       if (fullName.isError()) {
-        logger::error("ProcessStore::get(Value arg) failed. arg is Error.");
+        logger::error("ProcessStore::get(Value arg) failed. arg is Error. Value is {}", fullName);
         return nullObject<T>();
       }
       if (!fullName.isStringValue()) {
-        logger::error("ProcessStore::get(Value arg) failed. arg is not stringValue");
+        logger::error("ProcessStore::get(Value arg) failed. arg is not stringValue but {}", fullName);
         return nullObject<T>();
       }
       return get_with_string<T>(fullName.stringValue());
@@ -281,9 +280,9 @@ namespace juiz {
       if (has<T>(obj->fullName())) {
         return Value::error(logger::warn("ProcessStore.add<{}>(obj) failed. Object (fullName={} is already contained.", obj->className(), obj->fullName()));
       }
+      logger::info("ProcessStore.add<{}>(typeName={}, fullName={}) succeeded.", obj->className(), obj->typeName(), obj->fullName());
       objects_.push_back(obj);
       //ref_list<T>().push_back(obj);
-      logger::debug("ProcessStore.add<{}>(obj->info()={}) succeeded.", obj->className(), obj->info());
       return obj->info();
     }
 
@@ -296,7 +295,7 @@ namespace juiz {
       if (c->isNull()) {
         return Value::error(logger::warn("ProcessStore.del<>({}) failed. Object is not found.", fullName));
       }
-      logger::debug("ProcessStore.del<>(obj->fullName()={}) succeeded.", fullName);
+      logger::info("ProcessStore.del<{}>(typeName={}, fullName={}) succeeded.",c->className(), c->typeName(), c->fullName());
       objects_.erase(std::remove_if(objects_.begin(), objects_.end(),
                               [&fullName](auto c){return c->fullName() == fullName; }), objects_.end());
       return c->info();
@@ -465,6 +464,8 @@ namespace juiz {
     std::shared_ptr<ConnectionAPI> connection(const std::string& fullName) const;
 
     std::shared_ptr<ExecutionContextAPI> executionContext(const std::string& fullName) const;
+
+    std::shared_ptr<ExecutionContextAPI> executionContextProxy(const Value& fullName) const;
 
     std::shared_ptr<ExecutionContextFactoryAPI> executionContextFactory(const std::string& ecTypeFullName) const;
     

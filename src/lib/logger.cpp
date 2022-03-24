@@ -66,10 +66,20 @@ std::string juiz::logger::log(const LOG_LEVEL& severity, std::string&& fmt) {
     std::cout << RED;
   } else if (severity == LOG_LEVEL::LOG_WARN) {
     std::cout << YEL;
+  } else if (severity == LOG_LEVEL::LOG_NORMAL) {
+    std::cout << WHI;
+  } else if (severity == LOG_LEVEL::LOG_INFO) {
+    std::cout << WHI;
   } else if (severity == LOG_LEVEL::LOG_DEBUG) {
-    std::cout << CYA;
-  } else if (severity == LOG_LEVEL::LOG_TRACE) {
     std::cout << GRN;
+  } else if (severity == LOG_LEVEL::LOG_TRACE) {
+    std::cout << CYA;
+  } else if (severity == LOG_LEVEL::LOG_TRACE1) {
+    std::cout << BLU;
+  } else if (severity == LOG_LEVEL::LOG_TRACE2) {
+    std::cout << BLU;
+  } else if (severity == LOG_LEVEL::LOG_TRACE3) {
+    std::cout << BLU;
   } else {
     std::cout << NC;
   }

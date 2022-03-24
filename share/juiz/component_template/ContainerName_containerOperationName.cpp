@@ -16,7 +16,7 @@ extern "C" {
                   {}
               }},
             },
-            [](auto& container, auto arg) {
+            [](auto& container, auto arg) -> juiz::Value {
                 
                 return Value::error("ContainerName_containerOperationName is not implemented yet.");
             }

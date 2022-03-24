@@ -19,7 +19,7 @@ namespace juiz {
 
 class Operation : public OperationBase {
 private:
-  std::mutex op_mutex_;
+  // std::mutex op_mutex_;
   std::function<Value(const Value&)> function_;
   
 public:
@@ -34,10 +34,10 @@ public:
   virtual ~Operation() {}
 
   virtual Value call(const Value& value) override  {
-    logger::trace("Operation({})::call({})", info().at("fullName"), value);
-    std::lock_guard<std::mutex> lock(op_mutex_);
+    logger::trace_object to("Operation({})::call(value) entry", fullName());
     return this->function_(value); 
   }
+
 };
 
 

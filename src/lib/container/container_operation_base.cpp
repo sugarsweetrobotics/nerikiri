@@ -24,7 +24,7 @@ public:
 
 
     virtual Value setOwner(const std::shared_ptr<Object>& container) override { 
-        logger::trace("ContainerOperationBase::setOwner(container.info={}", container->info());
+        logger::trace3_object to("ContainerOperationBase::setOwner(container.info={}", container->info());
         container_ = std::dynamic_pointer_cast<ContainerAPI>(container); 
         if (!container_) {
             return Value::error(logger::error("ContainerOperationBase::setOwner(container) failed. Passed argument (info={}) can not be converted to ContainerAPI pointer.", container->info()));

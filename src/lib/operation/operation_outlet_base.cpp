@@ -40,16 +40,17 @@ static std::string applyConnectionAutoRename(const std::string& name, const int 
 /////
 
 Value OperationOutletBase::put(Value&& v) {
-  logger::trace("OperaitonOutletBase::put({}) called", v);
+  logger::trace2_object to("OperaitonOutletBase({})::put({}) called", this->ownerFullName(), v);
   outputBuffer_.push(v);
   for (auto& c : connections_.connections()) {
-    logger::trace(" - Connection({}) is detected.", c->fullName());
+    logger::verbose(" - Connection({}) is detected. Putting to the Connection", c->fullName());
     c->put(v);
   }
   return std::forward<Value>(v);
 }
 
 Value OperationOutletBase::connectTo(const std::shared_ptr<InletAPI>& inlet, const Value& connectionInfo_) {
+  logger::trace2_object to("OperationOutletBase::connectTo(inlet(info={}), connectionInfo={}) called", inlet->info(), connectionInfo_);
   auto con = createConnection(Value::string(connectionInfo_["name"]), connectionType(Value::string(connectionInfo_["type"])), inlet, operation_->outlet(), nullptr);
   if (con->isNull()) {
     return Value::error(logger::error("OperationBase::addConnection() failed. Passing connection is null"));
@@ -64,4 +65,5 @@ Value OperationOutletBase::connectTo(const std::shared_ptr<InletAPI>& inlet, con
     
 Value OperationOutletBase::disconnectFrom(const std::shared_ptr<InletAPI>& inlet) {
   // TODO: 未実装
+  return Value::error(logger::error("OperationOutletBase::disconnectFrom() called. but not implemented"));
 }

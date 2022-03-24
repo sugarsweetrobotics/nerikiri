@@ -1,3 +1,6 @@
+#include <iostream>
+
+
 #include <juiz/object.h>
 
 
@@ -60,7 +63,9 @@ Object::Object(const Value& info) : info_(info){
 Object::Object(): Object({{"typeName", "null"}, {"instanceName", "null"}, {"fullName", "null"}, {"state", "created"}}) {}
 
 
-Object::~Object() {}
+Object::~Object() {
+    std::cout << "Object(fullName=" <<  fullName() <<")::~Object() callled" << std::endl;;
+}
 
 Value Object::info() const {
     return {

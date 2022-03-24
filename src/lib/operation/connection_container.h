@@ -48,6 +48,10 @@ namespace juiz {
       }
       return Value::error(logger::warn("ConnectionContainer::removeConnection({}) failed. Connection not found.", _fullName));
     }
+
+    void clear() {
+      connections_.clear();
+    }
   };
 
 }

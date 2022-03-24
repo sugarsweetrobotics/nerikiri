@@ -43,6 +43,11 @@ public:
         return;
     }
 
+
+    virtual bool isNull() const override {
+        return true; 
+    }
+
 };
 
 std::shared_ptr<ExecutionContextAPI> juiz::nullEC() {
@@ -51,7 +56,8 @@ std::shared_ptr<ExecutionContextAPI> juiz::nullEC() {
 
 
 bool ExecutionContextBase::svc() { 
-    logger::trace("ExecutionContextBase::svc() called");
+    logger::trace2_object to("ExecutionContextBase::svc()");
+    std::lock_guard<std::mutex> lock(svc_mutex_);
     //for(auto c : svcOperation_->outlet()->connections()) {
     //    // c->inlet()->put({});
     //    c->inlet()->executeOwner();
@@ -64,8 +70,9 @@ bool ExecutionContextBase::svc() {
 
 
 Value juiz::bind(ProcessStore& store, const Value& ecInfo, const Value& opInfo) {
+    logger::trace_object to("ec_api.cpp: juiz::bind(store, ecInfo={}, opInfo={})", ecInfo, opInfo);
     const std::string ecName = getStringValue(ecInfo["fullName"], "");
     const auto activate_started_ope = store.get<ContainerAPI>(ecName)->operation("activate_state_started.ope");
     const auto opProxy =  store.operationProxy(opInfo);
-    return juiz::connect(coreBroker(store), ecName + "_bind_" + opProxy->fullName(), opProxy->inlet("__event__"), activate_started_ope->outlet(), {}); 
+    return juiz::connect(coreBroker(store), ecName + "_bind_" + opProxy->fullName(), opProxy->inlet("__event__"), activate_started_ope->outlet(), {{"type", "event"}});
 }

@@ -41,7 +41,9 @@ namespace juiz {
     virtual ~Object();
 
   public:
-    virtual void finalize() {}
+    virtual void finalize() {
+      logger::info("Object::finalize()");
+    }
 
     virtual const std::string& description() const { return description_; }
 
@@ -63,7 +65,7 @@ namespace juiz {
       return(typeName() == _typeName);
     }
     
-    bool isNull() const { return fullName() == "null"; }
+    virtual bool isNull() const { return fullName() == "null"; }
 
     virtual std::string fullName() const;
 

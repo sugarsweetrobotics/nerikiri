@@ -16,6 +16,7 @@ namespace juiz {
     private:
         std::shared_ptr<OperationAPI> svcOperation_;
         const std::string& typeName_;
+        std::mutex svc_mutex_;
     public:
         ExecutionContextBase(const std::string& typeName): ExecutionContextAPI(), typeName_(typeName) {}
         virtual ~ExecutionContextBase() {}

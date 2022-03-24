@@ -36,8 +36,9 @@ namespace juiz {
   public:
     //virtual OperationAPI* owner() override { return operation_; }
     virtual Value executeOwner() override { 
-      logger::trace("OperationInletBase::executeOwner() called");
-      return operation_->execute(); 
+      logger::trace3_object("OperationInletBase({})::executeOwner() called", ownerFullName() + ":" + name_);
+      auto && v = operation_->execute(); 
+      return v;
     }
 
     virtual bool isNull() const override {
@@ -82,6 +83,8 @@ namespace juiz {
 
     //virtual Value removeConnection(const std::string& _fullName) override {
     //  return connections_.removeConnection(_fullName);
+
+    virtual void finalize();
   };
 
 }

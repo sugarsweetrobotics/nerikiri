@@ -13,11 +13,11 @@ using namespace juiz;
 
 Value ObjectMapper::createResource(const std::shared_ptr<ClientProxyAPI>& coreBroker, const std::string& _path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
   auto path = _path;
-    if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
+  if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
 
 
   std::smatch match;
-  logger::info("ObjectMapper::createResource({}, {}) called.", path, value);
+  logger::debug_object d("ObjectMapper::createResource({}, {}) called.", path, value);
 
   if (std::regex_match(path, match, std::regex("([^/]*)s$"))) {
     return coreBroker->factory()->createObject(match[1], value);
@@ -54,7 +54,7 @@ Value ObjectMapper::readResource(const std::shared_ptr<const ClientProxyAPI>& co
       return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
     if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
 
-    logger::debug("ObjectMapper::readResource({})", path);
+    logger::debug_object d("ObjectMapper::readResource(path='{}')", path);
     std::smatch match;
     
     if (path == "info") {
@@ -120,10 +120,11 @@ Value ObjectMapper::readResource(const std::shared_ptr<const ClientProxyAPI>& co
  * 
  */
 Value ObjectMapper::updateResource(const std::shared_ptr<ClientProxyAPI>& coreBroker, const std::string& path, const Value& value, const Value& params, BrokerAPI* receiverBroker) {
-  logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
+  // logger::debug("ObjectMapper::updateResource(store, path={}, value={}", path, value);
+  logger::debug_object d("ObjectMapper::updateResource(store, path={}, value={}", path, value);
   std::smatch match;
 
-
+  
 
   if (std::regex_match(path, match, std::regex("operations/([^/]*)/inlets/([^/]*)"))) {
     return coreBroker->operationInlet()->put(match[1], match[2], value);
@@ -166,7 +167,7 @@ Value ObjectMapper::deleteResource(const std::shared_ptr<ClientProxyAPI>& coreBr
     return Value::error(logger::error("ObjectMapper::requestResource({}) failed.", path));
   if (path.at(path.length()-1) == '/') { path = path.substr(0, path.length()-1); }
 
-  logger::debug("ObjectMapper::deleteResource(path={}", path);std::smatch match;
+  logger::debug_object d("ObjectMapper::deleteResource(path={}", path);std::smatch match;
   if (std::regex_match(path, match, std::regex("connections/([^/]*)"))) {
     return coreBroker->connection()->deleteConnection(match[1]);
   }

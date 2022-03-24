@@ -71,8 +71,10 @@ public:
   }
 
   virtual Value pull() override {
+    logger::trace3_object to("Connection({})::pull() called", fullName());
     if (this->isPull()) {
       //return outlet_->owner()->invoke();
+      logger::verbose("Connection({})::pull() invoking owner({})", fullName(), outlet_->ownerFullName());
       return outlet_->invokeOwner();
     }
     return outlet_->get();
@@ -80,23 +82,28 @@ public:
 
 
   virtual Value put(const Value& value) override {
-    logger::trace("Connection({})::put({}) called", fullName(), value);
-    auto v = inlet_->put(value);
+    logger::trace3_object to("Connection({})::put(value) called", fullName());
+    auto&& v = inlet_->put(value);
+    logger::verbose(" - putting to the inlet....done");
     if (this->isEvent()) {
-      logger::trace(" - executing owner operation({})", inlet_->ownerFullName());
-      return inlet_->executeOwner();
+      logger::verbose("Connection({})::put(value) - executing owner operation({})", fullName(), inlet_->ownerFullName());
+      auto&& v2 = inlet_->executeOwner();
+      logger::verbose("Connection({})::put(value) exit", fullName());
+      return v2;
+    } else {
+
     }
     return v;
   }
 };
 
 std::shared_ptr<ConnectionAPI> juiz::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet) {
-  logger::trace("juiz::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
+  logger::trace3_object to("juiz::createConnection(name={}, type={}, inlet={}, outlet={}) called", name, toString(type), inlet->info(), outlet->info());
   return std::make_shared<Connection>(name, type, inlet, outlet);
 }
 
 std::shared_ptr<ConnectionAPI> juiz::createConnection(const std::string& name, const ConnectionAPI::ConnectionType& type, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const std::shared_ptr<Object>& obj) {
-  logger::trace("juiz::createConnection(name={}, type={}, inlet={}, outlet={})", name, toString(type), inlet->info(), outlet->info());
+  logger::trace3_object to("juiz::createConnection(name={}, type={}, inlet={}, outlet={}) called", name, toString(type), inlet->info(), outlet->info());
   return std::make_shared<Connection>(name, type, inlet, outlet, obj);
 }
 
@@ -123,7 +130,7 @@ std::shared_ptr<ClientProxyAPI> select_broker(ProcessStore& store, const std::sh
 }
 
 Value juiz::connect(ProcessStore& store, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
-  logger::info("juiz::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
+  logger::info_object to("juiz::connect(name={}, inlet={}, outlet={}, options={}) called", name, inlet->info(), outlet->info(), options);
   auto broker = select_broker(store, inlet, outlet, options);
   std::string defaultConnectionType = "event";
   if (options.hasKey("event")) {
@@ -142,13 +149,14 @@ Value juiz::connect(ProcessStore& store, const std::string& name, const std::sha
     con0Info["type"] = "pull";
   }
 
-  return broker->connection()->createConnection(con0Info);
+  auto&& c = broker->connection()->createConnection(con0Info);
+  return c;
   //return store.process()->coreBroker()->connection()->createConnection(con0Info);
 }
 
 
 Value juiz::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::string& name, const std::shared_ptr<InletAPI>& inlet, const std::shared_ptr<OutletAPI>& outlet, const Value& options) {
-  logger::info("juiz::connect(broker={typeName={}}, name={}, inlet={}, outlet={}, options={}) called", broker->typeName(), name, inlet->info(), outlet->info(), options);
+  logger::info_object to("connection.cpp: juiz::connect(broker={typeName={}}, name={}, inlet={}, outlet={}, options={}) called", broker->typeName(), name, inlet->info(), outlet->info(), options);
   std::string defaultConnectionType = "event";
   if (options.hasKey("event")) {
     defaultConnectionType = options["event"].stringValue();
@@ -166,7 +174,11 @@ Value juiz::connect(const std::shared_ptr<ClientProxyAPI>& broker, const std::st
     con0Info["type"] = "pull";
   }
 
-  return broker->connection()->createConnection(con0Info);
+  auto&& c = broker->connection()->createConnection(con0Info);
+  if (!c.isError()) {
+    logger::info("juiz::connect(broker={}, name={}, inlet={}, outlet={}) succeeded.", broker->fullName(), name, inlet->fullPath(), outlet->ownerFullName());
+  }
+  return c;
   //return store.process()->coreBroker()->connection()->createConnection(con0Info);
 }
 

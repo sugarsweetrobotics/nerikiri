@@ -25,7 +25,7 @@ public:
     }
 
     virtual JUIZ_MESH_DATA getMeshData() const override {
-        logger::error("NullContainer::{}() failed. Container is null.", __func__);
+        return Value::error(logger::error("NullContainer::{}() failed. Container is null.", __func__));
     }
 
     virtual void setMeshData(const JUIZ_MESH_DATA& mesh) override {

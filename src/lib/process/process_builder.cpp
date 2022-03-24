@@ -7,6 +7,7 @@
 
 #include "../pose/static_transformation_operation.h"
 #include "../pose/dynamic_transformation_operation.h"
+#include <juiz/path_parser.h>
 
 using namespace juiz;
 /**
@@ -35,14 +36,19 @@ void ProcessBuilder::preloadOperations(ProcessStore& store, const Value& config,
 namespace {
   void loadContainerFactory(ProcessStore& store, const std::string& typeName, const std::vector<std::string>& load_paths) {
     const auto dllproxy = ModuleLoader::loadDLL(typeName, load_paths);
-    store.addDLLProxy(dllproxy);
-    store.add(ModuleLoader::loadContainerFactory(dllproxy, typeName)); /// これでコンテナのファクトリを作成
+    if (dllproxy) {
+      store.addDLLProxy(dllproxy);
+      store.add(ModuleLoader::loadContainerFactory(dllproxy, typeName)); /// これでコンテナのファクトリを作成
+    }
   }
 
   void loadContainerOperationFactory(ProcessStore& store, const std::string& opTypeName, const std::vector<std::string>& load_paths) {
     const auto opDLLProxy = ModuleLoader::loadDLL(opTypeName, load_paths);
-    store.addDLLProxy(opDLLProxy);
-    store.add(ModuleLoader::loadContainerOperationFactory(opDLLProxy, opTypeName));
+    if (opDLLProxy) {
+      store.addDLLProxy(opDLLProxy);
+      store.add(ModuleLoader::loadContainerOperationFactory(opDLLProxy, opTypeName));
+
+    }
   }
 }
 
@@ -197,9 +203,9 @@ void ProcessBuilder::preloadExecutionContexts(ProcessStore& store, const Value& 
   });
   config["ecs"]["precreate"].const_list_for_each([&store](auto& value) {
     auto ecInfo = ObjectFactory::createExecutionContext(store, value);
-    auto ec = store.get<ContainerAPI>(ecInfo);
-    value["bind"].const_list_for_each([&store, &ecInfo](auto& opValue) {
-
+    auto ec = store.get<ContainerAPI>(ecInfo["fullName"]);
+    value["bind"].const_list_for_each([&store, &ecInfo](auto& opInfo) {
+      juiz::bind(store, ecInfo, opInfo);
     });
   });
 
@@ -269,11 +275,60 @@ void ProcessBuilder::preloadAnchors(ProcessStore& store, const Value& config, co
   logger::trace("ProcessBuilder::_preloadAnchors() exit");
 }
 
+
+
 /**
  * 
  */
 void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, const std::string& path) {
-  logger::trace("ProcessBuilder::_preStartFSMs() entry");
+  logger::trace("ProcessBuilder::preStartFSMs() entry");
+  config["fsms"]["precreate"].const_list_for_each([&store](auto& fsmInfo) {
+    const auto fsm = store.get<ContainerAPI>(fsmInfo["fullName"]);
+    fsmInfo["states"].const_list_for_each([&fsm, &store](auto& stateInfo) {
+      const auto stateOp = store.get<OperationAPI>(fsm->fullName() + ":activate_state_" + stateInfo["name"].stringValue() + ".ope");
+      stateInfo["bind"].const_list_for_each([&fsm, &stateOp, &store](auto& opInfo) {
+        std::string opFullName;
+        if (opInfo.isStringValue()) {
+          opFullName = PathParser::operationFullName(opInfo.stringValue());
+        } else {
+          opFullName = getStringValue(opInfo["fullName"], "");
+        }
+        const auto name = stateOp->fullName() + "_state_connection_" + opFullName;
+        logger::trace(" - FSM connection: {}", name);
+        Value option = {};
+        if (opInfo.hasKey("argument")) {
+          option["argument"] = opInfo["argument"];
+        }
+        const auto opProxy = store.operationProxy(opInfo);
+        if (!opProxy->isNull()) {
+          auto result = juiz::connect(coreBroker(store), name, opProxy->inlet("__argument__"), stateOp->outlet(), option);
+          if (result.isError()) {
+            logger::error("ProcessBuilder::preStartFSMs() failed. juiz::connect returns error. {}", result);
+          }
+          return;
+        } 
+
+        std::string ecFullName, ecStateName;
+        if (opInfo.isStringValue()) {
+          ecFullName = PathParser::executionContextFullName(opInfo.stringValue());
+          ecStateName = PathParser::executionContextStateName(opInfo.stringValue());
+        } else {
+          ecFullName = getStringValue(opInfo["fullName"], "");
+          ecStateName = getStringValue(opInfo["state"], "started");
+        }
+        
+        const auto ecProxy = store.get<OperationAPI>(ecFullName + ":" + "activate_state_" + ecStateName + ".ope");
+        if (!ecProxy->isNull()) {
+          auto result = juiz::connect(coreBroker(store), name, ecProxy->inlet("__event__"), stateOp->outlet(), option);
+          if (result.isError()) {
+            logger::error("ProcessBuilder::preStartFSMs() failed. juiz::connect returns error. {}", result);
+          }
+          return;
+        }
+        logger::error("ProcessBuilder::preStartFSMs failed. Can not create connection from {} to {}", fsm->fullName(), opInfo);
+      });
+    });
+  });
   config.at("fsms").at("bind").const_list_for_each([&store](const auto& bindInfo) {
      {
       auto fullName = Value::string(bindInfo["fullName"]);
@@ -300,73 +355,6 @@ void ProcessBuilder::preStartFSMs(ProcessStore& store, const Value& config, cons
       });
      }
   });
-    /*
-    auto fsmInfo = bindInfo.at("fsm");
-    auto opInfo = bindInfo.at("operation");
-    store.fsm(Value::string(fsmInfo.at("fullName")))->fsmState(Value::string(fsmInfo.at("state")))->bind(
-      store.operation(Value::string(opInfo.at("fullName"))),
-      opInfo.at("argument")
-    );
-    */
-    /*
-    if (opInfo.hasKey("argument")) {
-      this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
-        this->store()->getAllOperation(opInfo), opInfo.at("argument")
-      );
-    } else {
-      this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
-        this->store()->getAllOperation(opInfo)
-      );
-    }
-    *
-  }); 
-    /* 
-    config.at("fsms").at("bind").at("operations").const_list_for_each([&store](auto& bindInfo) {
-      auto fsmInfo = bindInfo.at("fsm");
-      auto opInfo = bindInfo.at("operation");
-      store.fsm(Value::string(fsmInfo.at("fullName")))->fsmState(Value::string(fsmInfo.at("state")))->bind(
-        store.operation(Value::string(opInfo.at("fullName"))),
-        opInfo.at("argument")
-      );
-      /*
-      if (opInfo.hasKey("argument")) {
-        this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
-          this->store()->getAllOperation(opInfo), opInfo.at("argument")
-        );
-      } else {
-        this->store()->getFSM(fsmInfo)->bindStateToOperation(fsmInfo.at("state").stringValue(), 
-          this->store()->getAllOperation(opInfo)
-        );
-      }
-      *
-    }); */
-    /* 
-    auto c = config.at("fsms").at("bind");
-    auto ecs = c.at("ecs");
-    */
-    /*
-    ecs.list_for_each([this](auto& value) {
-      // TODO: ECへのバインド
-      //store()->fsm(Value::string(value.at("fsm").at("fullName")))
-      
-      auto fsmInfo = value.at("fsm");
-      auto ecInfo = value.at("ec");
-      if (ecInfo.at("state").stringValue() == "started") {
-        this->store()->getFSM(fsmInfo)->bindStateToECStart(fsmInfo.at("state").stringValue(), 
-          this->store()->getExecutionContext(ecInfo)
-        );
-      } else if (ecInfo.at("state").stringValue() == "stopped") {
-        this->store()->getFSM(fsmInfo)->bindStateToECStop(fsmInfo.at("state").stringValue(), 
-          this->store()->getExecutionContext(ecInfo)
-        );
-      }
-      
-    });
-    */
-  //} catch (juiz::ValueTypeError& e) {
-  //  logger::debug("Process::_preloadFSMs(). ValueTypeException:{}", e.what());
-  //}
-
   logger::trace("ProcessBuilder::_preStartFSMs() exit");
 }
 
@@ -401,7 +389,7 @@ void ProcessBuilder::preloadBrokers(ProcessStore& store, const Value& config, co
 
 void ProcessBuilder::preloadConnections(ProcessStore& store, const Value& config, const std::string& path) {
   logger::trace("ProcessBuilder::_preloadConnections() entry");
-  config.at("connections").const_list_for_each([&store](auto& value) {
+  config["connections"].const_list_for_each([&store](auto& value) {
    // ConnectionBuilder::registerProviderConnection(store(), value);
    /// TODO: ここではStateBindも来るかもしれない
     ConnectionBuilder::createOperationConnection(store, value);
@@ -481,7 +469,7 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<Cl
       });
     });
   } catch (juiz::ValueTypeError& e) {
-    logger::debug("ProcessBuilder::preloadTopics(). ValueTypeException:{}", e.what());
+    logger::error("ProcessBuilder::preloadTopics(). ValueTypeException:{}", e.what());
   } 
   logger::trace("ProcessBuilder::preloadTopics() exit");
 
@@ -490,7 +478,7 @@ void ProcessBuilder::preloadTopics(ProcessStore& store, const std::shared_ptr<Cl
 void ProcessBuilder::preloadCallbacksOnStarted(ProcessStore& store, const Value& config, const std::string& path) {
   try {
     auto c = config.at("callbacks");
-    c.const_list_for_each([store](auto& value) {
+    c.const_list_for_each([&store](auto& value) {
       // TODO: コールバックね
       if (value.at("name").stringValue() == "on_started") {
         value.at("target").const_list_for_each([&store](auto& v) {

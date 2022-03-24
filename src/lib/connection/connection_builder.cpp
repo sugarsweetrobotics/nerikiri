@@ -99,7 +99,7 @@ Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Va
   }
 
   // 同一名称があるかどうか確認．ある場合はnamingPolicyがautoならば名前自動更新
-  auto name = Value::string(connectionInfo.at("name"));
+  auto name = Value::string(connectionInfo["name"]);
   auto all_connections = juiz::functional::join(outlet->connections(), inlet->connections());
   if (check_the_same_name_connection_exists(all_connections, name)) {
     if (Value::string(connectionInfo.at("namingPolicy")) == "auto") {
@@ -110,10 +110,12 @@ Value ConnectionBuilder::createOperationConnection(ProcessStore& store, const Va
     }
   }
   connectionInfo["name"] = name;
-
+  logger::trace(" - now connecting from outlet(info={})", outlet->info());
   // outlet側から接続を構築する．失敗したらエラーを返す
   auto outletConnectionResult = outlet->connectTo(inlet, connectionInfo);
   if (outletConnectionResult.isError()) return outletConnectionResult;
+  logger::trace(" - result is {}", outletConnectionResult);
+  logger::trace(" - then connecting from inlet(info={})", inlet->info());
   // inlet側から接続を構築．
   auto inletConnectionResult = inlet->connectTo(outlet, connectionInfo);
   if (inletConnectionResult.isError()) {

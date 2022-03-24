@@ -286,6 +286,20 @@
             "args": ["../example/demo.jproj"],
             "cwd": "${workspaceFolder}/build/"
 
+        },
+        {
+            "name": "Debug coppelia_juiz",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/juizd",
+            "args": ["CoppeliaSimJUIZ.jproj"],
+            "cwd": "/Users/ysuga/Development/etc/juiz/coppeliasimjuiz/",
+            "env": {
+                "DYLD_LIBRARY_PATH": "/opt/juiz/lib",
+                "JUIZ_ROOT": "/opt/juiz"
+            }
+
         }
+    
     ]
 }

@@ -151,7 +151,7 @@ ProcessImpl::ProcessImpl(const std::string& name, const std::string& jsonStr): P
 }
 
 ProcessImpl::~ProcessImpl() {
-  logger::trace("ProcessImpl::~Process() called.");
+  logger::info("ProcessImpl::~Process() called.");
   if (started_) {
     stop();
   }
@@ -187,6 +187,7 @@ namespace {
     } else if (_path.extension() == ".jproj") {
       return loadJProj(_path);
     }
+    return Value::error(logger::error("process_impl.cpp::loadConfigFile() failed. Unknown file extension ({})", _path.extension()));
   }
 }
 /**
@@ -225,9 +226,9 @@ static auto start_broker(std::vector<std::shared_ptr<std::thread>>& threads, con
   threads.emplace_back(std::make_shared<std::thread>([brk, broker](std::promise<bool> p) {
 				     std::stringstream ss;
 				     ss << std::this_thread::get_id();
-				     logger::trace("A thread {} is going to run broker {}", ss.str(), str(brk->info()));
+				     logger::info("A thread {} is going to run broker {}", ss.str(), str(brk->info()));
 				     p.set_value(brk->run(broker));
-				     logger::trace("A thread {} finished", ss.str());
+				     logger::info("A thread {} finished", ss.str());
 				   }, std::move(prms)));
   return ftr;
 }
@@ -262,7 +263,7 @@ void ProcessImpl::startAsync() {
   ProcessBuilder::preStartFSMs(store_, config_, fullpath_);
   ProcessBuilder::preStartExecutionContexts(store_, config_, fullpath_);
 
-  auto broker_futures = juiz::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store()->brokers(), [this](auto& brk) -> std::future<bool> {
+  auto broker_futures = juiz::functional::map<std::future<bool>, std::shared_ptr<BrokerAPI>>(store_.brokers(), [this](auto& brk) -> std::future<bool> {
 								   return start_broker(this->threads_, coreBroker_, brk);
 								 });
   
@@ -324,9 +325,12 @@ void ProcessImpl::stop() {
 
 int32_t ProcessImpl::start() {
   logger::trace("ProcessImpl::start() called");
+  logger::info("ProcessImpl::start() - starting Process.....");
   startAsync();
   if (wait() < 0) return -1;
+  logger::info("\nProcessImpl::start() - stopping Process.....");
   stop();
+  logger::info("ProcessImpl::start() - Process stopped");
   return 0;
 }
 

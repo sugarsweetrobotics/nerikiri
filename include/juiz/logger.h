@@ -6,34 +6,56 @@
 
 namespace juiz::logger {
 
-  enum LOG_LEVEL { LOG_TRACE,
-      LOG_DEBUG,
-      LOG_INFO,
-      LOG_WARN,
-      LOG_ERROR,
-      LOG_FATAL,
-      LOG_OFF };
+  enum LOG_LEVEL { 
+    LOG_VERBOSE,
+    LOG_TRACE3,
+    LOG_TRACE2,
+    LOG_TRACE1,
+    LOG_TRACE,
+    LOG_DEBUG,
+    LOG_NORMAL,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR,
+    LOG_FATAL,
+    LOG_OFF
+  };
 
   inline std::string to_string(const LOG_LEVEL& level) {
     switch(level) {
-    case LOG_TRACE: return " TRACE ";
-    case LOG_DEBUG: return " DEBUG ";
-    case LOG_INFO:  return " INFO  ";
-    case LOG_WARN:  return " WARN  ";
-    case LOG_ERROR: return " ERROR ";
-    case LOG_FATAL: return " FATAL ";
-    case LOG_OFF:  return  " OFF   ";
+    case LOG_VERBOSE:return "VERBOSE";
+    case LOG_TRACE3: return " TRACE3";
+    case LOG_TRACE2: return " TRACE2";
+    case LOG_TRACE1: return " TRACE1";
+    case LOG_TRACE:  return " TRACE ";
+    case LOG_DEBUG:  return " DEBUG ";
+    case LOG_INFO:   return " INFO  ";
+    case LOG_NORMAL: return "NORMAL ";
+    case LOG_WARN:   return " WARN  ";
+    case LOG_ERROR:  return " ERROR ";
+    case LOG_FATAL:  return " FATAL ";
+    case LOG_OFF:    return  " OFF   ";
     default:   return  "UNKNOWN";
     }
   }
   
   inline LOG_LEVEL from_string(const std::string& level) {
-    if (level == "TRACE") {
+    if (level == "VERBOSE") {
+      return LOG_VERBOSE;
+    } else if (level == "TRACE3") {
+      return LOG_TRACE3;
+    } else if (level == "TRACE2") {
+      return LOG_TRACE2;
+    } else if (level == "TRACE1") {
+      return LOG_TRACE1;
+    } else if (level == "TRACE") {
       return LOG_TRACE;
     } else if (level == "DEBUG") { 
       return LOG_DEBUG;
     } else if (level == "INFO") {
       return LOG_INFO;
+    } else if (level == "NORMAL") {
+      return LOG_NORMAL;
     } else if (level == "WARN") {
       return LOG_WARN;
     } else if (level == "ERROR") {
@@ -116,13 +138,45 @@ namespace juiz::logger {
     return log(severity, formatter(std::forward<std::string>(std::string(fmt)), severity), args...);
   }
 
-  inline std::string trace(const std::string& str) {
-    return log(LOG_TRACE, str.c_str());
+  template<typename... Args>
+  inline std::string verbose(const char* fmt, const Args &... args) {
+    return log(LOG_VERBOSE, fmt, args...);
   }
 
   template<typename... Args>
   inline std::string trace(const char* fmt, const Args &... args) {
     return log(LOG_TRACE, fmt, args...);
+  }
+
+  inline std::string trace(const std::string& str) {
+    return log(LOG_TRACE, str.c_str());
+  }
+
+  template<typename... Args>
+  inline std::string trace1(const char* fmt, const Args &... args) {
+    return log(LOG_TRACE1, fmt, args...);
+  }
+
+  inline std::string trace1(const std::string& str) {
+    return log(LOG_TRACE1, str.c_str());
+  }
+
+  template<typename... Args>
+  inline std::string trace2(const char* fmt, const Args &... args) {
+    return log(LOG_TRACE2, fmt, args...);
+  }
+
+  inline std::string trace2(const std::string& str) {
+    return log(LOG_TRACE2, str.c_str());
+  }
+
+  template<typename... Args>
+  inline std::string trace3(const char* fmt, const Args &... args) {
+    return log(LOG_TRACE3, fmt, args...);
+  }
+
+  inline std::string trace3(const std::string& str) {
+    return log(LOG_TRACE3, str.c_str());
   }
 
   template<typename... Args>
@@ -162,4 +216,32 @@ namespace juiz::logger {
     return log(LOG_FATAL, fmt, args...);
   }
 
+  template<LOG_LEVEL LL>
+  class log_object {
+    std::string functionName_;
+  public:
+    
+    template<typename... Args>
+    log_object(const char* fmt, const Args &... args) {
+      functionName_ = doNotLog(LL, fmt, args...);
+      log(LL, (functionName_ + " entry").c_str());
+    }
+
+    log_object(const std::string& fmt) {
+      functionName_ = fmt;
+      log(LL, (functionName_ + " entry").c_str());
+    }
+
+    ~log_object() {
+      log(LL, (functionName_ + " exit").c_str());
+    }
+  };
+
+  using trace3_object = log_object<LOG_TRACE3>;
+  using trace2_object = log_object<LOG_TRACE2>;
+  using trace1_object = log_object<LOG_TRACE1>;
+  using trace_object = log_object<LOG_TRACE>;
+  using debug_object = log_object<LOG_DEBUG>;
+  using info_object = log_object<LOG_INFO>;
+  
 }

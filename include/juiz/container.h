@@ -63,9 +63,11 @@ namespace juiz {
         std::condition_variable threading_condition_variable_;
         std::mutex threading_mutex_;
         bool threading_notify_;
+
         std::condition_variable task_condition_variable_;
         std::mutex task_mutex_;
-        bool task_notify_;
+        bool task_is_ready_;
+        bool task_is_done_;
         
         std::shared_ptr<ModelDataAPI> model_data_;
     public:
@@ -88,9 +90,17 @@ namespace juiz {
 
     public:
         Container(const ContainerFactoryAPI* parentFactory, const std::string& fullName) : ContainerAPI("Container", demangle(typeid(T).name()), fullName), base_(containerBase(parentFactory, "Container", demangle(typeid(T).name()), fullName))
-          ,_ptr(std::make_shared<T>()), end_flag_(false), use_thread_(false), threading_notify_(false), task_notify_(false), thread_([this]() { this->thread_routine(); }), model_data_(nullptr)
+          ,_ptr(std::make_shared<T>()), end_flag_(false), use_thread_(false), threading_notify_(false), task_is_ready_(false), task_is_done_(false), thread_([this]() { this->thread_routine(); }), model_data_(nullptr)
         {}
+
+        virtual void finalize() override {
+            logger::info("Container<{}>(fullName={})::finalize() called", typeName(), fullName());
+            base_->finalize();
+            base_ = nullptr;
+        }
+
         virtual ~Container() {
+            logger::info("Container<{}>(fullName={})::~Container() called", typeName(), fullName());
             end_flag_ = true;
             threading_notify_ = true;
             threading_condition_variable_.notify_all();
@@ -99,41 +109,73 @@ namespace juiz {
 
         void thread_routine() {
             const auto id = this->thread_.get_id();
-            const auto h = std::hash<std::thread::id>{}(std::this_thread::get_id());
+            const int32_t h = std::hash<std::thread::id>{}(std::this_thread::get_id());
             while(!end_flag_) {
-                std::unique_lock<std::mutex> lock(threading_mutex_);
-                if (!task_queue_.empty()) {
-                    {
-                        std::unique_lock<std::mutex> task_lock(task_mutex_);
-                        auto task = task_queue_.front();
-                        logger::trace("Container::thread_routine(id={}) is executing task.", (int32_t)h);
-                        task();
-                        task_notify_ = true;
+                // container_task task;
+                {
+                    logger::verbose("Container({})::thread_routine({}) blocking task_mutex_ .....", fullName(), h);
+                    std::unique_lock<std::mutex> task_lock(task_mutex_);
+                    this->task_is_ready_ = false;
+                    logger::verbose("Container({})::thread_routine({}) waiting task .....", fullName(), h);
+                    task_condition_variable_.wait(task_lock, [this](){ return this->task_is_ready_; });
+                    logger::verbose("Container({})::thread_routine({}) task is ready.", fullName(), h);
+                   
+                    if (task_queue_.empty()) {
+                        logger::error("Container({})::thread_routine({}) error. Task ready flag is ON but task queue is empty.", fullName(), h);
+                        //task_is_done_ = true;
+                        task_is_ready_ = false;
+                        continue;
                     }
-                    task_condition_variable_.notify_one();
+
+                    logger::verbose("Container({})::thread_routine({}) now getting task....", fullName(), h);
+                    auto task = task_queue_.front();
+                    logger::verbose("Container({})::thread_routine({}) is executing task", fullName(), h);
+                    task();
+                    logger::verbose("Container({})::thread_routine({}) is executed", fullName(), h);
+                    task_is_ready_ = false;
                     task_queue_.pop();
-                } else {
-                    threading_notify_ = false;
-                    threading_condition_variable_.wait(lock, [this](){ 
-                        return this->threading_notify_; 
-                    });
+
                 }
+
+                {
+                    logger::verbose("Container({})::thread_routine() blocking threading_mutex_ .....", fullName());
+                    std::lock_guard<std::mutex> done_lock(threading_mutex_);
+                    logger::verbose("Container({})::thread_routine() blocked threading_mutex_ .....", fullName());
+                    task_is_done_ = true;
+                }
+                threading_condition_variable_.notify_all();
             }
         }
 
-        void push_task(const container_task& func) {
-            std::unique_lock<std::mutex> task_lock(task_mutex_);
-            task_notify_= false;
-            task_queue_.push(func);
-            {
-                std::unique_lock<std::mutex> lock(threading_mutex_);
-                threading_notify_ = true;
-            }
-            threading_condition_variable_.notify_one();
+        std::mutex push_task_mutex_;
 
-            task_condition_variable_.wait(task_lock, [this]() {
-                return this->task_notify_;
-            });
+        void push_task(const container_task& func) {
+            logger::trace2_object("Container({})::push_task() called", fullName());
+            std::lock_guard<std::mutex> lock(push_task_mutex_);
+            {
+                {
+                    //std::unique_lock<std::mutex> done_lock(threading_mutex_);
+                    //task_is_done_ = false;
+                }
+                logger::verbose("Container({})::push_task() task_mutex locking...", fullName());
+                {
+                    std::lock_guard<std::mutex> task_lock(task_mutex_);
+                    logger::verbose("Container({})::push_task() task_mutex locked. Pushing task to the queue.", fullName());
+                    task_queue_.push(func);
+                    task_is_ready_ = true;
+                }
+                task_condition_variable_.notify_one();
+                {
+                    logger::verbose("Container({})::push_task() threading_mutex locked. Now notifying to the thread_routine....", fullName());
+                    std::unique_lock<std::mutex> done_lock(threading_mutex_);
+                    task_is_done_ = false;
+                    logger::verbose("Container({})::push_task() notified. then waiting for task is done.", fullName());
+                    threading_condition_variable_.wait(done_lock, [this](){ return this->task_is_done_; });
+                    task_is_done_ = false;
+                }
+                //while(task_is_done_) std::this_thread::yield();
+                logger::verbose("Container({})::push_task() task is done.", fullName());
+            }
         }
 
 
@@ -191,6 +233,7 @@ namespace juiz {
         std::shared_ptr<OperationAPI> base_;
         std::mutex cop_mutex_;
         Value defaultArgs_;
+
     public:
         virtual Value setOwner(const std::shared_ptr<Object>& container) override { return base_->setOwner(container); }
         virtual const std::shared_ptr<Object> getOwner() const override { return base_->getOwner(); }
@@ -202,30 +245,38 @@ namespace juiz {
             defaultArgs_(defaultArgs),
             function_(func)
            {
-               logger::trace("ContainerOperation(typeName={}, fullName={}, defaultArgs={}, func, info={}) called", _typeName, _fullName, defaultArgs, info);
+               logger::trace2("ContainerOperation(typeName={}, fullName={}, defaultArgs={}, func, info={}) called", _typeName, _fullName, defaultArgs, info);
            }
 
         virtual ~ContainerOperation() {}
 
         virtual Value call(const Value& value) override {
-            // std::lock_guard<std::mutex> lock(cop_mutex_);
+            logger::trace2_object("ContainerOperation({})::call(value) called", fullName());
+            std::lock_guard<std::mutex> lock(cop_mutex_);
             try {
-                auto c = std::static_pointer_cast<Container<T>>(getOwner());
+                const auto c = std::static_pointer_cast<Container<T>>(getOwner());
                 if (!c) {
-                    logger::error("ContainerOperation::call failed. Invalid owner container pointer. Can not convert to {}. ", juiz::demangle(typeid(T).name()));
+                    return Value::error(logger::error("ContainerOperation({})::call failed. Invalid owner container pointer. Can not convert to {}. ", fullName(), juiz::demangle(typeid(T).name())));
                 }
                 if (c->isUseThread()) {
                     Value v;
+                    logger::verbose("ContainerOperation({})::call(value={}) executing function by thread....", fullName(), value);
                     c->push_task(container_task([this, &v, &c, &value]() {
                         try {
-                        v = this->function_(*(c->ptr()), value);
+                            // std::lock_guard<std::mutex> lock(c->structMutex());
+                            v = this->function_(*(c->ptr()), value);
                         } catch (std::exception& ex) {
                            logger::error("ContainerOperation(fullName={})::call() failed. Exception occurred in ContainerThread : {}", fullName(), std::string(ex.what()));
                         }
                     }));
+                    logger::verbose("ContainerOperation({})::call(value) executing function done.", fullName());
                     return v;
                 } else {
-                    return this->function_(*(c->ptr()), value);
+                    //std::lock_guard<std::mutex> lock(c->structMutex());
+                    logger::verbose("ContainerOperation({})::call(value) executing function by this routine", fullName());
+                    auto&& v = this->function_(*(c->ptr()), value);
+                    logger::verbose("ContainerOperation({})::call(value) executing function done.", fullName());
+                    return v;
                 }
             } catch (std::exception& ex) {
                 return Value::error(logger::error("ContainerOperation(fullName={})::call() failed. Exception occurred {}", fullName(), std::string(ex.what())));
@@ -257,7 +308,6 @@ namespace juiz {
 
     class ContainerGetPoseOperation : public OperationAPI {
     private:  
-        std::mutex mutex_;
         std::shared_ptr<OperationAPI> operation_base_;
 
     public:
@@ -274,9 +324,8 @@ namespace juiz {
         virtual const std::shared_ptr<Object> getOwner() const override { return operation_base_->getOwner(); }
 
         virtual Value call(const Value& value) override  {
-            std::lock_guard<std::mutex> lock(this->mutex_);
-
             auto c = std::static_pointer_cast<ContainerAPI>(getOwner());
+            std::lock_guard<std::mutex> lock(c->basePoseMutex());
             if (!c) {
 
             }
@@ -306,7 +355,6 @@ namespace juiz {
 
     class ContainerSetPoseOperation : public OperationAPI {
     private:
-        std::mutex mutex_;
         Value defaultArgs_;
         std::shared_ptr<OperationAPI> operation_base_;
     public:
@@ -327,8 +375,8 @@ namespace juiz {
         virtual const std::shared_ptr<Object> getOwner() const override { return operation_base_->getOwner(); }
 
         virtual Value call(const Value& value) override {
-            std::lock_guard<std::mutex> lock(this->mutex_);
             auto c = std::static_pointer_cast<ContainerAPI>(getOwner());
+            std::lock_guard<std::mutex> lock(c->basePoseMutex());
             if (!c) {
 
             }
@@ -398,7 +446,7 @@ namespace juiz {
          * 
          */
         virtual std::shared_ptr<Object> create(const std::string& fullName, const Value& info={}) const override { 
-            logger::trace("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
+            logger::trace2_object("ContainerFactory<{}>::create(fullName={}) called.", typeName(), fullName);
             auto c = std::make_shared<Container<T>>(this, fullName);
             c->getPoseOperation_ = std::make_shared<ContainerGetPoseOperation>(juiz::naming::join(fullName, "container_get_pose.ope"));
             c->getPoseOperation_->setOwner(c);
@@ -407,7 +455,13 @@ namespace juiz {
             c->addOperation(c->getPoseOperation_);
             c->addOperation(c->setPoseOperation_);
             // ここでinfoにthreading_containerを要求するあたいがあればuseThreadをONにする
-            c->useThread(true);
+            if (info.hasKey("useThread")) {
+                if(info["useThread"].isBoolValue()) {
+                    c->useThread(info["useThread"].boolValue());
+                }
+            } else {
+                c->useThread(true);
+            }
             if (defaultInfo_.hasKey("className")) {
                 c->setClassName(defaultInfo_["className"].stringValue());
             }
@@ -423,7 +477,7 @@ namespace juiz {
      */
     template<typename T>
     void* containerFactory(const Value& info={}) {
-        logger::trace("juiz::containerFactory<{}> called.", demangle(typeid(T).name()));
+        logger::trace2_object("juiz::containerFactory<{}> called.", demangle(typeid(T).name()));
         return new ContainerFactory<T>(info); 
     }
 
@@ -457,7 +511,7 @@ namespace juiz {
          * 
          */
         virtual std::shared_ptr<Object> create(const std::string& fullName, const Value& info=Value::error("")) const override { 
-            logger::trace("ContainerOperationFactory(typeName={})::create(fullName={}, info={})", typeName(), fullName, info);
+            logger::trace2_object("ContainerOperationFactory(typeName={})::create(fullName={}, info={})", typeName(), fullName, info);
             auto defaultArg = defaultArgs_;
             if (info.isError()) {
                 logger::error("ContainerOperationFactory(typeName={})::create(fullname={}, info={}) failed. info is error.", typeName(), fullName, info);
@@ -475,7 +529,7 @@ namespace juiz {
      */
     template<typename T>
     void* containerOperationFactory(const Value& info, const std::function<Value(T&,const Value&)>& func) { 
-        logger::trace("juiz::containerOperationFactory<{}> called.", demangle(typeid(T).name()));
+        logger::trace2_object("juiz::containerOperationFactory<{}> called.", demangle(typeid(T).name()));
         return new ContainerOperationFactory<T>(Value::string(info["typeName"]), info["defaultArg"], func, info);
     }
 

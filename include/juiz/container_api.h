@@ -25,6 +25,12 @@ namespace juiz {
         std::shared_ptr<OperationAPI> getPoseOperation() const { return getPoseOperation_; }
         std::shared_ptr<OperationAPI> setPoseOperation() const { return setPoseOperation_; }
 
+    private:
+        std::mutex base_pose_mutex_;
+        std::mutex struct_mutex_;
+    public:
+        std::mutex& basePoseMutex() { return base_pose_mutex_; }
+        std::mutex& structMutex() { return struct_mutex_; }
     public:
         ContainerAPI(const std::string& className, const std::string& typeName, const std::string& fullName) : Object(className, typeName, fullName) {}
 
@@ -47,6 +53,10 @@ namespace juiz {
         virtual Value addOperation(const std::shared_ptr<OperationAPI>& operation) = 0;
 
         virtual Value deleteOperation(const std::string& fullName) = 0;
+
+        virtual void finalize() override {
+            logger::info("ContainerAPI(fullName={})::finalize() called", fullName());
+        }
         
     };
 

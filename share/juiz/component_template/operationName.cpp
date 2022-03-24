@@ -24,10 +24,12 @@ extern "C" {
           {
             {"typeName", "operationName"},
             {"defaultArg", {
-                {}
+ //               {"int_arg_name", 0},
+ //               {"double_arg_name", 0.0},
+ //               {"string_arg_name", "string_value"}
             }},
           },
-          [](auto arg) {
+          [](auto arg) -> juiz::Value {
               return Value::error("operationName is not implemented yet.");
           });
     }

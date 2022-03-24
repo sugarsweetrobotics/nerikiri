@@ -16,6 +16,49 @@ using namespace juiz;
 using namespace juiz::logger;
 
 
+/**
+ * コンストラクタ
+ * 
+ * 名前はデフォルトの"store"になります
+ */
+ProcessStore::ProcessStore(ProcessAPI* process) : ProcessStoreAPI("store"), process_(process) {
+  // std::cout << "ProcessStore::ProcessStore(process) called." << std::endl;
+  logger::info("ProcesStore::ProcessStore(process) called.");
+}
+
+
+ProcessStore::ProcessStore(ProcessAPI* process, const std::string& name) : ProcessStoreAPI(name), process_(process) {
+  // std::cout << "ProcessStore::ProcessStore(process, name=" << name << ") called." << std::endl;
+  logger::info("ProcesStore::ProcessStore(process, name={}) called.", name);
+}
+
+
+ProcessStore::~ProcessStore() {
+  /// クリアする順序が大事．他のオブジェクトへの直接のポインタを保持しているECなどは先に削除する必要がある
+  logger::info("ProcessStore::~ProcessStore() called");
+  logger::info("deleting containers...");
+  auto containers = list<ContainerAPI>();
+  std::for_each(containers.begin(), containers.end(), [this](auto c) {
+    this->del<ContainerAPI>(c->fullName());
+    logger::info("deleting ContainerAPI({})", c->fullName());
+    c->finalize();
+  });
+
+  logger::info("deleting operations...");
+  auto operations = list<OperationAPI>();
+  std::for_each(operations.begin(), operations.end(), [this](auto c) {
+    this->del<OperationAPI>(c->fullName());
+    logger::info("deleting OperationAPI({})", c->fullName());
+    c->finalize();
+  });
+
+  containers.clear();
+  executionContextFactories_.clear();
+  brokers_.clear();
+  brokerFactories_.clear();
+  logger::info("ProcessStore::~ProcessStore() exit");
+}
+
 Value ProcessStore::info() const { return process_->info(); }
 
 
@@ -57,6 +100,12 @@ std::shared_ptr<ExecutionContextFactoryAPI> ProcessStore::executionContextFactor
   });
   if (f) return f.value();
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, ecTypeFullName);
+  logger::error("Currently registered ExecutionContextFactoryAPI objects are:");
+  auto ecfs = executionContextFactories();
+  std::for_each(ecfs.begin(), ecfs.end(), [](auto ecf) {
+    logger::error("   - {}", ecf->typeName());
+  });
+  logger::error(" ---- ");
   return nullECFactory();
 }
 
@@ -73,6 +122,12 @@ std::shared_ptr<BrokerFactoryAPI> ProcessStore::brokerFactory(const std::string&
   logger::error("ProcessStore::{}({}) called, but not found.", __func__, fullName);
   return nullBrokerFactory();
 }
+
+/*
+std::shared_ptr<ExecutionContextAPI> ProcessStore::executionContextProxy(const Value& fullName) const {
+  return 
+}
+*/
 
 std::shared_ptr<OperationAPI> ProcessStore::operationProxy(const Value& info) {
   logger::trace("ProcessStore::operationProxy({}) called", info);

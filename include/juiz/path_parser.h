@@ -19,6 +19,13 @@ namespace juiz {
             return fullPath;
         }
     
+        static std::string executionContextFullName(const std::string& fullPath) {
+            return fullPath.substr(0, fullPath.rfind(":"));
+        }
+
+        static std::string executionContextStateName(const std::string& fullPath) {
+            return fullPath.substr(fullPath.rfind(":")+1);
+        }
     };
 
 
